@@ -1,35 +1,6 @@
 __author__ = 'GeorgHinkel'
 
 
-class NeuronReference(object):
-    """
-    Represents a reference to one or multiple neurons
-    """
-
-    def __init__(self, label, n):
-        self.__label = label
-        self.__n = n
-
-    def get_label(self):
-        """
-        Gets the label for this neuron reference
-        """
-        return self.__label
-
-    label = property(get_label)
-
-    def get_n(self):
-        """
-        Gets a number indicating how many neurons are referenced
-        """
-        return self.__n
-
-    n = property(get_n)
-
-    def __repr__(self):
-        return self.__label + "(" + str(self.n) + ")"
-
-
 class ISpikeGenerator(object):
     """
     Represents a communication object that may generate spikes
@@ -113,10 +84,6 @@ class IBrainCommunicationAdapter(object):
     Represents the communication interface to the neuronal simulator
     """
 
-    def __init__(self):
-        self.__generated_neurons = {}
-        self.__received_neurons = {}
-
     def register_generate_spikes(self, neurons, spike_generator_type):  # -> ISpikeGenerator:
         """
         Requests a communication object with the given spike generator type for the given set of neurons
@@ -144,22 +111,6 @@ class IBrainCommunicationAdapter(object):
             return publisher
         else:
             return self.__received_neurons[neurons]
-
-    def create_spike_generator(self, neurons, spike_generator_type):  # -> ISpikeGenerator:
-        """
-        Creates the spike generator for the given neurons and spike generator type
-        :param neurons: The neuron reference where the generator should be created
-        :param spike_generator_type: The generator type
-        """
-        raise Exception("Not Implemented")
-
-    def create_spike_detector(self, neurons, spike_detector_type):  # -> ISpikeDetector:
-        """
-        Creates the spike detector for the given neurons and spike detector type
-        :param neurons: The neuron reference where the detector should be created
-        :param spike_detector_type: The detector type
-        """
-        raise Exception("Not Implemented")
 
     def initialize(self):
         """

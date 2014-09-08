@@ -4,7 +4,7 @@ from robotsim.RobotInterface import IRobotCommunicationAdapter, Topic, IRobotSub
 __author__ = 'GeorgHinkel'
 
 
-class RosAdapter(IRobotCommunicationAdapter):
+class RosCommunicationAdapter(IRobotCommunicationAdapter):
     def initialize(self, name):
         #rospy.init_node(name)
         pass

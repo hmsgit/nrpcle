@@ -65,6 +65,22 @@ class IRobotCommunicationAdapter(object):
         self.__published_topics = {}
         self.__subscribed_topics = {}
 
+    @property
+    def published_topics(self):
+        """
+        Gets the published topics for the robot communication adapter
+        :return: A hash table of the communication adapters published topics
+        """
+        return self.__published_topics
+
+    @property
+    def subscribed_topics(self):
+        """
+        Gets the subscribed topics for the robot communication adapter
+        :return: A hash table of the communication adapters subscribed topics
+        """
+        return self.__subscribed_topics
+
     def register_subscribe_topic(self, topic):  # -> IRobotSubscribedTopic:
         """
         Requests a subscription object for the given topic
