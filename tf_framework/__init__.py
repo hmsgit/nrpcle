@@ -1,5 +1,5 @@
 __author__ = 'GeorgHinkel'
 
-from . import config, TransferFunctionsNode
+from . import config, TransferFunctionManager
 
-config.active_node = TransferFunctionsNode.TransferFunctionNode()
+config.active_node = TransferFunctionManager.TransferFunctionManager()

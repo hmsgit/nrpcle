@@ -38,7 +38,7 @@ class IRobotPublishedTopic(object):
         Send a message to the robot topic represented by this instance
         :param value: The message to be sent to the robot
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
 class IRobotSubscribedTopic(object):
@@ -47,10 +47,10 @@ class IRobotSubscribedTopic(object):
     """
 
     def __get_changed(self):  # -> bool:
-        raise Exception("Not implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def __get_value(self):  # -> object:
-        raise Exception("Not implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     changed = property(__get_changed)
 
@@ -113,7 +113,7 @@ class IRobotCommunicationAdapter(object):
         :param topic: The topic
         :return: A subscription object
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def create_topic_publisher(self, topic):  # -> IRobotPublishedTopic:
         """
@@ -121,21 +121,21 @@ class IRobotCommunicationAdapter(object):
         :param topic: The topic
         :return: A publisher object
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def initialize(self, name):  # -> None:
         """
         Initializes the robot adapter
         :param name: The name of the node
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def refresh_buffers(self, t):  # -> None:
         """
         Refreshes the subscribed topic buffers for the given simulation time
         :param t: The simulation time
         """
-        raise Exception("Not Implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
 class IRobotControlAdapter(object):
@@ -147,23 +147,23 @@ class IRobotControlAdapter(object):
         Queries the current status of the world simulation
         :return: True, if the world simulation is alive, otherwise False
         """
-        raise Exception("Not Implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def initialize(self):  # -> None:
         """
         Initializes the world simulation control adapter
         """
-        raise Exception("Not Implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def run_step(self, dt):  # -> None:
         """
         Runs the world simulation for the given time step
         :param dt: The time step
         """
-        raise Exception("Not Implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def shutdown(self):  # -> None:
         """
         Shuts down the world simulation
         """
-        raise Exception("Not Implemented")
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

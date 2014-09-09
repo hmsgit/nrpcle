@@ -4,10 +4,10 @@ from robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
 from brainsim.BrainInterface import IBrainCommunicationAdapter
 from .Neuron2Robot import Neuron2Robot
 from .Robot2Neuron import Robot2Neuron
-from .TransferFunctionsInterface import ITransferFunctionsNode
+from .TransferFunctionInterface import ITransferFunctionManager
 
 
-class TransferFunctionNode(ITransferFunctionsNode):
+class TransferFunctionManager(ITransferFunctionManager):
     """
     Represents a transfer functions node
     """
@@ -77,7 +77,7 @@ class TransferFunctionNode(ITransferFunctionsNode):
             for i in range(0, len(_n2r.robot_topics)):
                 _n2r.robot_topics[i] = self.__robotAdapter.register_publish_topic(_n2r.robot_topics[i])
 
-            for i in range(0, len(_n2r.neuron_params)):
+            for i in range(1, len(_n2r.neuron_params)):
                 item = _n2r.neuron_params[i]
                 _n2r.neuron_params[i] = self.__nestAdapter.register_consume_spikes(item[0], item[1])
 
@@ -86,7 +86,7 @@ class TransferFunctionNode(ITransferFunctionsNode):
             assert isinstance(_r2n, Robot2Neuron)
             _r2n.check_params()
 
-            for i in range(0, len(_r2n.params)):
+            for i in range(1, len(_r2n.params)):
                 item = _r2n.params[i]
                 if isinstance(item, Topic):
                     _r2n.params[i] = self.__robotAdapter.register_subscribe_topic(item)

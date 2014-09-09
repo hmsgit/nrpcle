@@ -1,7 +1,8 @@
 __author__ = 'GeorgHinkel'
 
 from robotsim.RobotInterface import Topic
-from brainsim.BrainInterface import INeuronVoltmeter
+from brainsim.BrainInterface import INeuronVoltmeter, ISpikeRecorder, IPoissonSpikeGenerator, \
+    IFixedFrequencySpikeGenerator, IPatternSpikeGenerator, ICustomDevice
 from .Robot2Neuron import Robot2Neuron
 from . import config
 
@@ -12,6 +13,9 @@ class MapNeuronParameter(object):
     """
     Class to map parameters to neurons
     """
+
+    supported_device_types = [ISpikeRecorder, INeuronVoltmeter, IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator,
+                              IPatternSpikeGenerator]
 
     def __init__(self, key, value, device_type):  # -> None:
         """
@@ -27,9 +31,10 @@ class MapNeuronParameter(object):
                 self.__value = value
             else:
                 self.__value = list(value)
-        # TODO: handle the case when the device_type is not a type
-        # assert isinstance(device_type, type)
         self.__key = key
+        if not isinstance(device_type, ICustomDevice):
+            if not device_type in MapNeuronParameter.supported_device_types:
+                raise Exception("Device type is not supported")
         self.__device_type = device_type
 
     def __call__(self, n2r):  # -> object:
@@ -103,7 +108,7 @@ class Neuron2Robot(object):
         args = inspect.getargspec(func).args
         if args[0] != "t":
             raise Exception("The first parameter of a transfer function must be the time!")
-        self.__neuron_params = args[1:]
+        self.__neuron_params = list(args)
         return self
 
     def replace_params(self):  # -> None:
@@ -111,7 +116,7 @@ class Neuron2Robot(object):
         Replaces strings to neuron references
         if the parameters are not mapped to neurons, voltmeters are generated
         """
-        for i in range(0, len(self.__neuron_params)):
+        for i in range(1, len(self.__neuron_params)):
             if type(self.__neuron_params[i]) == str:
                 param_name = self.__neuron_params[i].lower()
                 gid = None
@@ -125,56 +130,12 @@ class Neuron2Robot(object):
         return "{0} transfers to robot {1} {2} using {3}" \
             .format(self.__func, self.__main_robot_topic, self.__robot_topics, self.__neuron_params)
 
-    # The __run_i methods run the transfer function with i arguments. The reason why several of these methods are
-    # required here is that Python does not offer a way to call a method with a number of arguments unknown at
-    # compile time
-    # Thus, the framework currently supports transfer functions with at most 8 parameters where the first parameter
-    # is the time
-
-    def __run_0(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t)
-
-    def __run_1(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0])
-
-    def __run_2(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0], self.__neuron_params[1])
-
-    def __run_3(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2])
-
-    def __run_4(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
-                           self.__neuron_params[3])
-
-    def __run_5(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
-                           self.__neuron_params[3], self.__neuron_params[4])
-
-    def __run_6(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
-                           self.__neuron_params[3], self.__neuron_params[4], self.__neuron_params[5])
-
-    def __run_7(self, t):  # -> object:
-        assert callable(self.__func)
-        return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
-                           self.__neuron_params[3], self.__neuron_params[4], self.__neuron_params[5],
-                           self.__neuron_params[6])
-
-    __run_list = [__run_0, __run_1, __run_2, __run_3, __run_4, __run_5, __run_6, __run_7]
-
     def run(self, t):  # -> None:
         """
         Runs this transfer function at the given simulation time
         :param t: The simulation time
         """
-        return_value = Neuron2Robot.__run_list[len(self.__neuron_params)](self, t)
+        self.__neuron_params[0] = t
+        return_value = self.__func(*self.__neuron_params)
         if return_value is not None:
             self.__main_robot_topic.send_message(return_value)
