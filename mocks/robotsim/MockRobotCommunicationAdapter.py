@@ -16,6 +16,9 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     def is_alive(self):
         return True
 
+    def refresh_buffers(self, t):
+        pass
+
 
 class MockPublishedTopic(object):
     def __init__(self, topic):

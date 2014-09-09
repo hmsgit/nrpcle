@@ -27,15 +27,15 @@ def right_arm(t, neuron0):
 @nrp.Neuron2Robot(Husky.LeftArm.twist)
 def left_arm_tw(t, neuron1, neuron2):
     if neuron1.voltage < 0.678:
-        if neuron2[0]:
-            return 0
+        if neuron2[0].voltage > 0.345:
+            return 0.756
         else:
-            return 1
+            return 1.123
     else:
-        if neuron2[1]:
-            return 0.75
+        if neuron2[1].voltage < 0.789:
+            return 0.755
         else:
-            return 0.25
+            return 0.256
 
 
 # Here is an example of a transfer function mapping robot sensor data to spikes
@@ -47,6 +47,7 @@ def left_arm_tw(t, neuron1, neuron2):
 @nrp.MapNeuronParameter("camera_device", range(45, 1045), CameraSpikeGenerator(200, 300))
 @nrp.Robot2Neuron()
 def transform_camera(t, camera, camera_device):
+    print("transform_camera called!")
     if camera.changed:
         camera_device.update_image(camera.value)
 

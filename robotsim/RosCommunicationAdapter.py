@@ -1,6 +1,6 @@
 from robotsim.RobotInterface import IRobotCommunicationAdapter, Topic, IRobotSubscribedTopic, IRobotPublishedTopic
 #import rospy
-
+# TODO: implement RosAdapter actually using ROS
 __author__ = 'GeorgHinkel'
 
 

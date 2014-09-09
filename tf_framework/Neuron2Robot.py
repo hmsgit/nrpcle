@@ -13,7 +13,7 @@ class MapNeuronParameter(object):
     Class to map parameters to neurons
     """
 
-    def __init__(self, key, value, device_type):
+    def __init__(self, key, value, device_type):  # -> None:
         """
         Maps a parameter to a neuron
         :param key: the parameter name
@@ -32,7 +32,10 @@ class MapNeuronParameter(object):
         self.__key = key
         self.__device_type = device_type
 
-    def __call__(self, n2r):
+    def __call__(self, n2r):  # -> object:
+        """
+        Applies the parameter mapping to the given transfer function
+        """
         if isinstance(n2r, Neuron2Robot):
             neurons = n2r.neuron_params
             for i in range(0, len(neurons)):
@@ -55,7 +58,7 @@ class Neuron2Robot(object):
     Class to represent a transfer function from neurons to robot
     """
 
-    def __init__(self, robot_topic, *other_topics):
+    def __init__(self, robot_topic, *other_topics):  # -> None:
         """
         Defines a new transfer function from robots to neurons
         :param robot_topic: the robot topic reference
@@ -70,22 +73,30 @@ class Neuron2Robot(object):
     def __get_neuron_params(self):  # -> list:
         return self.__neuron_params
 
-    def __get_main_robot_topic(self):
+    def __get_main_robot_topic(self):  # -> Topic:
         return self.__main_robot_topic
 
-    def __set_main_robot_topic(self, robot_topic):
+    def __set_main_robot_topic(self, robot_topic):  # -> None:
         self.__main_robot_topic = robot_topic
 
-    def __get_robot_topics(self):
+    def __get_robot_topics(self):  # -> list:
         return self.__robot_topics
 
+    # The main robot topic is the topic that the return value of the transfer function is connected to
     main_robot_topic = property(__get_main_robot_topic, __set_main_robot_topic)
 
+    # The neuron parameters are descriptions of the parameters that the transfer functions takes as inputs
     neuron_params = property(__get_neuron_params)
 
+    # The robot topics are the robot topics that may be accessed by the current transfer function
     robot_topics = property(__get_robot_topics)
 
-    def __call__(self, func):
+    def __call__(self, func):  # -> Neuron2Robot:
+        """
+        Applies the transfer functions object to the given function
+        :param func: The function body for this transfer function
+        :return The transfer function object
+        """
         self.__func = func
         n2r_funcs = config.active_node.n2r
         n2r_funcs.append(self)
@@ -95,9 +106,10 @@ class Neuron2Robot(object):
         self.__neuron_params = args[1:]
         return self
 
-    def replace_params(self):
+    def replace_params(self):  # -> None:
         """
         Replaces strings to neuron references
+        if the parameters are not mapped to neurons, voltmeters are generated
         """
         for i in range(0, len(self.__neuron_params)):
             if type(self.__neuron_params[i]) == str:
@@ -109,42 +121,48 @@ class Neuron2Robot(object):
                     gid = int(param_name[1:])
                 self.__neuron_params[i] = ([gid], INeuronVoltmeter)
 
-    def __repr__(self):
+    def __repr__(self):  # -> str:
         return "{0} transfers to robot {1} {2} using {3}" \
             .format(self.__func, self.__main_robot_topic, self.__robot_topics, self.__neuron_params)
 
-    def __run_0(self, t):
+    # The __run_i methods run the transfer function with i arguments. The reason why several of these methods are
+    # required here is that Python does not offer a way to call a method with a number of arguments unknown at
+    # compile time
+    # Thus, the framework currently supports transfer functions with at most 8 parameters where the first parameter
+    # is the time
+
+    def __run_0(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t)
 
-    def __run_1(self, t):
+    def __run_1(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0])
 
-    def __run_2(self, t):
+    def __run_2(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0], self.__neuron_params[1])
 
-    def __run_3(self, t):
+    def __run_3(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2])
 
-    def __run_4(self, t):
+    def __run_4(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
                            self.__neuron_params[3])
 
-    def __run_5(self, t):
+    def __run_5(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
                            self.__neuron_params[3], self.__neuron_params[4])
 
-    def __run_6(self, t):
+    def __run_6(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
                            self.__neuron_params[3], self.__neuron_params[4], self.__neuron_params[5])
 
-    def __run_7(self, t):
+    def __run_7(self, t):  # -> object:
         assert callable(self.__func)
         return self.__func(t, self.__neuron_params[0], self.__neuron_params[1], self.__neuron_params[2],
                            self.__neuron_params[3], self.__neuron_params[4], self.__neuron_params[5],
@@ -152,7 +170,11 @@ class Neuron2Robot(object):
 
     __run_list = [__run_0, __run_1, __run_2, __run_3, __run_4, __run_5, __run_6, __run_7]
 
-    def run(self, t):
+    def run(self, t):  # -> None:
+        """
+        Runs this transfer function at the given simulation time
+        :param t: The simulation time
+        """
         return_value = Neuron2Robot.__run_list[len(self.__neuron_params)](self, t)
         if return_value is not None:
             self.__main_robot_topic.send_message(return_value)
