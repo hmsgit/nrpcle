@@ -148,6 +148,13 @@ class IRobotControlAdapter(object):
         :return: True, if the world simulation is alive, otherwise False
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+    
+    def is_paused(self):  # -> bool:
+        """
+        Queries the current status of the physics simulation
+        :return: True, if the physics simulation is paused, otherwise False
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def initialize(self):  # -> None:
         """
@@ -159,6 +166,7 @@ class IRobotControlAdapter(object):
         """
         Runs the world simulation for the given time step
         :param dt: The time step
+        :return: Updated simulation time
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
