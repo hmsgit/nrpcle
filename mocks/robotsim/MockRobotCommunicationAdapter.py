@@ -7,10 +7,10 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     def initialize(self, name):
         pass
 
-    def create_topic_publisher(self, topic):
+    def create_topic_publisher(self, topic, config):
         return MockPublishedTopic(topic)
 
-    def create_topic_subscriber(self, topic):
+    def create_topic_subscriber(self, topic, config):
         return MockSubscribedTopic(topic)
 
     def is_alive(self):

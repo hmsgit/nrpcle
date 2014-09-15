@@ -99,20 +99,22 @@ class IBrainCommunicationAdapter(object):
     Represents the communication interface to the neuronal simulator
     """
 
-    def register_generate_spikes(self, neurons, spike_generator_type):  # -> ISpikeGenerator:
+    def register_generate_spikes(self, neurons, spike_generator_type, **kwargs):  # -> ISpikeGenerator:
         """
         Requests a communication object with the given spike generator type for the given set of neurons
+        :param kwargs: A dictionary of configuration parameters
         :param neurons: A reference to the neurons where the spike generator should be installed
         :param spike_generator_type: A spike generator type (see documentation for a list of allowed values)
         :return: A communication object
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def register_consume_spikes(self, neurons, spike_detector_type):  # -> ISpikeDetector:
+    def register_consume_spikes(self, neurons, spike_detector_type, **kwargs):  # -> ISpikeDetector:
         """
         Requests a communication object with the given spike detector type for the given set of neurons
         :param neurons: A reference to the neurons where the spikes should be detected
         :param spike_detector_type: A spike detector type (see documentation for a list of allowed values)
+        :param kwargs: A dictionary of configuration parameters
         :return: A Communication object
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
