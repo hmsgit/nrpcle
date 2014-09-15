@@ -8,18 +8,25 @@ class ISpikeGenerator(object):
     pass
 
 
+class ICurrentGenerator(object):
+    """
+    Represents a communication object that may generate spikes
+    """
+    pass
+
+
 class IFixedFrequencySpikeGenerator(ISpikeGenerator):
     """
     Represents a communication object that generates spikes on a fixed frequency
     """
 
-    def __get_frequency(self):  # -> float:
+    def __get_rate(self):  # -> float:
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_frequency(self, value):
+    def __set_rate(self, value):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    frequency = property(__get_frequency, __set_frequency)
+    frequency = property(__get_rate, __set_rate)
 
 
 class IPatternSpikeGenerator(ISpikeGenerator):
@@ -36,7 +43,49 @@ class IPatternSpikeGenerator(ISpikeGenerator):
     pattern = property(__get_pattern, __set_pattern)
 
 
-class IPoissonSpikeGenerator(ISpikeGenerator):
+class IDCSource(ICurrentGenerator):
+    """
+    Represents a spike generator generating spikes in a pattern
+    """
+
+    def __get_amplitude(self):  # -> list:
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def __set_amplitude(self, value):
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    pattern = property(__get_amplitude, __set_amplitude)
+
+
+class IACSource(ICurrentGenerator):
+    """
+    Represents a spike generator generating spikes in a pattern
+    """
+
+    def __get_amplitude(self):  # -> list:
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def __set_amplitude(self, value):
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    pattern = property(__get_amplitude, __set_amplitude)
+
+
+class INCSource(ICurrentGenerator):
+    """
+    Represents a spike generator generating spikes in a pattern
+    """
+
+    def __get_mean(self):  # -> list:
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def __set_mean(self, value):
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    pattern = property(__get_mean, __set_mean)
+
+
+class ISpikeSourcePoisson(ISpikeGenerator):
     """
     Represents a spike generator based on a Poisson Distribution
     """
@@ -78,6 +127,23 @@ class INeuronVoltmeter(ISpikeDetector):
 
     voltage = property(__get_voltage)
 
+    def connect(self, neurons):
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
+class IIFCurrAlpha(ISpikeDetector):
+    """
+    Represents a spike detector that integrates the spikes to the voltage of a neuron
+    """
+
+    def __get_voltage(self):  # -> float:
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    voltage = property(__get_voltage)
+
+    def connect(self, neurons):
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class ICustomDevice(object):
     """
@@ -99,17 +165,17 @@ class IBrainCommunicationAdapter(object):
     Represents the communication interface to the neuronal simulator
     """
 
-    def register_generate_spikes(self, neurons, spike_generator_type, **kwargs):  # -> ISpikeGenerator:
+    def register_spike_source(self, neurons, spike_generator_type, **kwargs):  # -> ISpikeGenerator:
         """
         Requests a communication object with the given spike generator type for the given set of neurons
-        :param kwargs: A dictionary of configuration parameters
         :param neurons: A reference to the neurons where the spike generator should be installed
         :param spike_generator_type: A spike generator type (see documentation for a list of allowed values)
+        :param kwargs: A dictionary of configuration parameters
         :return: A communication object
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def register_consume_spikes(self, neurons, spike_detector_type, **kwargs):  # -> ISpikeDetector:
+    def register_spike_sink(self, neurons, spike_detector_type, **kwargs):  # -> ISpikeDetector:
         """
         Requests a communication object with the given spike detector type for the given set of neurons
         :param neurons: A reference to the neurons where the spikes should be detected
