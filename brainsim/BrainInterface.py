@@ -166,6 +166,12 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
     Represents the communication interface to the neuronal simulator
     """
 
+    def __init__(self):  # -> None:
+        """
+        Initializes the adapter
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
     def register_spike_source(self, neurons, spike_generator_type, **kwargs):  # -> ISpikeGenerator:
         """
         Requests a communication object with the given spike generator type for the given set of neurons
@@ -186,12 +192,6 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def initialize(self):  # -> None:
-        """
-        Initializes the adapter
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
     def refresh_buffers(self, t):  # -> None:
         """
         Refreshes all detector buffers
@@ -205,16 +205,16 @@ class IBrainControlAdapter(object):  # pragma: no cover
     Represents a controller object for the neuronal simulator
     """
 
+    def __init__(self):
+        """
+        Initializes the neuronal simulator
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
     def is_alive(self):  # -> bool:
         """
         Gets a status whether the neuronal simulator is still alive
         :return: True if the simulator is alive, otherwise False
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    def initialize(self):  # -> None:
-        """
-        Initializes the neuronal simulator
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
