@@ -17,11 +17,12 @@ class MapNeuronParameter(object):
     supported_device_types = [ISpikeRecorder, INeuronVoltmeter, IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator,
                               IPatternSpikeGenerator]
 
-    def __init__(self, key, value, device_type):  # -> None:
+    def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """
         Maps a parameter to a neuron
         :param key: the parameter name
         :param value: the neuron reference
+        :param kwargs: Additional configuration
         :param device_type: The type of device that should be created at the referenced neurons
         """
         if isinstance(value, int):
@@ -36,6 +37,7 @@ class MapNeuronParameter(object):
             if not device_type in MapNeuronParameter.supported_device_types:
                 raise Exception("Device type is not supported")
         self.__device_type = device_type
+        self.__config = kwargs
 
     def __call__(self, n2r):  # -> object:
         """
@@ -45,17 +47,38 @@ class MapNeuronParameter(object):
             neurons = n2r.neuron_params
             for i in range(0, len(neurons)):
                 if neurons[i] == self.__key:
-                    neurons[i] = (self.__value, self.__device_type)
+                    neurons[i] = self
                     return n2r
         elif isinstance(n2r, Robot2Neuron):
             params = n2r.params
             for i in range(0, len(params)):
                 if params[i] == self.__key:
-                    params[i] = (self.__value, self.__device_type)
+                    params[i] = self
                     return n2r
         else:
             raise Exception("Can only map parameters for neuron2robot objects")
         raise Exception("Could not map parameter as no parameter with the name " + self.__key + " exists")
+
+    @property
+    def neurons(self):
+        """
+        Gets the neurons referenced by this mapping
+        """
+        return self.__value
+
+    @property
+    def device_type(self):
+        """
+        Gets the device type referenced by this mapping
+        """
+        return self.__device_type
+
+    @property
+    def config(self):
+        """
+        Gets the configuration used by this mapping
+        """
+        return self.__config
 
 
 class Neuron2Robot(object):
@@ -124,7 +147,7 @@ class Neuron2Robot(object):
                     gid = int(param_name[6:])
                 elif param_name.startswith("n"):
                     gid = int(param_name[1:])
-                self.__neuron_params[i] = ([gid], INeuronVoltmeter)
+                self.__neuron_params[i] = MapNeuronParameter(None, [gid], INeuronVoltmeter)
 
     def __repr__(self):  # -> str:
         return "{0} transfers to robot {1} {2} using {3}" \

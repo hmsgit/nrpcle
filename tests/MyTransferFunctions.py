@@ -16,6 +16,7 @@ right_arm_v = 0
 # The annotation Neuron2Robot registers this function as a transfer function
 # As the parameter neuron0 is not explicitly mapped, the framework will assume a mapping
 # to the neuron with the GID 0 and associate with a voltmeter for this neuron
+@nrp.MapNeuronParameter("neuron0", [10], nrp.voltmeter, updates=[(1.0, 0.3)])
 @nrp.Neuron2Robot(Husky.RightArm.pose)
 def right_arm(t, neuron0):
     return neuron0.voltage * 1.345
@@ -25,7 +26,7 @@ def right_arm(t, neuron0):
 # This time, the neuron parameter is explicitly mapped to an array of neurons
 # More precisely, the parameter is mapped to a group of devices that are each connected to a single neuron
 # The neuron2 parameter will thus be a list of recorders
-@nrp.MapNeuronParameter("neuron2", [[42], [23], [0], [8], [15]], nrp.voltmeter)
+@nrp.MapNeuronParameter("neuron2", [[42], [23], [0], [8], [15]], nrp.voltmeter, updates=[(1.0, 0.4)])
 @nrp.Neuron2Robot(Husky.LeftArm.twist)
 def left_arm_tw(t, neuron1, neuron2):
     if neuron1.voltage < 0.678:
@@ -60,3 +61,5 @@ if __name__ == "__main__":
     nrp.initialize("MyTransferFunctions")
     config.active_node.run_neuron_to_robot(0.5)
     config.active_node.run_robot_to_neuron(0.5)
+    config.active_node.run_neuron_to_robot(1.5)
+    config.active_node.run_robot_to_neuron(1.5)
