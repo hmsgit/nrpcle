@@ -16,6 +16,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
     def __init__(self, **kwargs):
         """
         Initializes the neuronal simulator
+        :param kwargs: A dictionary of configuration parameters
         """
         self.__is_alive = True
         rank = sim.setup(**kwargs)

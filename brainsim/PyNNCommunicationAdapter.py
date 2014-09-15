@@ -4,7 +4,7 @@ moduleauthor: probst@fzi.de
 '''
 
 from brainsim.BrainInterface import IBrainCommunicationAdapter, \
-    IIFCurrAlpha, ISpikeSourcePoisson, IDCSource, IACSource, INCSource
+    IIFCurrAlpha, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
 import pyNN.nest as sim
 import warnings
 import numpy as np
@@ -13,9 +13,16 @@ __author__ = 'DimitriProbst'
 
 
 class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
+    """
+    Represents the communication adapter to the neuronal simulator
+    """
 
     def __init__(self):
-        self.__generator_types = {ISpikeSourcePoisson: PyNNSpikeSourcePoisson,
+        """
+        Initializes the communication adapter
+        """
+        self.__generator_types = {IPoissonSpikeGenerator:
+                                  PyNNPoissonSpikeGenerator,
                                   IDCSource: PyNNDCSource,
                                   IACSource: PyNNACSource,
                                   INCSource: PyNNNCSource}
@@ -24,19 +31,44 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         self.detectors = []
 
     def register_spike_source(self, neurons, spike_generator_type, **kwargs):
+        """
+        Requests a communication object with the given spike generator type
+        for the given set of neurons
+        :param neurons: A reference to the neurons to which the spike generator
+        should be connected
+        :param spike_generator_type: A spike generator type (see documentation
+        or a list of allowed values)
+        :param kwargs: A dictionary of configuration parameters
+        :return: A communication object
+        """
         generator = self.__generator_types[spike_generator_type]()
         self.generators.append(generator)
         generator.connect(neurons, **kwargs)
         return generator
 
     def register_spike_sink(self, neurons, spike_detector_type, **kwargs):
+        '''
+        Requests a communication object with the given spike detector type
+        for the given set of neurons
+        :param neurons: A reference to the neurons which should be connected
+        to the spike detector
+        :param spike_detector_type: A spike detector type (see documentation
+        for a list of allowed values)
+        :param kwargs: A dictionary of configuration parameters
+        :return: A Communication object
+        '''
         detector = self.__detector_types[spike_detector_type]()
         self.detectors.append(detector)
         detector.connect(neurons, **kwargs)
         return detector
 
     def refresh_buffers(self, t):
-        pass
+        """
+        Refreshes all detector buffers
+        :param t: The simulation time
+        """
+        raise NotImplementedError("This method was not implemented in the\
+                                  concrete implementation")
 
 
 class PyNNIFCurrAlpha(IIFCurrAlpha):
@@ -185,7 +217,7 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                               rng=rng)
 
 
-class PyNNSpikeSourcePoisson(ISpikeSourcePoisson):
+class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
     """
     Represents a Poisson spike generator
     """
@@ -491,7 +523,7 @@ if __name__ == "__main__":
                                                    'e_rev_I': -80.})
 
     CONN = sim.AllToAllConnector(weights=2.0, delays=0.1)
-    POISSON = PyNNSpikeSourcePoisson()
+    POISSON = PyNNPoissonSpikeGenerator()
     POISSON.connect(IFCELL2, connector=CONN)
     CELL = PyNNIFCurrAlpha()
     CELL.connect(IFCELL)

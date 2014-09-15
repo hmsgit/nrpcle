@@ -10,14 +10,14 @@ class ISpikeGenerator(object):
 
 class ICurrentGenerator(object):
     """
-    Represents a communication object that may generate spikes
+    Represents a communication object that may generate currents
     """
     pass
 
 
 class IFixedFrequencySpikeGenerator(ISpikeGenerator):
     """
-    Represents a communication object that generates spikes on a fixed frequency
+    Represents a communication object that generates spikes on a fixed rate
     """
 
     def __get_rate(self):  # -> float:
@@ -26,7 +26,7 @@ class IFixedFrequencySpikeGenerator(ISpikeGenerator):
     def __set_rate(self, value):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    frequency = property(__get_rate, __set_rate)
+    rate = property(__get_rate, __set_rate)
 
 
 class IPatternSpikeGenerator(ISpikeGenerator):
@@ -45,7 +45,7 @@ class IPatternSpikeGenerator(ISpikeGenerator):
 
 class IDCSource(ICurrentGenerator):
     """
-    Represents a spike generator generating spikes in a pattern
+    Represents a current generator which generates direct current
     """
 
     def __get_amplitude(self):  # -> list:
@@ -54,12 +54,12 @@ class IDCSource(ICurrentGenerator):
     def __set_amplitude(self, value):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    pattern = property(__get_amplitude, __set_amplitude)
+    amplitude = property(__get_amplitude, __set_amplitude)
 
 
 class IACSource(ICurrentGenerator):
     """
-    Represents a spike generator generating spikes in a pattern
+    Represents a current generator which generates alternating current
     """
 
     def __get_amplitude(self):  # -> list:
@@ -68,12 +68,12 @@ class IACSource(ICurrentGenerator):
     def __set_amplitude(self, value):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    pattern = property(__get_amplitude, __set_amplitude)
+    amplitude = property(__get_amplitude, __set_amplitude)
 
 
 class INCSource(ICurrentGenerator):
     """
-    Represents a spike generator generating spikes in a pattern
+    Represents a current generator which generates noisy current
     """
 
     def __get_mean(self):  # -> list:
@@ -82,10 +82,10 @@ class INCSource(ICurrentGenerator):
     def __set_mean(self, value):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    pattern = property(__get_mean, __set_mean)
+    mean = property(__get_mean, __set_mean)
 
 
-class ISpikeSourcePoisson(ISpikeGenerator):
+class IPoissonSpikeGenerator(ISpikeGenerator):
     """
     Represents a spike generator based on a Poisson Distribution
     """
@@ -133,7 +133,10 @@ class INeuronVoltmeter(ISpikeDetector):
 
 class IIFCurrAlpha(ISpikeDetector):
     """
-    Represents a spike detector that integrates the spikes to the voltage of a neuron
+    Represents the membrane voltage of a current-based LIF neuron
+    with alpha-shaped post synaptic currents. The neurons default threshold
+    potential is set to infinity, so that the neuron never spikes, but
+    only serves as a leaky integrator of the incoming spike train.
     """
 
     def __get_voltage(self):  # -> float:
@@ -168,7 +171,7 @@ class IBrainCommunicationAdapter(object):
     def register_spike_source(self, neurons, spike_generator_type, **kwargs):  # -> ISpikeGenerator:
         """
         Requests a communication object with the given spike generator type for the given set of neurons
-        :param neurons: A reference to the neurons where the spike generator should be installed
+        :param neurons: A reference to the neurons to which the spike generator should be connected
         :param spike_generator_type: A spike generator type (see documentation for a list of allowed values)
         :param kwargs: A dictionary of configuration parameters
         :return: A communication object
@@ -178,7 +181,7 @@ class IBrainCommunicationAdapter(object):
     def register_spike_sink(self, neurons, spike_detector_type, **kwargs):  # -> ISpikeDetector:
         """
         Requests a communication object with the given spike detector type for the given set of neurons
-        :param neurons: A reference to the neurons where the spikes should be detected
+        :param neurons: A reference to the neurons which should be connected to the spike detector
         :param spike_detector_type: A spike detector type (see documentation for a list of allowed values)
         :param kwargs: A dictionary of configuration parameters
         :return: A Communication object
