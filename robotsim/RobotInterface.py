@@ -81,44 +81,48 @@ class IRobotCommunicationAdapter(object):
         """
         return self.__subscribed_topics
 
-    def register_subscribe_topic(self, topic):  # -> IRobotSubscribedTopic:
+    def register_subscribe_topic(self, topic, **kwargs):  # -> IRobotSubscribedTopic:
         """
         Requests a subscription object for the given topic
         :param topic: The topic that should be subscribed
+        :param kwargs: Additional configuration parameters
         :return: A subscription object that holds the current data
         """
         if not topic in self.__subscribed_topics:
-            subscriber = self.create_topic_subscriber(topic)
+            subscriber = self.create_topic_subscriber(topic, kwargs)
             self.__subscribed_topics[topic] = subscriber
             return subscriber
         else:
             return self.__subscribed_topics[topic]
 
-    def register_publish_topic(self, topic):  # -> IRobotPublishedTopic:
+    def register_publish_topic(self, topic, **kwargs):  # -> IRobotPublishedTopic:
         """
         Requests a publisher object for the given topic
         :param topic: The topic for which to create a publisher
+        :param kwargs: Additional configuration parameters
         :return: A publisher communication object
         """
         if not topic in self.__published_topics:
-            publisher = self.create_topic_publisher(topic)
+            publisher = self.create_topic_publisher(topic, kwargs)
             self.__published_topics[topic] = publisher
             return publisher
         else:
             return self.__published_topics[topic]
 
-    def create_topic_subscriber(self, topic):  # -> IRobotSubscribedTopic:
+    def create_topic_subscriber(self, topic, config):  # -> IRobotSubscribedTopic:
         """
         Creates the subscription object for the given topic
         :param topic: The topic
+        :param config: Additional configuration for the subscriber
         :return: A subscription object
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def create_topic_publisher(self, topic):  # -> IRobotPublishedTopic:
+    def create_topic_publisher(self, topic, config):  # -> IRobotPublishedTopic:
         """
         Creates a publisher object for the given topic
         :param topic: The topic
+        :param config: Additional configuration for the publisher
         :return: A publisher object
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")

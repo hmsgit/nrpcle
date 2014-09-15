@@ -9,10 +9,10 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         #rospy.init_node(name)
         pass
 
-    def create_topic_publisher(self, topic):
+    def create_topic_publisher(self, topic, config):
         return RosPublishedTopic(topic)
 
-    def create_topic_subscriber(self, topic):
+    def create_topic_subscriber(self, topic, config):
         return RosSubscribedTopic(topic)
 
     def is_alive(self):
