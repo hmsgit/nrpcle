@@ -1,6 +1,8 @@
 from tf_framework.TransferFunctionInterface import ITransferFunctionManager
+import time
 
 __author__ = 'GeorgHinkel'
+
 
 class MockTransferFunctionManager(ITransferFunctionManager):
     """
@@ -14,6 +16,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         self.__name = None
         self.__r2nTimes = []
         self.__n2rTimes = []
+        self.__sleepTime = 1
 
     def initialize(self, name):
         """
@@ -28,6 +31,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         :param t: The simulation time of the neuronal simulator
         """
         self.__n2rTimes.append(t)
+        time.sleep(self.__sleepTime)
 
     def run_robot_to_neuron(self, t):
         """
@@ -35,6 +39,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         :param t: The simulation time of the world simulator
         """
         self.__r2nTimes.append(t)
+        time.sleep(self.__sleepTime)
 
     @property
     def name(self):
@@ -63,3 +68,18 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         Gets the times the transfer function manager has been called from neuron to robot
         """
         return self.__n2rTimes
+
+    @property
+    def sleep_time(self):
+        """
+        Gets the sleep_time of the mock when the transfer functions are called
+        """
+        return self.__sleepTime
+
+    @sleep_time.setter
+    def sleep_time(self, sleep_time):
+        """
+        Sets the sleep time when the transfer functions are called
+        :param sleep_time: The new sleep time for this mock
+        """
+        self.__sleepTime = sleep_time
