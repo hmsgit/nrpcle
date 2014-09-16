@@ -1,7 +1,7 @@
 __author__ = 'GeorgHinkel'
 
 
-class ITransferFunctionManager(object):
+class ITransferFunctionManager(object):  # pragma: no cover
     """
     Represents the interface of a transfer functions node
     """

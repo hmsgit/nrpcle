@@ -1,5 +1,5 @@
 __author__ = 'GeorgHinkel'
 
-from . import config, TransferFunctionManager
+from . import tf_framework
 
-config.active_node = TransferFunctionManager.TransferFunctionManager()
+tf_framework.start_new_tf_manager()

@@ -5,6 +5,7 @@ from brainsim.BrainInterface import IFixedFrequencySpikeGenerator, \
 
 from .Neuron2Robot import Neuron2Robot, MapNeuronParameter
 from .Robot2Neuron import Robot2Neuron, MapRobotParameter
+from . import TransferFunctionManager
 
 __author__ = 'GeorgHinkel'
 
@@ -46,3 +47,6 @@ def set_robot_adapter(robot_adapter):  # -> None:
     :param robot_adapter: The robot adapter
     """
     config.active_node.robot_adapter = robot_adapter
+
+def start_new_tf_manager():
+    config.active_node = TransferFunctionManager.TransferFunctionManager()

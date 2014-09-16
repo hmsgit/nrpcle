@@ -1,7 +1,7 @@
 __author__ = 'GeorgHinkel'
 
 
-class ISpikeGenerator(object):
+class ISpikeGenerator(object):  # pragma: no cover
     """
     Represents a communication object that may generate spikes
     """
@@ -15,7 +15,7 @@ class ICurrentGenerator(object):
     pass
 
 
-class IFixedFrequencySpikeGenerator(ISpikeGenerator):
+class IFixedFrequencySpikeGenerator(ISpikeGenerator):  # pragma: no cover
     """
     Represents a communication object that generates spikes on a fixed rate
     """
@@ -29,7 +29,7 @@ class IFixedFrequencySpikeGenerator(ISpikeGenerator):
     rate = property(__get_rate, __set_rate)
 
 
-class IPatternSpikeGenerator(ISpikeGenerator):
+class IPatternSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     """
     Represents a spike generator generating spikes in a pattern
     """
@@ -85,7 +85,7 @@ class INCSource(ICurrentGenerator):
     mean = property(__get_mean, __set_mean)
 
 
-class IPoissonSpikeGenerator(ISpikeGenerator):
+class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     """
     Represents a spike generator based on a Poisson Distribution
     """
@@ -99,14 +99,14 @@ class IPoissonSpikeGenerator(ISpikeGenerator):
     rate = property(__get_rate, __set_rate)
 
 
-class ISpikeDetector(object):
+class ISpikeDetector(object):  # pragma: no cover
     """
     Represents a communication object that may detect spikes
     """
     pass
 
 
-class ISpikeRecorder(ISpikeDetector):
+class ISpikeRecorder(ISpikeDetector):  # pragma: no cover
     """
     Represents a communication object that records spikes from a certain neuron
     """
@@ -117,7 +117,7 @@ class ISpikeRecorder(ISpikeDetector):
     recorded_spikes = property(__get_recorded_spikes)
 
 
-class INeuronVoltmeter(ISpikeDetector):
+class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
     """
     Represents a spike detector that integrates the spikes to the voltage of a neuron
     """
@@ -127,8 +127,6 @@ class INeuronVoltmeter(ISpikeDetector):
 
     voltage = property(__get_voltage)
 
-    def connect(self, neurons):
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
 class IIFCurrAlpha(ISpikeDetector):
@@ -148,7 +146,7 @@ class IIFCurrAlpha(ISpikeDetector):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class ICustomDevice(object):
+class ICustomDevice(object):  # pragma: no cover
     """
     Represents device type with an internal logic that can be mapped to existing device types
     A brain communication adapter may chose whether to use the custom device or to support it directly
@@ -163,7 +161,7 @@ class ICustomDevice(object):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IBrainCommunicationAdapter(object):
+class IBrainCommunicationAdapter(object):  # pragma: no cover
     """
     Represents the communication interface to the neuronal simulator
     """
@@ -202,7 +200,7 @@ class IBrainCommunicationAdapter(object):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IBrainControlAdapter(object):
+class IBrainControlAdapter(object):  # pragma: no cover
     """
     Represents a controller object for the neuronal simulator
     """

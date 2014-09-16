@@ -8,10 +8,10 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
         pass
 
     def create_topic_publisher(self, topic, config):
-        return MockPublishedTopic(topic)
+        return MockPublishedTopic()
 
     def create_topic_subscriber(self, topic, config):
-        return MockSubscribedTopic(topic)
+        return MockSubscribedTopic()
 
     def is_alive(self):
         return True
@@ -21,19 +21,21 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
 
 
 class MockPublishedTopic(object):
-    def __init__(self, topic):
-        self.__lastSent = None
-        self.__topic = topic
+    def __init__(self):
+        self.__sent = []
 
     def send_message(self, value):
-        print("Sending ", value, " on topic ", self.__topic)
+        self.__sent.append(value)
+
+    @property
+    def sent(self):
+        return self.__sent
 
 
 class MockSubscribedTopic(object):
-    def __init__(self, topic):
+    def __init__(self):
         self.__changed = False
         self.__value = None
-        assert isinstance(topic, Topic)
 
     def get_changed(self):
         return self.__changed
@@ -41,6 +43,10 @@ class MockSubscribedTopic(object):
     def get_value(self):
         return self.__value
 
+    def set_value(self, value):
+        self.__changed = value != self.__value
+        self.__value = value
+
     changed = property(get_changed)
 
-    value = property(get_value)
+    value = property(get_value, set_value)

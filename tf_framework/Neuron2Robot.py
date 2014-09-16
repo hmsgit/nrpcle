@@ -149,7 +149,7 @@ class Neuron2Robot(object):
                     gid = int(param_name[1:])
                 self.__neuron_params[i] = MapNeuronParameter(None, [gid], INeuronVoltmeter)
 
-    def __repr__(self):  # -> str:
+    def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} {2} using {3}" \
             .format(self.__func, self.__main_robot_topic, self.__robot_topics, self.__neuron_params)
 

@@ -25,11 +25,11 @@ class Topic(object):
 
     type = property(__get_type)
 
-    def __repr__(self):  # -> None:
+    def __repr__(self):  # pragma: no cover
         return self.__name + " : " + self.__type.__name__
 
 
-class IRobotPublishedTopic(object):
+class IRobotPublishedTopic(object):  # pragma: no cover
     """
     Represents a communication object for a published robot topic
     """
@@ -41,7 +41,7 @@ class IRobotPublishedTopic(object):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IRobotSubscribedTopic(object):
+class IRobotSubscribedTopic(object):  # pragma: no cover
     """
     Represents a communication object for a subscribed robot topic
     """
@@ -57,7 +57,7 @@ class IRobotSubscribedTopic(object):
     value = property(__get_value)
 
 
-class IRobotCommunicationAdapter(object):
+class IRobotCommunicationAdapter(object):  # pragma: no cover
     """
     Represents the communication adapter to the robot
     """
@@ -142,7 +142,7 @@ class IRobotCommunicationAdapter(object):
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IRobotControlAdapter(object):
+class IRobotControlAdapter(object):  # pragma: no cover
     """
     Represents a control adapter for the world simulation
     """

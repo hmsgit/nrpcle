@@ -64,10 +64,6 @@ class TransferFunctionManager(ITransferFunctionManager):
         assert isinstance(self.__nestAdapter, IBrainCommunicationAdapter)
         assert isinstance(self.__robotAdapter, IRobotCommunicationAdapter)
 
-        # Initialize dependencies
-        self.__nestAdapter.initialize()
-        self.__robotAdapter.initialize(name)
-
         # Wire transfer functions from neuronal simulation to world simulation
         for _n2r in self.__n2r:
             assert isinstance(_n2r, Neuron2Robot)
@@ -96,6 +92,9 @@ class TransferFunctionManager(ITransferFunctionManager):
                     assert isinstance(param, MapNeuronParameter)
                     _r2n.params[i] = self.__nestAdapter.register_generate_spikes(param.neurons, param.device_type,
                                                                                  **param.config)
+        # Initialize dependencies
+        self.__nestAdapter.initialize()
+        self.__robotAdapter.initialize(name)
 
     def __get_robot_adapter(self):  # -> IRobotCommunicationAdapter:
         return self.__robotAdapter
