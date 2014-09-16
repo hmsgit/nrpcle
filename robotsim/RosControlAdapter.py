@@ -1,55 +1,68 @@
 from robotsim.RobotInterface import IRobotControlAdapter
-import rospy, sys, os, time
-import string
-import warnings
-
-from gazebo_ros import gazebo_interface
+import rospy
 
 from gazebo_msgs.msg import *
 from gazebo_msgs.srv import *
 from std_srvs.srv import Empty
-from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Wrench
 
 __author__ = 'NinoCauli'
 
 
 class RosControlAdapter(IRobotControlAdapter):
+    def __init__(self):
+        rospy.wait_for_service('/gazebo/get_physics_properties')
+        self.__get_physics_properties = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
+        rospy.wait_for_service('/gazebo/get_world_properties')
+        self.__get_world_properties = rospy.ServiceProxy('gazebo/get_world_properties', GetWorldProperties)
+        rospy.wait_for_service('/gazebo/set_physics_properties')
+        self.__set_physics_properties = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
+        rospy.wait_for_service('/gazebo/pause_physics')
+        self.__pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty) 
+        rospy.wait_for_service('/gazebo/reset_sim')
+        self.__reset = rospy.ServiceProxy('gazebo/reset_sim', Empty)
+        rospy.wait_for_service('gazebo/end_world')
+        self.__endWorld = rospy.ServiceProxy('gazebo/end_world', Empty)
+        rospy.wait_for_service('gazebo/advance_simulation')
+        self.__advance_simulation = rospy.ServiceProxy('gazebo/advance_simulation', AdvanceSimulation)   
+
     def initialize(self):
-        get_physics_properties = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
-        physics = get_physics_properties()
+        physics = self.__get_physics_properties()
         paused = physics.pause
         if (not paused):
-            rospy.wait_for_service('/gazebo/pause_physics')
-            pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty)
-            pause_client()
-        reset = rospy.ServiceProxy('gazebo/reset_sim', Empty)
-        reset()
+            self.__pause_client()
+        self.__reset()
+        self.set_time_step(0.001)
         pass
 
+    def get_time_step(self):
+        physics = self.__get_physics_properties()
+        time_step = physics.time_step        
+        return time_step
+
+    def set_time_step(self, time_step):
+        physics = self.__get_physics_properties()
+        success = self.__set_physics_properties(time_step, physics.max_update_rate, physics.gravity, physics.ode_config)
+        return success
+
     def is_paused(self):
-        get_physics_properties = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
-        physics = get_physics_properties()
+        physics = self.__get_physics_properties()
         paused = physics.pause
         return paused
 
     def is_alive(self):
-        get_world_properties = rospy.ServiceProxy('gazebo/get_world_properties', GetWorldProperties)
-        world = get_world_properties()
+        world = self.__get_world_properties()
         success = world.success
         return success
 
     def run_step(self, dt):
-        advance_simulation = rospy.ServiceProxy('gazebo/advance_simulation', AdvanceSimulation)
-        advance_simulation(dt)  
-        get_world_properties = rospy.ServiceProxy('gazebo/get_world_properties', GetWorldProperties)
-        world = get_world_properties()
+        self.__advance_simulation(dt)  
+        world = self.__get_world_properties()
         simTime = world.sim_time     
         return simTime
 
     def shutdown(self):
         # TODO test better the endWorld function recently added in the gazebo_ros_HBP plugin
         
-        # endWorld = rospy.ServiceProxy('gazebo/end_world', Empty)
-        # endWorld()
+        # self.__endWorld()
         pass
     

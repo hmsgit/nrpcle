@@ -6,10 +6,18 @@ __author__ = 'NinoCauli'
 class MockRobotControlAdapter(IRobotControlAdapter):
     
     def __init__(self):
-        self.__timestamp = 0.0
+        self.__sim_time = 0.0
+        self.__time_step = 0.001
 
     def initialize(self):
         pass
+
+    def get_time_step(self):      
+        return self.__time_step
+
+    def set_time_step(self, time_step):
+        self.__time_step = time_step       
+        return True
 
     def is_paused(self):
         return True
@@ -18,8 +26,8 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         return True
 
     def run_step(self, dt):
-        self.__timestamp = self.__timestamp + (dt / 1000.0);
-        return self.__timestamp
+        self.__sim_time = self.__sim_time + (dt * self.__time_step)
+        return self.__sim_time
 
     def shutdown(self):
         pass
