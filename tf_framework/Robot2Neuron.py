@@ -11,15 +11,17 @@ class MapRobotParameter(object):
     Class to map parameters to robot topics
     """
 
-    def __init__(self, key, value):  # -> None:
+    def __init__(self, key, value, **kwargs):  # -> None:
         """
         Maps a parameter to a robot topic
         :param key: the name of the parameter
         :param value: the value for the parameter
+        :param kwargs: Additional configuration parameters
         """
         assert isinstance(value, Topic)
         self.__key = key
         self.__value = value
+        self.__config = kwargs
 
     def __call__(self, r2n):  # -> Robot2Neuron:
         """
@@ -29,10 +31,23 @@ class MapRobotParameter(object):
         topics = r2n.params
         for i in range(0, len(topics)):
             if topics[i] == self.__key:
-                topics[i] = self.__value
+                topics[i] = self
                 return r2n
         raise Exception("Could not map parameter as no parameter with the given name exists")
 
+    @property
+    def topic(self):
+        """
+        Gets the topic this mapping directs to
+        """
+        return self.__value
+
+    @property
+    def config(self):
+        """
+        Gets additional configuration for this mapping
+        """
+        return self.__config
 
 class Robot2Neuron(object):
     """

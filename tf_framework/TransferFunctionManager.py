@@ -2,8 +2,8 @@ __author__ = 'GeorgHinkel'
 
 from robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
 from brainsim.BrainInterface import IBrainCommunicationAdapter
-from .Neuron2Robot import Neuron2Robot
-from .Robot2Neuron import Robot2Neuron
+from .Neuron2Robot import Neuron2Robot, MapNeuronParameter
+from .Robot2Neuron import Robot2Neuron, MapRobotParameter
 from .TransferFunctionInterface import ITransferFunctionManager
 
 
@@ -78,8 +78,10 @@ class TransferFunctionManager(ITransferFunctionManager):
                 _n2r.robot_topics[i] = self.__robotAdapter.register_publish_topic(_n2r.robot_topics[i])
 
             for i in range(1, len(_n2r.neuron_params)):
-                item = _n2r.neuron_params[i]
-                _n2r.neuron_params[i] = self.__nestAdapter.register_consume_spikes(item[0], item[1])
+                param = _n2r.neuron_params[i]
+                assert isinstance(param, MapNeuronParameter)
+                _n2r.neuron_params[i] = self.__nestAdapter.register_consume_spikes(param.neurons, param.device_type,
+                                                                                   **param.config)
 
         # Wire transfer functions from world simulation to neuronal simulation
         for _r2n in self.__r2n:
@@ -87,11 +89,13 @@ class TransferFunctionManager(ITransferFunctionManager):
             _r2n.check_params()
 
             for i in range(1, len(_r2n.params)):
-                item = _r2n.params[i]
-                if isinstance(item, Topic):
-                    _r2n.params[i] = self.__robotAdapter.register_subscribe_topic(item)
+                param = _r2n.params[i]
+                if isinstance(param, MapRobotParameter):
+                    _r2n.params[i] = self.__robotAdapter.register_subscribe_topic(param.topic, **param.config)
                 else:
-                    _r2n.params[i] = self.__nestAdapter.register_generate_spikes(item[0], item[1])
+                    assert isinstance(param, MapNeuronParameter)
+                    _r2n.params[i] = self.__nestAdapter.register_generate_spikes(param.neurons, param.device_type,
+                                                                                 **param.config)
 
     def __get_robot_adapter(self):  # -> IRobotCommunicationAdapter:
         return self.__robotAdapter
