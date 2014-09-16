@@ -16,7 +16,7 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
     with alpha-shaped post synaptic currents
     """
 
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes the neuron whose membrane potential is to be read out.
         The obligatory threshold voltage 'v_thresh' is set to "infinity"
@@ -25,17 +25,21 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         :param params: Dictionary of neuron configuration parameters
         """
         self.__cell = None
-        self.latest_voltage = params.get('v_rest', -65.0)
+        self.__voltage = params.get('v_rest', -65.0)
+        self.__update = [0.0, params.get('v_rest', -65.0)]
 
-        self.create_device(params)
+        self.create_device(**params)
         self.start_record_voltage()
 
     def __get_voltage(self):
+        '''
+        Returns the membrane voltage of the cell
+        '''
         return self.__cell.get_v()[-1, -1]
 
     voltage = property(__get_voltage)
 
-    def create_device(self, params):
+    def create_device(self, **params):
         '''
         Creates a LIF neuron with alpha-shaped post synaptic currents
         and current-based synapses
@@ -58,22 +62,23 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         '''
         self.__cell.record_v()
 
-    def connect(self, neurons, **kwargs):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified in the list "neurons" to the
         device. The connection structure is specified via the
         PyNN connection object "connector". If "connector" is None,
         the weights and delays between the neurons and the device
         are sampled from a uniform distribution.
-        param neurons: must be a Population, PopulationView or
+        :param neurons: must be a Population, PopulationView or
             Assembly object
+        :param params: Optional configuration parameters
         """
-        connector = kwargs.get('connector', None)
-        source = kwargs.get('source', None)
-        target = kwargs.get('target', 'excitatory')
-        synapse_dynamics = kwargs.get('synapse_dynamics', None)
-        label = kwargs.get('label', None)
-        rng = kwargs.get('rng', None)
+        connector = params.get('connector', None)
+        source = params.get('source', None)
+        target = params.get('target', 'excitatory')
+        synapse_dynamics = params.get('synapse_dynamics', None)
+        label = params.get('label', None)
+        rng = params.get('rng', None)
 
         if connector is None:
             warnings.warn("Default weights and delays are used.", UserWarning)
@@ -86,9 +91,12 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                               synapse_dynamics=synapse_dynamics, label=label,
                               rng=rng)
 
-    def refresh(self):
+    def refresh(self, time):
         '''
         Refreshes the voltage value
+        :param t: The current simulation time
         '''
-        self.latest_voltage = self.__get_voltage()
-        return self.latest_voltage
+        if self.__update[0] is not time:
+            self.__update[0] = time
+            self.__update[1] = self.__get_voltage()
+        return self.__update[1]

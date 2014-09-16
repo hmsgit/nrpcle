@@ -15,7 +15,7 @@ class PyNNSpikeDetector(ISpikeDetector):
     neurons has spiked, otherwise a "0"
     """
 
-    def __init__(self, params):
+    def __init__(self):
         """
         Represents a device which returns a "1" whenever one of the recorded
         neurons has spiked, otherwise a "0"
@@ -23,10 +23,14 @@ class PyNNSpikeDetector(ISpikeDetector):
         self.__spike_count = None
         self.__previous_spike_count = None
         self.__neurons = None
-        self.__params = params
-        self.latest_spikes = None
+        self.__update = [0.0, None]
 
     def __get_spikes(self):
+        '''
+        Returns the recorded spikes
+        "1": neuron spiked within the last time step
+        "0": neuron was silent within the last time step
+        '''
         self.__previous_spike_count = self.__spike_count
         self.__spike_count = np.array(
             self.__neurons.get_spike_counts().values())
@@ -52,9 +56,12 @@ class PyNNSpikeDetector(ISpikeDetector):
         self.__spike_count = np.zeros(len(self.__neurons))
         self.start_record_spikes()
 
-    def refresh(self):
+    def refresh(self, time):
         '''
-        Refreshes the spikes record
+        Refreshes the voltage value
+        :param time: The current simulation time
         '''
-        self.latest_spikes = self.__get_spikes()
-        return self.latest_spikes
+        if self.__update[0] is not time:
+            self.__update[0] = time
+            self.__update[1] = self.__get_spikes()
+        return self.__update[1]

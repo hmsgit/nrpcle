@@ -15,23 +15,30 @@ class PyNNDCSource(IDCSource):
     :param kwargs: Optional configuration parameters
     """
 
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a direct current generator.
         :param params: Dictionary of neuron configuration parameters
         """
         self.__generator = None
-        self.create_device(params)
+        self.create_device(**params)
 
     def __get_amplitude(self):
+        '''
+        Returns the amplitude of the current
+        '''
         return self.__generator.amplitude
 
     def __set_amplitude(self, amplitude):
+        '''
+        Sets the amplitude of the current
+        :param amplitude: float
+        '''
         self.__generator.amplitude = amplitude
 
     amplitude = property(__get_amplitude, __set_amplitude)
 
-    def create_device(self, params):
+    def create_device(self, **params):
         '''
         Create a direct current source
         :param params: Dictionary of neuron configuration parameters

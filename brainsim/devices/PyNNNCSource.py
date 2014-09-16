@@ -15,32 +15,46 @@ class PyNNNCSource(INCSource):
     :param kwargs: Optional configuration parameters
     """
 
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a noisy current generator.
         :param params: Dictionary of neuron configuration parameters
         """
         self.__generator = None
 
-        self.create_device(params)
+        self.create_device(**params)
 
     def __get_mean(self):
+        '''
+        Returns the mean of the current
+        '''
         return self.__generator.mean
 
     def __set_mean(self, mean):
+        '''
+        Sets the mean of the current
+        :param mean: float
+        '''
         self.__generator.mean = mean
 
     mean = property(__get_mean, __set_mean)
 
     def __get_stdev(self):
+        '''
+        Returns the stdev of the current
+        '''
         return self.__generator.stdev
 
     def __set_stdev(self, stdev):
+        '''
+        Sets the stdev of the current
+        :param stdev: float
+        '''
         self.__generator.stdev = stdev
 
     stdev = property(__get_stdev, __set_stdev)
 
-    def create_device(self, params):
+    def create_device(self, **params):
         '''
         Create a noisy current source
         :param params: Dictionary of neuron configuration parameters
@@ -51,7 +65,7 @@ class PyNNNCSource(INCSource):
             dt=params.get('dt', None),
             start=params.get('start', 0.0),
             stop=params.get('stop', None),
-            rng=params.get('rng', None))
+            rng=params.get('rng', sim.NativeRNG()))
 
     def connect(self, neurons):
         """

@@ -13,15 +13,24 @@ class PyNNControlAdapter(IBrainControlAdapter):
     """
     Represents a controller object for the neuronal simulator
     """
-    def __init__(self, **kwargs):
+    def __init__(self):
+        """
+        Initializes the PyNN control adapter
+        """
+        self.__is_initialized = False
+        self.__is_alive = False
+        self.__rank = None
+
+    def initialize(self, **params):
         """
         Initializes the neuronal simulator
-        :param kwargs: A dictionary of configuration parameters
+        :param params: A dictionary of configuration parameters
         """
+        self.__is_initialized = True
         self.__is_alive = True
-        rank = sim.setup(**kwargs)
+        self.__rank = sim.setup(**params)
 
-        print "Setting up process %d." % rank
+        print "Setting up process %d." % self.__rank
 
     def is_alive(self):  # -> bool:
         """

@@ -15,23 +15,30 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
     Represents a Poisson spike generator
     """
 
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a Poisson spike generator.
         :param params: Optional configuration parameters
         """
         self.__generator = None
-        self.create_device(params)
+        self.create_device(**params)
 
     def __get_rate(self):
+        '''
+        Returns the frequency of the Poisson spike generator
+        '''
         return self.__generator.get('rate')[0]
 
     def __set_rate(self, rate):
+        '''
+        Sets the frequency of the Poisson spike generator
+        :param rate: float
+        '''
         self.__generator.set('rate', rate)
 
     rate = property(__get_rate, __set_rate)
 
-    def create_device(self, params):
+    def create_device(self, **params):
         '''
         Create Poisson spike generator device
         :param params: generator configuration parameters
@@ -41,7 +48,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
                   'rate': params.get('rate', 0.0)}
         self.__generator = sim.Population(1, sim.SpikeSourcePoisson, params)
 
-    def connect(self, neurons, **kwargs):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified in the list "neurons" to the
         device. The connection structure is specified via the
@@ -50,13 +57,14 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         are sampled from a uniform distribution.
         param neurons: must be a Population, PopulationView or
             Assembly object
+        :param params: optional configuration parameters
         """
-        connector = kwargs.get('connector', None)
-        source = kwargs.get('source', None)
-        target = kwargs.get('target', 'excitatory')
-        synapse_dynamics = kwargs.get('synapse_dynamics', None)
-        label = kwargs.get('label', None)
-        rng = kwargs.get('rng', None)
+        connector = params.get('connector', None)
+        source = params.get('source', None)
+        target = params.get('target', 'excitatory')
+        synapse_dynamics = params.get('synapse_dynamics', None)
+        label = params.get('label', None)
+        rng = params.get('rng', None)
 
         if connector is None:
             warnings.warn("Default weights and delays are used.", UserWarning)

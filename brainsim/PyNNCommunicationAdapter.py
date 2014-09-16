@@ -3,14 +3,15 @@ PyNNCommunicationAdapter.py
 moduleauthor: probst@fzi.de
 '''
 
-from brainsim.BrainInterface import IBrainCommunicationAdapter, \
-    IIFCurrAlpha, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
+from brainsim.BrainInterface import IBrainCommunicationAdapter, IIFCurrAlpha, \
+    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
 from brainsim.devices.PyNNPoissonSpikeGenerator import \
     PyNNPoissonSpikeGenerator
 from brainsim.devices.PyNNDCSource import PyNNDCSource
 from brainsim.devices.PyNNACSource import PyNNACSource
 from brainsim.devices.PyNNNCSource import PyNNNCSource
 from brainsim.devices.PyNNIFCurrAlpha import PyNNIFCurrAlpha
+from brainsim.devices.PyNNSpikeDetector import PyNNSpikeDetector
 
 __author__ = 'DimitriProbst'
 
@@ -19,21 +20,30 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
     """
     Represents the communication adapter to the neuronal simulator
     """
+    # In this dictionary, the association of spike generator types to classes
+    # implementing their functionality is established
+    __device_dict = {IPoissonSpikeGenerator: PyNNPoissonSpikeGenerator,
+                     IDCSource: PyNNDCSource,
+                     IACSource: PyNNACSource,
+                     INCSource: PyNNNCSource,
+                     IIFCurrAlpha: PyNNIFCurrAlpha,
+                     ISpikeDetector: PyNNSpikeDetector}
 
     def __init__(self):
         """
         Initializes the communication adapter
         """
-        self.__generator_types = {IPoissonSpikeGenerator:
-                                  PyNNPoissonSpikeGenerator,
-                                  IDCSource: PyNNDCSource,
-                                  IACSource: PyNNACSource,
-                                  INCSource: PyNNNCSource}
-        self.__detector_types = {IIFCurrAlpha: PyNNIFCurrAlpha}
-        self.detectors = []
+        self.__generator_devices = []
+        self.__detector_devices = []
+        self.__is_initialized = False
 
-    def register_spike_source(self, neurons, spike_generator_type, params,
-                              **connparams):
+    def initialize(self):
+        """
+        Initializes the PyNN adapter
+        """
+        self.__is_initialized = True
+
+    def register_spike_source(self, neurons, spike_generator_type, **params):
         """
         Requests a communication object with the given spike generator type
         for the given set of neurons
@@ -41,15 +51,16 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         should be connected
         :param spike_generator_type: A spike generator type (see documentation
         or a list of allowed values)
-        :param kwargs: A dictionary of configuration parameters
+        :param params: A dictionary of configuration parameters
         :return: A communication object
         """
-        generator = self.__generator_types[spike_generator_type](params)
-        generator.connect(neurons, **connparams)
-        return generator
+        device = PyNNCommunicationAdapter.__device_dict[
+            spike_generator_type](**params)
+        device.connect(neurons, **params)
+        self.__generator_devices.append(device)
+        return device
 
-    def register_spike_sink(self, neurons, spike_detector_type, params,
-                            **connparams):
+    def register_spike_sink(self, neurons, spike_detector_type, **params):
         '''
         Requests a communication object with the given spike detector type
         for the given set of neurons
@@ -57,17 +68,40 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         to the spike detector
         :param spike_detector_type: A spike detector type (see documentation
         for a list of allowed values)
-        :param kwargs: A dictionary of configuration parameters
+        :param params: A dictionary of configuration parameters
         :return: A Communication object
         '''
-        detector = self.__detector_types[spike_detector_type](params)
-        self.detectors.append(detector)
-        detector.connect(neurons, **connparams)
-        return detector
+        device = PyNNCommunicationAdapter.__device_dict[
+            spike_detector_type](**params)
+        device.connect(neurons, **params)
+        self.__detector_devices.append(device)
+        return device
 
-    def refresh_buffers(self):
+    def refresh_buffers(self, t):
         """
         Refreshes all detector buffers
         """
-        for det in self.detectors:
-            det.refresh()
+        for detector in self.__detector_devices:
+            if hasattr(detector, "refresh"):
+                detector.refresh(t)
+
+    @property
+    def detector_devices(self):
+        """
+        Gets the detector devices created by this mock
+        """
+        return self.__detector_devices
+
+    @property
+    def generator_devices(self):
+        """
+        Gets the spike detector devices created by this mock
+        """
+        return self.__generator_devices
+
+    @property
+    def is_initialized(self):
+        """
+        Gets a value indicating whether initialize has been called
+        """
+        return self.__is_initialized

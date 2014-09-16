@@ -166,7 +166,7 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
     Represents the communication interface to the neuronal simulator
     """
 
-    def __init__(self):  # -> None:
+    def initialize(self):  # -> None:
         """
         Initializes the adapter
         """
@@ -205,7 +205,7 @@ class IBrainControlAdapter(object):  # pragma: no cover
     Represents a controller object for the neuronal simulator
     """
 
-    def __init__(self):
+    def initialize(self):
         """
         Initializes the neuronal simulator
         """
