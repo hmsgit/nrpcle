@@ -50,14 +50,27 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
 
     def connect(self, neurons, **params):
         """
-        Connects the neurons specified in the list "neurons" to the
+        Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the
         PyNN connection object "connector". If "connector" is None,
         the weights and delays between the neurons and the device
         are sampled from a uniform distribution.
-        param neurons: must be a Population, PopulationView or
+        :param neurons: must be a Population, PopulationView or
             Assembly object
         :param params: optional configuration parameters
+        :param connector: a PyNN Connector object, or, if neurons is
+            a list of two populations, a list of two Connector objects
+        :param source: string specifying which attribute of the presynaptic
+            cell signals action potentials
+        :param target: string specifying which synapse on the postsynaptic cell
+            to connect to: excitatory or inhibitory. If neurons is a list of
+            two populations, target is ['excitatory', 'inhibitory'], dafault is
+            excitatory
+        :param synapse_dynamics: a PyNN SynapseDy
+        :param label: label of the Projection object
+        :param rng: RNG object to be used by the Connector
+            synaptic plasticity mechanisms to use
+
         """
         connector = params.get('connector', None)
         source = params.get('source', None)
@@ -65,14 +78,57 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         synapse_dynamics = params.get('synapse_dynamics', None)
         label = params.get('label', None)
         rng = params.get('rng', None)
+        w_min = 0.0
+        w_max = 0.01
+        d_min = 0.1
+        d_max = 2.0
 
-        if connector is None:
-            warnings.warn("Default weights and delays are used.", UserWarning)
-            weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-            delays = sim.RandomDistribution('uniform', [0.1, 2.0])
-            connector = sim.AllToAllConnector(weights=weights, delays=delays)
-        return sim.Projection(presynaptic_population=self.__generator,
-                              postsynaptic_population=neurons,
-                              method=connector, source=source, target=target,
-                              synapse_dynamics=synapse_dynamics, label=label,
-                              rng=rng)
+        if type(neurons) == list:
+            target = ['excitatory', 'inhibitory']
+            if connector is None:
+                warnings.warn("Default weights and delays are used.",
+                              UserWarning)
+                connector = []
+                weights = sim.RandomDistribution('uniform', [w_min, w_max])
+                delays = sim.RandomDistribution('uniform', [d_min, d_max])
+                connector.append(sim.AllToAllConnector(weights=weights,
+                                                       delays=delays))
+                if neurons[1].conductance_based:
+                    weights = sim.RandomDistribution('uniform', [w_min,
+                                                                 w_max])
+                else:
+                    weights = sim.RandomDistribution('uniform', [-w_max,
+                                                                 -w_min])
+                connector.append(sim.AllToAllConnector(weights=weights,
+                                                       delays=delays))
+            sim.Projection(presynaptic_population=self.__generator,
+                           postsynaptic_population=neurons[0],
+                           method=connector[0], source=source,
+                           target=target[0], synapse_dynamics=synapse_dynamics,
+                           label=label, rng=rng)
+            sim.Projection(presynaptic_population=self.__generator,
+                           postsynaptic_population=neurons[1],
+                           method=connector[1], source=source,
+                           target=target[1], synapse_dynamics=synapse_dynamics,
+                           label=label, rng=rng)
+        else:
+            if connector is None:
+                warnings.warn("Default weights and delays are used.",
+                              UserWarning)
+                if target == 'excitatory':
+                    weights = sim.RandomDistribution('uniform', [w_min, w_max])
+                else:
+                    if neurons.conductance_based:
+                        weights = sim.RandomDistribution('uniform', [w_min,
+                                                                     w_max])
+                    else:
+                        weights = sim.RandomDistribution('uniform', [-w_max,
+                                                                     -w_min])
+                delays = sim.RandomDistribution('uniform', [d_min, d_max])
+                connector = sim.AllToAllConnector(weights=weights,
+                                                  delays=delays)
+            sim.Projection(presynaptic_population=self.__generator,
+                           postsynaptic_population=neurons,
+                           method=connector, source=source,
+                           target=target, synapse_dynamics=synapse_dynamics,
+                           label=label, rng=rng)
