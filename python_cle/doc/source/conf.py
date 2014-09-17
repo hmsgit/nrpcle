@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# python_skeleton documentation build configuration file, created by
+# python_cle documentation build configuration file, created by
 # sphinx-quickstart on Wed Jan 29 14:44:00 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -41,8 +41,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Human Brain Project HSP10'
-copyright = u'2014, Human Brain Project'
+project = u'Closed Loop Engine'
+copyright = u'2014, Human Brain Project HSP10'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

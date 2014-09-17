@@ -1,6 +1,8 @@
-test-reports/
+dist/
 platform_venv/
+test-reports/
 .coverage
 ci_dep.txt
 Makefile
+pep8.txt
 *.*~
