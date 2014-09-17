@@ -152,7 +152,7 @@ class IRobotControlAdapter(object):  # pragma: no cover
         :return: True, if the world simulation is alive, otherwise False
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-    
+
     def is_paused(self):  # -> bool:
         """
         Queries the current status of the physics simulation
@@ -168,9 +168,9 @@ class IRobotControlAdapter(object):  # pragma: no cover
 
     def run_step(self, dt):  # -> float64:
         """
-        Runs the world simulation for the given time steps
-        :param dt: The time steps
-        :return: Updated simulation time
+        Runs the world simulation for the given CLE time step in seconds
+        :param dt: The CLE time step in seconds
+        :return: Updated simulation time, otherwise -1
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
@@ -182,16 +182,16 @@ class IRobotControlAdapter(object):  # pragma: no cover
 
     def get_time_step(self):  # -> float64:
         """
-        Gets the physics simulation time step
-        :param dt: The time step
-        :return: The time step in seconds
+        Gets the physics simulation time step in seconds
+        :param dt: The physics simulation time step in seconds
+        :return: The physics simulation time step in seconds
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     def set_time_step(self, time_step):  # -> Bool:
         """
-        Gets the physics simulation time step
-        :param dt: The time step in seconds
-        :return: True, if the time step is updated, otherwise False
+        Sets the physics simulation time step in seconds
+        :param dt: The physics simulation time step in seconds
+        :return: True, if the physics simulation time step is updated, otherwise False
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
