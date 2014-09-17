@@ -12,7 +12,7 @@ DOC_MODULES=python_cle/doc
 
 ##### DO NOT MODIFY BELOW #####################
 
-CI_REPO?=ssh://@bbpcode.epfl.ch/platform/ContinuousIntegration.git
+CI_REPO?=ssh://<your-user-name>@bbpcode.epfl.ch/platform/ContinuousIntegration.git
 CI_DIR?=ContinuousIntegration
 
 FETCH_CI := $(shell \
