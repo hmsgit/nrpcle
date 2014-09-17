@@ -1,0 +1,4 @@
+This is the basic layout needed for a python package within the bbp.
+
+It includes the optional as well as required files to build, test, release, and
+document the pretend package python_skeleton.
