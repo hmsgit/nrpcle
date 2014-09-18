@@ -48,5 +48,6 @@ def set_robot_adapter(robot_adapter):  # -> None:
     """
     config.active_node.robot_adapter = robot_adapter
 
+
 def start_new_tf_manager():
     config.active_node = TransferFunctionManager.TransferFunctionManager()

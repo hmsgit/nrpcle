@@ -1,7 +1,8 @@
 from python_cle.tf_framework import Facade as nrp
 from python_cle.tests.tf_framework.husky import Husky
 
-from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, MockPublishedTopic
+from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
+    MockPublishedTopic
 from python_cle.mocks.brainsim.MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
 
 import unittest
@@ -10,7 +11,6 @@ __author__ = 'GeorgHinkel'
 
 
 class Robot2NeuronTests(unittest.TestCase):
-
     def test_map_robot_wrong_parameter(self):
         nrp.start_new_tf_manager()
         try:

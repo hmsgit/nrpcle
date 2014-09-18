@@ -1,17 +1,19 @@
 from python_cle.tf_framework import Facade as nrp
 from python_cle.tf_framework import config
-from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import MonochromeImageSpikeGenerator
+from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import \
+    MonochromeImageSpikeGenerator
 from python_cle.tests.tf_framework.husky import Husky
 
-from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, MockPublishedTopic
+from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
+    MockPublishedTopic
 from python_cle.mocks.brainsim.MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
 
 import unittest
 
 __author__ = 'GeorgHinkel'
 
-class Test1(unittest.TestCase):
 
+class Test1(unittest.TestCase):
     def test_all_right(self):
 
         nrp.start_new_tf_manager()
@@ -28,7 +30,8 @@ class Test1(unittest.TestCase):
         # This time, the neuron parameter is explicitly mapped to an array of neurons
         # More precisely, the parameter is mapped to a group of devices that are each connected to a single neuron
         # The neuron2 parameter will thus be a list of recorders
-        @nrp.MapNeuronParameter("neuron2", [[42], [23], [0], [8], [15]], nrp.voltmeter, updates=[(1.0, 0.4)])
+        @nrp.MapNeuronParameter("neuron2", [[42], [23], [0], [8], [15]], nrp.voltmeter,
+                                updates=[(1.0, 0.4)])
         @nrp.Neuron2Robot(Husky.LeftArm.twist)
         def left_arm_tw(t, neuron1, neuron2):
             if neuron1.voltage < 0.678:
@@ -48,7 +51,8 @@ class Test1(unittest.TestCase):
         # physical Nest device, but do some processing internally and use a less specialized
         # device type internally
         @nrp.MapRobotParameter("camera", Husky.Eye.camera)
-        @nrp.MapNeuronParameter("camera_device", range(45, 645), MonochromeImageSpikeGenerator(20, 30))
+        @nrp.MapNeuronParameter("camera_device", range(45, 645),
+                                MonochromeImageSpikeGenerator(20, 30))
         @nrp.Robot2Neuron()
         def transform_camera(t, camera, camera_device):
             if camera.changed:

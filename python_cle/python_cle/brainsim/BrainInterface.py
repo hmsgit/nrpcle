@@ -128,7 +128,6 @@ class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
     voltage = property(__get_voltage)
 
 
-
 class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
     """
     Represents the membrane voltage of a current-based LIF neuron
@@ -149,7 +148,8 @@ class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
 class ICustomDevice(object):  # pragma: no cover
     """
     Represents device type with an internal logic that can be mapped to existing device types
-    A brain communication adapter may chose whether to use the custom device or to support it directly
+    A brain communication adapter may chose whether to use the custom device or to support it
+    directly
     """
 
     def apply(self, neurons, brain_adapter):
@@ -174,9 +174,11 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
 
     def register_spike_source(self, neurons, spike_generator_type, **kwargs):  # -> ISpikeGenerator:
         """
-        Requests a communication object with the given spike generator type for the given set of neurons
+        Requests a communication object with the given spike generator type for the given set of
+        neurons
         :param neurons: A reference to the neurons to which the spike generator should be connected
-        :param spike_generator_type: A spike generator type (see documentation for a list of allowed values)
+        :param spike_generator_type: A spike generator type (see documentation for a list of allowed
+         values)
         :param kwargs: A dictionary of configuration parameters
         :return: A communication object
         """
@@ -184,9 +186,11 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
 
     def register_spike_sink(self, neurons, spike_detector_type, **kwargs):  # -> ISpikeDetector:
         """
-        Requests a communication object with the given spike detector type for the given set of neurons
+        Requests a communication object with the given spike detector type for the given set of
+        neurons
         :param neurons: A reference to the neurons which should be connected to the spike detector
-        :param spike_detector_type: A spike detector type (see documentation for a list of allowed values)
+        :param spike_detector_type: A spike detector type (see documentation for a list of allowed
+        values)
         :param kwargs: A dictionary of configuration parameters
         :return: A Communication object
         """

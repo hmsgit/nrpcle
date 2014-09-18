@@ -1,8 +1,8 @@
 __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import Topic
-from python_cle.brainsim.BrainInterface import INeuronVoltmeter, ISpikeRecorder, IPoissonSpikeGenerator, \
-    IFixedFrequencySpikeGenerator, IPatternSpikeGenerator, ICustomDevice
+from python_cle.brainsim.BrainInterface import INeuronVoltmeter, ISpikeRecorder, \
+    IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator, IPatternSpikeGenerator, ICustomDevice
 from .Robot2Neuron import Robot2Neuron
 from . import config
 
@@ -14,8 +14,8 @@ class MapNeuronParameter(object):
     Class to map parameters to neurons
     """
 
-    supported_device_types = [ISpikeRecorder, INeuronVoltmeter, IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator,
-                              IPatternSpikeGenerator]
+    supported_device_types = [ISpikeRecorder, INeuronVoltmeter, IPoissonSpikeGenerator,
+                              IFixedFrequencySpikeGenerator, IPatternSpikeGenerator]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """
@@ -57,7 +57,8 @@ class MapNeuronParameter(object):
                     return n2r
         else:
             raise Exception("Can only map parameters for neuron2robot objects")
-        raise Exception("Could not map parameter as no parameter with the name " + self.__key + " exists")
+        raise Exception(
+            "Could not map parameter as no parameter with the name " + self.__key + " exists")
 
     @property
     def neurons(self):
@@ -110,10 +111,12 @@ class Neuron2Robot(object):
     def __get_robot_topics(self):  # -> list:
         return self.__robot_topics
 
-    # The main robot topic is the topic that the return value of the transfer function is connected to
+    # The main robot topic is the topic that the return value of the transfer function is connected
+    # to
     main_robot_topic = property(__get_main_robot_topic, __set_main_robot_topic)
 
-    # The neuron parameters are descriptions of the parameters that the transfer functions takes as inputs
+    # The neuron parameters are descriptions of the parameters that the transfer functions takes as
+    # inputs
     neuron_params = property(__get_neuron_params)
 
     # The robot topics are the robot topics that may be accessed by the current transfer function

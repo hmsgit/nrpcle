@@ -1,4 +1,5 @@
-from python_cle.brainsim.BrainInterface import ICustomDevice, IBrainCommunicationAdapter, IPoissonSpikeGenerator
+from python_cle.brainsim.BrainInterface import ICustomDevice, IBrainCommunicationAdapter, \
+    IPoissonSpikeGenerator
 
 __author__ = 'GeorgHinkel'
 
@@ -26,8 +27,9 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
         """
         assert isinstance(brain_adapter, IBrainCommunicationAdapter)
         if self.__width * self.__height != len(neurons):
-            raise Exception("The amount of assigned spikes is incorrect. A monochrome image spike generator " +
-                            "must be assigned to as many neurons as there are pixels in the image")
+            raise Exception(
+                "The amount of assigned spikes is incorrect. A monochrome image spike generator " +
+                "must be assigned to as many neurons as there are pixels in the image")
 
         self.__devices = brain_adapter.register_generate_spikes(neurons, IPoissonSpikeGenerator)
 
@@ -37,5 +39,5 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
         :param image: The image to be processed
         """
         # TODO: Implement
-        #self.__devices[7].rate = 4.5
+        # self.__devices[7].rate = 4.5
         pass

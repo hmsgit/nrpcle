@@ -2,8 +2,8 @@ from python_cle.robotsim.RobotInterface import IRobotControlAdapter
 
 __author__ = 'NinoCauli'
 
-class MockRobotControlAdapter(IRobotControlAdapter):
 
+class MockRobotControlAdapter(IRobotControlAdapter):
     def __init__(self):
         self.__sim_time = 0.0
         self.__time_step = 0.001

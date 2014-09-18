@@ -33,6 +33,7 @@ class IRobotPublishedTopic(object):  # pragma: no cover
     """
     Represents a communication object for a published robot topic
     """
+
     def send_message(self, value):  # -> None:
         """
         Send a message to the robot topic represented by this instance
@@ -61,6 +62,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
     """
     Represents the communication adapter to the robot
     """
+
     def __init__(self):  # -> None:
         self.__published_topics = {}
         self.__subscribed_topics = {}
@@ -146,6 +148,7 @@ class IRobotControlAdapter(object):  # pragma: no cover
     """
     Represents a control adapter for the world simulation
     """
+
     def is_alive(self):  # -> bool:
         """
         Queries the current status of the world simulation

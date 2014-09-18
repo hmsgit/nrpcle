@@ -5,4 +5,5 @@ test-reports/
 ci_dep.txt
 Makefile
 pep8.txt
+pylint.txt
 *.*~

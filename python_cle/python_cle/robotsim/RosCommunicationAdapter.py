@@ -1,9 +1,9 @@
-from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, Topic, IRobotSubscribedTopic, IRobotPublishedTopic
+from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, Topic, \
+    IRobotSubscribedTopic, IRobotPublishedTopic
 import rospy
 import std_msgs.msg
 
 __author__ = 'GeorgHinkel'
-
 
 
 class RosCommunicationAdapter(IRobotCommunicationAdapter):
@@ -25,15 +25,16 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         # TODO: Implement
         return
 
+
 class RosPublishedTopic(IRobotPublishedTopic):
     def __init__(self, topic):
         self.__lastSent = None
         assert isinstance(topic, Topic)
-        #print("ros publisher created: topic.name = ", topic.name, " topic.type ", topic.type)        
+        # print("ros publisher created: topic.name = ", topic.name, " topic.type ", topic.type)
         self.__pub = rospy.Publisher(topic.name, topic.type, queue_size=10)
 
     def send_message(self, value):
-        #if value != self.__lastSent:
+        # if value != self.__lastSent:
         self.__pub.publish(value)
         self.__lastSent = value
         #print("ros message published: topic name = ", Topic.name, " topic value = ", value)

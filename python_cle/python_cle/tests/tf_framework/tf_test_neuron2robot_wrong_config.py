@@ -1,7 +1,8 @@
 from python_cle.tf_framework import Facade as nrp
 from python_cle.tests.tf_framework.husky import Husky
 
-from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, MockPublishedTopic
+from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
+    MockPublishedTopic
 from python_cle.mocks.brainsim.MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
 
 import unittest
@@ -27,6 +28,7 @@ class Neuron2RobotTests(unittest.TestCase):
             @nrp.Neuron2Robot(Husky.RightArm.pose)
             def right_arm(t, neuron0):
                 return neuron0.voltage
+
             self.init_adapters()
             self.fail()
         except Exception:
@@ -39,6 +41,7 @@ class Neuron2RobotTests(unittest.TestCase):
             @nrp.Neuron2Robot(Husky.RightArm.pose)
             def right_arm(t, neuron0):
                 return neuron0.voltage
+
             self.init_adapters()
             self.fail()
         except Exception:

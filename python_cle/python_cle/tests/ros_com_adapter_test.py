@@ -4,6 +4,7 @@ from python_cle.robotsim.RobotInterface import Topic
 import std_msgs.msg
 import sensor_msgs.msg
 
+
 class ROSComTest:
     float_test = Topic("/float_test", std_msgs.msg.Float32)
 

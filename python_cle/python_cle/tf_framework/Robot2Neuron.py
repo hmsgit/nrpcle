@@ -49,6 +49,7 @@ class MapRobotParameter(object):
         """
         return self.__config
 
+
 class Robot2Neuron(object):
     """
     Represents a transfer function from robot topics to neurons
@@ -93,7 +94,6 @@ class Robot2Neuron(object):
         for topic in self.__params:
             if topic != "t" and type(topic) == str:
                 raise Exception("Parameter ", topic, " was not mapped to a robot topic")
-
 
     def run(self, t):  # -> None:
         """

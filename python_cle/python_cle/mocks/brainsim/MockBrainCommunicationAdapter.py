@@ -1,6 +1,7 @@
 __author__ = 'GeorgHinkel'
 
-from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, INeuronVoltmeter, ICustomDevice, IPatternSpikeGenerator, \
+from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, INeuronVoltmeter, \
+    ICustomDevice, IPatternSpikeGenerator, \
     IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator, ISpikeRecorder
 
 import itertools
@@ -10,6 +11,7 @@ class MockVoltmeter(INeuronVoltmeter):
     """
     Represents a mocked voltmeter
     """
+
     def __init__(self, updates):
         """
         Initializes a mocked voltmeter
@@ -49,6 +51,7 @@ class MockPatternGenerator(IPatternSpikeGenerator):
     """
     Represents a mocked pattern generator
     """
+
     def __init__(self):
         """
         Initializes a new pattern spike generator
@@ -75,6 +78,7 @@ class MockPoissonGenerator(IPoissonSpikeGenerator):
     """
     Represents a mocked poisson based spike generator
     """
+
     def __init__(self):
         """
         Initializes a new Poisson based spike generator
@@ -101,6 +105,7 @@ class MockFixedFrequencyGenerator(IFixedFrequencySpikeGenerator):
     """
     Represents a mock for fixed frequency spike generators
     """
+
     def __init__(self):
         """
         Initializes a new fixed frequency spike generator
@@ -127,6 +132,7 @@ class MockRecorder(ISpikeRecorder):
     """
     Represents a mock spike recorder
     """
+
     def __init__(self, updates):
         """
         Initializes a new mock recorder
@@ -161,16 +167,18 @@ class MockRecorder(ISpikeRecorder):
                 self.__recorded_spikes = self.__updates[0][1]
                 self.__updates = self.__updates[1:]
 
+
 class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
     """
     Represents a mock of the brain communication adapter
     """
 
-    # In this dictionary, the association of spike generator types to classes implementing their functionality
-    # is established
+    # In this dictionary, the association of spike generator types to classes implementing their
+    # functionality is established
     __device_dict = {INeuronVoltmeter: MockVoltmeter, IPatternSpikeGenerator: MockPatternGenerator,
                      IPoissonSpikeGenerator: MockPoissonGenerator,
-                     IFixedFrequencySpikeGenerator: MockFixedFrequencyGenerator, ISpikeRecorder: MockRecorder}
+                     IFixedFrequencySpikeGenerator: MockFixedFrequencyGenerator,
+                     ISpikeRecorder: MockRecorder}
 
     def __init__(self):
         """
@@ -189,8 +197,10 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
 
     def register_consume_spikes(self, neurons, spike_detector_type, **config):
         """
-        Registers a need to consume spikes for the given set of neurons with the given spike detector type
-        :param neurons: A list of neurons GIDs for a single device, or a list of lists for multiple devices
+        Registers a need to consume spikes for the given set of neurons with the given spike
+        detector type
+        :param neurons: A list of neurons GIDs for a single device, or a list of lists for multiple
+        devices
         :param spike_detector_type: The type of the device to be created
         :param config: Additional configuration
         :return: A communication object to retrieve the device status or a list of such
@@ -217,7 +227,8 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
     def register_generate_spikes(self, neurons, spike_generator_type, **config):
         """
         Registers a need to generate spikes for the given set of neurons
-        :param neurons: A list of neuron GIDs for a single device or a list of lists for multiple devices
+        :param neurons: A list of neuron GIDs for a single device or a list of lists for multiple
+        devices
         :param spike_generator_type: The type of the device to be created
         :param config: Additional configuration
         :return: A communication object to configure the spike generation or a list of such
