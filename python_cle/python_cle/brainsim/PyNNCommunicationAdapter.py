@@ -39,7 +39,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
 
     def initialize(self):
         """
-        Initializes the PyNN adapter
+        Marks the PyNN adapter as initialized
         """
         self.__is_initialized = True
 
@@ -88,14 +88,14 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
     @property
     def detector_devices(self):
         """
-        Gets the detector devices created by this mock
+        Gets the created detector devices
         """
         return self.__detector_devices
 
     @property
     def generator_devices(self):
         """
-        Gets the spike detector devices created by this mock
+        Gets the created spike detector devices
         """
         return self.__generator_devices
 

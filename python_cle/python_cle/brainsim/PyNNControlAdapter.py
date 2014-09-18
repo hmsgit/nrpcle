@@ -26,13 +26,13 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         Initializes the neuronal simulator
         :param params: A dictionary of configuration parameters
+        :return: True if the simulator is initialized, otherwise False
         """
         self.__is_initialized = True
         self.__is_alive = True
         self.__rank = sim.setup(**params)
-
-        print
-        "Setting up process %d." % self.__rank
+        print "Setting up process %d." % self.__rank
+        return self.__is_initialized
 
     def is_alive(self):  # -> bool:
         """

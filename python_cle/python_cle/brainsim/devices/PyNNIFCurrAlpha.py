@@ -109,16 +109,19 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                 weights = sim.RandomDistribution('uniform', [-w_max, -w_min])
                 connector.append(sim.AllToAllConnector(weights=weights,
                                                        delays=delays))
-            sim.Projection(presynaptic_population=neurons[0],
-                           postsynaptic_population=self.__cell,
-                           method=connector[0], source=source,
-                           target=target[0], synapse_dynamics=synapse_dynamics,
-                           label=label, rng=rng)
-            sim.Projection(presynaptic_population=neurons[1],
-                           postsynaptic_population=self.__cell,
-                           method=connector[1], source=source,
-                           target=target[1], synapse_dynamics=synapse_dynamics,
-                           label=label, rng=rng)
+            proj_exc = sim.Projection(presynaptic_population=neurons[0],
+                                      postsynaptic_population=self.__cell,
+                                      method=connector[0], source=source,
+                                      target=target[0],
+                                      synapse_dynamics=synapse_dynamics,
+                                      label=label, rng=rng)
+            proj_inh = sim.Projection(presynaptic_population=neurons[1],
+                                      postsynaptic_population=self.__cell,
+                                      method=connector[1], source=source,
+                                      target=target[1],
+                                      synapse_dynamics=synapse_dynamics,
+                                      label=label, rng=rng)
+            return [proj_exc, proj_inh]
         else:
             if connector is None:
                 warnings.warn("Default weights and delays are used.",
@@ -131,11 +134,13 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                 delays = sim.RandomDistribution('uniform', [d_min, d_max])
                 connector = sim.AllToAllConnector(weights=weights,
                                                   delays=delays)
-            sim.Projection(presynaptic_population=neurons,
-                           postsynaptic_population=self.__cell,
-                           method=connector, source=source,
-                           target=target, synapse_dynamics=synapse_dynamics,
-                           label=label, rng=rng)
+            proj = sim.Projection(presynaptic_population=neurons,
+                                  postsynaptic_population=self.__cell,
+                                  method=connector, source=source,
+                                  target=target,
+                                  synapse_dynamics=synapse_dynamics,
+                                  label=label, rng=rng)
+            return proj
 
     def refresh(self, time):
         '''
