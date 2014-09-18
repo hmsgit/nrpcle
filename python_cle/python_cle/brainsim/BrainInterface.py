@@ -1,3 +1,7 @@
+"""
+This module represents the interfaces for the brain communication and control adapter
+"""
+
 __author__ = 'GeorgHinkel'
 
 
@@ -20,13 +24,20 @@ class IFixedFrequencySpikeGenerator(ISpikeGenerator):  # pragma: no cover
     Represents a communication object that generates spikes on a fixed rate
     """
 
-    def __get_rate(self):  # -> float:
+    @property
+    def rate(self):  # -> float:
+        """
+        Gets or sets the rate in which spikes should be generated
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_rate(self, value):
+    @rate.setter
+    def rate(self, value):
+        """
+        Sets the rate in which spikes should be generated
+        :param value: The new rate in which spikes are generated
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    rate = property(__get_rate, __set_rate)
 
 
 class IPatternSpikeGenerator(ISpikeGenerator):  # pragma: no cover
@@ -34,13 +45,20 @@ class IPatternSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     Represents a spike generator generating spikes in a pattern
     """
 
-    def __get_pattern(self):  # -> list:
+    @property
+    def pattern(self):  # -> list:
+        """
+        Gets or sets the pattern in which spikes are generated
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_pattern(self, value):
+    @pattern.setter
+    def pattern(self, value):
+        """
+        Sets the pattern in which spikes should be generated
+        :param value: The new spike generation pattern
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    pattern = property(__get_pattern, __set_pattern)
 
 
 class IDCSource(ICurrentGenerator):  # pragma: no cover
@@ -48,13 +66,20 @@ class IDCSource(ICurrentGenerator):  # pragma: no cover
     Represents a current generator which generates direct current
     """
 
-    def __get_amplitude(self):  # -> list:
+    @property
+    def amplitude(self):  # -> list:
+        """
+        Gets or sets the amplitude of this current generator
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_amplitude(self, value):
+    @amplitude.setter
+    def amplitude(self, value):
+        """
+        Sets the amplitude to the new value
+        :param value: The new amplitude
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    amplitude = property(__get_amplitude, __set_amplitude)
 
 
 class IACSource(ICurrentGenerator):  # pragma: no cover
@@ -62,13 +87,20 @@ class IACSource(ICurrentGenerator):  # pragma: no cover
     Represents a current generator which generates alternating current
     """
 
-    def __get_amplitude(self):  # -> list:
+    @property
+    def amplitude(self):  # -> list:
+        """
+        Gets or sets the amplitude of this current generator
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_amplitude(self, value):
+    @amplitude.setter
+    def amplitude(self, value):
+        """
+        Sets the amplitude to the new value
+        :param value: The new amplitude
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    amplitude = property(__get_amplitude, __set_amplitude)
 
 
 class INCSource(ICurrentGenerator):  # pragma: no cover
@@ -76,13 +108,20 @@ class INCSource(ICurrentGenerator):  # pragma: no cover
     Represents a current generator which generates noisy current
     """
 
-    def __get_mean(self):  # -> list:
+    @property
+    def mean(self):  # -> list:
+        """
+        Gets or sets the mean value for the noisy current
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_mean(self, value):
+    @mean.setter
+    def mean(self, value):
+        """
+        Sets the mean value for the noisy current to the given value
+        :param value: The new mean current
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    mean = property(__get_mean, __set_mean)
 
 
 class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
@@ -90,13 +129,20 @@ class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     Represents a spike generator based on a Poisson Distribution
     """
 
-    def __get_rate(self):  # -> float:
+    @property
+    def rate(self):  # -> float:
+        """
+        Gets or sets the rate in which spikes should be generated
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __set_rate(self, rate):
+    @rate.setter
+    def rate(self, value):
+        """
+        Sets the rate in which spikes should be generated
+        :param value: The new rate in which spikes are generated
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    rate = property(__get_rate, __set_rate)
 
 
 class ISpikeDetector(object):  # pragma: no cover
@@ -111,10 +157,12 @@ class ISpikeRecorder(ISpikeDetector):  # pragma: no cover
     Represents a communication object that records spikes from a certain neuron
     """
 
-    def __get_recorded_spikes(self):  # -> list:
+    @property
+    def recorded_spikes(self):  # -> list:
+        """
+        Gets a list of spikes that have been recorded in the last time step
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    recorded_spikes = property(__get_recorded_spikes)
 
 
 class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
@@ -122,10 +170,12 @@ class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
     Represents a spike detector that integrates the spikes to the voltage of a neuron
     """
 
-    def __get_voltage(self):  # -> float:
+    @property
+    def voltage(self):  # -> float:
+        """
+        Gets the current voltage of the voltmeter
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    voltage = property(__get_voltage)
 
 
 class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
@@ -136,12 +186,11 @@ class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
     only serves as a leaky integrator of the incoming spike train.
     """
 
-    def __get_voltage(self):  # -> float:
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    voltage = property(__get_voltage)
-
-    def connect(self, neurons):
+    @property
+    def voltage(self):  # -> float:
+        """
+        Gets the current voltage of the voltmeter
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 

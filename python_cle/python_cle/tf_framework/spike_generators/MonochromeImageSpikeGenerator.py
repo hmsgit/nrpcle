@@ -1,3 +1,7 @@
+"""
+This module contains a class generating spikes for a monochrome image
+"""
+
 from python_cle.brainsim.BrainInterface import ICustomDevice, IBrainCommunicationAdapter, \
     IPoissonSpikeGenerator
 

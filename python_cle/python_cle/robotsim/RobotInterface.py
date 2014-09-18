@@ -1,3 +1,8 @@
+"""
+This module represents the interfaces for the robot (world) simulation both in terms of data
+exchange and control of the simulation
+"""
+
 __author__ = 'GeorgHinkel'
 
 
@@ -15,15 +20,19 @@ class Topic(object):
         self.__name = name
         self.__type = topic_type
 
-    def __get_name(self):  # -> str:
+    @property
+    def name(self):  # -> str:
+        """
+        Gets the name of the topic
+        """
         return self.__name
 
-    name = property(__get_name)
-
-    def __get_type(self):  # -> type:
+    @property
+    def topic_type(self):  # -> type:
+        """
+        Gets the type of the topic
+        """
         return self.__type
-
-    type = property(__get_type)
 
     def __repr__(self):  # pragma: no cover
         return self.__name + " : " + self.__type.__name__
@@ -47,15 +56,20 @@ class IRobotSubscribedTopic(object):  # pragma: no cover
     Represents a communication object for a subscribed robot topic
     """
 
-    def __get_changed(self):  # -> bool:
+    @property
+    def changed(self):  # -> bool:
+        """
+        Gets a value indicating whether the value of the subscribed topic has changed since the last
+        time step
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def __get_value(self):  # -> object:
+    @property
+    def value(self):  # -> object:
+        """
+        Gets the current value of the subscribed topic
+        """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    changed = property(__get_changed)
-
-    value = property(__get_value)
 
 
 class IRobotCommunicationAdapter(object):  # pragma: no cover

@@ -1,3 +1,7 @@
+"""
+This module contains the mock implementation of the transfer functions manager
+"""
+
 from python_cle.tf_framework.TransferFunctionInterface import ITransferFunctionManager
 import time
 

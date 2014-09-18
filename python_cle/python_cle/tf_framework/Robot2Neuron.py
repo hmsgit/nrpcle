@@ -1,3 +1,8 @@
+"""
+This module contains the representation of transfer functions from the world simulator towards the
+neuronal simulator
+"""
+
 __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import Topic
@@ -62,11 +67,12 @@ class Robot2Neuron(object):
         self.__func = None
         self.__params = []
 
-    def __get_params(self):  # -> list:
+    @property
+    def params(self):  # -> list:
+        """
+        Gets the parameters of the current transfer function
+        """
         return self.__params
-
-    # Gets the parameters of the current transfer function
-    params = property(__get_params)
 
     def __call__(self, func):  # -> Robot2Neuron:
         """

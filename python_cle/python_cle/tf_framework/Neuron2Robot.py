@@ -1,3 +1,8 @@
+"""
+This module contains the representation from transfer functions from the neuronal simulator towards
+the world simulator
+"""
+
 __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import Topic
@@ -99,28 +104,36 @@ class Neuron2Robot(object):
         self.__func = None
         self.__neuron_params = []
 
-    def __get_neuron_params(self):  # -> list:
+    @property
+    def neuron_params(self):  # -> list:
+        """
+        The neuron parameters are descriptions of the parameters that the transfer functions takes
+        as inputs
+        """
         return self.__neuron_params
 
-    def __get_main_robot_topic(self):  # -> Topic:
+    @property
+    def main_robot_topic(self):  # -> Topic:
+        """
+        The main robot topic is the topic that the return value of the transfer function is
+        connected to
+        """
         return self.__main_robot_topic
 
-    def __set_main_robot_topic(self, robot_topic):  # -> None:
+    @main_robot_topic.setter
+    def main_robot_topic(self, robot_topic):  # -> None:
+        """
+        Sets the main robot topic
+        :param robot_topic: The new main robot topic
+        """
         self.__main_robot_topic = robot_topic
 
-    def __get_robot_topics(self):  # -> list:
+    @property
+    def robot_topics(self):  # -> list:
+        """
+        The robot topics are the robot topics that may be accessed by the current transfer function
+        """
         return self.__robot_topics
-
-    # The main robot topic is the topic that the return value of the transfer function is connected
-    # to
-    main_robot_topic = property(__get_main_robot_topic, __set_main_robot_topic)
-
-    # The neuron parameters are descriptions of the parameters that the transfer functions takes as
-    # inputs
-    neuron_params = property(__get_neuron_params)
-
-    # The robot topics are the robot topics that may be accessed by the current transfer function
-    robot_topics = property(__get_robot_topics)
 
     def __call__(self, func):  # -> Neuron2Robot:
         """
