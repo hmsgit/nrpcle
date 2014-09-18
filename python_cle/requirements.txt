@@ -3,3 +3,4 @@ numpy==1.8.0
 PyNN==0.7.5
 PyYAML==3.11
 rospkg==1.0.28
+catkin_pkg==0.2.2
