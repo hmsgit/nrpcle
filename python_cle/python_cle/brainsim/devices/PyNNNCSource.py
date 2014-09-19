@@ -19,6 +19,14 @@ class PyNNNCSource(INCSource):
         """
         Initializes a noisy current generator.
         :param params: Dictionary of neuron configuration parameters
+        :param mean: Mean value of the noisy current, default: 0.0 nA
+        :param stdev: Standard deviation of the noisy current, default: 1.0 nA
+        :param dt: Interval between updates of the current amplitude in ms,
+            default: simulation time step
+        :param start: Start time of current injection, default: 0.0 ms
+        :param stop: Stop time of current injection, default: infinity
+        :param rng: an RNG object from the `pyNN.random` module,
+            default: NativeRNG of the back-end
         """
         self.__generator = None
 
@@ -58,6 +66,14 @@ class PyNNNCSource(INCSource):
         '''
         Create a noisy current source
         :param params: Dictionary of neuron configuration parameters
+        :param mean: Mean value of the noisy current, default: 0.0 nA
+        :param stdev: Standard deviation of the noisy current, default: 1.0 nA
+        :param dt: Interval between updates of the current amplitude in ms,
+            default: simulation time step
+        :param start: Start time of current injection, default: 0.0 ms
+        :param stop: Stop time of current injection, default: infinity
+        :param rng: an RNG object from the `pyNN.random` module,
+            default: NativeRNG of the back-end
         '''
         self.__generator = sim.NoisyCurrentSource(
             mean=params.get('mean', 0.0),
