@@ -19,6 +19,21 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         """
         Initializes a Poisson spike generator.
         :param params: Optional configuration parameters
+        :param duration: Duration of spike train, default: infinity
+        :param start: Start time of spike train, default: 0.0 ms
+        :param rate: Rate/frequency of spike train, default: 0.0 Hz
+        :param connector: a PyNN Connector object, or, if neurons is
+            a list of two populations, a list of two Connector objects
+        :param source: string specifying which attribute of the presynaptic
+            cell signals action potentials
+        :param target: string specifying which synapse on the postsynaptic cell
+            to connect to: excitatory or inhibitory. If neurons is a list of
+            two populations, target is ['excitatory', 'inhibitory'], dafault is
+            excitatory
+        :param synapse_dynamics: a PyNN SynapseDy
+        :param label: label of the Projection object
+        :param rng: RNG object to be used by the Connector
+            synaptic plasticity mechanisms to use
         """
         self.__generator = None
         self.create_device(**params)
@@ -42,6 +57,9 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         '''
         Create Poisson spike generator device
         :param params: generator configuration parameters
+        :param duration: Duration of spike train, default: infinity
+        :param start: Start time of spike train, default: 0.0 ms
+        :param rate: Rate/frequency of spike train, default: 0.0 Hz
         '''
         params = {'duration': params.get('duration', float('inf')),
                   'start': params.get('start', 0.0),
@@ -70,7 +88,6 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         :param label: label of the Projection object
         :param rng: RNG object to be used by the Connector
             synaptic plasticity mechanisms to use
-
         """
         connector = params.get('connector', None)
         source = params.get('source', None)

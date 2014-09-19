@@ -19,6 +19,12 @@ class PyNNACSource(IACSource):
         """
         Initializes an alternating current generator.
         :param params: Dictionary of neuron configuration parameters
+        :param amplitude: Amplitude of alternating current, default: 1.0 nA
+        :param offset: Offset of alternating current, default: 0.0 nA
+        :param frequency: Frequency of alternating current, default: 10 Hz
+        :param phase: Phase of alternating current, default: 0.0
+        :param start: Start time of current injection, default: 0.0 ms
+        :param stop: Stop time of current injection, dafault: infinity
         """
         self.__generator = None
 
@@ -88,6 +94,12 @@ class PyNNACSource(IACSource):
         '''
         Creates an alternating current source
         :param params: Dictionary of neuron configuration parameters
+        :param amplitude: Amplitude of alternating current, default: 1.0 nA
+        :param offset: Offset of alternating current, default: 0.0 nA
+        :param frequency: Frequency of alternating current, default: 10 Hz
+        :param phase: Phase of alternating current, default: 0.0
+        :param start: Start time of current injection, default: 0.0 ms
+        :param stop: Stop time of current injection, dafault: infinity
         '''
         self.__generator = sim.ACSource(amplitude=params.get('amplitude', 1.0),
                                         offset=params.get('offset', 0.0),

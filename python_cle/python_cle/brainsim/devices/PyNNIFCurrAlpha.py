@@ -23,6 +23,27 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         is set to infinity by default in order to forbid the neuron to elicit
         spikes.
         :param params: Dictionary of neuron configuration parameters
+        :param v_thresh: Threshold voltage , default: infinity
+        :param cm: Membrane capacitance, default: 1.0 nF
+        :param tau_m: Membrane time constant, default: 20.0 ms
+        :param tau_syn_E: Excitatory synaptic time constant, default: 0.5 ms
+        :param tau_syn_I: Inhibitory synaptic time constant, default: 0.5 ms
+        :param v_rest: Resting potential, default: -65.0 mV
+        :param v_reset: Reset potential, default: -65.0 mV
+        :param tau_refrac: Refractory time constant, default: 0.1 ms
+        :param i_offset: Offset current, default: 0.0 nA
+        :param connector: a PyNN Connector object, or, if neurons is
+            a list of two populations, a list of two Connector objects
+        :param source: string specifying which attribute of the presynaptic
+            cell signals action potentials
+        :param target: string specifying which synapse on the postsynaptic cell
+            to connect to: excitatory or inhibitory. If neurons is a list of
+            two populations, target is ['excitatory', 'inhibitory'], dafault is
+            excitatory
+        :param synapse_dynamics: a PyNN SynapseDynamics object
+        :param label: label of the Projection object
+        :param rng: RNG object to be used by the Connector
+            synaptic plasticity mechanisms to use
         """
         self.__cell = None
         self.__voltage = params.get('v_rest', -65.0)
@@ -44,6 +65,15 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         Creates a LIF neuron with alpha-shaped post synaptic currents
         and current-based synapses
         :param params: Dictionary of neuron configuration parameters
+        :param v_thresh: Threshold voltage , default: infinity
+        :param cm: Membrane capacitance, default: 1.0 nF
+        :param tau_m: Membrane time constant, default: 20.0 ms
+        :param tau_syn_E: Excitatory synaptic time constant, default: 0.5 ms
+        :param tau_syn_I: Inhibitory synaptic time constant, default: 0.5 ms
+        :param v_rest: Resting potential, default: -65.0 mV
+        :param v_reset: Reset potential, default: -65.0 mV
+        :param tau_refrac: Refractory time constant, default: 0.1 ms
+        :param i_offset: Offset current, default: 0.0 nA
         '''
         cellparams = {'v_thresh': params.get('v_thresh', float('inf')),
                       'cm': params.get('cm', 1.0),
