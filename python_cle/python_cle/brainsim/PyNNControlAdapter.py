@@ -1,5 +1,5 @@
 '''
-PyNNCommunicationAdapter.py
+PyNNControlAdapter.py
 moduleauthor: probst@fzi.de
 '''
 
