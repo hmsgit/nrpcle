@@ -1,6 +1,10 @@
+"""
+This module contains the implementation of a transfer functions manager
+"""
+
 __author__ = 'GeorgHinkel'
 
-from python_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
+from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
 from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
 from .Neuron2Robot import Neuron2Robot, MapNeuronParameter
 from .Robot2Neuron import Robot2Neuron, MapRobotParameter
@@ -22,10 +26,18 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.__nestAdapter = None
         self.__initialized = False
 
-    def __get_n2r(self):  # -> list:
+    @property
+    def n2r(self):  # -> list:
+        """
+        Gets a list of transfer functions from the neuronal simulator to the world simulation
+        """
         return self.__n2r
 
-    def __get_r2n(self):  # -> list:
+    @property
+    def r2n(self):  # -> list:
+        """
+        Gets a list of transfer functions from the world simulator to the neuronal simulation
+        """
         return self.__r2n
 
     def run_neuron_to_robot(self, t):  # -> None:
@@ -99,34 +111,40 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)
 
-    def __get_robot_adapter(self):  # -> IRobotCommunicationAdapter:
+    @property
+    def robot_adapter(self):  # -> IRobotCommunicationAdapter:
+        """
+        Gets or sets the adapter to the world simulation
+        """
         return self.__robotAdapter
 
-    def __set_robot_adapter(self, robot_adapter):  # -> None:
+    @robot_adapter.setter
+    def robot_adapter(self, robot_adapter):  # -> None:
+        """
+        Sets the robot adapter
+        :param robot_adapter: The new robot adapter
+        """
         if self.__initialized:
             raise Exception("Cannot exchange robot adapter after node has been initialized!")
         else:
             assert isinstance(robot_adapter, IRobotCommunicationAdapter)
             self.__robotAdapter = robot_adapter
 
-    def __get_nest_adapter(self):  # -> IBrainCommunicationAdapter:
+    @property
+    def brain_adapter(self):  # -> IBrainCommunicationAdapter:
+        """
+        Gets or sets the adapter to the brain simulation
+        """
         return self.__nestAdapter
 
-    def __set_nest_adapter(self, nest_adapter):  # -> None:
+    @brain_adapter.setter
+    def brain_adapter(self, nest_adapter):  # -> None:
+        """
+        Sets the nest adapter
+        :param nest_adapter: The new brain simulation adapter
+        """
         if self.__initialized:
             raise Exception("Cannot exchange brainsim adapter after node has been initialized!")
         else:
             assert isinstance(nest_adapter, IBrainCommunicationAdapter)
             self.__nestAdapter = nest_adapter
-
-    # Gets a list of transfer functions from the neuronal simulator to the world simulation
-    n2r = property(__get_n2r)
-
-    # Gets a list of transfer functions from the world simulator to the neuronal simulation
-    r2n = property(__get_r2n)
-
-    # Gets or sets the adapter to the world simulation
-    robot_adapter = property(__get_robot_adapter, __set_robot_adapter)
-
-    # Gets or sets the adapter to the brain simulation
-    nest_adapter = property(__get_nest_adapter, __set_nest_adapter)

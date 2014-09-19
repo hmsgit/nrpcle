@@ -1,7 +1,14 @@
+"""
+This module contains the publicly visible interface for the transfer functions framework that
+allows the neuroscience user to conveniently specify the transfer functions
+"""
+
 from . import config
 
 from python_cle.brainsim.BrainInterface import IFixedFrequencySpikeGenerator, \
     INeuronVoltmeter, IPoissonSpikeGenerator, IPatternSpikeGenerator, ISpikeRecorder
+
+# pylint: disable=W0611
 
 from .Neuron2Robot import Neuron2Robot, MapNeuronParameter
 from .Robot2Neuron import Robot2Neuron, MapRobotParameter
@@ -38,7 +45,7 @@ def set_nest_adapter(nest_adapter):  # -> None:
     Sets the brainsim adapter. Must be executed before tf node initialization
     :param nest_adapter: The brainsim adapter
     """
-    config.active_node.nest_adapter = nest_adapter
+    config.active_node.brain_adapter = nest_adapter
 
 
 def set_robot_adapter(robot_adapter):  # -> None:
@@ -50,4 +57,7 @@ def set_robot_adapter(robot_adapter):  # -> None:
 
 
 def start_new_tf_manager():
+    """
+    Start a new transfer function manager
+    """
     config.active_node = TransferFunctionManager.TransferFunctionManager()

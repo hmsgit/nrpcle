@@ -1,3 +1,7 @@
+"""
+This module represents the interface for a transfer functions manager
+"""
+
 __author__ = 'GeorgHinkel'
 
 

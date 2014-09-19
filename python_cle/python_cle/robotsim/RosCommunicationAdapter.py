@@ -31,7 +31,7 @@ class RosPublishedTopic(IRobotPublishedTopic):
         self.__lastSent = None
         assert isinstance(topic, Topic)
         # print("ros publisher created: topic.name = ", topic.name, " topic.type ", topic.type)
-        self.__pub = rospy.Publisher(topic.name, topic.type, queue_size=10)
+        self.__pub = rospy.Publisher(topic.name, topic.topic_type, queue_size=10)
 
     def send_message(self, value):
         # if value != self.__lastSent:
@@ -45,7 +45,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         self.__changed = False
         self.__value = None
         assert isinstance(topic, Topic)
-        self.__subscriber = rospy.Subscriber(topic.name, topic.type, self.__callback)
+        self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type, self.__callback)
 
     def __callback(self, data):
         print("ros subscriber callback")
