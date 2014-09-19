@@ -4,17 +4,18 @@ PyNN devices
 moduleauthor: probst@fzi.de
 '''
 
-from brainsim.BrainInterface import IIFCurrAlpha, ISpikeDetector, \
+from python_cle.brainsim.BrainInterface import IIFCurrAlpha, ISpikeDetector, \
     IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
-from brainsim.PyNNCommunicationAdapter import PyNNCommunicationAdapter
-from brainsim.PyNNControlAdapter import PyNNControlAdapter
-from brainsim.devices.PyNNPoissonSpikeGenerator import \
+from python_cle.brainsim.PyNNCommunicationAdapter import \
+    PyNNCommunicationAdapter
+from python_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
+from python_cle.brainsim.devices.PyNNPoissonSpikeGenerator import \
     PyNNPoissonSpikeGenerator
-from brainsim.devices.PyNNDCSource import PyNNDCSource
-from brainsim.devices.PyNNACSource import PyNNACSource
-from brainsim.devices.PyNNNCSource import PyNNNCSource
-from brainsim.devices.PyNNIFCurrAlpha import PyNNIFCurrAlpha
-from brainsim.devices.PyNNSpikeDetector import PyNNSpikeDetector
+from python_cle.brainsim.devices.PyNNDCSource import PyNNDCSource
+from python_cle.brainsim.devices.PyNNACSource import PyNNACSource
+from python_cle.brainsim.devices.PyNNNCSource import PyNNNCSource
+from python_cle.brainsim.devices.PyNNIFCurrAlpha import PyNNIFCurrAlpha
+from python_cle.brainsim.devices.PyNNSpikeDetector import PyNNSpikeDetector
 import pyNN.nest as sim
 import unittest
 

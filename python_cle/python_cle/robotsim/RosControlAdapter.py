@@ -11,11 +11,14 @@ __author__ = 'NinoCauli'
 class RosControlAdapter(IRobotControlAdapter):
     def initialize(self):
         rospy.wait_for_service('/gazebo/get_physics_properties')
-        self.__get_physics_properties = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
+        self.__get_physics_properties = rospy.ServiceProxy(
+                      'gazebo/get_physics_properties', GetPhysicsProperties)
         rospy.wait_for_service('/gazebo/get_world_properties')
-        self.__get_world_properties = rospy.ServiceProxy('gazebo/get_world_properties', GetWorldProperties)
+        self.__get_world_properties = rospy.ServiceProxy(
+                      'gazebo/get_world_properties', GetWorldProperties)
         rospy.wait_for_service('/gazebo/set_physics_properties')
-        self.__set_physics_properties = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
+        self.__set_physics_properties = rospy.ServiceProxy(
+                      'gazebo/set_physics_properties', SetPhysicsProperties)
         rospy.wait_for_service('/gazebo/pause_physics')
         self.__pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty)
         rospy.wait_for_service('/gazebo/reset_sim')
@@ -23,7 +26,8 @@ class RosControlAdapter(IRobotControlAdapter):
         rospy.wait_for_service('gazebo/end_world')
         self.__endWorld = rospy.ServiceProxy('gazebo/end_world', Empty)
         rospy.wait_for_service('gazebo/advance_simulation')
-        self.__advance_simulation = rospy.ServiceProxy('gazebo/advance_simulation', AdvanceSimulation)
+        self.__advance_simulation = rospy.ServiceProxy(
+                       'gazebo/advance_simulation', AdvanceSimulation)
         physics = self.__get_physics_properties()
         paused = physics.pause
         if (not paused):
@@ -39,7 +43,11 @@ class RosControlAdapter(IRobotControlAdapter):
 
     def set_time_step(self, time_step):
         physics = self.__get_physics_properties()
-        success = self.__set_physics_properties(time_step, physics.max_update_rate, physics.gravity, physics.ode_config)
+        success = self.__set_physics_properties(
+            time_step,
+            physics.max_update_rate,
+            physics.gravity,
+            physics.ode_config)
         if (success):
             self.__time_step = time_step
         return success
