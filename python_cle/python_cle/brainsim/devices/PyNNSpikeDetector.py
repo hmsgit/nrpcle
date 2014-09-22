@@ -15,6 +15,7 @@ class PyNNSpikeDetector(ISpikeDetector):
     neurons has spiked, otherwise a "0"
     """
 
+    # pylint: disable=W0221
     def __init__(self):
         """
         Represents a device which returns a "1" whenever one of the recorded
@@ -25,7 +26,8 @@ class PyNNSpikeDetector(ISpikeDetector):
         self.__neurons = None
         self.__update = [0.0, None]
 
-    def __get_spikes(self):
+    @property
+    def spikes(self):
         '''
         Returns the recorded spikes
         "1": neuron spiked within the last time step
@@ -35,8 +37,6 @@ class PyNNSpikeDetector(ISpikeDetector):
         self.__spike_count = np.array(
             self.__neurons.get_spike_counts().values())
         return self.__spike_count > self.__previous_spike_count
-
-    spikes = property(__get_spikes)
 
     def start_record_spikes(self):
         '''
@@ -63,5 +63,5 @@ class PyNNSpikeDetector(ISpikeDetector):
         '''
         if self.__update[0] is not time:
             self.__update[0] = time
-            self.__update[1] = self.__get_spikes()
+            self.__update[1] = self.spikes
         return self.__update[1]

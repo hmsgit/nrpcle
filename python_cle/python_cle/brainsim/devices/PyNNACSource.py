@@ -15,6 +15,7 @@ class PyNNACSource(IACSource):
     :param kwargs: Optional configuration parameters
     """
 
+    # pylint: disable=W0221
     def __init__(self, **params):
         """
         Initializes an alternating current generator.
@@ -30,65 +31,65 @@ class PyNNACSource(IACSource):
 
         self.create_device(**params)
 
-    def __get_amplitude(self):
+    @property
+    def amplitude(self):
         '''
         Returns the amplitude of the current
         '''
         return self.__generator.amplitude
 
-    def __set_amplitude(self, amplitude):
+    @amplitude.setter
+    def amplitude(self, value):
         '''
         Sets the amplitude of the current
-        :param amplitude: float
+        :param value: float
         '''
-        self.__generator.amplitude = amplitude
+        self.__generator.amplitude = value
 
-    amplitude = property(__get_amplitude, __set_amplitude)
-
-    def __get_offset(self):
+    @property
+    def offset(self):
         '''
         Returns the offset of the current
         '''
         return self.__generator.offset
 
-    def __set_offset(self, offset):
+    @offset.setter
+    def offset(self, value):
         '''
         Sets the offset of the current
-        :param offset: float
+        :param value: float
         '''
-        self.__generator.offset = offset
+        self.__generator.offset = value
 
-    offset = property(__get_offset, __set_offset)
-
-    def __get_frequency(self):
+    @property
+    def frequency(self):
         '''
         Returns the frequency of the current
         '''
         return self.__generator.frequency
 
-    def __set_frequency(self, frequency):
+    @frequency.setter
+    def frequency(self, value):
         '''
         Sets the frequency of the current
-        :param frequency: float
+        :param value: float
         '''
-        self.__generator.frequency = frequency
+        self.__generator.frequency = value
 
-    frequency = property(__get_frequency, __set_frequency)
-
-    def __get_phase(self):
+    @property
+    def phase(self):
         '''
         Returns the phase of the current
         '''
         return self.__generator.phase
 
-    def __set_phase(self, phase):
+    @phase.setter
+    def phase(self, value):
         '''
         Sets the phase of the current
-        :param phase: float
+        :param value: float
         '''
-        self.__generator.phase = phase
-
-    phase = property(__get_phase, __set_phase)
+        self.__generator.phase = value
 
     def create_device(self, **params):
         '''

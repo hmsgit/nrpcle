@@ -15,6 +15,7 @@ class PyNNNCSource(INCSource):
     :param kwargs: Optional configuration parameters
     """
 
+    # pylint: disable=W0221
     def __init__(self, **params):
         """
         Initializes a noisy current generator.
@@ -32,35 +33,35 @@ class PyNNNCSource(INCSource):
 
         self.create_device(**params)
 
-    def __get_mean(self):
+    @property
+    def mean(self):
         '''
         Returns the mean of the current
         '''
         return self.__generator.mean
 
-    def __set_mean(self, mean):
+    @mean.setter
+    def mean(self, value):
         '''
         Sets the mean of the current
-        :param mean: float
+        :param value: float
         '''
-        self.__generator.mean = mean
+        self.__generator.mean = value
 
-    mean = property(__get_mean, __set_mean)
-
-    def __get_stdev(self):
+    @property
+    def stdev(self):
         '''
         Returns the stdev of the current
         '''
         return self.__generator.stdev
 
-    def __set_stdev(self, stdev):
+    @stdev.setter
+    def stdev(self, value):
         '''
         Sets the stdev of the current
-        :param stdev: float
+        :param value: float
         '''
-        self.__generator.stdev = stdev
-
-    stdev = property(__get_stdev, __set_stdev)
+        self.__generator.stdev = value
 
     def create_device(self, **params):
         '''

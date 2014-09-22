@@ -15,6 +15,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
     Represents a Poisson spike generator
     """
 
+    # pylint: disable=W0221
     def __init__(self, **params):
         """
         Initializes a Poisson spike generator.
@@ -38,20 +39,20 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         self.__generator = None
         self.create_device(**params)
 
-    def __get_rate(self):
+    @property
+    def rate(self):
         '''
         Returns the frequency of the Poisson spike generator
         '''
         return self.__generator.get('rate')[0]
 
-    def __set_rate(self, rate):
+    @rate.setter
+    def rate(self, value):
         '''
         Sets the frequency of the Poisson spike generator
-        :param rate: float
+        :param value: float
         '''
-        self.__generator.set('rate', rate)
-
-    rate = property(__get_rate, __set_rate)
+        self.__generator.set('rate', value)
 
     def create_device(self, **params):
         '''
@@ -95,10 +96,6 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         synapse_dynamics = params.get('synapse_dynamics', None)
         label = params.get('label', None)
         rng = params.get('rng', None)
-        w_min = 0.0
-        w_max = 0.01
-        d_min = 0.1
-        d_max = 2.0
 
         if type(neurons) == list:
             target = ['excitatory', 'inhibitory']
@@ -106,16 +103,16 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
                 warnings.warn("Default weights and delays are used.",
                               UserWarning)
                 connector = []
-                weights = sim.RandomDistribution('uniform', [w_min, w_max])
-                delays = sim.RandomDistribution('uniform', [d_min, d_max])
+                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
                 connector.append(sim.AllToAllConnector(weights=weights,
                                                        delays=delays))
                 if neurons[1].conductance_based:
-                    weights = sim.RandomDistribution('uniform', [w_min,
-                                                                 w_max])
+                    weights = sim.RandomDistribution('uniform', [0.0,
+                                                                 0.01])
                 else:
-                    weights = sim.RandomDistribution('uniform', [-w_max,
-                                                                 -w_min])
+                    weights = sim.RandomDistribution('uniform', [-0.01,
+                                                                 -0.0])
                 connector.append(sim.AllToAllConnector(weights=weights,
                                                        delays=delays))
             proj_exc = sim.Projection(presynaptic_population=self.__generator,
@@ -136,15 +133,15 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
                 warnings.warn("Default weights and delays are used.",
                               UserWarning)
                 if target == 'excitatory':
-                    weights = sim.RandomDistribution('uniform', [w_min, w_max])
+                    weights = sim.RandomDistribution('uniform', [0.0, 0.01])
                 else:
                     if neurons.conductance_based:
-                        weights = sim.RandomDistribution('uniform', [w_min,
-                                                                     w_max])
+                        weights = sim.RandomDistribution('uniform', [0.0,
+                                                                     0.01])
                     else:
-                        weights = sim.RandomDistribution('uniform', [-w_max,
-                                                                     -w_min])
-                delays = sim.RandomDistribution('uniform', [d_min, d_max])
+                        weights = sim.RandomDistribution('uniform', [-0.01,
+                                                                     -0.0])
+                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
                 connector = sim.AllToAllConnector(weights=weights,
                                                   delays=delays)
             proj = sim.Projection(presynaptic_population=self.__generator,

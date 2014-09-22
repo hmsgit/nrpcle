@@ -15,6 +15,7 @@ class PyNNDCSource(IDCSource):
     :param kwargs: Optional configuration parameters
     """
 
+    # pylint: disable=W0221
     def __init__(self, **params):
         """
         Initializes a direct current generator.
@@ -26,20 +27,20 @@ class PyNNDCSource(IDCSource):
         self.__generator = None
         self.create_device(**params)
 
-    def __get_amplitude(self):
+    @property
+    def amplitude(self):
         '''
         Returns the amplitude of the current
         '''
         return self.__generator.amplitude
 
-    def __set_amplitude(self, amplitude):
+    @amplitude.setter
+    def amplitude(self, value):
         '''
         Sets the amplitude of the current
-        :param amplitude: float
+        :param value: float
         '''
-        self.__generator.amplitude = amplitude
-
-    amplitude = property(__get_amplitude, __set_amplitude)
+        self.__generator.amplitude = value
 
     def create_device(self, **params):
         '''

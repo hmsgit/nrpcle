@@ -16,6 +16,7 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
     with alpha-shaped post synaptic currents
     """
 
+    # pylint: disable=W0221
     def __init__(self, **params):
         """
         Initializes the neuron whose membrane potential is to be read out.
@@ -52,13 +53,12 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         self.create_device(**params)
         self.start_record_voltage()
 
-    def __get_voltage(self):
+    @property
+    def voltage(self):
         '''
         Returns the membrane voltage of the cell
         '''
         return self.__cell.get_v()[-1, -1]
-
-    voltage = property(__get_voltage)
 
     def create_device(self, **params):
         '''
@@ -121,10 +121,6 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         synapse_dynamics = params.get('synapse_dynamics', None)
         label = params.get('label', None)
         rng = params.get('rng', None)
-        w_min = 0.0
-        w_max = 0.01
-        d_min = 0.1
-        d_max = 2.0
 
         if type(neurons) == list:
             target = ['excitatory', 'inhibitory']
@@ -132,11 +128,11 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                 warnings.warn("Default weights and delays are used.",
                               UserWarning)
                 connector = []
-                weights = sim.RandomDistribution('uniform', [w_min, w_max])
-                delays = sim.RandomDistribution('uniform', [d_min, d_max])
+                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
                 connector.append(sim.AllToAllConnector(weights=weights,
                                                        delays=delays))
-                weights = sim.RandomDistribution('uniform', [-w_max, -w_min])
+                weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
                 connector.append(sim.AllToAllConnector(weights=weights,
                                                        delays=delays))
             proj_exc = sim.Projection(presynaptic_population=neurons[0],
@@ -157,11 +153,11 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                 warnings.warn("Default weights and delays are used.",
                               UserWarning)
                 if target == 'excitatory':
-                    weights = sim.RandomDistribution('uniform', [w_min, w_max])
+                    weights = sim.RandomDistribution('uniform', [0.0, 0.01])
                 else:
-                    weights = sim.RandomDistribution('uniform', [-w_max,
-                                                                 -w_min])
-                delays = sim.RandomDistribution('uniform', [d_min, d_max])
+                    weights = sim.RandomDistribution('uniform', [-0.01,
+                                                                 -0.0])
+                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
                 connector = sim.AllToAllConnector(weights=weights,
                                                   delays=delays)
             proj = sim.Projection(presynaptic_population=neurons,
@@ -179,5 +175,5 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         '''
         if self.__update[0] is not time:
             self.__update[0] = time
-            self.__update[1] = self.__get_voltage()
+            self.__update[1] = self.voltage
         return self.__update[1]
