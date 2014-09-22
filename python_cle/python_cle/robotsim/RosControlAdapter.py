@@ -43,7 +43,7 @@ class RosControlAdapter(IRobotControlAdapter):
         if (not paused):
             self.__pause_client()
         self.__reset()
-        self.time_step()
+        self.__time_step = physics.time_step
         pass
 
     @property
@@ -53,8 +53,6 @@ class RosControlAdapter(IRobotControlAdapter):
         :param dt: The physics simulation time step in seconds
         :return: The physics simulation time step in seconds
         """
-        physics = self.__get_physics_properties()
-        self.__time_step = physics.time_step
         return self.__time_step
 
     def set_time_step(self, time_step):

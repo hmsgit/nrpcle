@@ -1,13 +1,12 @@
 import unittest
-import rospy
 import time
 import numpy as np
-import cv2
 import os
-from cv_bridge import CvBridge, CvBridgeError
 
-from python_cle.tests.ros_com_adapter_test import ROSComTest
+import cv2
+from python_cle.tests.robotsim.ros_test_topics import ROSComTest
 from python_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter
+
 
 __author__ = 'LarsPfotzer'
 
@@ -45,7 +44,7 @@ class TestSequenceFunctions(unittest.TestCase):
         # Check, if values are equal
         self.assertEqual(self.rca1_sub_float.value.data, self.test_float)
 
-    def test_image_subscriper(self):
+    def test_image_subscriber(self):
         # Create CvBridge for converting cv images to ROS image msgs and back
         bridge = CvBridge()
 
@@ -67,5 +66,4 @@ class TestSequenceFunctions(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestSequenceFunctions)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()

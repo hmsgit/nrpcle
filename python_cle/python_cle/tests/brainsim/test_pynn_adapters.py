@@ -1,8 +1,8 @@
-'''
+"""
 Test the PyNN communication, PyNN control and
 PyNN devices
 moduleauthor: probst@fzi.de
-'''
+"""
 
 from python_cle.brainsim.BrainInterface import IIFCurrAlpha, ISpikeDetector, \
     IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
