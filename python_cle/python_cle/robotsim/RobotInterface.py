@@ -163,6 +163,7 @@ class IRobotControlAdapter(object):  # pragma: no cover
     Represents a control adapter for the world simulation
     """
 
+    @property
     def is_alive(self):  # -> bool:
         """
         Queries the current status of the world simulation
@@ -170,6 +171,7 @@ class IRobotControlAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    @property
     def is_paused(self):  # -> bool:
         """
         Queries the current status of the physics simulation
@@ -197,7 +199,8 @@ class IRobotControlAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def get_time_step(self):  # -> float64:
+    @property
+    def time_step(self):  # -> float64:
         """
         Gets the physics simulation time step in seconds
         :param dt: The physics simulation time step in seconds

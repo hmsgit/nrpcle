@@ -84,3 +84,6 @@ class Test1(unittest.TestCase):
 
         assert husky_left_arm.sent[0] == 0.256
         assert husky_left_arm.sent[1] == 0.755
+
+if __name__ == "__main__":
+    unittest.main()

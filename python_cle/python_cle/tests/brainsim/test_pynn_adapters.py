@@ -74,64 +74,64 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertEqual(device_0, self.communicator.generator_devices[0])
         # self.assertIsInstance(device_0, PyNNPoissonSpikeGenerator)
 
-        print "Poisson Spike Generator Rate (before): ", \
-            self.communicator.generator_devices[0].rate
+        print("Poisson Spike Generator Rate (before): ",
+              self.communicator.generator_devices[0].rate)
         self.communicator.generator_devices[0].rate = 2.0
-        print "Poisson Spike Generator Rate (after): ", \
-            self.communicator.generator_devices[0].rate
+        print("Poisson Spike Generator Rate (after): ",
+              self.communicator.generator_devices[0].rate)
 
         device_1 = self.communicator.register_spike_source(
             self.neurons_cond, IDCSource)
         self.assertEqual(device_1, self.communicator.generator_devices[1])
         # self.assertIsInstance(device_1, PyNNDCSource)
 
-        print "DC Amplitude (before): ", \
-            self.communicator.generator_devices[1].amplitude
+        print("DC Amplitude (before): ",
+              self.communicator.generator_devices[1].amplitude)
         self.communicator.generator_devices[1].amplitude = 2.0
-        print "DC Amplitude (after): ", \
-            self.communicator.generator_devices[1].amplitude
+        print("DC Amplitude (after): ",
+              self.communicator.generator_devices[1].amplitude)
 
         device_2 = self.communicator.register_spike_source(
             self.neurons_cond, IACSource)
         self.assertEqual(device_2, self.communicator.generator_devices[2])
         # self.assertIsInstance(device_2, PyNNACSource)
 
-        print "AC Amplitude (before): ", \
-            self.communicator.generator_devices[2].amplitude
-        print "AC Offset (before): ", \
-            self.communicator.generator_devices[2].offset
-        print "AC Freuqency (before): ", \
-            self.communicator.generator_devices[2].frequency
-        print "AC Phase (before): ", \
-            self.communicator.generator_devices[2].phase
+        print("AC Amplitude (before): ",
+              self.communicator.generator_devices[2].amplitude)
+        print("AC Offset (before): ",
+              self.communicator.generator_devices[2].offset)
+        print("AC Frequency (before): ",
+              self.communicator.generator_devices[2].frequency)
+        print("AC Phase (before): ",
+              self.communicator.generator_devices[2].phase)
         self.communicator.generator_devices[2].amplitude = 2.0
         self.communicator.generator_devices[2].offset = 2.0
         self.communicator.generator_devices[2].frequency = 2.0
         self.communicator.generator_devices[2].phase = 2.0
-        print "AC Amplitude (after): ", \
-            self.communicator.generator_devices[2].amplitude
-        print "AC Offset (after): ", \
-            self.communicator.generator_devices[2].offset
-        print "AC Frequency (after): ", \
-            self.communicator.generator_devices[2].frequency
-        print "AC Phase (after): ", \
-            self.communicator.generator_devices[2].phase
+        print("AC Amplitude (after): ",
+              self.communicator.generator_devices[2].amplitude)
+        print("AC Offset (after): ",
+              self.communicator.generator_devices[2].offset)
+        print("AC Frequency (after): ",
+              self.communicator.generator_devices[2].frequency)
+        print("AC Phase (after): ",
+              self.communicator.generator_devices[2].phase)
 
         device_3 = self.communicator.register_spike_source(
             self.neurons_cond, INCSource)
         self.assertEqual(device_3, self.communicator.generator_devices[3])
         # self.assertIsInstance(device_3, PyNNNCSource)
 
-        print "NC Mean (before): ", \
-            self.communicator.generator_devices[3].mean
-        print "NC Standard Deviation (before): ", \
-            self.communicator.generator_devices[3].stdev
+        print("NC Mean (before): ",
+              self.communicator.generator_devices[3].mean)
+        print("NC Standard Deviation (before): ",
+              self.communicator.generator_devices[3].stdev)
         self.communicator.generator_devices[3].mean = 2.0
         self.communicator.generator_devices[3].stdev = 2.0
-        print "NC Mean (after): ", \
-            self.communicator.generator_devices[3].mean
-        print "NC Standard Deviation (after): ", \
-            self.communicator.generator_devices[3].stdev
+        print("NC Mean (after): ",
+              self.communicator.generator_devices[3].mean)
+        print("NC Standard Deviation (after): ",
+              self.communicator.generator_devices[3].stdev)
 
         device_4 = self.communicator.register_spike_source(
             self.neurons_curr, IPoissonSpikeGenerator)
@@ -173,8 +173,8 @@ class PyNNAdaptersTest(unittest.TestCase):
         # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
 
         self.control.run_step(0.1)
-        print "Voltage of IF neuron (= device IFCurrAlpha): ", \
-            self.communicator.detector_devices[1].voltage
+        print("Voltage of IF neuron (= device IFCurrAlpha): ",
+              self.communicator.detector_devices[1].voltage)
 
         device_2 = self.communicator.register_spike_sink(
             self.neurons_curr, IIFCurrAlpha)
@@ -214,6 +214,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.control.run_step(0.1)
         self.communicator.refresh_buffers(time)
         self.control.shutdown()
+
 
 if __name__ == "__main__":
     unittest.main()
