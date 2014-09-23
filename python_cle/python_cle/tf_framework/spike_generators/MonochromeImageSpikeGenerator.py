@@ -35,7 +35,7 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
                 "The amount of assigned spikes is incorrect. A monochrome image spike generator " +
                 "must be assigned to as many neurons as there are pixels in the image")
 
-        self.__devices = brain_adapter.register_generate_spikes(neurons, IPoissonSpikeGenerator)
+        self.__devices = brain_adapter.register_spike_source(neurons, IPoissonSpikeGenerator)
 
     def update_image(self, image):
         """

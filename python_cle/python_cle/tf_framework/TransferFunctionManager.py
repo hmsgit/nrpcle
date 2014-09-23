@@ -91,7 +91,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                 param = _n2r.neuron_params[i]
                 assert isinstance(param, MapNeuronParameter)
                 _n2r.neuron_params[i] = self.__nestAdapter \
-                    .register_consume_spikes(param.neurons, param.device_type, **param.config)
+                    .register_spike_sink(param.neurons, param.device_type, **param.config)
 
         # Wire transfer functions from world simulation to neuronal simulation
         for _r2n in self.__r2n:
@@ -106,7 +106,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                 else:
                     assert isinstance(param, MapNeuronParameter)
                     _r2n.params[i] = self.__nestAdapter \
-                        .register_generate_spikes(param.neurons, param.device_type, **param.config)
+                        .register_spike_source(param.neurons, param.device_type, **param.config)
         # Initialize dependencies
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)
