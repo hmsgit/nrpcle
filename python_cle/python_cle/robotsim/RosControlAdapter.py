@@ -1,12 +1,11 @@
-"""
-Contains the implementation for the robot control adapter
-"""
+#!/usr/bin/env python
+"""Implementation of the robot control adapter using ros and gazebo"""
 
 from python_cle.robotsim.RobotInterface import IRobotControlAdapter
 import rospy
 
-from gazebo_msgs.msg import *
-from gazebo_msgs.srv import *
+from gazebo_msgs.srv import GetPhysicsProperties, GetWorldProperties, \
+                            SetPhysicsProperties, AdvanceSimulation
 from std_srvs.srv import Empty
 
 __author__ = 'NinoCauli'
@@ -16,10 +15,8 @@ class RosControlAdapter(IRobotControlAdapter):
     """
     Represents a robot simulation adapter actually using ROS
     """
-    def initialize(self):
-        """
-        Initializes the world simulation control adapter
-        """
+
+    def __init__(self):
         rospy.wait_for_service('/gazebo/get_physics_properties')
         self.__get_physics_properties = rospy.ServiceProxy(
                       'gazebo/get_physics_properties', GetPhysicsProperties)
@@ -38,13 +35,18 @@ class RosControlAdapter(IRobotControlAdapter):
         rospy.wait_for_service('gazebo/advance_simulation')
         self.__advance_simulation = rospy.ServiceProxy(
                        'gazebo/advance_simulation', AdvanceSimulation)
+        self.__time_step = 0.0
+
+    def initialize(self):
+        """
+        Initializes the world simulation control adapter
+        """
         physics = self.__get_physics_properties()
         paused = physics.pause
         if (not paused):
             self.__pause_client()
         self.__reset()
         self.__time_step = physics.time_step
-        pass
 
     @property
     def time_step(self):
@@ -112,4 +114,3 @@ class RosControlAdapter(IRobotControlAdapter):
         Shuts down the world simulation
         """
         self.__endWorld()
-        pass
