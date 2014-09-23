@@ -1,9 +1,10 @@
 """
-Represents an implementation of the robot communication adapter actually using ROS
+Represents an implementation of the robot communication adapter actually
+using ROS
 """
 
-from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, Topic, \
-    IRobotSubscribedTopic, IRobotPublishedTopic
+from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, \
+    Topic, IRobotSubscribedTopic, IRobotPublishedTopic
 import rospy
 # import std_msgs.msg
 
@@ -52,8 +53,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         Resets the changed bit for all subscribers
         :param t: The world simulation time
         """
-        for subscriber in self.subscribed_topics:
-            subscriber.reset_changed()
+        for key in self.subscribed_topics:
+            self.subscribed_topics[key].reset_changed()
 
 
 class RosPublishedTopic(IRobotPublishedTopic):
@@ -67,8 +68,10 @@ class RosPublishedTopic(IRobotPublishedTopic):
         """
         self.__lastSent = None
         assert isinstance(topic, Topic)
-        # print("ros publisher created: topic.name = ", topic.name, " topic.type ", topic.type)
-        self.__pub = rospy.Publisher(topic.name, topic.topic_type, queue_size=10)
+        # print("ros publisher created: topic.name = ", topic.name,
+        # " topic.type ", topic.type)
+        self.__pub = rospy.Publisher(topic.name, topic.topic_type,
+                                     queue_size=10)
 
     def send_message(self, value):
         """
@@ -78,7 +81,8 @@ class RosPublishedTopic(IRobotPublishedTopic):
         # if value != self.__lastSent:
         self.__pub.publish(value)
         self.__lastSent = value
-        #print("ros message published: topic name = ", Topic.name, " topic value = ", value)
+        # print("ros message published: topic name = ", Topic.name,
+        # " topic value = ", value)
 
 
 class RosSubscribedTopic(IRobotSubscribedTopic):
@@ -94,7 +98,8 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         self.__changed = False
         self.__value = None
         assert isinstance(topic, Topic)
-        self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type, self.__callback)
+        self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
+                                             self.__callback)
 
     def __callback(self, data):
         """
@@ -108,7 +113,8 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
     @property
     def changed(self):
         """
-        Indicates whether the current value of this subscriber has changed since the last iteration
+        Indicates whether the current value of this subscriber has changed
+        since the last iteration
         """
         return self.__changed
 
@@ -123,4 +129,4 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         """
         Gets the last value received by this ROS subscribed topic
         """
-        return self.__changed
+        return self.__value
