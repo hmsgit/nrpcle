@@ -8,6 +8,32 @@ from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, IRobo
 __author__ = 'GeorgHinkel'
 
 
+class Roscore(object):
+    """
+    Represents a mock implementation of the message passing in roscore
+    """
+    def __init__(self):
+        """
+        Creates a new mock message passing
+        """
+        self._associations = []
+
+    def connect(self, pub, sub):
+        """
+        Connect a publisher to a subscriber"
+        """
+        self._associations.append((pub, sub))
+
+    def sendAll(self):
+        """
+        Send all present messages to the connected subscribers
+        """
+        for association in self._associations:
+            data = association[0].sent
+            for d in data:
+                association[1].value = d
+
+
 class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     """
     Represents a mock implementation of the world simulation communication adapter
@@ -117,5 +143,5 @@ class MockSubscribedTopic(IRobotSubscribedTopic):
         Sets the current value of the subscribed topic
         :param value: The new current value
         """
-        self.__changed = value != self.__value
+        self.__changed = (value != self.__value)
         self.__value = value
