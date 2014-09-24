@@ -2,18 +2,16 @@ from python_cle.robotsim.RosControlAdapter import RosControlAdapter
 
 import unittest
 
-__author__ = 'LorenzoVannucci'
+__author__ = 'Lorenzo Vannucci'
 
 
 class TestRosControlAdapter(unittest.TestCase):
+
     def setUp(self):
         self._rca = RosControlAdapter()
         self._rca.initialize()
 
-    def test_get_time_step(self):
-        self.assertEqual(self._rca.time_step, 0.001)
-
-    def test_set_time_step(self):
+    def test_time_step(self):
         self.assertTrue(self._rca.set_time_step(0.01))
         self.assertEqual(self._rca.time_step, 0.01)
 
@@ -23,9 +21,13 @@ class TestRosControlAdapter(unittest.TestCase):
     def test_is_alive(self):
         self.assertTrue(self._rca.is_alive)
 
-    def run_step(self):
-        self.assertEqual(self._rca.run_step(0.5), 0.5)
-        self.assertRaises(self._rca.run_step(0.0001))
+    def test_run_step(self):
+        self.assertEqual(self._rca.run_step(0.05), 0.05)
+        with self.assertRaises(ValueError):
+            self._rca.run_step(0.0001)
+
+    def test_shutdown(self):
+        self._rca.shutdown()
 
 
 if __name__ == '__main__':
