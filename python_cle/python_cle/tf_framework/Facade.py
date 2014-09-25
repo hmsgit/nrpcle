@@ -6,7 +6,7 @@ allows the neuroscience user to conveniently specify the transfer functions
 from . import config
 
 from python_cle.brainsim.BrainInterface import IFixedFrequencySpikeGenerator, \
-    INeuronVoltmeter, IPoissonSpikeGenerator, IPatternSpikeGenerator, ISpikeRecorder
+    IIFCurrAlpha, IPoissonSpikeGenerator, IPatternSpikeGenerator, ISpikeRecorder
 
 # pylint: disable=W0611
 
@@ -16,7 +16,7 @@ from . import TransferFunctionManager
 
 __author__ = 'GeorgHinkel'
 
-voltmeter = INeuronVoltmeter
+voltmeter = IIFCurrAlpha
 fixed_frequency = IFixedFrequencySpikeGenerator
 poisson = IPoissonSpikeGenerator
 pattern = IPatternSpikeGenerator

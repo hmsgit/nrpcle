@@ -1,7 +1,7 @@
 from python_cle.tf_framework import Facade as nrp
 from python_cle.tf_framework import config
-from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import \
-    MonochromeImageSpikeGenerator
+#from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import \
+#    MonochromeImageSpikeGenerator
 from python_cle.tests.tf_framework.husky import Husky
 
 from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
@@ -21,7 +21,7 @@ class Test1(unittest.TestCase):
         # The annotation Neuron2Robot registers this function as a transfer function
         # As the parameter neuron0 is not explicitly mapped, the framework will assume a mapping
         # to the neuron with the GID 0 and associate with a voltmeter for this neuron
-        @nrp.MapNeuronParameter("neuron0", [10], nrp.voltmeter, updates=[(1.0, 0.3)])
+        @nrp.MapNeuronParameter("neuron0", [[10, 13], [10, 14]], nrp.voltmeter, updates=[(1.0, 0.3)])
         @nrp.Neuron2Robot(Husky.RightArm.pose)
         def right_arm(t, neuron0):
             return neuron0.voltage * 1.345
@@ -30,17 +30,19 @@ class Test1(unittest.TestCase):
         # This time, the neuron parameter is explicitly mapped to an array of neurons
         # More precisely, the parameter is mapped to a group of devices that are each connected to a single neuron
         # The neuron2 parameter will thus be a list of recorders
-        @nrp.MapNeuronParameter("neuron2", [[42], [23], [0], [8], [15]], nrp.voltmeter,
+        @nrp.MapNeuronParameter("neuron1", [[42, 23, 41], [0, 8, 15]], nrp.voltmeter,
+                                updates=[(1.0, 0.4)])
+        @nrp.MapNeuronParameter("neuron2", [[42, 23], [0, 8, 15]], nrp.voltmeter,
                                 updates=[(1.0, 0.4)])
         @nrp.Neuron2Robot(Husky.LeftArm.twist)
         def left_arm_tw(t, neuron1, neuron2):
             if neuron1.voltage < 0.678:
-                if neuron2[0].voltage > 0.345:
+                if neuron2.voltage > 0.345:
                     return 0.756
                 else:
                     return 1.123
             else:
-                if neuron2[1].voltage < 0.789:
+                if neuron2.voltage < 0.789:
                     return 0.755
                 else:
                     return 0.256
@@ -52,7 +54,7 @@ class Test1(unittest.TestCase):
         # device type internally
         @nrp.MapRobotParameter("camera", Husky.Eye.camera)
         @nrp.MapNeuronParameter("camera_device", range(45, 645),
-                                MonochromeImageSpikeGenerator(20, 30))
+                                nrp.poisson)
         @nrp.Robot2Neuron()
         def transform_camera(t, camera, camera_device):
             if camera.changed:
@@ -79,11 +81,13 @@ class Test1(unittest.TestCase):
         assert len(husky_right_arm.sent) == 2
         assert len(husky_left_arm.sent) == 2
 
-        assert husky_right_arm.sent[0] == 1.345
-        assert husky_right_arm.sent[1] == 1.345 * 0.3
+        print husky_right_arm.sent
+        print husky_left_arm.sent
+        assert husky_right_arm.sent[0] == -87.425  # 1.345
+        assert husky_right_arm.sent[1] == -87.425  # 1.345 * 0.3
 
-        assert husky_left_arm.sent[0] == 0.256
-        assert husky_left_arm.sent[1] == 0.755
+        assert husky_left_arm.sent[0] == 1.123  # 0.256
+        assert husky_left_arm.sent[1] == 1.123  # 0.755
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,4 @@
-"""
-This package contains the mocks for the neuronal simulator (communication and control)
-"""
-
+'''
+This package contains the mocks for the brain simulator
+'''
 __author__ = 'GeorgHinkel'

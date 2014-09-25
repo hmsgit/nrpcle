@@ -6,7 +6,7 @@ the world simulator
 __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import Topic
-from python_cle.brainsim.BrainInterface import INeuronVoltmeter, ISpikeRecorder, \
+from python_cle.brainsim.BrainInterface import IIFCurrAlpha, ISpikeRecorder, \
     IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator, IPatternSpikeGenerator, ICustomDevice
 from .Robot2Neuron import Robot2Neuron
 from . import config
@@ -19,7 +19,7 @@ class MapNeuronParameter(object):
     Class to map parameters to neurons
     """
 
-    supported_device_types = [ISpikeRecorder, INeuronVoltmeter, IPoissonSpikeGenerator,
+    supported_device_types = [ISpikeRecorder, IIFCurrAlpha, IPoissonSpikeGenerator,
                               IFixedFrequencySpikeGenerator, IPatternSpikeGenerator]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
@@ -163,7 +163,7 @@ class Neuron2Robot(object):
                     gid = int(param_name[6:])
                 elif param_name.startswith("n"):
                     gid = int(param_name[1:])
-                self.__neuron_params[i] = MapNeuronParameter(None, [gid], INeuronVoltmeter)
+                self.__neuron_params[i] = MapNeuronParameter(None, [gid], IIFCurrAlpha)
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} {2} using {3}" \
