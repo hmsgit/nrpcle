@@ -211,6 +211,7 @@ class MockBrainAdaptersTest(unittest.TestCase):
         self.control.run_step(0.1)
         self.communicator.refresh_buffers(time)
         self.control.shutdown()
+        self.assertEqual(self.communicator.refreshed_at[0], time)
 
 
 if __name__ == "__main__":
