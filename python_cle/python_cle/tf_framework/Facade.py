@@ -1,12 +1,14 @@
 """
-This module contains the publicly visible interface for the transfer functions framework that
-allows the neuroscience user to conveniently specify the transfer functions
+This module contains the publicly visible interface for the transfer functions
+framework that allows the neuroscience user to conveniently specify the
+transfer functions
 """
 
 from . import config
 
-from python_cle.brainsim.BrainInterface import IFixedFrequencySpikeGenerator, \
-    IIFCurrAlpha, IPoissonSpikeGenerator, IPatternSpikeGenerator, ISpikeRecorder
+from python_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
+    IIFCurrAlpha, IIFCurrExp, IPoissonSpikeGenerator, ISpikeDetector, \
+    IDCSource, IACSource, INCSource, IPopulationRate
 
 # pylint: disable=W0611
 
@@ -16,11 +18,15 @@ from . import TransferFunctionManager
 
 __author__ = 'GeorgHinkel'
 
-voltmeter = IIFCurrAlpha
-fixed_frequency = IFixedFrequencySpikeGenerator
+leaky_integrator_alpha = IIFCurrAlpha
+leaky_integrator_exp = IIFCurrExp
+fixed_frequency = IFixedSpikeGenerator
 poisson = IPoissonSpikeGenerator
-pattern = IPatternSpikeGenerator
-recorder = ISpikeRecorder
+detector = ISpikeDetector
+dc_source = IDCSource
+ac_source = IACSource
+nc_source = INCSource
+population_rate = IPopulationRate
 
 
 def initialize(name):  # -> None:

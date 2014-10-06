@@ -4,13 +4,18 @@ moduleauthor: probst@fzi.de
 '''
 
 from .BrainInterface import IBrainCommunicationAdapter, IIFCurrAlpha, \
-    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
+    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, \
+    IIFCurrExp, IPopulationRate, IFixedSpikeGenerator
 from .devices.PyNNPoissonSpikeGenerator import \
     PyNNPoissonSpikeGenerator
+from .devices.PyNNFixedSpikeGenerator import \
+    PyNNFixedSpikeGenerator
 from .devices.PyNNDCSource import PyNNDCSource
 from .devices.PyNNACSource import PyNNACSource
 from .devices.PyNNNCSource import PyNNNCSource
 from .devices.PyNNIFCurrAlpha import PyNNIFCurrAlpha
+from .devices.PyNNIFCurrExp import PyNNIFCurrExp
+from .devices.PyNNPopulationRate import PyNNPopulationRate
 from .devices.PyNNSpikeDetector import PyNNSpikeDetector
 
 __author__ = 'DimitriProbst'
@@ -22,11 +27,14 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
     """
     # In this dictionary, the association of spike generator types to classes
     # implementing their functionality is established
-    __device_dict = {IPoissonSpikeGenerator: PyNNPoissonSpikeGenerator,
+    __device_dict = {IFixedSpikeGenerator: PyNNFixedSpikeGenerator,
+                     IPoissonSpikeGenerator: PyNNPoissonSpikeGenerator,
                      IDCSource: PyNNDCSource,
                      IACSource: PyNNACSource,
                      INCSource: PyNNNCSource,
                      IIFCurrAlpha: PyNNIFCurrAlpha,
+                     IIFCurrExp: PyNNIFCurrExp,
+                     IPopulationRate: PyNNPopulationRate,
                      ISpikeDetector: PyNNSpikeDetector}
 
     def __init__(self):

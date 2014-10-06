@@ -6,8 +6,9 @@ the world simulator
 __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import Topic
-from python_cle.brainsim.BrainInterface import IIFCurrAlpha, ISpikeRecorder, \
-    IPoissonSpikeGenerator, IFixedFrequencySpikeGenerator, IPatternSpikeGenerator, ICustomDevice
+from python_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
+    IIFCurrAlpha, IIFCurrExp, IPoissonSpikeGenerator, ISpikeDetector, \
+    IDCSource, IACSource, INCSource, IPopulationRate, ICustomDevice
 from .Robot2Neuron import Robot2Neuron
 from . import config
 
@@ -19,8 +20,10 @@ class MapNeuronParameter(object):
     Class to map parameters to neurons
     """
 
-    supported_device_types = [ISpikeRecorder, IIFCurrAlpha, IPoissonSpikeGenerator,
-                              IFixedFrequencySpikeGenerator, IPatternSpikeGenerator]
+    supported_device_types = [ISpikeDetector, IIFCurrAlpha, IIFCurrExp,
+                              IPoissonSpikeGenerator, IFixedSpikeGenerator,
+                              IDCSource, IACSource, INCSource, IPopulationRate,
+                              ICustomDevice]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """

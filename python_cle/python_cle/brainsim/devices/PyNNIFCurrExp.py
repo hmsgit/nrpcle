@@ -1,19 +1,19 @@
 '''
-Implementation of PyNNIFCurrAlpha
+Implementation of PyNNIFCurrExp
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IIFCurrAlpha
+from ..BrainInterface import IIFCurrExp
 import warnings
 import pyNN.nest as sim
 
 __author__ = 'DimitriProbst'
 
 
-class PyNNIFCurrAlpha(IIFCurrAlpha):
+class PyNNIFCurrExp(IIFCurrExp):
     """
     Represents the membrane potential of a current-based LIF neuron
-    with alpha-shaped post synaptic currents
+    with decaying-exponential post-synaptic currents
     """
 
     # pylint: disable=W0221
@@ -21,7 +21,8 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         """
         Initializes the neuron whose membrane potential is to be read out.
         The obligatory threshold voltage 'v_thresh' is set to infinity
-        by default in order to forbid the neuron to elicit spikes.
+        by default in order to forbid the neuron to elicit
+        spikes.
         :param params: Dictionary of neuron configuration parameters
         :param v_thresh: Threshold voltage , default: infinity
         :param cm: Membrane capacitance, default: 1.0 nF
@@ -61,7 +62,7 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
 
     def create_device(self, **params):
         '''
-        Creates a LIF neuron with alpha-shaped post synaptic currents
+        Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses
         :param params: Dictionary of neuron configuration parameters
         :param v_thresh: Threshold voltage , default: infinity
@@ -83,7 +84,7 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                       'v_reset': params.get('v_reset', -65.0),
                       'tau_refrac': params.get('tau_refrac', 0.1),
                       'i_offset': params.get('i_offset', 0.0)}
-        self.__cell = sim.Population(1, sim.IF_curr_alpha, cellparams)
+        self.__cell = sim.Population(1, sim.IF_curr_exp, cellparams)
 
     def start_record_voltage(self):
         '''

@@ -24,7 +24,7 @@ class Neuron2RobotTests(unittest.TestCase):
     def test_map_neuron_wrong_parameter_fails(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapNeuronParameter("neuronX", [1, 2, 3], nrp.voltmeter)
+            @nrp.MapNeuronParameter("neuronX", [1, 2, 3], nrp.leaky_integrator_exp)
             @nrp.Neuron2Robot(Husky.RightArm.pose)
             def right_arm(t, neuron0):
                 return neuron0.voltage

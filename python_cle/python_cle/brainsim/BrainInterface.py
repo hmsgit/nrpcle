@@ -19,7 +19,7 @@ class ICurrentGenerator(object):  # pragma: no cover
     pass
 
 
-class IFixedFrequencySpikeGenerator(ISpikeGenerator):  # pragma: no cover
+class IFixedSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     """
     Represents a communication object that generates spikes on a fixed rate
     """
@@ -40,23 +40,23 @@ class IFixedFrequencySpikeGenerator(ISpikeGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IPatternSpikeGenerator(ISpikeGenerator):  # pragma: no cover
+class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     """
-    Represents a spike generator generating spikes in a pattern
+    Represents a spike generator based on a Poisson Distribution
     """
 
     @property
-    def pattern(self):  # -> list:
+    def rate(self):  # -> float:
         """
-        Gets or sets the pattern in which spikes are generated
+        Gets or sets the rate in which spikes should be generated
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    @pattern.setter
-    def pattern(self, value):
+    @rate.setter
+    def rate(self, value):
         """
-        Sets the pattern in which spikes should be generated
-        :param value: The new spike generation pattern
+        Sets the rate in which spikes should be generated
+        :param value: The new rate in which spikes are generated
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
@@ -124,27 +124,6 @@ class INCSource(ICurrentGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
-    """
-    Represents a spike generator based on a Poisson Distribution
-    """
-
-    @property
-    def rate(self):  # -> float:
-        """
-        Gets or sets the rate in which spikes should be generated
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    @rate.setter
-    def rate(self, value):
-        """
-        Sets the rate in which spikes should be generated
-        :param value: The new rate in which spikes are generated
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-
 class ISpikeDetector(object):  # pragma: no cover
     """
     Represents a communication object that may detect spikes
@@ -181,7 +160,7 @@ class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
 class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
     """
     Represents the membrane voltage of a current-based LIF neuron
-    with alpha-shaped post synaptic currents. The neurons default threshold
+    with alpha-shaped post-synaptic currents. The neurons default threshold
     potential is set to infinity, so that the neuron never spikes, but
     only serves as a leaky integrator of the incoming spike train.
     """
@@ -190,6 +169,35 @@ class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
     def voltage(self):  # -> float:
         """
         Gets the current voltage of the voltmeter
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
+class IIFCurrExp(ISpikeDetector):  # pragma: no cover
+    """
+    Represents the membrane voltage of a current-based LIF neuron
+    with decaying-exponential post-synaptic currents. The neurons default
+    threshold potential is set to infinity, so that the neuron never spikes,
+    but only serves as a leaky integrator of the incoming spike train.
+    """
+
+    @property
+    def voltage(self):  # -> float:
+        """
+        Gets the current voltage of the voltmeter
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
+class IPopulationRate(ISpikeDetector):  # pragma: no cover
+    """
+    Represents a device which returns the spiking frequency of a population of neurons
+    """
+
+    @property
+    def rate(self):  # -> float:
+        """
+        Gets the current rate of the neuron population
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

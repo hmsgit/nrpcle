@@ -5,17 +5,11 @@ moduleauthor: probst@fzi.de
 """
 
 from python_cle.brainsim.BrainInterface import IIFCurrAlpha, ISpikeDetector, \
-    IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
+    IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, IIFCurrExp, \
+    IPopulationRate, IFixedSpikeGenerator
 from python_cle.brainsim.PyNNCommunicationAdapter import \
     PyNNCommunicationAdapter
 from python_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
-from python_cle.brainsim.devices.PyNNPoissonSpikeGenerator import \
-    PyNNPoissonSpikeGenerator
-from python_cle.brainsim.devices.PyNNDCSource import PyNNDCSource
-from python_cle.brainsim.devices.PyNNACSource import PyNNACSource
-from python_cle.brainsim.devices.PyNNNCSource import PyNNNCSource
-from python_cle.brainsim.devices.PyNNIFCurrAlpha import PyNNIFCurrAlpha
-from python_cle.brainsim.devices.PyNNSpikeDetector import PyNNSpikeDetector
 import pyNN.nest as sim
 import unittest
 
@@ -26,14 +20,6 @@ class PyNNAdaptersTest(unittest.TestCase):
     """
     Tests the communication and control adapter to the neuronal simulator
     """
-    # In this dictionary, the association of spike generator types to classes
-    # implementing their functionality is established
-    __device_dict = {IPoissonSpikeGenerator: PyNNPoissonSpikeGenerator,
-                     IDCSource: PyNNDCSource,
-                     IACSource: PyNNACSource,
-                     INCSource: PyNNNCSource,
-                     IIFCurrAlpha: PyNNIFCurrAlpha,
-                     ISpikeDetector: PyNNSpikeDetector}
 
     def setUp(self):
         """
@@ -158,6 +144,42 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertEqual(device_8, self.communicator.generator_devices[8])
         # self.assertIsInstance(device_8, PyNNPoissonSpikeGenerator)
 
+        device_9 = self.communicator.register_spike_source(
+            self.neurons_cond, IFixedSpikeGenerator)
+        self.assertEqual(device_9, self.communicator.generator_devices[9])
+        # self.assertIsInstance(device_9, PyNNFixedSpikeGenerator)
+
+        print("Fixed Frequency Spike Generator Rate (before): ",
+              self.communicator.generator_devices[9].rate)
+        self.communicator.generator_devices[9].rate = 2.0
+        print("Fixed Frequency Spike Generator Rate (after): ",
+              self.communicator.generator_devices[9].rate)
+
+        device_10 = self.communicator.register_spike_source(
+            self.neurons_curr, IFixedSpikeGenerator)
+        self.assertEqual(device_10, self.communicator.generator_devices[10])
+        # self.assertIsInstance(device_10, PyNNFixedSpikeGenerator)
+
+        device_11 = self.communicator.register_spike_source(
+            self.two_neurons_pop_cond, IFixedSpikeGenerator)
+        self.assertEqual(device_11, self.communicator.generator_devices[11])
+        # self.assertIsInstance(device_11, PyNNFixedSpikeGenerator)
+
+        device_12 = self.communicator.register_spike_source(
+            self.two_neurons_pop_curr, IFixedSpikeGenerator)
+        self.assertEqual(device_12, self.communicator.generator_devices[12])
+        # self.assertIsInstance(device_12, PyNNFixedSpikeGenerator)
+
+        device_13 = self.communicator.register_spike_source(
+            self.neurons_cond, IFixedSpikeGenerator, target="inhibitory")
+        self.assertEqual(device_13, self.communicator.generator_devices[13])
+        # self.assertIsInstance(device_13, PyNNFixedSpikeGenerator)
+
+        device_14 = self.communicator.register_spike_source(
+            self.neurons_curr, IFixedSpikeGenerator, target="inhibitory")
+        self.assertEqual(device_14, self.communicator.generator_devices[14])
+        # self.assertIsInstance(device_14, PyNNFixedSpikeGenerator)
+
     def test_register_spike_sink(self):
         """
         Tests the registration of the detector devices
@@ -196,6 +218,44 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertEqual(device_5, self.communicator.detector_devices[5])
         # self.assertIsInstance(device_5, PyNNIFCurrAlpha)
 
+        device_6 = self.communicator.register_spike_sink(
+            self.neurons_cond, IIFCurrExp)
+        self.assertEqual(device_6, self.communicator.detector_devices[6])
+        # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
+
+        self.control.run_step(0.1)
+        print("Voltage of IF neuron (= device IFCurrExp): ",
+              self.communicator.detector_devices[6].voltage)
+
+        device_7 = self.communicator.register_spike_sink(
+            self.neurons_curr, IIFCurrExp)
+        self.assertEqual(device_7, self.communicator.detector_devices[7])
+        # self.assertIsInstance(device_7, PyNNIFCurrExp)
+
+        device_8 = self.communicator.register_spike_sink(
+            self.two_neurons_pop_cond, IIFCurrExp)
+        self.assertEqual(device_8, self.communicator.detector_devices[8])
+        # self.assertIsInstance(device_8, PyNNIFCurrExp)
+
+        device_9 = self.communicator.register_spike_sink(
+            self.two_neurons_pop_curr, IIFCurrExp)
+        self.assertEqual(device_9, self.communicator.detector_devices[9])
+        # self.assertIsInstance(device_9, PyNNIFCurrExp)
+
+        device_10 = self.communicator.register_spike_sink(
+            self.neurons_curr, IIFCurrExp, target='inhibitory')
+        self.assertEqual(device_10, self.communicator.detector_devices[10])
+        # self.assertIsInstance(device_10, PyNNIFCurrExp)
+
+        device_11 = self.communicator.register_spike_sink(
+            self.neurons_curr, IPopulationRate)
+        self.assertEqual(device_11, self.communicator.detector_devices[11])
+        # self.assertIsInstance(device_10, PyNNIFCurrExp)
+
+        self.control.run_step(0.1)
+        print("Voltage of IF neuron (= device PopulationRate): ",
+              self.communicator.detector_devices[11].rate)
+
     def test_refresh_buffers(self):
         """
         Tests the refresh_buffers function
@@ -208,6 +268,16 @@ class PyNNAdaptersTest(unittest.TestCase):
         device_1 = self.communicator.register_spike_sink(
             self.neurons_cond, IIFCurrAlpha)
         self.assertEqual(device_1, self.communicator.detector_devices[1])
+        # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
+
+        device_2 = self.communicator.register_spike_sink(
+            self.neurons_cond, IIFCurrExp)
+        self.assertEqual(device_2, self.communicator.detector_devices[2])
+        # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
+
+        device_3 = self.communicator.register_spike_sink(
+            self.neurons_cond, IPopulationRate)
+        self.assertEqual(device_3, self.communicator.detector_devices[3])
         # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
 
         time = 0.2
