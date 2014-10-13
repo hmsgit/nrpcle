@@ -3,6 +3,7 @@
 
 from python_cle.robotsim.RobotInterface import IRobotControlAdapter
 import rospy
+import math
 
 from gazebo_msgs.srv import GetPhysicsProperties, GetWorldProperties, \
                             SetPhysicsProperties, AdvanceSimulation
@@ -99,7 +100,7 @@ class RosControlAdapter(IRobotControlAdapter):
         :param dt: The CLE time step in seconds
         :return: Updated simulation time, otherwise -1
         """
-        if dt % self.__time_step == 0:
+        if math.fmod(dt, self.__time_step) < 1e-10:
             steps = dt / self.__time_step
             self.__advance_simulation(steps)
             world = self.__get_world_properties()
