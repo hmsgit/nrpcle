@@ -7,8 +7,9 @@ __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import Topic
 from python_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
-    IIFCurrAlpha, IIFCurrExp, IPoissonSpikeGenerator, ISpikeDetector, \
-    IDCSource, IACSource, INCSource, IPopulationRate, ICustomDevice
+    ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
+    ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, \
+    ICustomDevice
 from .Robot2Neuron import Robot2Neuron
 from . import config
 
@@ -20,7 +21,7 @@ class MapNeuronParameter(object):
     Class to map parameters to neurons
     """
 
-    supported_device_types = [ISpikeDetector, IIFCurrAlpha, IIFCurrExp,
+    supported_device_types = [ISpikeDetector, ILeakyIntegratorAlpha, ILeakyIntegratorExp,
                               IPoissonSpikeGenerator, IFixedSpikeGenerator,
                               IDCSource, IACSource, INCSource, IPopulationRate,
                               ICustomDevice]

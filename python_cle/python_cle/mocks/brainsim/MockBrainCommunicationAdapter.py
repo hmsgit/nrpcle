@@ -4,13 +4,18 @@ moduleauthor: Michael.Weber@fzi.de
 '''
 
 
-from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IIFCurrAlpha, \
-    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, ICustomDevice
+from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, \
+    ILeakyIntegratorAlpha, ISpikeDetector, IPoissonSpikeGenerator, \
+    IDCSource, IACSource, INCSource, ICustomDevice, \
+    IFixedSpikeGenerator, ILeakyIntegratorExp, IPopulationRate
 from .devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
+from .devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
 from .devices.MockDCSource import MockDCSource
 from .devices.MockACSource import MockACSource
 from .devices.MockNCSource import MockNCSource
-from .devices.MockIFCurrAlpha import MockIFCurrAlpha
+from .devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
+from .devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
+from .devices.MockPopulationRate import MockPopulationRate
 from .devices.MockSpikeDetector import MockSpikeDetector
 
 __author__ = 'MichaelWeber'
@@ -24,11 +29,14 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
     #pylint: disable=W0613
     # In this dictionary, the association of spike generator types to classes implementing their
     # functionality is established
-    __device_dict = {IPoissonSpikeGenerator: MockPoissonSpikeGenerator,
+    __device_dict = {IFixedSpikeGenerator: MockFixedSpikeGenerator,
+                     IPoissonSpikeGenerator: MockPoissonSpikeGenerator,
                      IDCSource: MockDCSource,
                      IACSource: MockACSource,
                      INCSource: MockNCSource,
-                     IIFCurrAlpha: MockIFCurrAlpha,
+                     ILeakyIntegratorAlpha: MockLeakyIntegratorAlpha,
+                     ILeakyIntegratorExp: MockLeakyIntegratorExp,
+                     IPopulationRate: MockPopulationRate,
                      ISpikeDetector: MockSpikeDetector}
 
     def __init__(self):

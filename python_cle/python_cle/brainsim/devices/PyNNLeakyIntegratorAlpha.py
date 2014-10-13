@@ -1,16 +1,16 @@
 '''
-Implementation of PyNNIFCurrAlpha
+Implementation of PyNNLeakyIntegratorAlpha
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IIFCurrAlpha
+from ..BrainInterface import ILeakyIntegratorAlpha
 import warnings
 import pyNN.nest as sim
 
 __author__ = 'DimitriProbst'
 
 
-class PyNNIFCurrAlpha(IIFCurrAlpha):
+class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
     """
     Represents the membrane potential of a current-based LIF neuron
     with alpha-shaped post synaptic currents
@@ -28,8 +28,8 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         :param tau_m: Membrane time constant, default: 20.0 ms
         :param tau_syn_E: Excitatory synaptic time constant, default: 0.5 ms
         :param tau_syn_I: Inhibitory synaptic time constant, default: 0.5 ms
-        :param v_rest: Resting potential, default: -65.0 mV
-        :param v_reset: Reset potential, default: -65.0 mV
+        :param v_rest: Resting potential, default: 0.0 mV
+        :param v_reset: Reset potential, default: 0.0 mV
         :param tau_refrac: Refractory time constant, default: 0.1 ms
         :param i_offset: Offset current, default: 0.0 nA
         :param connector: a PyNN Connector object, or, if neurons is
@@ -46,8 +46,7 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
             synaptic plasticity mechanisms to use
         """
         self.__cell = None
-        self.__voltage = params.get('v_rest', -65.0)
-        self.__update = [0.0, params.get('v_rest', -65.0)]
+        self.__update = [0.0, params.get('v_rest', 0.0)]
 
         self.create_device(**params)
         self.start_record_voltage()
@@ -69,8 +68,8 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
         :param tau_m: Membrane time constant, default: 20.0 ms
         :param tau_syn_E: Excitatory synaptic time constant, default: 0.5 ms
         :param tau_syn_I: Inhibitory synaptic time constant, default: 0.5 ms
-        :param v_rest: Resting potential, default: -65.0 mV
-        :param v_reset: Reset potential, default: -65.0 mV
+        :param v_rest: Resting potential, default: 0.0 mV
+        :param v_reset: Reset potential, default: 0.0 mV
         :param tau_refrac: Refractory time constant, default: 0.1 ms
         :param i_offset: Offset current, default: 0.0 nA
         '''
@@ -79,11 +78,12 @@ class PyNNIFCurrAlpha(IIFCurrAlpha):
                       'tau_m': params.get('tau_m', 20.0),
                       'tau_syn_E': params.get('tau_syn_E', 0.5),
                       'tau_syn_I': params.get('tau_syn_I', 0.5),
-                      'v_rest': params.get('v_rest', -65.0),
-                      'v_reset': params.get('v_reset', -65.0),
+                      'v_rest': params.get('v_rest', 0.0),
+                      'v_reset': params.get('v_reset', 0.0),
                       'tau_refrac': params.get('tau_refrac', 0.1),
                       'i_offset': params.get('i_offset', 0.0)}
         self.__cell = sim.Population(1, sim.IF_curr_alpha, cellparams)
+        sim.initialize(self.__cell, 'v', self.__cell[0].v_rest)
 
     def start_record_voltage(self):
         '''

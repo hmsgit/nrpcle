@@ -1,16 +1,16 @@
 '''
-Implementation of MockIFCurrAlpha
+Implementation of MockLeakyIntegratorAlpha
 moduleauthor: Michael.Weber@fzi.de
 '''
 
-from python_cle.brainsim.BrainInterface import IIFCurrAlpha
+from python_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha
 from . import MockProjection as mp
 import warnings
 
 __author__ = 'MichaelWeber'
 
 
-class MockIFCurrAlpha(IIFCurrAlpha):
+class MockLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
     """
     Represents the membrane potential of a current-based LIF neuron
     with alpha-shaped post synaptic currents
@@ -25,8 +25,8 @@ class MockIFCurrAlpha(IIFCurrAlpha):
         :param params: Dictionary of neuron configuration parameters
         """
         self.__cell = None
-        self.__voltage = params.get('v_rest', -65.0)
-        self.__update = [0.0, params.get('v_rest', -65.0)]
+        self.__voltage = params.get('v_rest', 0.0)
+        self.__update = [0.0, params.get('v_rest', 0.0)]
 
         self.create_device(**params)
         self.start_record_voltage()

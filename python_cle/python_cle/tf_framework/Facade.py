@@ -7,8 +7,8 @@ transfer functions
 from . import config
 
 from python_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
-    IIFCurrAlpha, IIFCurrExp, IPoissonSpikeGenerator, ISpikeDetector, \
-    IDCSource, IACSource, INCSource, IPopulationRate
+    ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
+    ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate
 
 # pylint: disable=W0611
 
@@ -18,8 +18,8 @@ from . import TransferFunctionManager
 
 __author__ = 'GeorgHinkel'
 
-leaky_integrator_alpha = IIFCurrAlpha
-leaky_integrator_exp = IIFCurrExp
+leaky_integrator_alpha = ILeakyIntegratorAlpha
+leaky_integrator_exp = ILeakyIntegratorExp
 fixed_frequency = IFixedSpikeGenerator
 poisson = IPoissonSpikeGenerator
 detector = ISpikeDetector

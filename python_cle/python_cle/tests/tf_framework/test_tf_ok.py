@@ -81,10 +81,8 @@ class Test1(unittest.TestCase):
         assert len(husky_right_arm.sent) == 2
         assert len(husky_left_arm.sent) == 2
 
-        print husky_right_arm.sent
-        print husky_left_arm.sent
-        assert husky_right_arm.sent[0] == -87.425  # 1.345
-        assert husky_right_arm.sent[1] == -87.425  # 1.345 * 0.3
+        assert husky_right_arm.sent[0] == 0.0  # 1.345
+        assert husky_right_arm.sent[1] == 0.0  # 1.345 * 0.3
 
         assert husky_left_arm.sent[0] == 1.123  # 0.256
         assert husky_left_arm.sent[1] == 1.123  # 0.755

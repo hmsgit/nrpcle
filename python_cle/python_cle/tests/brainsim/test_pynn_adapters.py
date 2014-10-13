@@ -4,9 +4,10 @@ PyNN devices
 moduleauthor: probst@fzi.de
 """
 
-from python_cle.brainsim.BrainInterface import IIFCurrAlpha, ISpikeDetector, \
-    IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, IIFCurrExp, \
-    IPopulationRate, IFixedSpikeGenerator
+from python_cle.brainsim.BrainInterface import ISpikeDetector, \
+    IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, \
+    IPopulationRate, IFixedSpikeGenerator, ILeakyIntegratorAlpha, \
+    ILeakyIntegratorExp
 from python_cle.brainsim.PyNNCommunicationAdapter import \
     PyNNCommunicationAdapter
 from python_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
@@ -190,7 +191,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         # self.assertIsInstance(device_0, PyNNSpikeDetector)
 
         device_1 = self.communicator.register_spike_sink(
-            self.neurons_cond, IIFCurrAlpha)
+            self.neurons_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_1, self.communicator.detector_devices[1])
         # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
 
@@ -199,27 +200,27 @@ class PyNNAdaptersTest(unittest.TestCase):
               self.communicator.detector_devices[1].voltage)
 
         device_2 = self.communicator.register_spike_sink(
-            self.neurons_curr, IIFCurrAlpha)
+            self.neurons_curr, ILeakyIntegratorAlpha)
         self.assertEqual(device_2, self.communicator.detector_devices[2])
         # self.assertIsInstance(device_2, PyNNIFCurrAlpha)
 
         device_3 = self.communicator.register_spike_sink(
-            self.two_neurons_pop_cond, IIFCurrAlpha)
+            self.two_neurons_pop_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_3, self.communicator.detector_devices[3])
         # self.assertIsInstance(device_3, PyNNIFCurrAlpha)
 
         device_4 = self.communicator.register_spike_sink(
-            self.two_neurons_pop_curr, IIFCurrAlpha)
+            self.two_neurons_pop_curr, ILeakyIntegratorAlpha)
         self.assertEqual(device_4, self.communicator.detector_devices[4])
         # self.assertIsInstance(device_4, PyNNIFCurrAlpha)
 
         device_5 = self.communicator.register_spike_sink(
-            self.neurons_curr, IIFCurrAlpha, target='inhibitory')
+            self.neurons_curr, ILeakyIntegratorAlpha, target='inhibitory')
         self.assertEqual(device_5, self.communicator.detector_devices[5])
         # self.assertIsInstance(device_5, PyNNIFCurrAlpha)
 
         device_6 = self.communicator.register_spike_sink(
-            self.neurons_cond, IIFCurrExp)
+            self.neurons_cond, ILeakyIntegratorExp)
         self.assertEqual(device_6, self.communicator.detector_devices[6])
         # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
 
@@ -228,22 +229,22 @@ class PyNNAdaptersTest(unittest.TestCase):
               self.communicator.detector_devices[6].voltage)
 
         device_7 = self.communicator.register_spike_sink(
-            self.neurons_curr, IIFCurrExp)
+            self.neurons_curr, ILeakyIntegratorExp)
         self.assertEqual(device_7, self.communicator.detector_devices[7])
         # self.assertIsInstance(device_7, PyNNIFCurrExp)
 
         device_8 = self.communicator.register_spike_sink(
-            self.two_neurons_pop_cond, IIFCurrExp)
+            self.two_neurons_pop_cond, ILeakyIntegratorExp)
         self.assertEqual(device_8, self.communicator.detector_devices[8])
         # self.assertIsInstance(device_8, PyNNIFCurrExp)
 
         device_9 = self.communicator.register_spike_sink(
-            self.two_neurons_pop_curr, IIFCurrExp)
+            self.two_neurons_pop_curr, ILeakyIntegratorExp)
         self.assertEqual(device_9, self.communicator.detector_devices[9])
         # self.assertIsInstance(device_9, PyNNIFCurrExp)
 
         device_10 = self.communicator.register_spike_sink(
-            self.neurons_curr, IIFCurrExp, target='inhibitory')
+            self.neurons_curr, ILeakyIntegratorExp, target='inhibitory')
         self.assertEqual(device_10, self.communicator.detector_devices[10])
         # self.assertIsInstance(device_10, PyNNIFCurrExp)
 
@@ -266,12 +267,12 @@ class PyNNAdaptersTest(unittest.TestCase):
         # self.assertIsInstance(device_0, PyNNSpikeDetector)
 
         device_1 = self.communicator.register_spike_sink(
-            self.neurons_cond, IIFCurrAlpha)
+            self.neurons_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_1, self.communicator.detector_devices[1])
         # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
 
         device_2 = self.communicator.register_spike_sink(
-            self.neurons_cond, IIFCurrExp)
+            self.neurons_cond, ILeakyIntegratorExp)
         self.assertEqual(device_2, self.communicator.detector_devices[2])
         # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
 

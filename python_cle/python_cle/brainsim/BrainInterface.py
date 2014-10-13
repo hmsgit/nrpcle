@@ -157,7 +157,7 @@ class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
+class ILeakyIntegratorAlpha(ISpikeDetector):  # pragma: no cover
     """
     Represents the membrane voltage of a current-based LIF neuron
     with alpha-shaped post-synaptic currents. The neurons default threshold
@@ -173,7 +173,7 @@ class IIFCurrAlpha(ISpikeDetector):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IIFCurrExp(ISpikeDetector):  # pragma: no cover
+class ILeakyIntegratorExp(ISpikeDetector):  # pragma: no cover
     """
     Represents the membrane voltage of a current-based LIF neuron
     with decaying-exponential post-synaptic currents. The neurons default

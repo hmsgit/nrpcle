@@ -1,16 +1,15 @@
 '''
-Implementation of PyNNIFCurrExp
-moduleauthor: probst@fzi.de
+Implementation of MockLeakyIntegratorExp
+moduleauthor: scheidecker@fzi.de
 '''
 
-from ..BrainInterface import IIFCurrExp
-import warnings
-import pyNN.nest as sim
+from python_cle.brainsim.BrainInterface import ILeakyIntegratorExp
+from . import MockProjection as mp
 
-__author__ = 'DimitriProbst'
+__author__ = 'PatrikScheidecker'
 
 
-class PyNNIFCurrExp(IIFCurrExp):
+class MockLeakyIntegratorExp(ILeakyIntegratorExp):
     """
     Represents the membrane potential of a current-based LIF neuron
     with decaying-exponential post-synaptic currents
@@ -47,10 +46,10 @@ class PyNNIFCurrExp(IIFCurrExp):
             synaptic plasticity mechanisms to use
         """
         self.__cell = None
-        self.__voltage = params.get('v_rest', -65.0)
-        self.__update = [0.0, params.get('v_rest', -65.0)]
+        self.__update = [0.0, params.get('v_rest', 0.0)]
 
         self.create_device(**params)
+        self.__voltage = 0.0
         self.start_record_voltage()
 
     @property
@@ -58,7 +57,7 @@ class PyNNIFCurrExp(IIFCurrExp):
         '''
         Returns the membrane voltage of the cell
         '''
-        return self.__cell.get_v()[-1, -1]
+        return self.__voltage
 
     def create_device(self, **params):
         '''
@@ -75,22 +74,11 @@ class PyNNIFCurrExp(IIFCurrExp):
         :param tau_refrac: Refractory time constant, default: 0.1 ms
         :param i_offset: Offset current, default: 0.0 nA
         '''
-        cellparams = {'v_thresh': params.get('v_thresh', float('inf')),
-                      'cm': params.get('cm', 1.0),
-                      'tau_m': params.get('tau_m', 20.0),
-                      'tau_syn_E': params.get('tau_syn_E', 0.5),
-                      'tau_syn_I': params.get('tau_syn_I', 0.5),
-                      'v_rest': params.get('v_rest', -65.0),
-                      'v_reset': params.get('v_reset', -65.0),
-                      'tau_refrac': params.get('tau_refrac', 0.1),
-                      'i_offset': params.get('i_offset', 0.0)}
-        self.__cell = sim.Population(1, sim.IF_curr_exp, cellparams)
 
     def start_record_voltage(self):
         '''
         Records the voltage of the neuron
         '''
-        self.__cell.record_v()
 
     def connect(self, neurons, **params):
         """
@@ -125,47 +113,30 @@ class PyNNIFCurrExp(IIFCurrExp):
         if type(neurons) == list:
             target = ['excitatory', 'inhibitory']
             if connector is None:
-                warnings.warn("Default weights and delays are used.",
-                              UserWarning)
-                connector = []
-                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
-                connector.append(sim.AllToAllConnector(weights=weights,
-                                                       delays=delays))
-                weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
-                connector.append(sim.AllToAllConnector(weights=weights,
-                                                       delays=delays))
-            proj_exc = sim.Projection(presynaptic_population=neurons[0],
-                                      postsynaptic_population=self.__cell,
-                                      method=connector[0], source=source,
-                                      target=target[0],
-                                      synapse_dynamics=synapse_dynamics,
-                                      label=label, rng=rng)
-            proj_inh = sim.Projection(presynaptic_population=neurons[1],
-                                      postsynaptic_population=self.__cell,
-                                      method=connector[1], source=source,
-                                      target=target[1],
-                                      synapse_dynamics=synapse_dynamics,
-                                      label=label, rng=rng)
+                connector = [[], []]
+
+            proj_exc = mp.MockProjection(presynaptic_population=neurons[0],
+                                         postsynaptic_population=self.__cell,
+                                         method=connector[0], source=source,
+                                         target=target[0],
+                                         synapse_dynamics=synapse_dynamics,
+                                         label=label, rng=rng)
+            proj_inh = mp.MockProjection(presynaptic_population=neurons[1],
+                                         postsynaptic_population=self.__cell,
+                                         method=connector[1], source=source,
+                                         target=target[1],
+                                         synapse_dynamics=synapse_dynamics,
+                                         label=label, rng=rng)
             return [proj_exc, proj_inh]
         else:
             if connector is None:
-                warnings.warn("Default weights and delays are used.",
-                              UserWarning)
-                if target == 'excitatory':
-                    weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-                else:
-                    weights = sim.RandomDistribution('uniform', [-0.01,
-                                                                 -0.0])
-                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
-                connector = sim.AllToAllConnector(weights=weights,
-                                                  delays=delays)
-            proj = sim.Projection(presynaptic_population=neurons,
-                                  postsynaptic_population=self.__cell,
-                                  method=connector, source=source,
-                                  target=target,
-                                  synapse_dynamics=synapse_dynamics,
-                                  label=label, rng=rng)
+                connector = []
+            proj = mp.MockProjection(presynaptic_population=neurons,
+                                     postsynaptic_population=self.__cell,
+                                     method=connector, source=source,
+                                     target=target,
+                                     synapse_dynamics=synapse_dynamics,
+                                     label=label, rng=rng)
             return proj
 
     def refresh(self, time):

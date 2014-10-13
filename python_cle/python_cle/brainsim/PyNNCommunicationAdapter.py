@@ -3,9 +3,10 @@ PyNNCommunicationAdapter.py
 moduleauthor: probst@fzi.de
 '''
 
-from .BrainInterface import IBrainCommunicationAdapter, IIFCurrAlpha, \
-    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, \
-    IIFCurrExp, IPopulationRate, IFixedSpikeGenerator
+from .BrainInterface import IBrainCommunicationAdapter, \
+    ILeakyIntegratorAlpha, ISpikeDetector, IPoissonSpikeGenerator, \
+    IDCSource, IACSource, INCSource, \
+    ILeakyIntegratorExp, IPopulationRate, IFixedSpikeGenerator
 from .devices.PyNNPoissonSpikeGenerator import \
     PyNNPoissonSpikeGenerator
 from .devices.PyNNFixedSpikeGenerator import \
@@ -13,8 +14,8 @@ from .devices.PyNNFixedSpikeGenerator import \
 from .devices.PyNNDCSource import PyNNDCSource
 from .devices.PyNNACSource import PyNNACSource
 from .devices.PyNNNCSource import PyNNNCSource
-from .devices.PyNNIFCurrAlpha import PyNNIFCurrAlpha
-from .devices.PyNNIFCurrExp import PyNNIFCurrExp
+from .devices.PyNNLeakyIntegratorAlpha import PyNNLeakyIntegratorAlpha
+from .devices.PyNNLeakyIntegratorExp import PyNNLeakyIntegratorExp
 from .devices.PyNNPopulationRate import PyNNPopulationRate
 from .devices.PyNNSpikeDetector import PyNNSpikeDetector
 
@@ -32,8 +33,8 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                      IDCSource: PyNNDCSource,
                      IACSource: PyNNACSource,
                      INCSource: PyNNNCSource,
-                     IIFCurrAlpha: PyNNIFCurrAlpha,
-                     IIFCurrExp: PyNNIFCurrExp,
+                     ILeakyIntegratorAlpha: PyNNLeakyIntegratorAlpha,
+                     ILeakyIntegratorExp: PyNNLeakyIntegratorExp,
                      IPopulationRate: PyNNPopulationRate,
                      ISpikeDetector: PyNNSpikeDetector}
 
