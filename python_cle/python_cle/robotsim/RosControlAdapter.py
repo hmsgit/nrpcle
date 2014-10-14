@@ -4,7 +4,7 @@
 from python_cle.robotsim.RobotInterface import IRobotControlAdapter
 import rospy
 import math
-
+# pylint: disable=E0611
 from gazebo_msgs.srv import GetPhysicsProperties, GetWorldProperties, \
                             SetPhysicsProperties, AdvanceSimulation
 from std_srvs.srv import Empty

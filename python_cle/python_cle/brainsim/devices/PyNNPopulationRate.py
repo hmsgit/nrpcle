@@ -5,6 +5,7 @@ moduleauthor: probst@fzi.de
 
 from ..BrainInterface import IPopulationRate
 import pyNN.nest as sim
+# pylint: disable=E0611
 from scipy.integrate import simps
 import numpy as np
 
