@@ -140,26 +140,13 @@ class ISpikeDetector(object):  # pragma: no cover
 
 class ISpikeRecorder(ISpikeDetector):  # pragma: no cover
     """
-    Represents a communication object that records spikes from a certain neuron
+    Represents a device that captures whether a neuron has spiked since the last iteration
     """
 
     @property
-    def recorded_spikes(self):  # -> list:
+    def spiked(self):  # -> bool
         """
-        Gets a list of spikes that have been recorded in the last time step
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-
-class INeuronVoltmeter(ISpikeDetector):  # pragma: no cover
-    """
-    Represents a spike detector that integrates the spikes to the voltage of a neuron
-    """
-
-    @property
-    def voltage(self):  # -> float:
-        """
-        Gets the current voltage of the voltmeter
+        Gets a value indicating whether the neuron has spiked since the last iteration
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

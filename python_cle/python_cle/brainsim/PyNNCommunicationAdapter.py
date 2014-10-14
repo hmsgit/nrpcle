@@ -7,18 +7,16 @@ from .BrainInterface import IBrainCommunicationAdapter, \
     ILeakyIntegratorAlpha, ISpikeDetector, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, \
     ILeakyIntegratorExp, IPopulationRate, IFixedSpikeGenerator
-from .devices.PyNNPoissonSpikeGenerator import \
-    PyNNPoissonSpikeGenerator
-from .devices.PyNNFixedSpikeGenerator import \
-    PyNNFixedSpikeGenerator
-from .devices.PyNNDCSource import PyNNDCSource
-from .devices.PyNNACSource import PyNNACSource
-from .devices.PyNNNCSource import PyNNNCSource
-from .devices.PyNNLeakyIntegratorAlpha import PyNNLeakyIntegratorAlpha
-from .devices.PyNNLeakyIntegratorExp import PyNNLeakyIntegratorExp
-from .devices.PyNNPopulationRate import PyNNPopulationRate
-from .devices.PyNNSpikeDetector import PyNNSpikeDetector
-from .devices.PyNNDeviceGroup import PyNNDeviceGroup
+from .__devices.PyNNPoissonSpikeGenerator import PyNNPoissonSpikeGenerator
+from .__devices.PyNNFixedSpikeGenerator import PyNNFixedSpikeGenerator
+from .__devices.PyNNDCSource import PyNNDCSource
+from .__devices.PyNNACSource import PyNNACSource
+from .__devices.PyNNNCSource import PyNNNCSource
+from .__devices.PyNNLeakyIntegratorAlpha import PyNNLeakyIntegratorAlpha
+from .__devices.PyNNLeakyIntegratorExp import PyNNLeakyIntegratorExp
+from .__devices.PyNNPopulationRate import PyNNPopulationRate
+from .__devices.PyNNSpikeRecorder import PyNNSpikeRecorder
+from .__devices.PyNNDeviceGroup import PyNNDeviceGroup
 
 __author__ = 'DimitriProbst'
 
@@ -37,7 +35,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                      ILeakyIntegratorAlpha: PyNNLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: PyNNLeakyIntegratorExp,
                      IPopulationRate: PyNNPopulationRate,
-                     ISpikeDetector: PyNNSpikeDetector}
+                     ISpikeDetector: PyNNSpikeRecorder}
 
     def __init__(self):
         """
@@ -120,14 +118,14 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
     @property
     def detector_devices(self):
         """
-        Gets the created detector devices
+        Gets the created detector __devices
         """
         return self.__detector_devices
 
     @property
     def generator_devices(self):
         """
-        Gets the created spike detector devices
+        Gets the created spike detector __devices
         """
         return self.__generator_devices
 

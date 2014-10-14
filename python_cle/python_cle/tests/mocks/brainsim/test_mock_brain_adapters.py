@@ -12,6 +12,15 @@ from python_cle.mocks.brainsim.MockBrainCommunicationAdapter import \
     MockBrainCommunicationAdapter
 from python_cle.mocks.brainsim.MockBrainControlAdapter import MockBrainControlAdapter
 import unittest
+from python_cle.mocks.brainsim.__devices.MockACSource import MockACSource
+from python_cle.mocks.brainsim.__devices.MockDCSource import MockDCSource
+from python_cle.mocks.brainsim.__devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
+from python_cle.mocks.brainsim.__devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
+from python_cle.mocks.brainsim.__devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
+from python_cle.mocks.brainsim.__devices.MockNCSource import MockNCSource
+from python_cle.mocks.brainsim.__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
+from python_cle.mocks.brainsim.__devices.MockPopulationRate import MockPopulationRate
+from python_cle.mocks.brainsim.__devices.MockSpikeRecorder import MockSpikeRecorder
 
 __author__ = 'MichaelWeber'
 
@@ -23,7 +32,7 @@ class MockBrainAdaptersTest(unittest.TestCase):
 
     def setUp(self):
         """
-        Instantiates the PyNN communication and control adapter
+        Instantiates the Mock communication and control adapter
         """
         self.control = MockBrainControlAdapter()
         self.assertEqual(self.control.is_alive(), False)
@@ -51,12 +60,12 @@ class MockBrainAdaptersTest(unittest.TestCase):
 
     def test_register_spike_source(self):
         """
-        Tests the registration of the generator devices
+        Tests the registration of the generator __devices
         """
         device_0 = self.communicator.register_spike_source(
             self.neurons_cond, IPoissonSpikeGenerator)
         self.assertEqual(device_0, self.communicator.generator_devices[0])
-        # self.assertIsInstance(device_0, PyNNPoissonSpikeGenerator)
+        self.assertIsInstance(device_0, MockPoissonSpikeGenerator)
 
         print("Poisson Spike Generator Rate (before): ",
               self.communicator.generator_devices[0].rate)
@@ -67,7 +76,7 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_1 = self.communicator.register_spike_source(
             self.neurons_cond, IDCSource)
         self.assertEqual(device_1, self.communicator.generator_devices[1])
-        # self.assertIsInstance(device_1, PyNNDCSource)
+        self.assertIsInstance(device_1, MockDCSource)
 
         print("DC Amplitude (before): ",
               self.communicator.generator_devices[1].amplitude)
@@ -78,119 +87,81 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_2 = self.communicator.register_spike_source(
             self.neurons_cond, IACSource)
         self.assertEqual(device_2, self.communicator.generator_devices[2])
-        # self.assertIsInstance(device_2, PyNNACSource)
-
-        print("AC Amplitude (before): ",
-              self.communicator.generator_devices[2].amplitude)
-        print("AC Offset (before): ",
-              self.communicator.generator_devices[2].offset)
-        print("AC Frequency (before): ",
-              self.communicator.generator_devices[2].frequency)
-        print("AC Phase (before): ",
-              self.communicator.generator_devices[2].phase)
-        self.communicator.generator_devices[2].amplitude = 2.0
-        self.communicator.generator_devices[2].offset = 2.0
-        self.communicator.generator_devices[2].frequency = 2.0
-        self.communicator.generator_devices[2].phase = 2.0
-        print("AC Amplitude (after): ",
-              self.communicator.generator_devices[2].amplitude)
-        print("AC Offset (after): ",
-              self.communicator.generator_devices[2].offset)
-        print("AC Frequency (after): ",
-              self.communicator.generator_devices[2].frequency)
-        print("AC Phase (after): ",
-              self.communicator.generator_devices[2].phase)
+        self.assertIsInstance(device_2, MockACSource)
 
         device_3 = self.communicator.register_spike_source(
             self.neurons_cond, INCSource)
         self.assertEqual(device_3, self.communicator.generator_devices[3])
-        # self.assertIsInstance(device_3, PyNNNCSource)
-
-        print("NC Mean (before): ",
-              self.communicator.generator_devices[3].mean)
-        print("NC Standard Deviation (before): ",
-              self.communicator.generator_devices[3].stdev)
-        self.communicator.generator_devices[3].mean = 2.0
-        self.communicator.generator_devices[3].stdev = 2.0
-        print("NC Mean (after): ",
-              self.communicator.generator_devices[3].mean)
-        print("NC Standard Deviation (after): ",
-              self.communicator.generator_devices[3].stdev)
+        self.assertIsInstance(device_3, MockNCSource)
 
         device_4 = self.communicator.register_spike_source(
             self.neurons_curr, IPoissonSpikeGenerator)
         self.assertEqual(device_4, self.communicator.generator_devices[4])
-        # self.assertIsInstance(device_4, PyNNPoissonSpikeGenerator)
+        self.assertIsInstance(device_4, MockPoissonSpikeGenerator)
 
         device_5 = self.communicator.register_spike_source(
             self.two_neurons_pop_cond, IPoissonSpikeGenerator)
         self.assertEqual(device_5, self.communicator.generator_devices[5])
-        # self.assertIsInstance(device_5, PyNNPoissonSpikeGenerator)
+        self.assertIsInstance(device_5, MockPoissonSpikeGenerator)
 
         device_6 = self.communicator.register_spike_source(
             self.two_neurons_pop_curr, IPoissonSpikeGenerator)
         self.assertEqual(device_6, self.communicator.generator_devices[6])
-        # self.assertIsInstance(device_6, PyNNPoissonSpikeGenerator)
+        self.assertIsInstance(device_6, MockPoissonSpikeGenerator)
 
         device_7 = self.communicator.register_spike_source(
             self.neurons_cond, IPoissonSpikeGenerator, target="inhibitory")
         self.assertEqual(device_7, self.communicator.generator_devices[7])
-        # self.assertIsInstance(device_7, PyNNPoissonSpikeGenerator)
+        self.assertIsInstance(device_7, MockPoissonSpikeGenerator)
 
         device_8 = self.communicator.register_spike_source(
             self.neurons_curr, IPoissonSpikeGenerator, target="inhibitory")
         self.assertEqual(device_8, self.communicator.generator_devices[8])
-        # self.assertIsInstance(device_8, PyNNPoissonSpikeGenerator)
+        self.assertIsInstance(device_8, MockPoissonSpikeGenerator)
 
         device_9 = self.communicator.register_spike_source(
             self.neurons_cond, IFixedSpikeGenerator)
         self.assertEqual(device_9, self.communicator.generator_devices[9])
-        # self.assertIsInstance(device_9, PyNNFixedSpikeGenerator)
-
-        print("Fixed Frequency Spike Generator Rate (before): ",
-              self.communicator.generator_devices[9].rate)
-        self.communicator.generator_devices[9].rate = 2.0
-        print("Fixed Frequency Spike Generator Rate (after): ",
-              self.communicator.generator_devices[9].rate)
+        self.assertIsInstance(device_9, MockFixedSpikeGenerator)
 
         device_10 = self.communicator.register_spike_source(
             self.neurons_curr, IFixedSpikeGenerator)
         self.assertEqual(device_10, self.communicator.generator_devices[10])
-        # self.assertIsInstance(device_10, PyNNFixedSpikeGenerator)
+        self.assertIsInstance(device_10, MockFixedSpikeGenerator)
 
         device_11 = self.communicator.register_spike_source(
             self.two_neurons_pop_cond, IFixedSpikeGenerator)
         self.assertEqual(device_11, self.communicator.generator_devices[11])
-        # self.assertIsInstance(device_11, PyNNFixedSpikeGenerator)
+        self.assertIsInstance(device_11, MockFixedSpikeGenerator)
 
         device_12 = self.communicator.register_spike_source(
             self.two_neurons_pop_curr, IFixedSpikeGenerator)
         self.assertEqual(device_12, self.communicator.generator_devices[12])
-        # self.assertIsInstance(device_12, PyNNFixedSpikeGenerator)
+        self.assertIsInstance(device_12, MockFixedSpikeGenerator)
 
         device_13 = self.communicator.register_spike_source(
             self.neurons_cond, IFixedSpikeGenerator, target="inhibitory")
         self.assertEqual(device_13, self.communicator.generator_devices[13])
-        # self.assertIsInstance(device_13, PyNNFixedSpikeGenerator)
+        self.assertIsInstance(device_13, MockFixedSpikeGenerator)
 
         device_14 = self.communicator.register_spike_source(
             self.neurons_curr, IFixedSpikeGenerator, target="inhibitory")
         self.assertEqual(device_14, self.communicator.generator_devices[14])
-        # self.assertIsInstance(device_14, PyNNFixedSpikeGenerator)
+        self.assertIsInstance(device_14, MockFixedSpikeGenerator)
 
     def test_register_spike_sink(self):
         """
-        Tests the registration of the detector devices
+        Tests the registration of the detector __devices
         """
         device_0 = self.communicator.register_spike_sink(
             self.neurons_cond, ISpikeDetector)
         self.assertEqual(device_0, self.communicator.detector_devices[0])
-        # self.assertIsInstance(device_0, PyNNSpikeDetector)
+        self.assertIsInstance(device_0, MockSpikeRecorder)
 
         device_1 = self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_1, self.communicator.detector_devices[1])
-        # self.assertIsInstance(device_1, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_1, MockLeakyIntegratorAlpha)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device LeakyIntegratorAlpha): ",
@@ -199,27 +170,27 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_2 = self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorAlpha)
         self.assertEqual(device_2, self.communicator.detector_devices[2])
-        # self.assertIsInstance(device_2, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_2, MockLeakyIntegratorAlpha)
 
         device_3 = self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_3, self.communicator.detector_devices[3])
-        # self.assertIsInstance(device_3, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_3, MockLeakyIntegratorAlpha)
 
         device_4 = self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorAlpha)
         self.assertEqual(device_4, self.communicator.detector_devices[4])
-        # self.assertIsInstance(device_4, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_4, MockLeakyIntegratorAlpha)
 
         device_5 = self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorAlpha, target='inhibitory')
         self.assertEqual(device_5, self.communicator.detector_devices[5])
-        # self.assertIsInstance(device_5, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_5, MockLeakyIntegratorAlpha)
 
         device_6 = self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorExp)
         self.assertEqual(device_6, self.communicator.detector_devices[6])
-        # self.assertIsInstance(device_6, PyNNLeakyIntegratorExp)
+        self.assertIsInstance(device_6, MockLeakyIntegratorExp)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device LeakyIntegratorExp): ",
@@ -228,27 +199,27 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_7 = self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp)
         self.assertEqual(device_7, self.communicator.detector_devices[7])
-        # self.assertIsInstance(device_7, PyNNLeakyIntegratorExp)
+        self.assertIsInstance(device_7, MockLeakyIntegratorExp)
 
         device_8 = self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorExp)
         self.assertEqual(device_8, self.communicator.detector_devices[8])
-        # self.assertIsInstance(device_8, PyNNLeakyIntegratorExp)
+        self.assertIsInstance(device_8, MockLeakyIntegratorExp)
 
         device_9 = self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorExp)
         self.assertEqual(device_9, self.communicator.detector_devices[9])
-        # self.assertIsInstance(device_9, PyNNLeakyIntegratorExp)
+        self.assertIsInstance(device_9, MockLeakyIntegratorExp)
 
         device_10 = self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp, target='inhibitory')
         self.assertEqual(device_10, self.communicator.detector_devices[10])
-        # self.assertIsInstance(device_10, PyNNLeakyIntegratorExp)
+        self.assertIsInstance(device_10, MockLeakyIntegratorExp)
 
         device_11 = self.communicator.register_spike_sink(
             self.neurons_curr, IPopulationRate)
         self.assertEqual(device_11, self.communicator.detector_devices[11])
-        # self.assertIsInstance(device_10, PyNNIFCurrExp)
+        self.assertIsInstance(device_11, MockPopulationRate)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device PopulationRate): ",
@@ -266,17 +237,17 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_1 = self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_1, self.communicator.detector_devices[1])
-        # self.assertIsInstance(device_1, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_1, MockLeakyIntegratorAlpha)
 
         device_2 = self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorExp)
         self.assertEqual(device_2, self.communicator.detector_devices[2])
-        # self.assertIsInstance(device_2, PyNNLeakyIntegratorAlpha)
+        self.assertIsInstance(device_2, MockLeakyIntegratorExp)
 
         device_3 = self.communicator.register_spike_sink(
             self.neurons_cond, IPopulationRate)
         self.assertEqual(device_3, self.communicator.detector_devices[3])
-        # self.assertIsInstance(device_1, PyNNIFCurrAlpha)
+        self.assertIsInstance(device_3, MockPopulationRate)
 
         time = 0.2
         self.control.run_step(0.1)

@@ -20,19 +20,20 @@ class Test1(unittest.TestCase):
         # The annotation Neuron2Robot registers this function as a transfer function
         # As the parameter neuron0 is not explicitly mapped, the framework will assume a mapping
         # to the neuron with the GID 0 and associate with a leaky_integrator_alpha for this neuron
-        @nrp.MapNeuronParameter("neuron0", [[10, 13], [10, 14]], nrp.leaky_integrator_alpha, updates=[(1.0, 0.3)])
+        @nrp.MapNeuronParameter("neuron0", [[10, 13], [10, 14]], nrp.leaky_integrator_alpha,
+                                v_rest=1.0, updates=[(1.0, 0.3)])
         @nrp.Neuron2Robot(Husky.RightArm.pose)
         def right_arm(t, neuron0):
             return neuron0.voltage * 1.345
 
         # Here is a another transfer function from neurons to robot messages
         # This time, the neuron parameter is explicitly mapped to an array of neurons
-        # More precisely, the parameter is mapped to a group of devices that are each connected to a single neuron
+        # More precisely, the parameter is mapped to a group of __devices that are each connected to a single neuron
         # The neuron2 parameter will thus be a list of recorders
         @nrp.MapNeuronParameter("neuron1", [[42, 23, 41], [0, 8, 15]], nrp.leaky_integrator_alpha,
-                                updates=[(1.0, 0.4)])
+                                updates=[(1.0, 0.4)], v_rest=1.0)
         @nrp.MapNeuronParameter("neuron2", [[42, 23], [0, 8, 15]], nrp.leaky_integrator_alpha,
-                                updates=[(1.0, 0.4)])
+                                updates=[(1.0, 0.4)], v_rest=1.0)
         @nrp.Neuron2Robot(Husky.LeftArm.twist)
         def left_arm_tw(t, neuron1, neuron2):
             if neuron1.voltage < 0.678:
@@ -42,7 +43,7 @@ class Test1(unittest.TestCase):
                     return 1.123
             else:
                 if neuron2.voltage < 0.789:
-                    return 0.755
+                    return 0.632
                 else:
                     return 0.256
 
@@ -86,11 +87,11 @@ class Test1(unittest.TestCase):
         assert len(husky_right_arm.sent) == 2
         assert len(husky_left_arm.sent) == 2
 
-        assert husky_right_arm.sent[0] == 0.0  # 1.345
-        assert husky_right_arm.sent[1] == 0.0  # 1.345 * 0.3
+        assert husky_right_arm.sent[0] == 1.345
+        assert husky_right_arm.sent[1] == 1.345 * 0.3
 
-        assert husky_left_arm.sent[0] == 1.123  # 0.256
-        assert husky_left_arm.sent[1] == 1.123  # 0.755
+        assert husky_left_arm.sent[0] == 0.256
+        assert husky_left_arm.sent[1] == 0.756
 
         assert camera_device.inner.amplitude == 42.0
 

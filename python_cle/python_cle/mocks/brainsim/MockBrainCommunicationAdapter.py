@@ -8,15 +8,15 @@ from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, \
     ILeakyIntegratorAlpha, ISpikeDetector, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, ICustomDevice, \
     IFixedSpikeGenerator, ILeakyIntegratorExp, IPopulationRate
-from .devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
-from .devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
-from .devices.MockDCSource import MockDCSource
-from .devices.MockACSource import MockACSource
-from .devices.MockNCSource import MockNCSource
-from .devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
-from .devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
-from .devices.MockPopulationRate import MockPopulationRate
-from .devices.MockSpikeDetector import MockSpikeDetector
+from .__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
+from .__devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
+from .__devices.MockDCSource import MockDCSource
+from .__devices.MockACSource import MockACSource
+from .__devices.MockNCSource import MockNCSource
+from .__devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
+from .__devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
+from .__devices.MockPopulationRate import MockPopulationRate
+from .__devices.MockSpikeRecorder import MockSpikeRecorder
 
 __author__ = 'MichaelWeber'
 
@@ -37,7 +37,7 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
                      ILeakyIntegratorAlpha: MockLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: MockLeakyIntegratorExp,
                      IPopulationRate: MockPopulationRate,
-                     ISpikeDetector: MockSpikeDetector}
+                     ISpikeDetector: MockSpikeRecorder}
 
     def __init__(self):
         """
@@ -71,7 +71,6 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
 
         device = MockBrainCommunicationAdapter.__device_dict[
             spike_generator_type](**params)
-        device.connect(neurons, **params)
         self.__generator_devices.append(device)
         return device
 
@@ -92,7 +91,6 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
 
         device = MockBrainCommunicationAdapter.__device_dict[
             spike_detector_type](**params)
-        device.connect(neurons, **params)
         self.__detector_devices.append(device)
         return device
 
@@ -109,14 +107,14 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
     @property
     def detector_devices(self):
         """
-        Gets the detector devices created by this mock
+        Gets the detector __devices created by this mock
         """
         return self.__detector_devices
 
     @property
     def generator_devices(self):
         """
-        Gets the spike detector devices created by this mock
+        Gets the spike detector __devices created by this mock
         """
         return self.__generator_devices
 

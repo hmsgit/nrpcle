@@ -25,7 +25,7 @@ def right_arm(t, neuron0):
 
 # Here is a another transfer function from neurons to robot messages
 # This time, the neuron parameter is explicitly mapped to an array of neurons
-# More precisely, the parameter is mapped to a group of devices that are each connected to a single neuron
+# More precisely, the parameter is mapped to a group of __devices that are each connected to a single neuron
 # The neuron2 parameter will thus be a list of recorders
 @nrp.MapNeuronParameter("neuron2", [[42], [23], [0], [8], [15]], nrp.leaky_integrator_alpha,
                         updates=[(1.0, 0.4)])

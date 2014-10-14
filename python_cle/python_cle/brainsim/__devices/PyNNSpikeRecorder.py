@@ -1,22 +1,21 @@
 '''
-Implementation of MockSpikeDetector
-moduleauthor: Michael.Weber@fzi.de
+Implementation of PyNNSpikeDetector
+moduleauthor: probst@fzi.de
 '''
 
-from python_cle.brainsim.BrainInterface import ISpikeDetector
+from ..BrainInterface import ISpikeRecorder
 import numpy as np
 
-__author__ = 'MichaelWeber'
+__author__ = 'DimitriProbst'
 
 
-class MockSpikeDetector(ISpikeDetector):
+class PyNNSpikeRecorder(ISpikeRecorder):
     """
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"
-    MOCK - returns random "0" or "1"
     """
 
-    #pylint: disable=W0221
+    # pylint: disable=W0221
     def __init__(self):
         """
         Represents a device which returns a "1" whenever one of the recorded
@@ -28,13 +27,15 @@ class MockSpikeDetector(ISpikeDetector):
         self.__update = [0.0, None]
 
     @property
-    def spikes(self):
+    def spiked(self):
         '''
-        Returns mocked random spikes
+        Returns the recorded spikes
         "1": neuron spiked within the last time step
         "0": neuron was silent within the last time step
         '''
-        self.__spike_count = np.around(np.random.rand(self.__spike_count.size)).astype(int)
+        self.__previous_spike_count = self.__spike_count
+        self.__spike_count = np.array(
+            self.__neurons.get_spike_counts().values())
         return self.__spike_count > self.__previous_spike_count
 
     def start_record_spikes(self):
@@ -42,6 +43,7 @@ class MockSpikeDetector(ISpikeDetector):
         Records the spikes of "neurons"
         :param neurons: Population, PopulationView or Assembly
         '''
+        self.__neurons.record()
 
     def connect(self, neurons):
         """
@@ -61,6 +63,5 @@ class MockSpikeDetector(ISpikeDetector):
         '''
         if self.__update[0] is not time:
             self.__update[0] = time
-            self.__update[1] = None
-            self.__update[1] = self.spikes
+            self.__update[1] = self.spiked
         return self.__update[1]

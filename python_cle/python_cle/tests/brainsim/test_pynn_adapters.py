@@ -58,7 +58,7 @@ class PyNNAdaptersTest(unittest.TestCase):
 
     def test_register_spike_source(self):
         """
-        Tests the registration of the generator devices
+        Tests the registration of the generator __devices
         """
         self.communicator.register_spike_source(
             self.neurons_cond, IPoissonSpikeGenerator)
@@ -207,7 +207,7 @@ class PyNNAdaptersTest(unittest.TestCase):
 
     def test_register_spike_sink(self):
         """
-        Tests the registration of the detector devices
+        Tests the registration of the detector __devices
         """
         self.communicator.register_spike_sink(
             self.neurons_cond, ISpikeDetector)
