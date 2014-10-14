@@ -167,7 +167,7 @@ class Neuron2Robot(object):
                     gid = int(param_name[6:])
                 elif param_name.startswith("n"):
                     gid = int(param_name[1:])
-                self.__neuron_params[i] = MapNeuronParameter(None, [gid], IIFCurrAlpha)
+                self.__neuron_params[i] = MapNeuronParameter(None, [gid], ILeakyIntegratorAlpha)
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} {2} using {3}" \

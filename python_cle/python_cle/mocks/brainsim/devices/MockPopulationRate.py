@@ -55,7 +55,6 @@ class MockPopulationRate(IPopulationRate):
         :param tau_fall: Falling time constant, default: 20.0 ms
         '''
 
-
     def calculate_weight(self):
         '''
         Calculates the weight of a neuron from the population to the device

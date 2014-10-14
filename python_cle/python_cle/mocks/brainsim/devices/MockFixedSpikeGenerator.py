@@ -36,7 +36,7 @@ class MockFixedSpikeGenerator(IFixedSpikeGenerator):
         """
         self.__generator = None
         self.__currentsource = None
-        self.__rate = 0.0
+        self.__rate = params.get('rate', 0.0)
         self.create_device()
 
     @property
@@ -58,7 +58,7 @@ class MockFixedSpikeGenerator(IFixedSpikeGenerator):
         '''
         Create a fixed spike-distance device
         '''
-        
+
     def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the

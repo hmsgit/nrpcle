@@ -68,7 +68,7 @@ class PyNNPopulationRate(IPopulationRate):
         such that the area below the resulting PSP is 1. The exact shape of a
         PSP can be found e.g. in Bytschok, I., Diploma thesis.
         '''
-        tau_c = (1. / self.__cell[0].tau_syn_E - 1. / self.__cell[0].tau_m)**-1
+        tau_c = (1. / self.__cell[0].tau_syn_E - 1. / self.__cell[0].tau_m) ** -1
         t_end = -np.log(1e-10) * self.__cell[0].tau_m
         x_new = np.arange(0., t_end, 0.1)
         y_new = tau_c / self.__cell[0].cm * (np.exp(
@@ -89,7 +89,7 @@ class PyNNPopulationRate(IPopulationRate):
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
-        connector = sim.AllToAllConnector(weights=self.__weight*1000,
+        connector = sim.AllToAllConnector(weights=self.__weight * 1000,
                                           delays=sim.state.dt)
         sim.Projection(presynaptic_population=neurons,
                        postsynaptic_population=self.__cell,
