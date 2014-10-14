@@ -2,7 +2,7 @@ from python_cle.tf_framework import Facade as nrp
 from python_cle.tf_framework import config
 from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import \
     MonochromeImageSpikeGenerator
-from .husky import Husky
+from python_cle.tests.husky import Husky
 
 from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter
 from python_cle.mocks.brainsim.MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
@@ -65,3 +65,7 @@ if __name__ == "__main__":
     config.active_node.run_robot_to_neuron(0.5)
     config.active_node.run_neuron_to_robot(1.5)
     config.active_node.run_robot_to_neuron(1.5)
+
+    assert isinstance(right_arm, nrp.Neuron2Robot)
+    assert isinstance(left_arm_tw, nrp.Neuron2Robot)
+    assert isinstance(transform_camera. nrp.Robot2Neuron)

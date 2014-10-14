@@ -5,7 +5,7 @@ moduleauthor: Michael.Weber@fzi.de
 
 
 from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IIFCurrAlpha, \
-    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource
+    ISpikeDetector, IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, ICustomDevice
 from .devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
 from .devices.MockDCSource import MockDCSource
 from .devices.MockACSource import MockACSource
@@ -57,6 +57,10 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         :param params: A dictionary of configuration parameters
         :return: A communication object
         """
+        if isinstance(spike_generator_type, ICustomDevice):
+            spike_generator_type.apply(neurons, self, **params)
+            return spike_generator_type
+
         device = MockBrainCommunicationAdapter.__device_dict[
             spike_generator_type](**params)
         device.connect(neurons, **params)
@@ -74,6 +78,10 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         :param params: A dictionary of configuration parameters
         :return: A Communication object
         '''
+        if isinstance(spike_detector_type, ICustomDevice):
+            spike_detector_type.apply(neurons, self, **params)
+            return spike_detector_type
+
         device = MockBrainCommunicationAdapter.__device_dict[
             spike_detector_type](**params)
         device.connect(neurons, **params)
