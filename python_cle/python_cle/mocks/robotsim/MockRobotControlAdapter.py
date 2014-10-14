@@ -3,6 +3,7 @@ This module contains the mock implementation of the robot control adapter
 """
 
 from python_cle.robotsim.RobotInterface import IRobotControlAdapter
+import math
 
 __author__ = 'NinoCauli'
 
@@ -64,7 +65,7 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         :param dt: The CLE time step in seconds
         :return: Updated simulation time, otherwise -1
         """
-        if dt % self.__time_step == 0:
+        if math.fmod(dt, self.__time_step) < 1e-10:
             self.__sim_time = self.__sim_time + dt
             simTime = self.__sim_time
         else:
