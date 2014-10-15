@@ -1,7 +1,6 @@
 from python_cle.tf_framework import Facade as nrp
 from python_cle.tf_framework import config
-#from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import \
-#    MonochromeImageSpikeGenerator
+from python_cle.tests.tf_framework.TestDevice import TestDevice
 from python_cle.tests.tf_framework.husky import Husky
 
 from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
@@ -54,11 +53,11 @@ class Test1(unittest.TestCase):
         # device type internally
         @nrp.MapRobotParameter("camera", Husky.Eye.camera)
         @nrp.MapNeuronParameter("camera_device", range(45, 645),
-                                nrp.poisson)
+                                TestDevice())
         @nrp.Robot2Neuron()
         def transform_camera(t, camera, camera_device):
             if camera.changed:
-                camera_device.update_image(camera.value)
+                camera_device.inner.amplitude = 42.0
 
         brain = MockBrainCommunicationAdapter()
         robot = MockRobotCommunicationAdapter()
@@ -67,11 +66,17 @@ class Test1(unittest.TestCase):
         nrp.set_robot_adapter(robot)
         nrp.initialize("MyTransferFunctions")
 
-        husky_right_arm = robot.register_publish_topic(Husky.RightArm.pose)
-        husky_left_arm = robot.register_publish_topic(Husky.LeftArm.twist)
+        husky_right_arm = right_arm.topic
+        husky_left_arm = left_arm_tw.topic
+
+        camera = transform_camera.camera
+        camera_device = transform_camera.camera_device
 
         config.active_node.run_neuron_to_robot(0.5)
         config.active_node.run_robot_to_neuron(0.5)
+
+        camera.value = "Definitely not an image"
+
         config.active_node.run_neuron_to_robot(1.5)
         config.active_node.run_robot_to_neuron(1.5)
 
@@ -86,6 +91,8 @@ class Test1(unittest.TestCase):
 
         assert husky_left_arm.sent[0] == 1.123  # 0.256
         assert husky_left_arm.sent[1] == 1.123  # 0.755
+
+        assert camera_device.inner.amplitude == 42.0
 
 if __name__ == "__main__":
     unittest.main()

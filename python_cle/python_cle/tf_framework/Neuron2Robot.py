@@ -90,6 +90,13 @@ class MapNeuronParameter(object):
         """
         return self.__config
 
+    @property
+    def name(self):
+        """
+        Gets the name of the mapped parameter
+        """
+        return self.__key
+
 
 class Neuron2Robot(object):
     """
@@ -117,15 +124,15 @@ class Neuron2Robot(object):
         return self.__neuron_params
 
     @property
-    def main_robot_topic(self):  # -> Topic:
+    def topic(self):  # -> Topic:
         """
         The main robot topic is the topic that the return value of the transfer function is
         connected to
         """
         return self.__main_robot_topic
 
-    @main_robot_topic.setter
-    def main_robot_topic(self, robot_topic):  # -> None:
+    @topic.setter
+    def topic(self, robot_topic):  # -> None:
         """
         Sets the main robot topic
         :param robot_topic: The new main robot topic
@@ -133,7 +140,7 @@ class Neuron2Robot(object):
         self.__main_robot_topic = robot_topic
 
     @property
-    def robot_topics(self):  # -> list:
+    def topics(self):  # -> list:
         """
         The robot topics are the robot topics that may be accessed by the current transfer function
         """
@@ -167,7 +174,8 @@ class Neuron2Robot(object):
                     gid = int(param_name[6:])
                 elif param_name.startswith("n"):
                     gid = int(param_name[1:])
-                self.__neuron_params[i] = MapNeuronParameter(None, [gid], ILeakyIntegratorAlpha)
+                self.__neuron_params[i] = MapNeuronParameter(self.__neuron_params[i], [gid],
+                                                             ILeakyIntegratorAlpha)
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} {2} using {3}" \

@@ -81,17 +81,18 @@ class TransferFunctionManager(ITransferFunctionManager):
             assert isinstance(_n2r, Neuron2Robot)
             _n2r.replace_params()
 
-            _n2r.main_robot_topic = self.__robotAdapter.register_publish_topic(
-                _n2r.main_robot_topic)
-            for i in range(0, len(_n2r.robot_topics)):
-                _n2r.robot_topics[i] = self.__robotAdapter.register_publish_topic(
-                    _n2r.robot_topics[i])
+            _n2r.topic = self.__robotAdapter.register_publish_topic(
+                _n2r.topic)
+            for i in range(0, len(_n2r.topics)):
+                _n2r.topics[i] = self.__robotAdapter.register_publish_topic(
+                    _n2r.topics[i])
 
             for i in range(1, len(_n2r.neuron_params)):
                 param = _n2r.neuron_params[i]
                 assert isinstance(param, MapNeuronParameter)
                 _n2r.neuron_params[i] = self.__nestAdapter \
                     .register_spike_sink(param.neurons, param.device_type, **param.config)
+                _n2r.__dict__[param.name] = _n2r.neuron_params[i]
 
         # Wire transfer functions from world simulation to neuronal simulation
         for _r2n in self.__r2n:
@@ -107,6 +108,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                     assert isinstance(param, MapNeuronParameter)
                     _r2n.params[i] = self.__nestAdapter \
                         .register_spike_source(param.neurons, param.device_type, **param.config)
+                _r2n.__dict__[param.name] = _r2n.params[i]
         # Initialize dependencies
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)

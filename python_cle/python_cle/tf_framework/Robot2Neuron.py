@@ -54,6 +54,13 @@ class MapRobotParameter(object):
         """
         return self.__config
 
+    @property
+    def name(self):
+        """
+        Gets the name of the mapped parameter
+        """
+        return self.__key
+
 
 class Robot2Neuron(object):
     """

@@ -209,9 +209,10 @@ class ICustomDevice(object):  # pragma: no cover
     directly
     """
 
-    def apply(self, neurons, brain_adapter):
+    def apply(self, neurons, brain_adapter, **config):
         """
         Apply the device type to the neurons with the given set of GIDs and the given adapter
+        :param config: Additional device configuration
         :param neurons: A list of neuron GIDs for which to create the custom device
         :param brain_adapter: The brain communication adapter
         """
