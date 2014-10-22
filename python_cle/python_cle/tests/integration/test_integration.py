@@ -13,7 +13,7 @@ from python_cle.cle.ClosedLoopEngine import ClosedLoopEngine
 from python_cle.tests.integration import MS2TransferFunctions
 
 import os
-from subprocess import call
+import platform
 
 __author__ = 'GeorgHinkel'
 
@@ -32,7 +32,7 @@ class IntegrationTestMilestone2(unittest.TestCase):
         env = os.environ
         ros_master_uri = env[ROS_MASTER_URI] if ROS_MASTER_URI in env else None
         if ros_master_uri is None:
-            env[ROS_MASTER_URI] = "http://" + env["COMPUTERNAME"] + ":11311/"
+            env[ROS_MASTER_URI] = "http://" + platform.node() + ":11311/"
         # 2. Load robot model & environment model
         # TODO: Load robot model and environment model
         # 3. Stack adapters together

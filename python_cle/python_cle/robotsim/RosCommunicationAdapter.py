@@ -72,8 +72,8 @@ class RosPublishedTopic(IRobotPublishedTopic):
         """
         self.__lastSent = None
         assert isinstance(topic, Topic)
-        # print("ros publisher created: topic.name = ", topic.name,
-        # " topic.type ", topic.type)
+        print("ros publisher created: topic.name = ", topic.name,
+              " topic.type ", topic.topic_type)
         self.__pub = rospy.Publisher(topic.name, topic.topic_type,
                                      queue_size=10)
 
@@ -109,7 +109,6 @@ class RosPublishedPreprocessedTopic(RosPublishedTopic):
         """
         to_send = self.__pre_processor(value)
         super(RosPublishedPreprocessedTopic, self).send_message(to_send)
-
 
 
 class RosSubscribedTopic(IRobotSubscribedTopic):
@@ -157,6 +156,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         Gets the last value received by this ROS subscribed topic
         """
         return self.__value
+
 
 class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
     """

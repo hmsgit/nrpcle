@@ -10,6 +10,7 @@ class PropertyPath(object):
     Represents the path to a specified sub object
     """
 
+    # pylint: disable=R0201,R0921,R0924
     def __getattr__(self, item):
         """
         Gets the attribute with the specified name
@@ -43,6 +44,7 @@ class AttributePathSegment(PropertyPath):
     Represents an attribute segment in a property path
     """
 
+    # pylint: disable=R0201,R0921, R0924
     def __init__(self, name, parent):
         """
         Creates a new path segment with the given attribute name based on the given parent path
@@ -83,6 +85,7 @@ class IndexPathSegment(PropertyPath):
     Represents an index path segment
     """
 
+    # pylint: disable=R0201,R0921, R0924
     def __init__(self, index, parent):
         """
         Creates a new index path segment for the given index and parent path

@@ -30,6 +30,7 @@ population_rate = IPopulationRate
 
 brain = _PropertyPath.PropertyPath()
 
+
 def initialize(name):  # -> None:
     """
     Initializes and starts the TF node
