@@ -2,7 +2,7 @@
 This module contains the mock implementation of the transfer functions manager
 """
 
-from python_cle.tf_framework.TransferFunctionInterface import ITransferFunctionManager
+from python_cle.tf_framework._TransferFunctionInterface import ITransferFunctionManager
 import time
 
 __author__ = 'GeorgHinkel'

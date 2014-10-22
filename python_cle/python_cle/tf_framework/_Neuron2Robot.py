@@ -10,7 +10,7 @@ from python_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, \
     ICustomDevice
-from .Robot2Neuron import Robot2Neuron
+from ._Robot2Neuron import Robot2Neuron
 from . import config
 
 import inspect
@@ -34,13 +34,7 @@ class MapNeuronParameter(object):
         :param kwargs: Additional configuration
         :param device_type: The type of device that should be created at the referenced neurons
         """
-        if isinstance(value, int):
-            self.__value = [value]
-        else:
-            if isinstance(value, list):
-                self.__value = value
-            else:
-                self.__value = list(value)
+        self.__value = value
         self.__key = key
         if not isinstance(device_type, ICustomDevice):
             if not device_type in MapNeuronParameter.supported_device_types:

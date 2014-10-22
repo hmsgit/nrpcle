@@ -4,7 +4,7 @@ using ROS
 """
 
 from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, \
-    Topic, IRobotSubscribedTopic, IRobotPublishedTopic
+    Topic, PreprocessedTopic, IRobotSubscribedTopic, IRobotPublishedTopic
 import rospy
 # import std_msgs.msg
 
@@ -30,6 +30,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         :param config: Additional configuration for the publisher
         :return: A publisher object
         """
+        if isinstance(topic, PreprocessedTopic):
+            return RosPublishedPreprocessedTopic(topic)
         return RosPublishedTopic(topic)
 
     def create_topic_subscriber(self, topic, config):
@@ -39,6 +41,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         :param config: Additional configuration for the subscriber
         :return: A subscription object
         """
+        if isinstance(topic, PreprocessedTopic):
+            return RosSubscribedPreprocessedTopic(topic)
         return RosSubscribedTopic(topic)
 
     @property
@@ -85,6 +89,29 @@ class RosPublishedTopic(IRobotPublishedTopic):
         # " topic value = ", value)
 
 
+class RosPublishedPreprocessedTopic(RosPublishedTopic):
+    """
+    Represents a robot topic publisher actually using ROS
+    """
+    def __init__(self, topic):
+        """
+        Creates a new robot topic publisher
+        :param topic: The topic where data should be sent to
+        """
+        super(RosPublishedPreprocessedTopic, self).__init__(topic)
+        assert isinstance(topic, PreprocessedTopic)
+        self.__pre_processor = topic.pre_processor
+
+    def send_message(self, value):
+        """
+        Sends a message
+        :param value: The message to be sent
+        """
+        to_send = self.__pre_processor(value)
+        super(RosPublishedPreprocessedTopic, self).send_message(to_send)
+
+
+
 class RosSubscribedTopic(IRobotSubscribedTopic):
     """
     Represents a robot topic subscriber actually using ROS
@@ -99,9 +126,9 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         self.__value = None
         assert isinstance(topic, Topic)
         self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
-                                             self.__callback)
+                                             self._callback)
 
-    def __callback(self, data):
+    def _callback(self, data):
         """
         This method is called whenever new data is available from ROS
         :param data: The incoming data on this topic
@@ -130,3 +157,25 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         Gets the last value received by this ROS subscribed topic
         """
         return self.__value
+
+class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
+    """
+    Represents a robot topic subscriber with a preprocessor
+    """
+
+    def __init__(self, topic):
+        """
+        Creates a new preprocessing topic subscriber
+        :param topic: The topic that is subscribed
+        """
+        super(RosSubscribedPreprocessedTopic, self).__init__(topic)
+        assert isinstance(topic, PreprocessedTopic)
+        self.__pre_processor = topic.pre_processor
+
+    def _callback(self, data):
+        """
+        This method is called whenever new data is available from ROS
+        :param data: The incoming data
+        """
+        pre_processed = self.__pre_processor(data)
+        super(RosSubscribedPreprocessedTopic, self)._callback(pre_processed)

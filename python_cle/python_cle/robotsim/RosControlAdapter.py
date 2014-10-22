@@ -37,17 +37,21 @@ class RosControlAdapter(IRobotControlAdapter):
         self.__advance_simulation = rospy.ServiceProxy(
                        'gazebo/advance_simulation', AdvanceSimulation)
         self.__time_step = 0.0
+        self.__is_initialized = False
 
     def initialize(self):
         """
         Initializes the world simulation control adapter
         """
-        physics = self.__get_physics_properties()
-        paused = physics.pause
-        if (not paused):
-            self.__pause_client()
-        self.__reset()
-        self.__time_step = physics.time_step
+        if not self.__is_initialized:
+            physics = self.__get_physics_properties()
+            paused = physics.pause
+            if (not paused):
+                self.__pause_client()
+            self.__reset()
+            self.__time_step = physics.time_step
+            self.__is_initialized = True
+        return self.__is_initialized
 
     @property
     def time_step(self):

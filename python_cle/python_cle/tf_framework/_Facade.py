@@ -12,9 +12,9 @@ from python_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
 
 # pylint: disable=W0611
 
-from .Neuron2Robot import Neuron2Robot, MapNeuronParameter
-from .Robot2Neuron import Robot2Neuron, MapRobotParameter
-from . import TransferFunctionManager
+from ._Neuron2Robot import Neuron2Robot, MapNeuronParameter
+from ._Robot2Neuron import Robot2Neuron, MapRobotParameter
+from . import _TransferFunctionManager, _PropertyPath
 
 __author__ = 'GeorgHinkel'
 
@@ -28,6 +28,7 @@ ac_source = IACSource
 nc_source = INCSource
 population_rate = IPopulationRate
 
+brain = _PropertyPath.PropertyPath()
 
 def initialize(name):  # -> None:
     """
@@ -66,4 +67,4 @@ def start_new_tf_manager():
     """
     Start a new transfer function manager
     """
-    config.active_node = TransferFunctionManager.TransferFunctionManager()
+    config.active_node = _TransferFunctionManager.TransferFunctionManager()

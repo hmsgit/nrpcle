@@ -1,4 +1,4 @@
-from python_cle.tf_framework import Facade as nrp
+from python_cle.tf_framework import _Facade as nrp
 from python_cle.tf_framework import config
 from python_cle.tf_framework.spike_generators.MonochromeImageSpikeGenerator import \
     MonochromeImageSpikeGenerator

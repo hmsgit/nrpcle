@@ -52,39 +52,59 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         """
         self.__is_initialized = True
 
-    def register_spike_source(self, neurons, spike_generator_type, **params):
+    def register_spike_source(self, populations, spike_generator_type, **params):
         """
         Requests a communication object with the given spike generator type
         for the given set of neurons
-        :param neurons: A reference to the neurons to which the spike generator
+        :param populations: A reference to the populations to which the spike generator
         should be connected
         :param spike_generator_type: A spike generator type (see documentation
         or a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A communication object
         """
-        device = PyNNCommunicationAdapter.__device_dict[
-            spike_generator_type](**params)
-        device.connect(neurons, **params)
-        self.__generator_devices.append(device)
-        return device
+        if not isinstance(populations, list):
+            device = PyNNCommunicationAdapter.__device_dict[
+                spike_generator_type](**params)
+            device.connect(populations, **params)
+            self.__generator_devices.append(device)
+            return device
+        else:
+            device_list = []
+            for pop in populations:
+                device = PyNNCommunicationAdapter.__device_dict[
+                    spike_generator_type](**params)
+                device.connect(pop, **params)
+                device_list.append(device)
+            self.__generator_devices += device_list
+            return device_list
 
-    def register_spike_sink(self, neurons, spike_detector_type, **params):
+    def register_spike_sink(self, populations, spike_detector_type, **params):
         '''
         Requests a communication object with the given spike detector type
         for the given set of neurons
-        :param neurons: A reference to the neurons which should be connected
+        :param populations: A reference to the populations which should be connected
         to the spike detector
         :param spike_detector_type: A spike detector type (see documentation
         for a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A Communication object
         '''
-        device = PyNNCommunicationAdapter.__device_dict[
-            spike_detector_type](**params)
-        device.connect(neurons, **params)
-        self.__detector_devices.append(device)
-        return device
+        if not isinstance(populations, list):
+            device = PyNNCommunicationAdapter.__device_dict[
+                spike_detector_type](**params)
+            device.connect(populations, **params)
+            self.__detector_devices.append(device)
+            return device
+        else:
+            device_list = []
+            for pop in populations:
+                device = PyNNCommunicationAdapter.__device_dict[
+                    spike_detector_type](**params)
+                device.connect(pop, **params)
+                device_list.append(device)
+            self.__detector_devices += device_list
+            return device_list
 
     def refresh_buffers(self, t):
         """

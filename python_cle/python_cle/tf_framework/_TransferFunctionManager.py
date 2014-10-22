@@ -6,9 +6,11 @@ __author__ = 'GeorgHinkel'
 
 from python_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
 from python_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
-from .Neuron2Robot import Neuron2Robot, MapNeuronParameter
-from .Robot2Neuron import Robot2Neuron, MapRobotParameter
-from .TransferFunctionInterface import ITransferFunctionManager
+from ._Neuron2Robot import Neuron2Robot, MapNeuronParameter
+from ._Robot2Neuron import Robot2Neuron, MapRobotParameter
+from ._TransferFunctionInterface import ITransferFunctionManager
+from ._PropertyPath import PropertyPath
+from . import config
 
 
 class TransferFunctionManager(ITransferFunctionManager):
@@ -91,7 +93,8 @@ class TransferFunctionManager(ITransferFunctionManager):
                 param = _n2r.neuron_params[i]
                 assert isinstance(param, MapNeuronParameter)
                 _n2r.neuron_params[i] = self.__nestAdapter \
-                    .register_spike_sink(param.neurons, param.device_type, **param.config)
+                    .register_spike_sink(self.__select_neurons(param.neurons), param.device_type,
+                                         **param.config)
                 _n2r.__dict__[param.name] = _n2r.neuron_params[i]
 
         # Wire transfer functions from world simulation to neuronal simulation
@@ -107,11 +110,26 @@ class TransferFunctionManager(ITransferFunctionManager):
                 else:
                     assert isinstance(param, MapNeuronParameter)
                     _r2n.params[i] = self.__nestAdapter \
-                        .register_spike_source(param.neurons, param.device_type, **param.config)
+                        .register_spike_source(self.__select_neurons(param.neurons),
+                                               param.device_type, **param.config)
                 _r2n.__dict__[param.name] = _r2n.params[i]
+
         # Initialize dependencies
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)
+
+    @staticmethod
+    def __select_neurons(neurons):
+        """
+        Selects the neurons represented by the given property path
+        :param neurons:
+        """
+        if isinstance(neurons, PropertyPath):
+            return neurons.select(config.brain_root)
+        if isinstance(neurons, list):
+            for i in range(0, len(neurons)):
+                neurons[i] = TransferFunctionManager.__select_neurons(neurons[i])
+        return neurons
 
     @property
     def robot_adapter(self):  # -> IRobotCommunicationAdapter:

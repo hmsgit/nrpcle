@@ -38,6 +38,29 @@ class Topic(object):
         return self.__name + " : " + self.__type.__name__
 
 
+class PreprocessedTopic(Topic):
+    """
+    Represents a topic where pre-processing is applied to
+    """
+
+    def __init__(self, name, topic_type, pre_processing):
+        """
+        Creates a new pre-processing topic
+        :param name: The name of the topic
+        :param topic_type: The topic type
+        :param pre_processing: The pre-processing function
+        """
+        super(PreprocessedTopic, self).__init__(name, topic_type)
+        self.__pre_processing = pre_processing
+
+    @property
+    def pre_processor(self):  # -> func
+        """
+        Gets the pre_processor
+        """
+        return self.__pre_processing
+
+
 class IRobotPublishedTopic(object):  # pragma: no cover
     """
     Represents a communication object for a published robot topic

@@ -1,4 +1,4 @@
-from python_cle.tf_framework import Facade as nrp
+from python_cle.tf_framework import _Facade as nrp
 from python_cle.tests.tf_framework.husky import Husky
 
 from python_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
