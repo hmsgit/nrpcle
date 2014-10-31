@@ -6,13 +6,15 @@ __author__ = 'GeorgHinkel'
 
 from python_cle.tests.integration import Husky
 from geometry_msgs.msg import Twist, Vector3
-import sensor_msgs.msg
+# import sensor_msgs.msg
 import python_cle.tf_framework as nrp
 # import itertools
+from cv_bridge import CvBridge
+#import numpy as np
 
 MAX_SPIKE_RATE = 8.  # Hz
-WHEEL_SCALING_FACTOR = .123
-
+WHEEL_SCALING_FACTOR = 500.
+bridge = CvBridge()
 
 @nrp.MapNeuronParameter("left_wheel_neuron", nrp.brain.actors[1],
                         nrp.leaky_integrator_alpha)
@@ -56,28 +58,29 @@ def eye_sensor_transmit(t, eye_sensor, red_left_eye_device, red_right_eye_device
     :param red_right_eye_device: The Poisson generator for the right red eye
     :param green_blue_eye_device: The Poisson generator for the green-blue eye device
     """
-    SCALING_FACTOR = 0.01
-    if eye_sensor.changed:
-        image = eye_sensor.value
-        red_left_rate = 0.
-        red_right_rate = 0.
-        green_blue_rate = 0.
-        assert isinstance(image, sensor_msgs.msg.Image)
-        for i in range(0, image.height):
-            for j in range(0, image.width):
-                # pixel = image.deserialize_numpy()
-                # TODO: Implement how devices are configured based on the image data
-                if j < image.width / 2:
-                    red_left_rate += image.data[3 * i * image.width + 3 * j + 1]
-                    red_left_rate += image.data[3 * i * image.width + 3 * j + 2]
+    red_left_rate = 0.
+    red_right_rate = 0.
+    green_blue_rate = 0.
+    if not isinstance(eye_sensor.value, type(None)):    # Problem: starts as NoneType
+#        print eye_sensor.changed
+        cv_image = bridge.imgmsg_to_cv2(eye_sensor.value, "rgb8")
+        for i in range(0, cv_image.shape[0]):
+            for j in range(0, cv_image.shape[1]):
+#                # TODO: Implement how devices are configured based on the image data
+                if j < cv_image.shape[1] / 2:
+                    red_left_rate += cv_image[i, j, 0]
                 else:
-                    red_right_rate += image.data[3 * i * image.width + 3 * j + 1]
-                    red_right_rate += image.data[3 * i * image.width + 3 * j + 2]
-                green_blue_rate += image.data[3 * i * image.width + 3 * j]
-        red_left_rate *= (8. / 256.) * SCALING_FACTOR
-        red_right_rate *= (8. / 256.) * SCALING_FACTOR
-        green_blue_rate *= (8. / 256.) * SCALING_FACTOR
+                    red_right_rate += cv_image[i, j, 0]
+                green_blue_rate += cv_image[i, j, 1]
+                green_blue_rate += cv_image[i, j, 2]
+    red_left_rate *= 0.002
+    red_right_rate *= 0.002
+    green_blue_rate *= 0.00025
+#    print np.array([red_left_rate, red_right_rate, green_blue_rate])
+#    red_left_rate = (8. / 256.) * SCALING_FACTOR
+#    red_right_rate = 0.  # (8. / 256.) * SCALING_FACTOR
+#    green_blue_rate = 0.  # (8. / 256.) * SCALING_FACTOR
 
-        red_left_eye_device.rate = red_left_rate
-        red_right_eye_device.rate = red_right_rate
-        green_blue_eye_device.rate = green_blue_rate
+    red_left_eye_device.rate = red_left_rate
+    red_right_eye_device.rate = red_right_rate
+    green_blue_eye_device.rate = green_blue_rate

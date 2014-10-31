@@ -13,6 +13,7 @@ def init_brain_simulation():
     """
     Initializes PyNN with the neuronal network that has to be simulated
     """
+
     SENSORPARAMS = {'cm': 0.025,
                     'v_rest': -60.5,
                     'tau_m': 10.0,
@@ -42,11 +43,14 @@ def init_brain_simulation():
     # Go-on-node and 2 actor neurons
     ACTORS = sim.Population(3, sim.IF_cond_exp, cellparams=GO_ON_PARAMS)
 
+    sim.initialize(SENSORS, 'v', SENSORS[0].v_rest)
+    sim.initialize(ACTORS, 'v', ACTORS[0].v_rest)
+
     CIRCUIT = SENSORS + ACTORS  # Assembly of 6 neurons
 
     # Synaptic weights
     WEIGHT_RED_TO_ACTOR = -2.8e-5
-    WEIGHT_RED_TO_GO_ON = -2e-3
+    WEIGHT_RED_TO_GO_ON = -2.15e-3  # -2e-3
     WEIGHT_GREEN_BLUE_TO_ACTOR = [-1.7e-3, 0.4e-3]
     WEIGHT_GO_ON_TO_RIGHT_ACTOR = -1.7e-3
     DELAY = 0.1
