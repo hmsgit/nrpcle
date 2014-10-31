@@ -5,6 +5,13 @@ This module represents the interfaces for the brain communication and control ad
 __author__ = 'GeorgHinkel'
 
 
+class IDeviceGroup(object):
+    """
+    Gathers multiple devices to a group
+    """
+    pass
+
+
 class ISpikeGenerator(object):  # pragma: no cover
     """
     Represents a communication object that may generate spikes
