@@ -18,6 +18,7 @@ from .devices.PyNNLeakyIntegratorAlpha import PyNNLeakyIntegratorAlpha
 from .devices.PyNNLeakyIntegratorExp import PyNNLeakyIntegratorExp
 from .devices.PyNNPopulationRate import PyNNPopulationRate
 from .devices.PyNNSpikeDetector import PyNNSpikeDetector
+from .devices.PyNNDeviceGroup import PyNNDeviceGroup
 
 __author__ = 'DimitriProbst'
 
@@ -61,7 +62,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         :param spike_generator_type: A spike generator type (see documentation
         or a list of allowed values)
         :param params: A dictionary of configuration parameters
-        :return: A communication object
+        :return: A communication object or a group of objects
         """
         if not isinstance(populations, list):
             device = PyNNCommunicationAdapter.__device_dict[
@@ -77,7 +78,8 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                 device.connect(pop, **params)
                 device_list.append(device)
             self.__generator_devices += device_list
-            return device_list
+            device_group = PyNNDeviceGroup(device_list)
+            return device_group
 
     def register_spike_sink(self, populations, spike_detector_type, **params):
         '''
@@ -88,7 +90,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         :param spike_detector_type: A spike detector type (see documentation
         for a list of allowed values)
         :param params: A dictionary of configuration parameters
-        :return: A Communication object
+        :return: A Communication object or a group of objects
         '''
         if not isinstance(populations, list):
             device = PyNNCommunicationAdapter.__device_dict[
@@ -104,7 +106,8 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                 device.connect(pop, **params)
                 device_list.append(device)
             self.__detector_devices += device_list
-            return device_list
+            device_group = PyNNDeviceGroup(device_list)
+            return device_group
 
     def refresh_buffers(self, t):
         """

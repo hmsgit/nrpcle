@@ -138,7 +138,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
                     weights = sim.RandomDistribution('uniform', [0.0, 0.01])
                 else:
                     weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
-            delays = sim.RandomDistribution('uniform', [0.1, 2.0])
+            delays = sim.RandomDistribution('uniform', [0.1, 0.3])
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
         proj = sim.Projection(presynaptic_population=self.__generator,
