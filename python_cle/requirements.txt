@@ -1,6 +1,8 @@
-numpy==1.8.0
+bbp-numpy-1.8.0-system-numeric-mod==1.8.0.0
 scipy==0.13.3
 PyNN==0.7.5
 PyYAML==3.11
 rospkg==1.0.28
 catkin_pkg==0.2.2
+bbp-h5py==2.1.2.0
+progressbar==2.3
