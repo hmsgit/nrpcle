@@ -46,6 +46,8 @@ add_service_files(DIRECTORY srv FILES
   SetPhysicsProperties.srv
   SetJointTrajectory.srv
   AdvanceSimulation.srv
+  GetVisualProperties.srv
+  SetVisualProperties.srv
   )
 
 generate_messages(DEPENDENCIES
