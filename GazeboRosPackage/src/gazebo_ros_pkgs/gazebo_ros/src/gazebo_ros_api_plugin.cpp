@@ -24,6 +24,10 @@
 #include <gazebo/gazebo_config.h>
 #include "gazebo_ros_api_plugin.h"
 
+#include "gazebo/rendering/RenderEngine.hh"
+#include "gazebo/rendering/Scene.hh"
+#include "gazebo/rendering/Visual.hh"
+
 namespace gazebo
 {
 
@@ -192,7 +196,14 @@ void GazeboRosApiPlugin::loadGazeboRosApiPlugin(std::string world_name)
 
 void GazeboRosApiPlugin::onResponse(ConstResponsePtr &response)
 {
+  if (response->type() == gazeboscene_.GetTypeName())
+  {
+    gazeboscene_.Clear();
+    gazeboscene_.ParseFromString(response->serialized_data());
+    scene_update_done_ = true;
 
+    ROS_DEBUG("scene name = %s, model count = %d", gazeboscene_.name().c_str(), gazeboscene_.model_size());
+  }
 }
 
 void GazeboRosApiPlugin::gazeboQueueThread()
@@ -436,6 +447,26 @@ void GazeboRosApiPlugin::advertiseServices()
                                                           boost::bind(&GazeboRosApiPlugin::endWorld,this,_1,_2),
                                                           ros::VoidPtr(), &gazebo_queue_);
   end_world_service_ = nh_->advertiseService(end_world_aso);
+
+  // patched for HBP
+  // Advertise more services on the custom queue
+  std::string get_object_properties_service_name("get_visual_properties");
+  ros::AdvertiseServiceOptions get_object_properties_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_msgs::GetVisualProperties>(
+                                                          get_object_properties_service_name,
+                                                          boost::bind(&GazeboRosApiPlugin::getVisualProperties,this,_1,_2),
+                                                          ros::VoidPtr(), &gazebo_queue_);
+  get_object_properties_service_ = nh_->advertiseService(get_object_properties_aso);
+
+  // patched for HBP
+  // Advertise more services on the custom queue
+  std::string set_object_properties_service_name("set_visual_properties");
+  ros::AdvertiseServiceOptions set_object_properties_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_msgs::SetVisualProperties>(
+                                                          set_object_properties_service_name,
+                                                          boost::bind(&GazeboRosApiPlugin::setVisualProperties,this,_1,_2),
+                                                          ros::VoidPtr(), &gazebo_queue_);
+  set_object_properties_service_ = nh_->advertiseService(set_object_properties_aso);
 
   // Advertise more services on the custom queue
   std::string pause_physics_service_name("pause_physics");
@@ -1446,6 +1477,96 @@ bool GazeboRosApiPlugin::endWorld(std_srvs::Empty::Request &req,std_srvs::Empty:
   return true;
 }
 
+// patched for HBP
+bool GazeboRosApiPlugin::getVisualProperties(gazebo_msgs::GetVisualProperties::Request &req,
+                                             gazebo_msgs::GetVisualProperties::Response &res)
+{
+  // request and wait for scene update
+  if (!requestSceneUpdate())
+  {
+    res.success = false;
+    res.status_message = std::string("getVisualProperties: Scene update requested for getting actual model values, but")
+      + std::string(" timed out waiting for model to appear in simulation under the name ")
+      + req.model_name;
+    return true;
+  }
+
+  // get model pointer from scene
+  ModelIter model;
+  LinkIter link;
+  VisualIter visual;
+  if (getVisualFromScene(model, link, visual, req.model_name, req.link_name, req.visual_name))
+  {
+    res.parent_model_name = visual->parent_name();
+    res.cast_shadows = visual->cast_shadows();
+    res.transparency = visual->transparency();
+    res.laser_retro = visual->laser_retro();
+    //res.pose = visual->pose();
+    //res.geometry_type = visual->geometry().type();
+    res.material_name = visual->material().script().name();
+    res.visible = visual->visible();
+    res.is_static = visual->is_static();
+    res.success = true;
+  }
+  else
+  {
+    res.success = false;
+    res.status_message = std::string("getVisualProperties: Requested visual ") + req.visual_name + std::string(" not found!");
+    return true;
+  }
+
+  return true;
+}
+
+// patched for HBP
+bool GazeboRosApiPlugin::setVisualProperties(gazebo_msgs::SetVisualProperties::Request &req,
+                                             gazebo_msgs::SetVisualProperties::Response &res)
+{
+  // request and wait for scene update
+  if (!requestSceneUpdate())
+  {
+    res.success = false;
+    res.status_message = std::string("getVisualProperties: Scene update requested for getting actual model values, but")
+      + std::string(" timed out waiting for model to appear in simulation under the name ")
+      + req.model_name;
+    return true;
+  }
+
+  // get model pointer from scene
+  ModelIter model;
+  LinkIter link;
+  VisualIter visual;
+  if (getVisualFromScene(model, link, visual, req.model_name, req.link_name, req.visual_name))
+  {
+    // do some corrections and fixes
+    link->clear_collision();
+    link->set_name(req.link_name);
+    //std::string cor_link_name = split(link->name());
+    //link->set_name(cor_link_name[cor_link_name.size()-1]);
+
+    // set the requested properties
+    if (updateVisualProperty(visual, req.property_name, req.property_value))
+    {
+      // Create a publisher on the ~/model/modify topic
+      gazebo::transport::PublisherPtr model_pub = gazebonode_->Advertise<gazebo::msgs::Model>("~/model/modify");
+      model_pub->Publish(*model);
+      res.success = true;
+    }
+    else
+    {
+      res.success = false;
+      res.status_message = std::string("getVisualProperties: Could not set visual property ") + req.property_name;
+    }
+  }
+  else
+  {
+    res.success = false;
+    res.status_message = std::string("getVisualProperties: Requested visual ") + req.visual_name + std::string(" not found!");
+  }
+
+  return true;
+}
+
 bool GazeboRosApiPlugin::pausePhysics(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res)
 {
   world_->SetPaused(true);
@@ -2363,6 +2484,99 @@ bool GazeboRosApiPlugin::spawnAndConform(TiXmlDocument &gazebo_model_xml, std::s
   res.success = true;
   res.status_message = std::string("SpawnModel: Successfully spawned model");
   return true;
+}
+
+// HBP helper function
+bool GazeboRosApiPlugin::requestSceneUpdate()
+{
+  // request updated scene
+  scene_update_done_ = false;
+  gazebo::msgs::Request *scene_info_msg = gazebo::msgs::CreateRequest("scene_info", "");
+  request_pub_->Publish(*scene_info_msg, true);
+
+  // wait unitl updated scene arrived
+  ros::Duration scene_update_timeout(10.0);
+  ros::Time timeout = ros::Time::now() + scene_update_timeout;
+
+  while (ros::ok())
+  {
+    if (ros::Time::now() > timeout)
+    {
+      return false;
+    }
+
+    if (scene_update_done_)
+    {
+      break;
+    }
+
+    ROS_DEBUG_STREAM_ONCE_NAMED("api_plugin","Waiting for " << timeout - ros::Time::now() << " for scene update ");
+
+    usleep(2000);
+  }
+  return true;
+}
+
+// HBP helper function
+bool GazeboRosApiPlugin::getVisualFromScene(ModelIter &model, LinkIter &link, VisualIter &visual,
+                                            const std::string &model_name, const std::string &link_name,
+                                            const std::string &visual_name)
+{
+  model = gazeboscene_.mutable_model()->begin();
+  for (; model != gazeboscene_.mutable_model()->end(); model++)
+  {
+    if (model->name() == model_name)
+    {
+      link = model->mutable_link()->begin();
+      for (; link != model->mutable_link()->end(); link++)
+      {
+        if (link->name() == (model_name + "::" + link_name))
+        {
+          visual = link->mutable_visual()->begin();
+          for (; visual != link->mutable_visual()->end(); visual++)
+          {
+            if (visual->name() == (model_name + "::" + link_name + "::" + visual_name))
+            {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// HBP helper function
+bool GazeboRosApiPlugin::updateVisualProperty(VisualIter &visual, const std::string prop_name,
+                                              const std::string prop_value)
+{
+  std::vector<std::string> prop_vector = split(prop_name, ':');
+  if (prop_vector[0] == "material")
+  {
+    if (prop_vector[1] == "script")
+    {
+      if (prop_vector[2] == "name")
+      {
+        visual->mutable_material()->mutable_script()->set_name(prop_value);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// HBP helper function
+std::vector<std::string> GazeboRosApiPlugin::split(const std::string &input, const char &token)
+{
+  std::vector<std::string> result;
+  std::string s;
+  std::istringstream f(input);
+  while (getline(f, s, token))
+  {
+    result.push_back(s);
+  }
+  return result;
 }
 
 // Register this plugin with the simulator

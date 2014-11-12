@@ -80,6 +80,10 @@
 // patched for HBP
 #include "gazebo_msgs/AdvanceSimulation.h"
 
+// new for HBP
+#include "gazebo_msgs/GetVisualProperties.h"
+#include "gazebo_msgs/SetVisualProperties.h"
+
 // Topics
 #include "gazebo_msgs/ModelState.h"
 #include "gazebo_msgs/LinkState.h"
@@ -106,6 +110,11 @@
 
 namespace gazebo
 {
+
+// HBP
+typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Model>::iterator  ModelIter;
+typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Link>::iterator   LinkIter;
+typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Visual>::iterator VisualIter;
 
 /// \brief A plugin loaded within the gzserver on startup.
 class GazeboRosApiPlugin : public SystemPlugin
@@ -219,6 +228,14 @@ public:
   /// \brief
   bool endWorld(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res);
 
+  // patched for HBP
+  /// \brief
+  bool getVisualProperties(gazebo_msgs::GetVisualProperties::Request &req, gazebo_msgs::GetVisualProperties::Response &res);
+
+  // patched for HBP
+  /// \brief
+  bool setVisualProperties(gazebo_msgs::SetVisualProperties::Request &req, gazebo_msgs::SetVisualProperties::Response &res);
+
   /// \brief
   bool pausePhysics(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res);
 
@@ -314,6 +331,21 @@ private:
   /// \brief convert xml to Pose
   gazebo::math::Vector3 parseVector3(const std::string &str);
 
+  // HBP helper function
+  bool requestSceneUpdate();
+
+  // HBP helper function
+  bool getVisualFromScene(ModelIter &model, LinkIter &link, VisualIter &visual,
+                          const std::string &model_name, const std::string &link_name,
+                          const std::string &visual_name);
+
+  // HBP helper function
+  bool updateVisualProperty(VisualIter &visual, const std::string prop_name,
+                            const std::string prop_value);
+
+  // HBP helper function
+  std::vector<std::string> split(const std::string &input, const char &token);
+
   // track if the desconstructor event needs to occur
   bool plugin_loaded_;
 
@@ -328,6 +360,10 @@ private:
   gazebo::transport::PublisherPtr factory_pub_;
   gazebo::transport::PublisherPtr request_pub_;
   gazebo::transport::SubscriberPtr response_sub_;
+
+  // HBP
+  gazebo::msgs::Scene gazeboscene_;
+  bool scene_update_done_;
 
   boost::shared_ptr<ros::NodeHandle> nh_;
   ros::CallbackQueue gazebo_queue_;
@@ -366,6 +402,8 @@ private:
   ros::ServiceServer reset_sim_time_service_; // patched for HBP
   ros::ServiceServer reset_sim_service_; // patched for HBP
   ros::ServiceServer end_world_service_; // patched for HBP
+  ros::ServiceServer get_object_properties_service_; // patched for HBP
+  ros::ServiceServer set_object_properties_service_; // patched for HBP
   ros::ServiceServer pause_physics_service_;
   ros::ServiceServer unpause_physics_service_;
   ros::ServiceServer clear_joint_forces_service_;
