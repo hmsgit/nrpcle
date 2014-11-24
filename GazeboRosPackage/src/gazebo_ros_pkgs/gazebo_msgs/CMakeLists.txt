@@ -48,6 +48,7 @@ add_service_files(DIRECTORY srv FILES
   AdvanceSimulation.srv
   GetVisualProperties.srv
   SetVisualProperties.srv
+  SetLightProperties.srv
   )
 
 generate_messages(DEPENDENCIES

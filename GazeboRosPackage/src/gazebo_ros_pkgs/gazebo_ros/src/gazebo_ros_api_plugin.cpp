@@ -24,10 +24,6 @@
 #include <gazebo/gazebo_config.h>
 #include "gazebo_ros_api_plugin.h"
 
-#include "gazebo/rendering/RenderEngine.hh"
-#include "gazebo/rendering/Scene.hh"
-#include "gazebo/rendering/Visual.hh"
-
 namespace gazebo
 {
 
@@ -467,6 +463,16 @@ void GazeboRosApiPlugin::advertiseServices()
                                                           boost::bind(&GazeboRosApiPlugin::setVisualProperties,this,_1,_2),
                                                           ros::VoidPtr(), &gazebo_queue_);
   set_object_properties_service_ = nh_->advertiseService(set_object_properties_aso);
+
+  // patched for HBP
+  // Advertise more services on the custom queue
+  std::string set_light_properties_service_name("set_light_properties");
+  ros::AdvertiseServiceOptions set_light_properties_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_msgs::SetLightProperties>(
+                                                          set_light_properties_service_name,
+                                                          boost::bind(&GazeboRosApiPlugin::setLightProperties,this,_1,_2),
+                                                          ros::VoidPtr(), &gazebo_queue_);
+  set_light_properties_service_ = nh_->advertiseService(set_light_properties_aso);
 
   // Advertise more services on the custom queue
   std::string pause_physics_service_name("pause_physics");
@@ -1526,7 +1532,7 @@ bool GazeboRosApiPlugin::setVisualProperties(gazebo_msgs::SetVisualProperties::R
   if (!requestSceneUpdate())
   {
     res.success = false;
-    res.status_message = std::string("getVisualProperties: Scene update requested for getting actual model values, but")
+    res.status_message = std::string("setVisualProperties: Scene update requested for getting actual model values, but")
       + std::string(" timed out waiting for model to appear in simulation under the name ")
       + req.model_name;
     return true;
@@ -1555,14 +1561,56 @@ bool GazeboRosApiPlugin::setVisualProperties(gazebo_msgs::SetVisualProperties::R
     else
     {
       res.success = false;
-      res.status_message = std::string("getVisualProperties: Could not set visual property ") + req.property_name;
+      res.status_message = std::string("setVisualProperties: Could not set visual property ") + req.property_name;
     }
   }
   else
   {
     res.success = false;
-    res.status_message = std::string("getVisualProperties: Requested visual ") + req.visual_name + std::string(" not found!");
+    res.status_message = std::string("setVisualProperties: Requested visual ") + req.visual_name + std::string(" not found!");
   }
+
+  return true;
+}
+
+// patched for HBP
+bool GazeboRosApiPlugin::setLightProperties(gazebo_msgs::SetLightProperties::Request &req, gazebo_msgs::SetLightProperties::Response &res)
+{
+  // request and wait for scene update
+  if (!requestSceneUpdate())
+  {
+    res.success = false;
+    res.status_message = std::string("setLightProperties: Scene update requested for getting actual light values, but")
+      + std::string(" timed out waiting for light to appear in simulation under the name ")
+      + req.light_name;
+    return true;
+  }
+
+  LightIter light = gazeboscene_.mutable_light()->begin();
+  for (; light != gazeboscene_.mutable_light()->end(); light++)
+  {
+    if (light->name() == req.light_name)
+    {
+      light->mutable_diffuse()->set_r(req.diffuse.r);
+      light->mutable_diffuse()->set_g(req.diffuse.g);
+      light->mutable_diffuse()->set_b(req.diffuse.b);
+      light->mutable_diffuse()->set_a(req.diffuse.a);
+
+      light->set_attenuation_constant(req.attenuation_constant);
+      light->set_attenuation_linear(req.attenuation_linear);
+      light->set_attenuation_quadratic(req.attenuation_quadratic);
+
+      // Create a publisher on the ~/light topic
+      gazebo::transport::PublisherPtr light_pub = gazebonode_->Advertise<gazebo::msgs::Light>("~/light");
+      light_pub->Publish(*light);
+
+      res.success = true;
+      return true;
+    }
+  }
+
+  res.success = false;
+  res.status_message = std::string("setLightProperties: Requested light ") + req.light_name + std::string(" not found!");
 
   return true;
 }

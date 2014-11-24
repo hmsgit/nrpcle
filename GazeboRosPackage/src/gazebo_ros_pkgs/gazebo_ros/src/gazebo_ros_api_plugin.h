@@ -83,6 +83,7 @@
 // new for HBP
 #include "gazebo_msgs/GetVisualProperties.h"
 #include "gazebo_msgs/SetVisualProperties.h"
+#include "gazebo_msgs/SetLightProperties.h"
 
 // Topics
 #include "gazebo_msgs/ModelState.h"
@@ -115,6 +116,8 @@ namespace gazebo
 typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Model>::iterator  ModelIter;
 typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Link>::iterator   LinkIter;
 typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Visual>::iterator VisualIter;
+
+typedef google::protobuf::RepeatedPtrField<gazebo::msgs::Light>::iterator  LightIter;
 
 /// \brief A plugin loaded within the gzserver on startup.
 class GazeboRosApiPlugin : public SystemPlugin
@@ -235,6 +238,10 @@ public:
   // patched for HBP
   /// \brief
   bool setVisualProperties(gazebo_msgs::SetVisualProperties::Request &req, gazebo_msgs::SetVisualProperties::Response &res);
+
+  // patched for HBP
+  /// \brief
+  bool setLightProperties(gazebo_msgs::SetLightProperties::Request &req, gazebo_msgs::SetLightProperties::Response &res);
 
   /// \brief
   bool pausePhysics(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res);
@@ -404,6 +411,7 @@ private:
   ros::ServiceServer end_world_service_; // patched for HBP
   ros::ServiceServer get_object_properties_service_; // patched for HBP
   ros::ServiceServer set_object_properties_service_; // patched for HBP
+  ros::ServiceServer set_light_properties_service_;  // patched for HBP
   ros::ServiceServer pause_physics_service_;
   ros::ServiceServer unpause_physics_service_;
   ros::ServiceServer clear_joint_forces_service_;
