@@ -56,7 +56,13 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         '''
         Returns the membrane voltage of the cell
         '''
-        return self.__cell.get_v()[-1, -1]
+        ### HACK ###
+        # The usual PyNN get_v() call
+        # return self.__cell.get_v()[-1, -1]
+        # takes too much time.
+        # In the meantime, until the PyNN call gets fixed, we can use the
+        # function of the NEST back-end.
+        return sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
 
     def create_device(self, **params):
         '''
@@ -75,9 +81,9 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         '''
         cellparams = {'v_thresh': params.get('v_thresh', float('inf')),
                       'cm': params.get('cm', 1.0),
-                      'tau_m': params.get('tau_m', 20.0),
-                      'tau_syn_E': params.get('tau_syn_E', 0.5),
-                      'tau_syn_I': params.get('tau_syn_I', 0.5),
+                      'tau_m': params.get('tau_m', 10.0),
+                      'tau_syn_E': params.get('tau_syn_E', 2.),
+                      'tau_syn_I': params.get('tau_syn_I', 2.),
                       'v_rest': params.get('v_rest', 0.0),
                       'v_reset': params.get('v_reset', 0.0),
                       'tau_refrac': params.get('tau_refrac', 0.1),
@@ -151,10 +157,10 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
             warnings.warn("Default weights and delays are used.",
                           UserWarning)
             if target == 'excitatory':
-                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+                weights = sim.RandomDistribution('uniform', [0.01, 0.01])
             else:
-                weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
-            delays = sim.RandomDistribution('uniform', [0.1, 2.0])
+                weights = sim.RandomDistribution('uniform', [-0.01, -0.01])
+            delays = sim.RandomDistribution('uniform', [.1, .1])
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
         proj = sim.Projection(presynaptic_population=neurons,

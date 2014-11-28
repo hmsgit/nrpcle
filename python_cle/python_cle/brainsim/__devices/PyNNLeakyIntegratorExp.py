@@ -57,7 +57,13 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         '''
         Returns the membrane voltage of the cell
         '''
-        return self.__cell.get_v()[-1, -1]
+        ### HACK ###
+        # The usual PyNN get_v() call
+        # return self.__cell.get_v()[-1, -1]
+        # takes too much time.
+        # In the meantime, until the PyNN call gets fixed, we can use the
+        # function of the NEST back-end.
+        return sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
 
     def create_device(self, **params):
         '''

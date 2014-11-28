@@ -132,13 +132,13 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
             warnings.warn("Default weights and delays are used.",
                           UserWarning)
             if target == 'excitatory':
-                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+                weights = sim.RandomDistribution('uniform', [0.00015, 0.00015])
             else:
                 if neurons.conductance_based:
-                    weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+                    weights = sim.RandomDistribution('uniform', [0.00015, 0.00015])
                 else:
-                    weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
-            delays = sim.RandomDistribution('uniform', [0.1, 0.3])
+                    weights = sim.RandomDistribution('uniform', [-0.00015, -0.00015])
+            delays = sim.RandomDistribution('uniform', [.1, .1])
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
         proj = sim.Projection(presynaptic_population=self.__generator,
