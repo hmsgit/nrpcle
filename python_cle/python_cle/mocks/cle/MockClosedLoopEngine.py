@@ -34,11 +34,21 @@ class MockClosedLoopEngine(IClosedLoopControl,
 
         self.clock = 0.0
 
+        self.initialized = False
+
     def initialize(self):
         """
         Initializes the closed loop engine.
         """
-        pass
+        self.clock = 0.0
+        self.initialized = True
+
+    @property
+    def is_initialized(self):
+        """
+        Returns True if the simulation is initialized, False otherwise.
+        """
+        return self.initialized
 
     def run_step(self, timestep):
         """
@@ -81,6 +91,14 @@ class MockClosedLoopEngine(IClosedLoopControl,
         Stops the orchestrated simulations.
         """
         self.stop_flag.clear()
+
+    def reset(self):
+        """
+        Reset the orchestrated simulations.
+        """
+        self.stop()
+        self.wait_step()
+        self.initialize()
 
     @property
     def time(self):

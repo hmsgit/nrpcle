@@ -97,6 +97,8 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         # global clock
         self.clock = 0.0
 
+        self.initialized = False
+
     def initialize(self):
         """
         Initializes the closed loop engine.
@@ -104,6 +106,15 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         self.rca.initialize()
         self.bca.initialize()
         self.tfm.initialize('tfnode')
+        self.clock = 0.0
+        self.initialized = True
+
+    @property
+    def is_initialized(self):
+        """
+        Returns True if the simulation is initialized, False otherwise.
+        """
+        return self.initialized
 
     def run_step(self, timestep):
         """
@@ -147,6 +158,7 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         Starts the orchestrated simulations.
         This function does not return (starts an infinite loop).
         """
+        self.stop_flag.clear()
         while not self.stop_flag.isSet():
             self.run_step(self.timestep)
 
@@ -157,6 +169,14 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         by a threading.Timer.
         """
         self.stop_flag.set()
+
+    def reset(self):
+        """
+        Reset the orchestrated simulations.
+        """
+        self.stop()
+        self.wait_step()
+        self.initialize()
 
     @property
     def time(self):

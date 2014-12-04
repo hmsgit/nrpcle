@@ -162,10 +162,6 @@ def load_h5_network(path, sensors_ids, actors_ids):
     :param sensor_indices: indices of the sensor neurons (list)
     :param actors_indices: indices of the actor neurons (list)
     """
-    # Setup PyNN simulation
-    sim.setup(timestep=0.1, min_delay=0.1, max_delay=20.0,
-              threads=1, rng_seeds=[1234])
-
     # Load point neuron circuit
     circuit = load_pointneuron_circuit(path)
 

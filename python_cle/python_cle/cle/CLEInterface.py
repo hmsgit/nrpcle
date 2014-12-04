@@ -17,6 +17,13 @@ class IClosedLoopControl(object):  # pragma: no cover
         """
         raise NotImplementedError("Method not implemented")
 
+    @property
+    def is_initialized(self):  # -> bool
+        """
+        Returns True if the simulation is initialized, False otherwise.
+        """
+        raise NotImplementedError("Method not implemented")
+
     def run_step(self, timestep):  # -> float64:
         """
         Runs both simulations for the given time step in seconds.
@@ -40,6 +47,12 @@ class IClosedLoopControl(object):  # pragma: no cover
     def stop(self):  # -> None:
         """
         Stops the orchestrated simulations.
+        """
+        raise NotImplementedError("Method not implemented")
+
+    def reset(self):  # -> None:
+        """
+        Reset the orchestrated simulations.
         """
         raise NotImplementedError("Method not implemented")
 

@@ -21,7 +21,10 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         Initializes this robot communication adapter
         :param name: The name of this node
         """
-        rospy.init_node(name)
+        try:
+            rospy.init_node(name)
+        except rospy.exceptions.ROSException:
+            print "ROS node already initialized"
 
     def create_topic_publisher(self, topic, config):
         """
