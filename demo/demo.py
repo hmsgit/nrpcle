@@ -5,18 +5,18 @@ CLE integration demo
 
 __author__ = 'LorenzoVannucci'
 
-from python_cle.cle.SerialClosedLoopEngine import SerialClosedLoopEngine \
+from hbp_nrp_cle.cle.SerialClosedLoopEngine import SerialClosedLoopEngine \
     as ClosedLoopEngine
 
 import PyNNScript
-from python_cle.robotsim.RosControlAdapter import RosControlAdapter
-from python_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter
+from hbp_nrp_cle.robotsim.RosControlAdapter import RosControlAdapter
+from hbp_nrp_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter
 
-from python_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
-from python_cle.brainsim.PyNNCommunicationAdapter import \
+from hbp_nrp_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
+from hbp_nrp_cle.brainsim.PyNNCommunicationAdapter import \
     PyNNCommunicationAdapter
 
-from python_cle.tf_framework import config
+from hbp_nrp_cle.tf_framework import config
 # pylint: disable=F0401,W0611
 import MS2TransferFunctions
 

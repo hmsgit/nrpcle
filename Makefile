@@ -1,14 +1,14 @@
 #modules that have tests
-TEST_MODULES=python_cle/python_cle/
+TEST_MODULES=hbp_nrp_cle/hbp_nrp_cle/
 
 #modules that are installable (ie: ones w/ setup.py)
-INSTALL_MODULES=python_cle
+INSTALL_MODULES=hbp_nrp_cle
 
 #packages to cover
-COVER_PACKAGES=python_cle
+COVER_PACKAGES=hbp_nrp_cle
 
 #documentation to build
-DOC_MODULES=python_cle/doc
+DOC_MODULES=hbp_nrp_cle/doc
 
 ##### DO NOT MODIFY BELOW #####################
 

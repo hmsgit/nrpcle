@@ -2,9 +2,10 @@
 The Husky robot model used by milestone 2
 """
 
-from hbp_nrp_cle.robotsim.RobotInterface import Topic
+from hbp_nrp_cle.robotsim.RobotInterface import Topic, PreprocessedTopic
 import geometry_msgs.msg
 import sensor_msgs.msg
+import numpy as np
 
 __author__ = 'GeorgHinkel'
 

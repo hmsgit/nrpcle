@@ -41,36 +41,37 @@ def init_brain_simulation():
     # 3 sensor neurons
     SENSORS = sim.Population(3, sim.IF_cond_exp, cellparams=SENSORPARAMS)
     # Go-on-node and 2 actor neurons
-    GO_ON = sim.Population(1, sim.IF_cond_exp, cellparams=GO_ON_PARAMS)
-    ACTORS = sim.Population(2, sim.IF_cond_exp, cellparams=SENSORPARAMS)
+    ACTORS = sim.Population(3, sim.IF_cond_exp, cellparams=GO_ON_PARAMS)
 
     sim.initialize(SENSORS, 'v', SENSORS[0].v_rest)
-    sim.initialize(GO_ON, 'v', SENSORS[0].v_rest)
     sim.initialize(ACTORS, 'v', ACTORS[0].v_rest)
 
-    CIRCUIT = SENSORS + GO_ON + ACTORS  # Assembly of 6 neurons
+    CIRCUIT = SENSORS + ACTORS  # Assembly of 6 neurons
 
     # Synaptic weights
-    WEIGHT_RED_TO_ACTOR = 1.5e-4
-    WEIGHT_RED_TO_GO_ON = -1.2e-3  # -2e-3
-    WEIGHT_GREEN_BLUE_TO_ACTOR = 1.05e-4
-    WEIGHT_GO_ON_TO_RIGHT_ACTOR = 1.4e-4
+    WEIGHT_RED_TO_ACTOR = -2.8e-5
+    WEIGHT_RED_TO_GO_ON = -2.15e-3  # -2e-3
+    WEIGHT_GREEN_BLUE_TO_ACTOR = [-1.7e-3, 0.4e-3]
+    WEIGHT_GO_ON_TO_RIGHT_ACTOR = -1.7e-3
     DELAY = 0.1
 
     # Connect neurons
     CONN = sim.AllToAllConnector(weights=abs(WEIGHT_RED_TO_ACTOR),
                                  delays=DELAY)
-    sim.Projection(CIRCUIT[0:1], CIRCUIT[5:6], CONN, target='excitatory')
-    sim.Projection(CIRCUIT[1:2], CIRCUIT[4:5], CONN, target='excitatory')
+    sim.Projection(CIRCUIT[0:1], CIRCUIT[4:5], CONN, target='inhibitory')
+    sim.Projection(CIRCUIT[1:2], CIRCUIT[5:6], CONN, target='inhibitory')
     CONN = sim.AllToAllConnector(weights=abs(WEIGHT_RED_TO_GO_ON),
                                  delays=DELAY)
     sim.Projection(CIRCUIT[0:2], CIRCUIT[3:4], CONN, target='inhibitory')
-    CONN = sim.AllToAllConnector(weights=abs(WEIGHT_GREEN_BLUE_TO_ACTOR),
+    CONN = sim.AllToAllConnector(weights=abs(WEIGHT_GREEN_BLUE_TO_ACTOR[0]),
+                                 delays=DELAY)
+    sim.Projection(CIRCUIT[2:3], CIRCUIT[4:5], CONN, target='inhibitory')
+    CONN = sim.AllToAllConnector(weights=WEIGHT_GREEN_BLUE_TO_ACTOR[1],
                                  delays=DELAY)
     sim.Projection(CIRCUIT[2:3], CIRCUIT[5:6], CONN, target='excitatory')
     CONN = sim.AllToAllConnector(weights=abs(WEIGHT_GO_ON_TO_RIGHT_ACTOR),
                                  delays=DELAY)
-    sim.Projection(CIRCUIT[3:4], CIRCUIT[5:6], CONN, target='excitatory')
+    sim.Projection(CIRCUIT[3:4], CIRCUIT[4:5], CONN, target='inhibitory')
 
     print "Circuit description: "
     print CIRCUIT.describe()
@@ -78,7 +79,7 @@ def init_brain_simulation():
     config.brain_root = HuskyBrain(SENSORS, ACTORS, CIRCUIT)
 
 
-class HuskyBrain(object):
+class HuskyBrain:
     """
     Represents a simple model of the husky brain
     """

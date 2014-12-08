@@ -7,6 +7,6 @@ Makefile
 pep8.txt
 pylint.txt
 coverage.xml
-*.*~
+**~
 packages/
 rpmbuild/
