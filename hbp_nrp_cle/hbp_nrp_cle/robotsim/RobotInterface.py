@@ -238,3 +238,9 @@ class IRobotControlAdapter(object):  # pragma: no cover
         :return: True, if the physics simulation time step is updated, otherwise False
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset(self):  # -> None:
+        """
+        Resets the physics simulation
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

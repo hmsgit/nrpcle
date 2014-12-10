@@ -119,3 +119,9 @@ class RosControlAdapter(IRobotControlAdapter):
         Shuts down the world simulation
         """
         self.__endWorld()
+
+    def reset(self):
+        """
+        Resets the physics simulation
+        """
+        self.__reset()

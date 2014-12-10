@@ -63,6 +63,12 @@ class TestClosedLoopEngine(unittest.TestCase):
         self._cle.stop()
         time.sleep(1)
 
+    def test_reset(self):
+        self._cle.run_step(0.05)
+        self._cle.wait_step()
+        self._cle.reset()
+        self.assertEqual(self._cle.time, 0.0)
+
     def test_shutdown(self):
         """
         Test shutdown.

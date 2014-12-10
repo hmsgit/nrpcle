@@ -26,6 +26,11 @@ class TestRosControlAdapter(unittest.TestCase):
         with self.assertRaises(ValueError):
             self._rca.run_step(0.0001)
 
+    def test_reset(self):
+        self._rca.run_step(0.05)
+        self._rca.reset()
+        self.assertEqual(self._rca.run_step(0.05), 0.05)
+
 #     def test_shutdown(self):
 #         self._rca.shutdown()
 

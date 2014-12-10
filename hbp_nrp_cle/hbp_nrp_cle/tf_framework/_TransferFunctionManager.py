@@ -11,6 +11,7 @@ from ._Robot2Neuron import Robot2Neuron, MapRobotParameter
 from ._TransferFunctionInterface import ITransferFunctionManager
 from ._PropertyPath import PropertyPath
 from . import config
+from copy import deepcopy
 
 
 class TransferFunctionManager(ITransferFunctionManager):
@@ -23,7 +24,9 @@ class TransferFunctionManager(ITransferFunctionManager):
         Creates a new transfer functions node
         """
         self.__n2r = []
+        self.__n2r_old = []
         self.__r2n = []
+        self.__r2n_old = []
         self.__robotAdapter = None
         self.__nestAdapter = None
         self.__initialized = False
@@ -79,6 +82,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         assert isinstance(self.__robotAdapter, IRobotCommunicationAdapter)
 
         # Wire transfer functions from neuronal simulation to world simulation
+        self.__n2r_old = deepcopy(self.__n2r)
         for _n2r in self.__n2r:
             assert isinstance(_n2r, Neuron2Robot)
             _n2r.replace_params()
@@ -98,6 +102,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                 _n2r.__dict__[param.name] = _n2r.neuron_params[i]
 
         # Wire transfer functions from world simulation to neuronal simulation
+        self.__r2n_old = deepcopy(self.__r2n)
         for _r2n in self.__r2n:
             assert isinstance(_r2n, Robot2Neuron)
             _r2n.check_params()
@@ -168,3 +173,57 @@ class TransferFunctionManager(ITransferFunctionManager):
         else:
             assert isinstance(nest_adapter, IBrainCommunicationAdapter)
             self.__nestAdapter = nest_adapter
+
+    def reset(self):  # -> None:
+        """
+        Resets the transfer functions
+        """
+        if self.__nestAdapter is None:
+            raise Exception("No brain simulation adapter has been specified")
+
+        if self.__robotAdapter is None:
+            raise Exception("No robot simulation adapter has been specified")
+
+        assert isinstance(self.__nestAdapter, IBrainCommunicationAdapter)
+        assert isinstance(self.__robotAdapter, IRobotCommunicationAdapter)
+
+        # Wire transfer functions from neuronal simulation to world simulation
+        self.__n2r = deepcopy(self.__n2r_old)
+        for _n2r in self.__n2r:
+            assert isinstance(_n2r, Neuron2Robot)
+            _n2r.replace_params()
+
+            _n2r.topic = self.__robotAdapter.register_publish_topic(
+                _n2r.topic)
+            for i in range(0, len(_n2r.topics)):
+                _n2r.topics[i] = self.__robotAdapter.register_publish_topic(
+                    _n2r.topics[i])
+
+            for i in range(1, len(_n2r.neuron_params)):
+                param = _n2r.neuron_params[i]
+                assert isinstance(param, MapNeuronParameter)
+                _n2r.neuron_params[i] = self.__nestAdapter \
+                    .register_spike_sink(self.__select_neurons(param.neurons), param.device_type,
+                                         **param.config)
+                _n2r.__dict__[param.name] = _n2r.neuron_params[i]
+
+        # Wire transfer functions from world simulation to neuronal simulation
+        self.__r2n = deepcopy(self.__r2n_old)
+        for _r2n in self.__r2n:
+            assert isinstance(_r2n, Robot2Neuron)
+            _r2n.check_params()
+
+            for i in range(1, len(_r2n.params)):
+                param = _r2n.params[i]
+                if isinstance(param, MapRobotParameter):
+                    _r2n.params[i] = self.__robotAdapter \
+                        .register_subscribe_topic(param.topic, **param.config)
+                else:
+                    assert isinstance(param, MapNeuronParameter)
+                    _r2n.params[i] = self.__nestAdapter \
+                        .register_spike_source(self.__select_neurons(param.neurons),
+                                               param.device_type, **param.config)
+                _r2n.__dict__[param.name] = _r2n.params[i]
+
+        # Initialize dependencies
+        self.__nestAdapter.initialize()

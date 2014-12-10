@@ -176,7 +176,10 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         """
         self.stop()
         self.wait_step()
-        self.initialize()
+        self.rca.reset()
+        self.bca.reset()
+        self.tfm.reset()
+        self.clock = 0.0
 
     @property
     def time(self):

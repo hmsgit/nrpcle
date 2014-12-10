@@ -4,6 +4,8 @@ This module contains a selector class selecting property paths
 
 __author__ = 'GeorgHinkel'
 
+from copy import deepcopy
+
 
 class PropertyPath(object):
     """
@@ -37,6 +39,14 @@ class PropertyPath(object):
         :param root: The specified root object
         """
         return root
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
 
 
 class AttributePathSegment(PropertyPath):

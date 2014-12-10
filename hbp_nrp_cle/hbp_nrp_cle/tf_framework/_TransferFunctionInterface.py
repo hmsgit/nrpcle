@@ -30,3 +30,9 @@ class ITransferFunctionManager(object):  # pragma: no cover
         :param name: The name for this transfer function node
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset(self):  # -> None:
+        """
+        Resets the transfer functions
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

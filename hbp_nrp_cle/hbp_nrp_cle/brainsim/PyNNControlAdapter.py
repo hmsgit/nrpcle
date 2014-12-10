@@ -42,20 +42,21 @@ class PyNNControlAdapter(IBrainControlAdapter):
         :param params: A dictionary of configuration parameters
         :return: True if the simulator is initialized, otherwise False
         """
-        timestep = params.get('timestep', 0.1)
-        min_delay = params.get('min_delay', 0.1)
-        max_delay = params.get('max_delay', 20.0)
-        threads = params.get('threads', 1)
-        rng_seeds = params.get('rng_seeds', [1234])
-        self.__rank = sim.setup(timestep=timestep, min_delay=min_delay,
-                                max_delay=max_delay, threads=threads,
-                                rng_seeds=rng_seeds)
-        if not self.__network_file == '':
-            BrainLoader.load_h5_network(self.__network_file,
-                                        self.__sensors,
-                                        self.__actors)
-        self.__is_initialized = True
-        self.__is_alive = True
+        if not self.__is_initialized:
+            timestep = params.get('timestep', 0.1)
+            min_delay = params.get('min_delay', 0.1)
+            max_delay = params.get('max_delay', 20.0)
+            threads = params.get('threads', 1)
+            rng_seeds = params.get('rng_seeds', [1234])
+            self.__rank = sim.setup(timestep=timestep, min_delay=min_delay,
+                                    max_delay=max_delay, threads=threads,
+                                    rng_seeds=rng_seeds)
+            if not self.__network_file == '':
+                BrainLoader.load_h5_network(self.__network_file,
+                                            self.__sensors,
+                                            self.__actors)
+            self.__is_initialized = True
+            self.__is_alive = True
         return self.__is_initialized
 
     def is_alive(self):  # -> bool:
@@ -78,3 +79,17 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         self.__is_alive = False
         sim.end()
+
+    def reset(self):  # -> None:
+        """
+        Resets the neuronal simulator
+        """
+        self.__rank = sim.setup(timestep=sim.get_time_step(),
+                                min_delay=sim.get_min_delay(),
+                                max_delay=sim.get_max_delay(),
+                                threads=1,
+                                rng_seeds=[1234])
+        if not self.__network_file == '':
+            BrainLoader.load_h5_network(self.__network_file,
+                                        self.__sensors,
+                                        self.__actors)

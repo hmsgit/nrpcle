@@ -87,3 +87,8 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         :param sleep_time: The new sleep time for this mock
         """
         self.__sleepTime = sleep_time
+
+    def reset(self):  # -> None:
+        """
+        Resets the transfer functions
+        """

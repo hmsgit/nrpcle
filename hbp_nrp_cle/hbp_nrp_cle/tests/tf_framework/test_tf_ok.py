@@ -95,5 +95,7 @@ class Test1(unittest.TestCase):
 
         assert camera_device.inner.amplitude == 42.0
 
+        config.active_node.reset()
+
 if __name__ == "__main__":
     unittest.main()

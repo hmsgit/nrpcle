@@ -78,3 +78,9 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         Shuts down the world simulation
         """
         pass
+
+    def reset(self):
+        """
+        Resets the physics simulation
+        """
+        self.__sim_time = 0.0

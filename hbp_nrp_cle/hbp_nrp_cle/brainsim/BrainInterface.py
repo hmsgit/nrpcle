@@ -286,3 +286,9 @@ class IBrainControlAdapter(object):  # pragma: no cover
         Shuts down the neuronal simulator
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset(self):  # -> None:
+        """
+        Resets the neuronal simulator
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

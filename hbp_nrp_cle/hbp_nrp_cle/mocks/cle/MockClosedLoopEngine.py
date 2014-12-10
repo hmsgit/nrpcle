@@ -98,7 +98,7 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         self.stop()
         self.wait_step()
-        self.initialize()
+        self.clock = 0.0
 
     @property
     def time(self):

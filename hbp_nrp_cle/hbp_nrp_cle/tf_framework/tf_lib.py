@@ -2,7 +2,7 @@
 Contains a library of transfer functions
 """
 
-import sensor_msgs.msg
+# import sensor_msgs.msg
 from cv_bridge import CvBridge
 
 __author__ = 'GeorgHinkel'
@@ -15,7 +15,7 @@ def detect_red(image):
     Detects a red image
     :param image: The image
     """
-    assert isinstance(image, sensor_msgs.msg.Image)
+    # assert isinstance(image, sensor_msgs.msg.Image)
     red_left_rate = 0.
     red_right_rate = 0.
     green_blue_rate = 0.

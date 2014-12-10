@@ -49,6 +49,14 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertEqual(self.communicator.detector_devices, [])
         self.assertEqual(self.communicator.generator_devices, [])
 
+    def test_reset(self):
+        """
+        Test the reset functionality
+        """
+        self.control.reset()
+        population = sim.Population(10, sim.IF_cond_exp)
+        self.assertEqual(population.all_cells[9], 10)
+
     def test_initialize(self):
         """
         Test the initialization of the PyNN adapters

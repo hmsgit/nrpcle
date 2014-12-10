@@ -52,3 +52,8 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         Shuts down the neuronal simulator
         """
         self.__is_alive = False
+
+    def reset(self):  # -> None:
+        """
+        Resets the neuronal simulator
+        """
