@@ -28,7 +28,7 @@ config = {
                  'hbp_nrp_cle.cle', 'hbp_nrp_cle.mocks', 'hbp_nrp_cle.mocks.brainsim',
                  'hbp_nrp_cle.mocks.brainsim.__devices', 'hbp_nrp_cle.mocks.cle',
                  'hbp_nrp_cle.mocks.robotsim', 'hbp_nrp_cle.tf_framework',
-                 'hbp_nrp_cle.tf_framework', 'hbp_nrp_cle.robotsim'],
+                 'hbp_nrp_cle.tf_framework.spike_generators', 'hbp_nrp_cle.robotsim'],
     'scripts': [],
     'name': 'hbp-nrp-cle',
     'include_package_data': True,
