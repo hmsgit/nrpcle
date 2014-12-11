@@ -83,6 +83,7 @@
 // new for HBP
 #include "gazebo_msgs/GetVisualProperties.h"
 #include "gazebo_msgs/SetVisualProperties.h"
+#include "gazebo_msgs/GetLightProperties.h"
 #include "gazebo_msgs/SetLightProperties.h"
 
 // Topics
@@ -239,6 +240,10 @@ public:
   /// \brief
   bool setVisualProperties(gazebo_msgs::SetVisualProperties::Request &req, gazebo_msgs::SetVisualProperties::Response &res);
 
+  // patched for HBP
+  /// \brief
+  bool getLightProperties(gazebo_msgs::GetLightProperties::Request &req, gazebo_msgs::GetLightProperties::Response &res);
+  
   // patched for HBP
   /// \brief
   bool setLightProperties(gazebo_msgs::SetLightProperties::Request &req, gazebo_msgs::SetLightProperties::Response &res);
@@ -411,6 +416,7 @@ private:
   ros::ServiceServer end_world_service_; // patched for HBP
   ros::ServiceServer get_object_properties_service_; // patched for HBP
   ros::ServiceServer set_object_properties_service_; // patched for HBP
+  ros::ServiceServer get_light_properties_service_;  // patched for HBP
   ros::ServiceServer set_light_properties_service_;  // patched for HBP
   ros::ServiceServer pause_physics_service_;
   ros::ServiceServer unpause_physics_service_;

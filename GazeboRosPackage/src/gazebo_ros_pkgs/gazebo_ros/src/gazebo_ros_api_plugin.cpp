@@ -466,6 +466,16 @@ void GazeboRosApiPlugin::advertiseServices()
 
   // patched for HBP
   // Advertise more services on the custom queue
+  std::string get_light_properties_service_name("get_light_properties");
+  ros::AdvertiseServiceOptions get_light_properties_aso =
+    ros::AdvertiseServiceOptions::create<gazebo_msgs::GetLightProperties>(
+                                                          get_light_properties_service_name,
+                                                          boost::bind(&GazeboRosApiPlugin::getLightProperties,this,_1,_2),
+                                                          ros::VoidPtr(), &gazebo_queue_);
+  get_light_properties_service_ = nh_->advertiseService(get_light_properties_aso);
+
+  // patched for HBP
+  // Advertise more services on the custom queue
   std::string set_light_properties_service_name("set_light_properties");
   ros::AdvertiseServiceOptions set_light_properties_aso =
     ros::AdvertiseServiceOptions::create<gazebo_msgs::SetLightProperties>(
@@ -1572,6 +1582,45 @@ bool GazeboRosApiPlugin::setVisualProperties(gazebo_msgs::SetVisualProperties::R
 
   return true;
 }
+
+// patched for HBP
+bool GazeboRosApiPlugin::getLightProperties(gazebo_msgs::GetLightProperties::Request &req, gazebo_msgs::GetLightProperties::Response &res)
+{
+  // request and wait for scene update
+  if (!requestSceneUpdate())
+  {
+    res.success = false;
+    res.status_message = std::string("getLightProperties: Scene update requested for getting actual light values, but")
+      + std::string(" timed out waiting for light to appear in simulation under the name ")
+      + req.light_name;
+    return true;
+  }
+
+  LightIter light = gazeboscene_.mutable_light()->begin();
+  for (; light != gazeboscene_.mutable_light()->end(); light++)
+  {
+    if (light->name() == req.light_name)
+    {
+      res.diffuse.r = light->diffuse().r();
+      res.diffuse.g = light->diffuse().g();
+      res.diffuse.b = light->diffuse().b();
+      res.diffuse.a = light->diffuse().a();
+
+      res.attenuation_constant = light->attenuation_constant();
+      res.attenuation_linear = light->attenuation_linear();
+      res.attenuation_quadratic = light->attenuation_quadratic();
+
+      res.success = true;
+      return true;
+    }
+  }
+
+  res.success = false;
+  res.status_message = std::string("getLightProperties: Requested light ") + req.light_name + std::string(" not found!");
+
+  return true;
+}
+
 
 // patched for HBP
 bool GazeboRosApiPlugin::setLightProperties(gazebo_msgs::SetLightProperties::Request &req, gazebo_msgs::SetLightProperties::Response &res)
