@@ -154,69 +154,53 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
     return circuit
 
 
-def load_h5_network(path, sensors_ids, actors_ids):
+def load_h5_network(path, populations):
     """
     Load a h5 brain network file.
 
     :param path: path to the .h5 file.
-    :param sensor_indices: indices of the sensor neurons (list)
-    :param actors_indices: indices of the actor neurons (list)
+    :param populations: A dictionary of the populations and their ids
     """
     # Load point neuron circuit
     circuit = load_pointneuron_circuit(path)
+    population = circuit['population']
 
     # AdEx parameters are set
-    circuit['population'].tset('a', circuit["a"])        # nS
-    circuit['population'].tset('b', circuit["b"] * 1e-3)        # pA -> nA
-    circuit['population'].tset('v_thresh', circuit["V_th"])
-    circuit['population'].tset('delta_T', circuit["Delta_T"])
-    circuit['population'].tset('cm', circuit["C_m"] * 1e-3)     # pF -> nF
-    circuit['population'].tset('tau_m', circuit["C_m"] / circuit["g_L"])
-    circuit['population'].tset('v_reset', circuit["V_reset"])
-    circuit['population'].tset('tau_w', circuit["tau_w"])
-    circuit['population'].tset('tau_refrac', circuit["t_ref"])
-    circuit['population'].tset('v_spike', circuit["V_peak"])
-    circuit['population'].tset('v_rest', circuit["E_L"])
-    circuit['population'].tset('e_rev_E', circuit["E_ex"])
-    circuit['population'].tset('e_rev_I', circuit["E_in"])
-    circuit['population'].tset('tau_syn_E', circuit["tau_syn_E"])
-    circuit['population'].tset('tau_syn_I', circuit["tau_syn_I"])
+    population.tset('a', circuit["a"])        # nS
+    population.tset('b', circuit["b"] * 1e-3)        # pA -> nA
+    population.tset('v_thresh', circuit["V_th"])
+    population.tset('delta_T', circuit["Delta_T"])
+    population.tset('cm', circuit["C_m"] * 1e-3)     # pF -> nF
+    population.tset('tau_m', circuit["C_m"] / circuit["g_L"])
+    population.tset('v_reset', circuit["V_reset"])
+    population.tset('tau_w', circuit["tau_w"])
+    population.tset('tau_refrac', circuit["t_ref"])
+    population.tset('v_spike', circuit["V_peak"])
+    population.tset('v_rest', circuit["E_L"])
+    population.tset('e_rev_E', circuit["E_ex"])
+    population.tset('e_rev_I', circuit["E_in"])
+    population.tset('tau_syn_E', circuit["tau_syn_E"])
+    population.tset('tau_syn_I', circuit["tau_syn_I"])
 
-    sim.initialize(circuit['population'], 'v',
-                   circuit['population'].get('v_rest'))
+    sim.initialize(population, 'v',
+                   population.get('v_rest'))
 
     # set sensors and actors
-    sensors = sim.PopulationView(circuit['population'],
-                                 np.array(sensors_ids))
+    brain = Brain(population)
 
-    actors = sim.PopulationView(circuit['population'],
-                                np.array(actors_ids))
+    for p in populations:
+        neurons = sim.PopulationView(population, np.array(populations[p]))
+        brain.__dict__[p] = neurons
 
-    config.brain_root = Brain(sensors, actors, circuit['population'])
+    config.brain_root = brain
 
 
 class Brain(object):
     """
     Represents a simple model of a generic brain.
     """
-    def __init__(self, sensors, actors, circuit):
-        self.__sensors = sensors
-        self.__actors = actors
+    def __init__(self, circuit):
         self.__circuit = circuit
-
-    @property
-    def sensors(self):
-        """
-        Gets the sensors brain region
-        """
-        return self.__sensors
-
-    @property
-    def actors(self):
-        """
-        Gets the actors brain region
-        """
-        return self.__actors
 
     @property
     def circuit(self):

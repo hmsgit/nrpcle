@@ -21,7 +21,9 @@ def detect_red(image):
     green_blue_rate = 0.
     if not isinstance(image, type(None)):  # Problem: starts as NoneType
         # print eye_sensor.changed
+        # load image in [0,1]
         cv_image = bridge.imgmsg_to_cv2(image, "rgb8") / 256.
+        # intensify values but keep in [0,1]
         cv_image = 5000 ** cv_image / 5000
 
         for i in range(0, cv_image.shape[0]):

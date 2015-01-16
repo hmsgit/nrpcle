@@ -21,7 +21,7 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
         """
         self.__width = width
         self.__height = height
-        self.__devices = []
+        self.__devices = None
 
     def apply(self, neurons, brain_adapter):
         """
@@ -45,3 +45,11 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
         # TODO: Implement
         # self.__devices[7].rate = 4.5
         pass
+
+    def reset(self, transfer_function_manager):
+        """
+        Resets the device
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
+        """
+        self.__devices = self.__devices.reset(transfer_function_manager)

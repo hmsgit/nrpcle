@@ -23,7 +23,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         Test loading an .h5 file.
         """
         filename = 'hbp_nrp_cle/hbp_nrp_cle/tests/brainsim/braitenberg.h5'
-        BrainLoader.load_h5_network(filename, [0, 1, 2], [3, 4, 5])
+        BrainLoader.load_h5_network(filename, {'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
 
 
 if __name__ == '__main__':

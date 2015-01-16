@@ -12,9 +12,10 @@ from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
 
 # pylint: disable=W0611
 
-from ._Neuron2Robot import Neuron2Robot, MapNeuronParameter
-from ._Robot2Neuron import Robot2Neuron, MapRobotParameter
+from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
+from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
 from . import _TransferFunctionManager, _PropertyPath
+from ._TransferFunctionInterface import ITransferFunctionManager
 
 __author__ = 'GeorgHinkel'
 
@@ -27,6 +28,9 @@ dc_source = IDCSource
 ac_source = IACSource
 nc_source = INCSource
 population_rate = IPopulationRate
+
+subscriber = True
+publisher = False
 
 brain = _PropertyPath.PropertyPath()
 

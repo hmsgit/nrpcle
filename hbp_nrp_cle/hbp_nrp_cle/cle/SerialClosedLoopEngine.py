@@ -6,6 +6,9 @@ __author__ = 'LorenzoVannucci'
 
 import threading
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
+from hbp_nrp_cle.tf_framework import ITransferFunctionManager
+from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
+from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
 
 
 class ControlThread(threading.Thread):
@@ -60,28 +63,40 @@ class SerialClosedLoopEngine(IClosedLoopControl):
     """
 
     def __init__(self,
-                 robotcontroladapter,
-                 braincontroladapter,
-                 transferfunctionmanager,
+                 robot_control_adapter,
+                 robot_comm_adapter,
+                 brain_control_adapter,
+                 brain_comm_adapter,
+                 transfer_function_manager,
                  dt):
         """
         Create an instance of the serial cle.
-        :param robotcontroladapter: an instance of IRobotContolAdapter
-        :param braincontroladapter: an instance of IBrainContolAdapter
-        :param transferfunctionmanager: an instance of ITransferFunctionManager
+        :param robot_control_adapter: an instance of IRobotContolAdapter
+        :param robot_comm_adapter: an instance of IRobotCommunicationAdapter
+        :param brain_control_adapter: an instance of IBrainContolAdapter
+        :param brain_comm_adapter: an instance of IBrainCommunicationAdapter
+        :param transfer_function_manager: an instance of ITransferFunctionManager
         :param dt: The CLE time step in seconds
         """
+
+        assert isinstance(robot_control_adapter, IRobotControlAdapter)
+        assert isinstance(robot_comm_adapter, IRobotCommunicationAdapter)
+        assert isinstance(brain_control_adapter, IBrainControlAdapter)
+        assert isinstance(brain_comm_adapter, IBrainCommunicationAdapter)
+        assert isinstance(transfer_function_manager, ITransferFunctionManager)
         # set up the robot control adapter thread
-        self.rca = robotcontroladapter
+        self.rca = robot_control_adapter
         self.rct_flag = threading.Event()
         self.rct = ControlThread(self.rca, self.rct_flag)
         self.rct.start()
+        self.rcm = robot_comm_adapter
 
         # set up the brain control adapter thread
-        self.bca = braincontroladapter
+        self.bca = brain_control_adapter
+        self.bcm = brain_comm_adapter
 
         # set up the transfer function thread
-        self.tfm = transferfunctionmanager
+        self.tfm = transfer_function_manager
 
         # default timestep
         self.timestep = dt
@@ -134,8 +149,11 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         self.bca.run_step(timestep * 1000.0)
 
         # transfer functions
-        self.tfm.run_neuron_to_robot(self.clock)
-        self.tfm.run_robot_to_neuron(self.clock)
+        clk = self.clock
+        self.bcm.refresh_buffers(clk)
+        self.rcm.refresh_buffers(clk)
+        self.tfm.run_neuron_to_robot(clk)
+        self.tfm.run_robot_to_neuron(clk)
 
         # update clock
         self.clock += timestep

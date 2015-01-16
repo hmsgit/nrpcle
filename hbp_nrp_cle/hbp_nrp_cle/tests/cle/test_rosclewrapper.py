@@ -2,7 +2,7 @@
 ROSCLEWrapper unit test
 """
 
-from hbp_nrp_cle.mocks.cle.MockClosedLoopEngine import MockClosedLoopEngine
+from hbp_nrp_cle.mocks.cle._MockClosedLoopEngine import MockClosedLoopEngine
 from hbp_nrp_cle.cle.ROSCLEWrapper import ROSCLEClient, ROSCLEServer
 
 import unittest

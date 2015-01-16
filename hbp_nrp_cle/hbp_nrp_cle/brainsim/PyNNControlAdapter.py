@@ -15,7 +15,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
     Represents a controller object for the neuronal simulator
     """
 
-    def __init__(self, network_file='', sensors=None, actors=None):
+    def __init__(self, network_file='', **populations):
         """
         Initializes the PyNN control adapter
         :param network_file: The path to the .5h file containing the network
@@ -27,14 +27,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         self.__rank = None
 
         self.__network_file = network_file
-        if sensors is None:
-            self.__sensors = []
-        else:
-            self.__sensors = sensors
-        if actors is None:
-            self.__actors = []
-        else:
-            self.__actors = actors
+        self.__populations = populations
 
     def initialize(self, **params):
         """
@@ -53,8 +46,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
                                     rng_seeds=rng_seeds)
             if not self.__network_file == '':
                 BrainLoader.load_h5_network(self.__network_file,
-                                            self.__sensors,
-                                            self.__actors)
+                                            self.__populations)
             self.__is_initialized = True
             self.__is_alive = True
         return self.__is_initialized
@@ -91,5 +83,4 @@ class PyNNControlAdapter(IBrainControlAdapter):
                                 rng_seeds=[1234])
         if not self.__network_file == '':
             BrainLoader.load_h5_network(self.__network_file,
-                                        self.__sensors,
-                                        self.__actors)
+                                        self.__populations)

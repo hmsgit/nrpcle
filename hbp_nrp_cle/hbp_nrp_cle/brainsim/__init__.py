@@ -4,3 +4,5 @@ neuronal (brain) simulator. As brain simulator, we are using PyNN.
 """
 
 __author__ = 'GeorgHinkel'
+
+from .BrainInterface import IBrainCommunicationAdapter, IBrainControlAdapter

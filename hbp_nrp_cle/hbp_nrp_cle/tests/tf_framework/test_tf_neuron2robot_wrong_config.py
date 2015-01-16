@@ -1,10 +1,8 @@
 from hbp_nrp_cle.tf_framework import _Facade as nrp
 from hbp_nrp_cle.tests.tf_framework.husky import Husky
 
-from hbp_nrp_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
-    MockPublishedTopic
-from hbp_nrp_cle.mocks.brainsim.MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
-
+from hbp_nrp_cle.mocks.robotsim import MockRobotCommunicationAdapter
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
 import unittest
 
 __author__ = 'GeorgHinkel'
@@ -24,7 +22,7 @@ class Neuron2RobotTests(unittest.TestCase):
     def test_map_neuron_wrong_parameter_fails(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapNeuronParameter("neuronX", [1, 2, 3], nrp.leaky_integrator_exp)
+            @nrp.MapSpikeSink("neuronX", [1, 2, 3], nrp.leaky_integrator_exp)
             @nrp.Neuron2Robot(Husky.RightArm.pose)
             def right_arm(t, neuron0):
                 return neuron0.voltage
@@ -37,7 +35,7 @@ class Neuron2RobotTests(unittest.TestCase):
     def test_map_robot_fails(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapRobotParameter("neuronX", Husky.LeftArm.twist)
+            @nrp.MapRobotPublisher("neuronX", Husky.LeftArm.twist)
             @nrp.Neuron2Robot(Husky.RightArm.pose)
             def right_arm(t, neuron0):
                 return neuron0.voltage

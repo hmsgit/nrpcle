@@ -35,3 +35,13 @@ class TestDevice(ICustomDevice):
         Gets the inner AC source managed by this test device
         """
         return self.__source
+
+    def reset(self, transfer_function_manager):
+        """
+        Resets the test device
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
+        """
+        new_device = TestDevice()
+        new_device.__source = self.__source.reset(transfer_function_manager)
+        return new_device

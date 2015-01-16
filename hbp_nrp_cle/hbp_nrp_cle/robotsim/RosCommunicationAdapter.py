@@ -160,6 +160,13 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         """
         return self.__value
 
+    def reset(self, transfer_function_manager):
+        """
+        Gets a reset subscriber
+        """
+        self.reset_changed()
+        return self
+
 
 class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
     """

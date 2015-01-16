@@ -1,10 +1,8 @@
 from hbp_nrp_cle.tf_framework import _Facade as nrp
 from hbp_nrp_cle.tests.tf_framework.husky import Husky
 
-from hbp_nrp_cle.mocks.robotsim.MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
-    MockPublishedTopic
-from hbp_nrp_cle.mocks.brainsim.MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
-
+from hbp_nrp_cle.mocks.robotsim import MockRobotCommunicationAdapter
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
 import unittest
 
 __author__ = 'GeorgHinkel'
@@ -14,8 +12,8 @@ class Robot2NeuronTests(unittest.TestCase):
     def test_map_robot_wrong_parameter(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapRobotParameter("cameraX", Husky.Eye.camera)
-            @nrp.MapNeuronParameter("device", nrp.voltmeter)
+            @nrp.MapRobotSubscriber("cameraX", Husky.Eye.camera)
+            @nrp.MapSpikeSink("device", nrp.leaky_integrator_alpha)
             @nrp.Robot2Neuron()
             def camera_trans(t, camera, device):
                 pass
@@ -29,8 +27,8 @@ class Robot2NeuronTests(unittest.TestCase):
     def test_map_neuron_wrong_parameter(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapRobotParameter("camera", Husky.Eye.camera)
-            @nrp.MapNeuronParameter("deviceX", nrp.voltmeter)
+            @nrp.MapRobotSubscriber("camera", Husky.Eye.camera)
+            @nrp.MapSpikeSink("deviceX", nrp.leaky_integrator_alpha)
             @nrp.Robot2Neuron()
             def camera_trans(t, camera, device):
                 pass
@@ -43,7 +41,7 @@ class Robot2NeuronTests(unittest.TestCase):
     def test_neuron_unmapped_fails(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapRobotParameter("camera", Husky.Eye.camera)
+            @nrp.MapRobotSubscriber("camera", Husky.Eye.camera)
             @nrp.Robot2Neuron()
             def camera_trans(t, camera, device):
                 pass
@@ -56,7 +54,7 @@ class Robot2NeuronTests(unittest.TestCase):
     def test_robot_unmapped_fails(self):
         nrp.start_new_tf_manager()
         try:
-            @nrp.MapNeuronParameter("device", nrp.voltmeter)
+            @nrp.MapSpikeSink("device", nrp.leaky_integrator_alpha)
             @nrp.Robot2Neuron()
             def camera_trans(t, camera, device):
                 pass

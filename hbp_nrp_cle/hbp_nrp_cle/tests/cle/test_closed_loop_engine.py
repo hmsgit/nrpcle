@@ -3,15 +3,9 @@ CLE unit test
 """
 
 from hbp_nrp_cle.cle.ClosedLoopEngine import ClosedLoopEngine
-from hbp_nrp_cle.mocks.robotsim.MockRobotControlAdapter import (
-    MockRobotControlAdapter
-)
-from hbp_nrp_cle.mocks.brainsim.MockBrainControlAdapter import (
-    MockBrainControlAdapter
-)
-from hbp_nrp_cle.mocks.tf_framework.MockTransferFunctionManager import (
-    MockTransferFunctionManager
-)
+from hbp_nrp_cle.mocks.robotsim import MockRobotCommunicationAdapter, MockRobotControlAdapter
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter, MockBrainControlAdapter
+from hbp_nrp_cle.mocks.tf_framework import MockTransferFunctionManager
 
 import unittest
 import time
@@ -31,9 +25,11 @@ class TestClosedLoopEngine(unittest.TestCase):
         Sets up the cle and the mocks for the adapters.
         """
         rca = MockRobotControlAdapter()
+        rcm = MockRobotCommunicationAdapter()
         bca = MockBrainControlAdapter()
+        bcm = MockBrainCommunicationAdapter()
         tfm = MockTransferFunctionManager()
-        self._cle = ClosedLoopEngine(rca, bca, tfm, 0.01)
+        self._cle = ClosedLoopEngine(rca, rcm, bca, bcm, tfm, 0.01)
         self._cle.initialize()
 
     def test_run_step(self):

@@ -16,9 +16,9 @@ MAX_SPIKE_RATE = 8.  # Hz
 WHEEL_SCALING_FACTOR = 500.
 bridge = CvBridge()
 
-@nrp.MapNeuronParameter("left_wheel_neuron", nrp.brain.actors[1],
+@nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1],
                         nrp.leaky_integrator_alpha)
-@nrp.MapNeuronParameter("right_wheel_neuron", nrp.brain.actors[2],
+@nrp.MapSpikeSink("right_wheel_neuron", nrp.brain.actors[2],
                         nrp.leaky_integrator_alpha)
 @nrp.Neuron2Robot(Husky.wheel_twist)
 def linear_twist(t, left_wheel_neuron, right_wheel_neuron):
@@ -44,10 +44,10 @@ def linear_twist(t, left_wheel_neuron, right_wheel_neuron):
 # ROW_SENSORS = list(itertools.chain(LEFT_IMAGE, RIGHT_IMAGE))
 # ALL_SENSORS = [sensor for row in itertools.repeat(ROW_SENSORS, 20) for sensor in row]
 
-@nrp.MapRobotParameter("eye_sensor", Husky.eye_sensor)
-@nrp.MapNeuronParameter("red_left_eye_device", nrp.brain.sensors[0], nrp.poisson)
-@nrp.MapNeuronParameter("red_right_eye_device", nrp.brain.sensors[1], nrp.poisson)
-@nrp.MapNeuronParameter("green_blue_eye_device", nrp.brain.sensors[2], nrp.poisson)
+@nrp.MapRobotSubscriber("eye_sensor", Husky.eye_sensor)
+@nrp.MapSpikeSink("red_left_eye_device", nrp.brain.sensors[0], nrp.poisson)
+@nrp.MapSpikeSink("red_right_eye_device", nrp.brain.sensors[1], nrp.poisson)
+@nrp.MapSpikeSink("green_blue_eye_device", nrp.brain.sensors[2], nrp.poisson)
 @nrp.Robot2Neuron()
 def eye_sensor_transmit(t, eye_sensor, red_left_eye_device, red_right_eye_device, green_blue_eye_device):
     """

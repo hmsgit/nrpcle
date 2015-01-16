@@ -8,9 +8,9 @@ from hbp_nrp_cle.brainsim.BrainInterface import ISpikeDetector, \
     IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, \
     IPopulationRate, IFixedSpikeGenerator, ILeakyIntegratorAlpha, \
     ILeakyIntegratorExp
-from hbp_nrp_cle.mocks.brainsim.MockBrainCommunicationAdapter import \
+from hbp_nrp_cle.mocks.brainsim._MockBrainCommunicationAdapter import \
     MockBrainCommunicationAdapter
-from hbp_nrp_cle.mocks.brainsim.MockBrainControlAdapter import MockBrainControlAdapter
+from hbp_nrp_cle.mocks.brainsim._MockBrainControlAdapter import MockBrainControlAdapter
 import unittest
 from hbp_nrp_cle.mocks.brainsim.__devices.MockACSource import MockACSource
 from hbp_nrp_cle.mocks.brainsim.__devices.MockDCSource import MockDCSource

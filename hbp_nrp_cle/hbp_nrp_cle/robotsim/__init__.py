@@ -4,3 +4,5 @@ as well an implementation using ROS and Gazebo
 """
 
 __author__ = 'GeorgHinkel'
+
+from .RobotInterface import IRobotCommunicationAdapter, IRobotControlAdapter

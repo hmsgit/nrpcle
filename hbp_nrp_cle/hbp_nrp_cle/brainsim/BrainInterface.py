@@ -4,6 +4,8 @@ This module represents the interfaces for the brain communication and control ad
 
 __author__ = 'GeorgHinkel'
 
+# pylint: disable=W0613
+
 
 class IDeviceGroup(object):
     """
@@ -16,14 +18,26 @@ class ISpikeGenerator(object):  # pragma: no cover
     """
     Represents a communication object that may generate spikes
     """
-    pass
+    def reset(self, transfer_function_manager):
+        """
+        Resets the device
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
+        """
+        return self
 
 
 class ICurrentGenerator(object):  # pragma: no cover
     """
     Represents a communication object that may generate currents
     """
-    pass
+    def reset(self, transfer_function_manager):
+        """
+        Resets the device
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
+        """
+        return self
 
 
 class IFixedSpikeGenerator(ISpikeGenerator):  # pragma: no cover
@@ -135,7 +149,13 @@ class ISpikeDetector(object):  # pragma: no cover
     """
     Represents a communication object that may detect spikes
     """
-    pass
+    def reset(self, transfer_function_manager):
+        """
+        Resets the device
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
+        """
+        return self
 
 
 class ISpikeRecorder(ISpikeDetector):  # pragma: no cover
@@ -209,6 +229,14 @@ class ICustomDevice(object):  # pragma: no cover
         :param config: Additional device configuration
         :param neurons: A list of neuron GIDs for which to create the custom device
         :param brain_adapter: The brain communication adapter
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset(self, transfer_function_manager):
+        """
+        Resets the device
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

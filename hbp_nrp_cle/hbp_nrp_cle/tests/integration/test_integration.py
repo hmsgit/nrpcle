@@ -51,7 +51,7 @@ class IntegrationTestMilestone2(unittest.TestCase):
 
         tf_man.brain_adapter = pynn_comm
         tf_man.robot_adapter = ros_comm
-        engine = ClosedLoopEngine(ros_control, pynn_control, tf_man, 0.1)
+        engine = ClosedLoopEngine(ros_control, ros_comm, pynn_control, pynn_comm, tf_man, 0.1)
 
         engine.initialize()
 

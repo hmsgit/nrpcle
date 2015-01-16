@@ -6,6 +6,9 @@ __author__ = 'LorenzoVannucci'
 
 import threading
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
+from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
+from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
+from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 
 
 class ControlThread(threading.Thread):
@@ -13,17 +16,17 @@ class ControlThread(threading.Thread):
     Separate thread to control a simulation.
     """
 
-    def __init__(self, controladapter, end_flag):
+    def __init__(self, control_adapter, end_flag):
         """
         Constructor
-        :param controladapter: the adapter (able to do run_step)
+        :param control_adapter: the adapter (able to do run_step)
         :param endFlag: the flag on wich the CLE waits
                         for the simulation to end
         """
         super(ControlThread, self).__init__()
         self.daemon = True
 
-        self.ctrlad = controladapter
+        self.ctrlad = control_adapter
         self.timestep = 0.0
         self.end_flag = end_flag
 
@@ -44,7 +47,7 @@ class ControlThread(threading.Thread):
         """
         while True:
             self.start_flag.wait()
-#            print 'Simulating...'
+            # print 'Simulating...'
             self.ctrlad.run_step(self.timestep)
             self.start_flag.clear()
             self.end_flag.set()
@@ -55,17 +58,25 @@ class TransferFunctionsThread(threading.Thread):
     Thread running the tranfer functions.
     """
 
-    def __init__(self, transferfunctionmanager, end_flag):
+    def __init__(self, transfer_function_manager, robot_comm_adapter, brain_comm_adapter, end_flag):
         """
         Constructor
-        :param controladapter: the adapter (able to do run_step)
+        :param transfer_function_manager: the adapter (able to do run_step)
+        :param robot_comm_adapter: The robot comm adapter
+        :param brain_comm_adapter: The brain comm adapter
         :param endFlag: the flag on wich the CLE waits
                         for the computation to end
         """
         super(TransferFunctionsThread, self).__init__()
         self.daemon = True
 
-        self.tfm = transferfunctionmanager
+        assert isinstance(transfer_function_manager, ITransferFunctionManager)
+        assert isinstance(robot_comm_adapter, IRobotCommunicationAdapter)
+        assert isinstance(brain_comm_adapter, IBrainCommunicationAdapter)
+
+        self.tfm = transfer_function_manager
+        self.rcm = robot_comm_adapter
+        self.bcm = brain_comm_adapter
         self.simtime = 0.0
         self.end_flag = end_flag
 
@@ -86,8 +97,11 @@ class TransferFunctionsThread(threading.Thread):
         """
         while True:
             self.start_flag.wait()
-            self.tfm.run_neuron_to_robot(self.simtime)
-            self.tfm.run_robot_to_neuron(self.simtime)
+            t = self.simtime
+            self.bcm.refresh_buffers(t)
+            self.rcm.refresh_buffers(t)
+            self.tfm.run_neuron_to_robot(t)
+            self.tfm.run_robot_to_neuron(t)
             self.start_flag.clear()
             self.end_flag.set()
 
@@ -100,36 +114,44 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
     """
 
     def __init__(self,
-                 robotcontroladapter,
-                 braincontroladapter,
-                 transferfunctionmanager,
+                 robot_control_adapter,
+                 robot_comm_adapter,
+                 brain_control_adapter,
+                 brain_comm_adapter,
+                 transfer_function_manager,
                  dt):
         """
         Create an instance of the cle.
-        :param robotcontroladapter: an instance of IRobotContolAdapter
-        :param braincontroladapter: an instance of IBrainContolAdapter
-        :param transferfunctionmanager: an instance of ITransferFunctionManager
+        :param robot_control_adapter: an instance of IRobotContolAdapter
+        :param robot_comm_adapter: an instance of IRobotCommunicationAdapter
+        :param brain_control_adapter: an instance of IBrainContolAdapter
+        :param brain_comm_adapter: an instance of IBraimCommunicationAdapter
+        :param transfer_function_manager: an instance of ITransferFunctionManager
         :param dt: The CLE time step in seconds
         """
         super(ClosedLoopEngine, self).__init__()
         self.daemon = True
 
         # set up the robot control adapter thread
-        self.rca = robotcontroladapter
+        assert isinstance(robot_control_adapter, IRobotControlAdapter)
+        self.rca = robot_control_adapter
         self.rct_flag = threading.Event()
         self.rct = ControlThread(self.rca, self.rct_flag)
         self.rct.start()
 
         # set up the brain control adapter thread
-        self.bca = braincontroladapter
+        assert isinstance(brain_control_adapter, IBrainControlAdapter)
+        self.bca = brain_control_adapter
         self.bct_flag = threading.Event()
         self.bct = ControlThread(self.bca, self.bct_flag)
         self.bct.start()
 
         # set up the transfer function thread
-        self.tfm = transferfunctionmanager
+        assert isinstance(transfer_function_manager, ITransferFunctionManager)
+        self.tfm = transfer_function_manager
         self.tft_flag = threading.Event()
-        self.tft = TransferFunctionsThread(self.tfm, self.tft_flag)
+        self.tft = TransferFunctionsThread(self.tfm, robot_comm_adapter, brain_comm_adapter,
+                                           self.tft_flag)
         self.tft.start()
 
         # default timestep

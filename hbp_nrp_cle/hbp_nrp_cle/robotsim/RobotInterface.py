@@ -5,6 +5,8 @@ exchange and control of the simulation
 
 __author__ = 'GeorgHinkel'
 
+# pylint: disable=W0613
+
 
 class Topic(object):
     """
@@ -73,6 +75,14 @@ class IRobotPublishedTopic(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def reset(self, transfer_function_manager):
+        """
+        Resets the published topic
+        :param transfer_function_manager: The transfer function manager the publisher belongs to
+        :return: The reset adapter
+        """
+        return self
+
 
 class IRobotSubscribedTopic(object):  # pragma: no cover
     """
@@ -93,6 +103,14 @@ class IRobotSubscribedTopic(object):  # pragma: no cover
         Gets the current value of the subscribed topic
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset(self, transfer_function_manager):
+        """
+        Resets the subscribed topic
+        :param transfer_function_manager: The transfer function manager the subscriber belongs to
+        :return: The reset adapter
+        """
+        return self
 
 
 class IRobotCommunicationAdapter(object):  # pragma: no cover

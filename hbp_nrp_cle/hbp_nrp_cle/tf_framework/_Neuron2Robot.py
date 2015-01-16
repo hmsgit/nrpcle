@@ -9,22 +9,20 @@ from hbp_nrp_cle.robotsim.RobotInterface import Topic
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, \
-    ICustomDevice
-from ._Robot2Neuron import Robot2Neuron
+    ICustomDevice, IBrainCommunicationAdapter
 from . import config
+from ._TransferFunction import TransferFunction
 
 import inspect
 
 
-class MapNeuronParameter(object):
+class MapSpikeSink(object):
     """
-    Class to map parameters to neurons
+    Class to map parameters to spike sinks such as leaky integrators
     """
 
     supported_device_types = [ISpikeDetector, ILeakyIntegratorAlpha, ILeakyIntegratorExp,
-                              IPoissonSpikeGenerator, IFixedSpikeGenerator,
-                              IDCSource, IACSource, INCSource, IPopulationRate,
-                              ICustomDevice]
+                              IPopulationRate]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """
@@ -37,31 +35,32 @@ class MapNeuronParameter(object):
         self.__value = value
         self.__key = key
         if not isinstance(device_type, ICustomDevice):
-            if not device_type in MapNeuronParameter.supported_device_types:
+            if not self.is_supported(device_type):
                 raise Exception("Device type is not supported")
         self.__device_type = device_type
         self.__config = kwargs
 
-    def __call__(self, n2r):  # -> object:
+    def __call__(self, transfer_function):  # -> object:
         """
         Applies the parameter mapping to the given transfer function
         """
-        if isinstance(n2r, Neuron2Robot):
-            neurons = n2r.neuron_params
+        if isinstance(transfer_function, TransferFunction):
+            neurons = transfer_function.params
             for i in range(0, len(neurons)):
                 if neurons[i] == self.__key:
                     neurons[i] = self
-                    return n2r
-        elif isinstance(n2r, Robot2Neuron):
-            params = n2r.params
-            for i in range(0, len(params)):
-                if params[i] == self.__key:
-                    params[i] = self
-                    return n2r
+                    return transfer_function
         else:
-            raise Exception("Can only map parameters for neuron2robot objects")
+            raise Exception("Can only map parameters for transfer functions")
         raise Exception(
             "Could not map parameter as no parameter with the name " + self.__key + " exists")
+
+    def is_supported(self, device_type):  # pylint: disable=R0201
+        """
+        Gets a value indicating whether the given device type is supported
+        :param device_type: The device type that should be looked for
+        """
+        return device_type in MapSpikeSink.supported_device_types
 
     @property
     def neurons(self):
@@ -91,31 +90,55 @@ class MapNeuronParameter(object):
         """
         return self.__key
 
+    def create_adapter(self, transfer_function_manager):
+        """
+        Replaces the current mapping operator with the mapping result
+        """
+        adapter = transfer_function_manager.brain_adapter
+        assert isinstance(adapter, IBrainCommunicationAdapter)
+        return adapter.register_spike_sink(self.neurons, self.device_type, **self.config)
 
-class Neuron2Robot(object):
+
+class MapSpikeSource(MapSpikeSink):
+    """
+    Class to map parameters to spike sources such as poisson generators
+    """
+
+    supported_device_types = [IPoissonSpikeGenerator, IFixedSpikeGenerator,
+                              IDCSource, IACSource, INCSource]
+
+    def create_adapter(self, transfer_function_manager):
+        """
+        Replaces the current mapping operator with the mapping result
+        """
+        adapter = transfer_function_manager.brain_adapter
+        assert isinstance(adapter, IBrainCommunicationAdapter)
+        return adapter.register_spike_source(self.neurons, self.device_type, **self.config)
+
+    def is_supported(self, device_type):
+        """
+        Gets a value indicating whether the given device type is supported
+        :param device_type: The device type that should be looked for
+        """
+        return device_type in MapSpikeSource.supported_device_types
+
+
+class Neuron2Robot(TransferFunction):
     """
     Class to represent a transfer function from neurons to robot
     """
 
-    def __init__(self, robot_topic, *other_topics):  # -> None:
+    def __init__(self, robot_topic=None):
         """
         Defines a new transfer function from robots to neurons
         :param robot_topic: the robot topic reference
         :param other_topics: other topics required by this transfer function
         """
-        assert isinstance(robot_topic, Topic)
-        self.__main_robot_topic = robot_topic
-        self.__robot_topics = other_topics
+        super(Neuron2Robot, self).__init__()
+        if robot_topic is not None:
+            assert isinstance(robot_topic, Topic)
+        self.__main_topic = robot_topic
         self.__func = None
-        self.__neuron_params = []
-
-    @property
-    def neuron_params(self):  # -> list:
-        """
-        The neuron parameters are descriptions of the parameters that the transfer functions takes
-        as inputs
-        """
-        return self.__neuron_params
 
     @property
     def topic(self):  # -> Topic:
@@ -123,7 +146,7 @@ class Neuron2Robot(object):
         The main robot topic is the topic that the return value of the transfer function is
         connected to
         """
-        return self.__main_robot_topic
+        return self.__main_topic
 
     @topic.setter
     def topic(self, robot_topic):  # -> None:
@@ -131,14 +154,7 @@ class Neuron2Robot(object):
         Sets the main robot topic
         :param robot_topic: The new main robot topic
         """
-        self.__main_robot_topic = robot_topic
-
-    @property
-    def topics(self):  # -> list:
-        """
-        The robot topics are the robot topics that may be accessed by the current transfer function
-        """
-        return self.__robot_topics
+        self.__main_topic = robot_topic
 
     def __call__(self, func):  # -> Neuron2Robot:
         """
@@ -152,7 +168,7 @@ class Neuron2Robot(object):
         args = inspect.getargspec(func).args
         if args[0] != "t":
             raise Exception("The first parameter of a transfer function must be the time!")
-        self.__neuron_params = list(args)
+        self._params = list(args)
         return self
 
     def replace_params(self):  # -> None:
@@ -160,27 +176,29 @@ class Neuron2Robot(object):
         Replaces strings to neuron references
         if the parameters are not mapped to neurons, voltmeters are generated
         """
-        for i in range(1, len(self.__neuron_params)):
-            if type(self.__neuron_params[i]) == str:
-                param_name = self.__neuron_params[i].lower()
+        for i in range(1, len(self._params)):
+            if type(self._params[i]) == str:
+                param_name = self._params[i].lower()
                 gid = None
                 if param_name.startswith("neuron"):
                     gid = int(param_name[6:])
                 elif param_name.startswith("n"):
                     gid = int(param_name[1:])
-                self.__neuron_params[i] = MapNeuronParameter(self.__neuron_params[i], [gid],
-                                                             ILeakyIntegratorAlpha)
+                self._params[i] = MapSpikeSink(self._params[i], [gid],
+                                                     ILeakyIntegratorAlpha)
 
     def __repr__(self):  # pragma: no cover
-        return "{0} transfers to robot {1} {2} using {3}" \
-            .format(self.__func, self.__main_robot_topic, self.__robot_topics, self.__neuron_params)
+        return "{0} transfers to robot {1} using {2}" \
+            .format(self.__func, self.__main_topic, self._params)
 
     def run(self, t):  # -> None:
         """
         Runs this transfer function at the given simulation time
         :param t: The simulation time
         """
-        self.__neuron_params[0] = t
-        return_value = self.__func(*self.__neuron_params)
+        self._params[0] = t
+        return_value = self.__func(*self._params)
         if return_value is not None:
-            self.__main_robot_topic.send_message(return_value)
+            topic_publisher = self.__main_topic
+            if topic_publisher is not None:
+                topic_publisher.send_message(return_value)

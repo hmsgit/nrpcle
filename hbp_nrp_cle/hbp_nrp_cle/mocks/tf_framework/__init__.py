@@ -3,3 +3,5 @@ This package contains all classes necessary to mock a transfer function manager 
 """
 
 __author__ = 'GeorgHinkel'
+
+from ._MockTransferFunctionManager import MockTransferFunctionManager
