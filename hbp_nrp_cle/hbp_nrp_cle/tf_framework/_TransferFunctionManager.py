@@ -67,6 +67,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         Initializes the transfer Function node with the given name
         :param name: The name for this transfer function node
         """
+        print("Initialize transfer functions node ", name)
         if self.__nestAdapter is None:
             raise Exception("No brain simulation adapter has been specified")
 
@@ -79,6 +80,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         # Wire transfer functions from neuronal simulation to world simulation
         for _n2r in self.__n2r:
             assert isinstance(_n2r, Neuron2Robot)
+            print("Initialize transfer function ", repr(_n2r))
             _n2r.replace_params()
 
             if _n2r.topic is not None:
@@ -92,6 +94,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         # Wire transfer functions from world simulation to neuronal simulation
         for _r2n in self.__r2n:
             assert isinstance(_r2n, Robot2Neuron)
+            print("Initialize transfer function ", repr(_r2n))
             _r2n.check_params()
 
             for i in range(1, len(_r2n.params)):
@@ -190,6 +193,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         Resets the transfer functions
         """
+        print("Resetting transfer functions")
         if self.__nestAdapter is None:
             raise Exception("No brain simulation adapter has been specified")
 

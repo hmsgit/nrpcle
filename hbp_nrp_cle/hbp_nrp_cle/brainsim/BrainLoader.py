@@ -189,7 +189,7 @@ def load_h5_network(path, populations):
     brain = Brain(population)
 
     for p in populations:
-        neurons = sim.PopulationView(population, np.array(populations[p]))
+        neurons = sim.PopulationView(population, populations[p])
         brain.__dict__[p] = neurons
 
     config.brain_root = brain

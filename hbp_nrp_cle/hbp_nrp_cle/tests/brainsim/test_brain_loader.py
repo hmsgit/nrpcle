@@ -5,6 +5,7 @@ brain_loader unit test
 from hbp_nrp_cle.brainsim import BrainLoader
 
 import unittest
+import os
 
 __author__ = 'Lorenzo Vannucci'
 
@@ -22,7 +23,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         Test loading an .h5 file.
         """
-        filename = 'hbp_nrp_cle/hbp_nrp_cle/tests/brainsim/braitenberg.h5'
+        directory = os.path.split(__file__)[0]
+        filename = os.path.join(directory, 'braitenberg.h5')
         BrainLoader.load_h5_network(filename, {'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
 
 
