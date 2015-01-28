@@ -7,3 +7,4 @@ catkin_pkg==0.2.2
 bbp-h5py==2.1.2.0
 progressbar==2.3
 psutil==2.0.0
+lxml==3.3.3
