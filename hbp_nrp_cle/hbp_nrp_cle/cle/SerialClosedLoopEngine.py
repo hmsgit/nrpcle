@@ -177,8 +177,10 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         This function does not return (starts an infinite loop).
         """
         self.stop_flag.clear()
+        self.rca.unpause()
         while not self.stop_flag.isSet():
             self.run_step(self.timestep)
+        self.rca.pause()
 
     def stop(self):
         """

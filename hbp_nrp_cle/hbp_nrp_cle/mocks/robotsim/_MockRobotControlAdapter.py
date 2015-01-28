@@ -84,3 +84,15 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         Resets the physics simulation
         """
         self.__sim_time = 0.0
+
+    def unpause(self):
+        """
+        Unpaused the physics
+        """
+        pass
+
+    def pause(self):
+        """
+        Pause the physics
+        """
+        pass

@@ -29,6 +29,8 @@ class RosControlAdapter(IRobotControlAdapter):
                       'gazebo/set_physics_properties', SetPhysicsProperties)
         rospy.wait_for_service('/gazebo/pause_physics')
         self.__pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty)
+        rospy.wait_for_service('/gazebo/unpause_physics')
+        self.__unpause_client = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
         rospy.wait_for_service('/gazebo/reset_sim')
         self.__reset = rospy.ServiceProxy('gazebo/reset_sim', Empty)
         rospy.wait_for_service('gazebo/end_world')
@@ -125,3 +127,17 @@ class RosControlAdapter(IRobotControlAdapter):
         Resets the physics simulation
         """
         self.__reset()
+
+    def unpause(self):
+        """
+        Unpaused the physics
+        """
+        if (self.is_paused):
+            self.__unpause_client()
+
+    def pause(self):
+        """
+        Pause the physics
+        """
+        if (not self.is_paused):
+            self.__pause_client()
