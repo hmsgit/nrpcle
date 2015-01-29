@@ -444,6 +444,15 @@ void GazeboRosApiPlugin::advertiseServices()
                                                           ros::VoidPtr(), &gazebo_queue_);
   end_world_service_ = nh_->advertiseService(end_world_aso);
 
+  // patched for HBP 
+  std::string delete_lights_service_name("delete_lights");
+  ros::AdvertiseServiceOptions delete_lights_aso =
+    ros::AdvertiseServiceOptions::create<std_srvs::Empty>(
+                                                          delete_lights_service_name,
+                                                          boost::bind(&GazeboRosApiPlugin::deleteLights,this,_1,_2),
+                                                          ros::VoidPtr(), &gazebo_queue_);
+  delete_lights_service_ = nh_->advertiseService(delete_lights_aso);
+
   // patched for HBP
   // Advertise more services on the custom queue
   std::string get_object_properties_service_name("get_visual_properties");
@@ -1490,6 +1499,18 @@ bool GazeboRosApiPlugin::resetSim(std_srvs::Empty::Request &req,std_srvs::Empty:
 bool GazeboRosApiPlugin::endWorld(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res)
 {
   world_->Fini();
+  return true;
+}
+
+// patched for HBP
+bool GazeboRosApiPlugin::deleteLights(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res)
+{
+  LightIter light = gazeboscene_.mutable_light()->begin();
+  for (; light != gazeboscene_.mutable_light()->end(); light++)
+  {
+    gazebo::msgs::Request *msg = gazebo::msgs::CreateRequest("entity_delete",light->name());
+    request_pub_->Publish(*msg,true);
+  }
   return true;
 }
 

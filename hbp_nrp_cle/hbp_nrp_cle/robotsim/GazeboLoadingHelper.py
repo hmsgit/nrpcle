@@ -4,7 +4,8 @@ Helper class for gazebo loading operations
 
 import rospy
 import os
-from gazebo_msgs.srv import SpawnModel
+from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel
+from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion
 from lxml import etree
 
@@ -20,6 +21,12 @@ def load_gazebo_world_file(world_file):
 
     # Load lights
     for light in world_file_sdf.xpath("/sdf/world/light"):
+        # This call will produce errors on the console in this form:
+        # [ WARN] [1422519240.507654550, 234.622000000]: Could not find <model>
+        # or <world> element in sdf, so name and initial position cannot be applied
+        # This is because ROS is based on an old and deprecated version of SDF.
+        # Anyway, regardless of the warning, the lights are loaded with their correct
+        # positions.
         load_gazebo_sdf(light.xpath("@name")[0],
                          "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
                          etree.tostring(light) +
@@ -76,6 +83,30 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
                      initial_pose,
                      "")
     spawn_model_prox.close()
+
+
+def empty_gazebo_world():
+    """
+    Clean up the ROS connected running instance.
+    Remove all models and all lights.
+    """
+
+    rospy.wait_for_service('gazebo/get_world_properties')
+    get_world_properties_proxy = rospy.ServiceProxy('gazebo/get_world_properties',
+                                                    GetWorldProperties)
+    world_properties = get_world_properties_proxy()
+    get_world_properties_proxy.close()
+
+    rospy.wait_for_service('gazebo/delete_model')
+    delete_model_proxy = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
+    for model in world_properties.model_names:
+        delete_model_proxy(model)
+    delete_model_proxy.close()
+
+    rospy.wait_for_service('gazebo/delete_lights')
+    delete_lights_proxy = rospy.ServiceProxy('gazebo/delete_lights', Empty)
+    delete_lights_proxy()
+    delete_lights_proxy.close()
 
 
 def _get_basepath(adjacent_file=None):

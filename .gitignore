@@ -1,5 +1,6 @@
 dist/
 platform_venv/
+build_venv/
 test-reports/
 .coverage
 ci_dep.txt

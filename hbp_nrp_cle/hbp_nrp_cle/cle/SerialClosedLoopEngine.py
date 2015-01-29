@@ -58,7 +58,7 @@ class ControlThread(threading.Thread):
 class SerialClosedLoopEngine(IClosedLoopControl):
     """
     Implementation of the closed loop engine that overcomes the NEST
-    segementation fault problem by serializing the transfer function execution
+    segmentation fault problem by serializing the transfer function execution
     and the brain simulation.
     """
 

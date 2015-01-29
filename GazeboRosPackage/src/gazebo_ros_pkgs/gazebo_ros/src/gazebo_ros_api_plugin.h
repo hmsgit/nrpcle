@@ -234,6 +234,10 @@ public:
 
   // patched for HBP
   /// \brief
+  bool deleteLights(std_srvs::Empty::Request &req,std_srvs::Empty::Response &res);
+
+  // patched for HBP
+  /// \brief
   bool getVisualProperties(gazebo_msgs::GetVisualProperties::Request &req, gazebo_msgs::GetVisualProperties::Response &res);
 
   // patched for HBP
@@ -414,6 +418,7 @@ private:
   ros::ServiceServer reset_sim_time_service_; // patched for HBP
   ros::ServiceServer reset_sim_service_; // patched for HBP
   ros::ServiceServer end_world_service_; // patched for HBP
+  ros::ServiceServer delete_lights_service_; // patched for HBP
   ros::ServiceServer get_object_properties_service_; // patched for HBP
   ros::ServiceServer set_object_properties_service_; // patched for HBP
   ros::ServiceServer get_light_properties_service_;  // patched for HBP
