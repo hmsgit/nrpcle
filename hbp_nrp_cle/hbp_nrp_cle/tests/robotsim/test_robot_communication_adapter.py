@@ -11,6 +11,7 @@ import numpy as np
 #import cv_bridge
 from hbp_nrp_cle.tests.robotsim.ros_test_topics import ROSComTest
 from hbp_nrp_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter
+from testfixtures import log_capture, LogCapture
 
 
 __author__ = 'LarsPfotzer'
@@ -24,32 +25,42 @@ class TestSequenceFunctions(unittest.TestCase):
         '''
         Set up of the test
         '''
-        # Create first instance of the ROSCommunicationAdapter
-        self.rca1 = RosCommunicationAdapter()
-        self.rca1.initialize("MyROSComAdapter1")
+        with LogCapture('hbp_nrp_cle.robotsim.RosCommunicationAdapter') as l:
+            # Create first instance of the ROSCommunicationAdapter
+            self.rca1 = RosCommunicationAdapter()
+            self.rca1.initialize("MyROSComAdapter1")
 
-        # Create float publisher and image subscriber in rca1
-        self.rca1_pub_float = self.rca1.register_publish_topic(
-            ROSComTest.float_test)
-#        self.rca1_sub_image = self.rca1.register_subscribe_topic(
-#            ROSComTest.image_test)
+            # Create float publisher and image subscriber in rca1
+            self.rca1_pub_float = self.rca1.register_publish_topic(
+                ROSComTest.float_test)
+            #        self.rca1_sub_image = self.rca1.register_subscribe_topic(
+            #            ROSComTest.image_test)
 
-        # Create image publisher and float subscriber in rca1
-#        self.rca1_pub_image = self.rca1.register_publish_topic(
-#            ROSComTest.image_test)
-        self.rca1_sub_float = self.rca1.register_subscribe_topic(
-            ROSComTest.float_test)
+            # Create image publisher and float subscriber in rca1
+            #        self.rca1_pub_image = self.rca1.register_publish_topic(
+            #            ROSComTest.image_test)
+            self.rca1_sub_float = self.rca1.register_subscribe_topic(
+                ROSComTest.float_test)
 
-        # Initialize test values (float and cv image)
-        self.test_float = np.float32(1.2)
-#        image_file = os.path.dirname(os.path.abspath(__file__)) + \
-#            '/mouse_eyes_output.png'
-#        self.test_image = cv2.imread(image_file, cv2.IMREAD_COLOR)
+            # Initialize test values (float and cv image)
+            self.test_float = np.float32(1.2)
+            #        image_file = os.path.dirname(os.path.abspath(__file__)) + \
+            #            '/mouse_eyes_output.png'
+            #        self.test_image = cv2.imread(image_file, cv2.IMREAD_COLOR)
 
-        # Wait until subscriber and publisher are initialized!
-        time.sleep(0.5)
+            # Wait until subscriber and publisher are initialized!
+            time.sleep(0.5)
+        l.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'WARNING', 
+                 'ROS node already initialized'),
+                ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO', 
+                 'ros publisher created: \
+topic name = /float_test, topic type = <class \'std_msgs.msg._Float32.Float32\'>'),
+                ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO', 
+                 'ros subscriber created: \
+topic name = /float_test, topic type = <class \'std_msgs.msg._Float32.Float32\'>'))
 
-    def test_float_publisher(self):
+    @log_capture('hbp_nrp_cle.robotsim.RosCommunicationAdapter')
+    def test_float_publisher(self, logcapture):
         '''
         Tests the sending of float values
         '''
@@ -87,6 +98,10 @@ class TestSequenceFunctions(unittest.TestCase):
 #        ch1 = cv2.split(received_image)[0]
 #        cnt = cv2.countNonZero(ch1)
 #        self.assertNotEqual(cnt, 0)
+        logcapture.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO',
+                          'ros message published: topic value = 1.2'),
+                         ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO',
+                          'ros subscriber callback'))
 
     def test_refresh_buffers(self):
         '''

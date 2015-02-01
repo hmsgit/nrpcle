@@ -7,6 +7,9 @@ from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, \
     Topic, PreprocessedTopic, IRobotSubscribedTopic, IRobotPublishedTopic
 import rospy
 # import std_msgs.msg
+import logging
+
+logger = logging.getLogger(__name__)
 
 __author__ = 'GeorgHinkel'
 
@@ -23,8 +26,9 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         try:
             rospy.init_node(name)
+            logger.info("robot comunication adapter initialized")
         except rospy.exceptions.ROSException:
-            print "ROS node already initialized"
+            logger.warn("ROS node already initialized")
 
     def create_topic_publisher(self, topic, config):
         """
@@ -75,8 +79,8 @@ class RosPublishedTopic(IRobotPublishedTopic):
         """
         self.__lastSent = None
         assert isinstance(topic, Topic)
-        print("ros publisher created: topic.name = ", topic.name,
-              " topic.type ", topic.topic_type)
+        logger.info("ros publisher created: topic name = %s, topic type = %s",
+                     topic.name, topic.topic_type)
         self.__pub = rospy.Publisher(topic.name, topic.topic_type,
                                      queue_size=10)
 
@@ -88,8 +92,8 @@ class RosPublishedTopic(IRobotPublishedTopic):
         # if value != self.__lastSent:
         self.__pub.publish(value)
         self.__lastSent = value
-        # print("ros message published: topic name = ", Topic.name,
-        # " topic value = ", value)
+        logger.info("ros message published: topic value = %s",
+                     value)
 
 
 class RosPublishedPreprocessedTopic(RosPublishedTopic):
@@ -129,13 +133,15 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         assert isinstance(topic, Topic)
         self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
                                              self._callback)
+        logger.info("ros subscriber created: topic name = %s, topic type = %s",
+                     topic.name, topic.topic_type)
 
     def _callback(self, data):
         """
         This method is called whenever new data is available from ROS
         :param data: The incoming data on this topic
         """
-        print("ros subscriber callback")
+        logger.info("ros subscriber callback")
         self.__changed = True
         self.__value = data
 

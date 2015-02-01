@@ -9,11 +9,13 @@ from lxml import etree, objectify
 from mock import patch, call, MagicMock, Mock
 from hbp_nrp_cle.tests.robotsim.ros_test_topics import ROSComTest
 from hbp_nrp_cle.robotsim.GazeboLoadingHelper import load_gazebo_sdf, load_gazebo_model_file, load_gazebo_world_file
+from testfixtures import log_capture, LogCapture
 
 
 class TestGazeboLoadingHelper(unittest.TestCase):
 
-    def test_load_gazebo_model_file(self):
+    @log_capture('hbp_nrp_cle.robotsim.GazeboLoadingHelper')
+    def test_load_gazebo_model_file(self, logcapture):
         with patch("hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_gazebo_sdf") as mocked_load_gazebo_sdf:
             test_pose = Pose()
             test_pose.position = Point(1, 2, 3)
@@ -46,8 +48,11 @@ class TestGazeboLoadingHelper(unittest.TestCase):
             self.assertEqual(actualNormalizedString, expectedNormalizedString)
 
             self.assertEqual(mocked_load_gazebo_sdf.call_args_list[0][0][2], test_pose)
+            logcapture.check(('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+                          '../tests/robotsim/sample_model.sdf successfully loaded in Gazebo'))
 
-    def test_load_gazebo_world_file(self):
+    @log_capture('hbp_nrp_cle.robotsim.GazeboLoadingHelper')
+    def test_load_gazebo_world_file(self, logcapture):
         with patch("hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_gazebo_sdf") as mocked_load_gazebo_sdf:
             load_gazebo_world_file("../tests/robotsim/sample_world.sdf")
         expected_calls_args = [[
@@ -135,6 +140,14 @@ class TestGazeboLoadingHelper(unittest.TestCase):
             expectedXML = objectify.fromstring(expected[1])
             expectedNormalizedString = etree.tostring(expectedXML)
             self.assertEqual(actualNormalizedString, expectedNormalizedString)
+        logcapture.check(('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+                          'Loading light "sun1" in Gazebo'),
+                         ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+                          'Loading light "sun2" in Gazebo'),
+                         ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+                          'Loading model "ground_plane" in Gazebo'),
+                         ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+                          '../tests/robotsim/sample_world.sdf successfully loaded in Gazebo'))
 
     def test_load_gazebo_sdf(self):
         with patch("rospy.ServiceProxy") as mocked_service_proxy:

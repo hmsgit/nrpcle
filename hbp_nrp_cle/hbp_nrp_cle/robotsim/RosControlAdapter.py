@@ -8,6 +8,9 @@ import math
 from gazebo_msgs.srv import GetPhysicsProperties, GetWorldProperties, \
                             SetPhysicsProperties, AdvanceSimulation
 from std_srvs.srv import Empty
+import logging
+
+logger = logging.getLogger(__name__)
 
 __author__ = 'NinoCauli'
 
@@ -53,6 +56,8 @@ class RosControlAdapter(IRobotControlAdapter):
             self.__reset()
             self.__time_step = physics.time_step
             self.__is_initialized = True
+
+        logger.info("Robot control adapter initialized")
         return self.__is_initialized
 
     @property
@@ -78,6 +83,9 @@ class RosControlAdapter(IRobotControlAdapter):
             physics.ode_config)
         if (success):
             self.__time_step = time_step
+            logger.info("new time step = %f", self.__time_step)
+        else:
+            logger.warn("impossible to set the new time step")
         return success
 
     @property
@@ -113,6 +121,7 @@ class RosControlAdapter(IRobotControlAdapter):
             simTime = world.sim_time
         else:
             simTime = -1
+            logger.error("dt is not multiple of the physics time step")
             raise ValueError("dt is not multiple of the physics time step")
         return simTime
 
@@ -120,18 +129,21 @@ class RosControlAdapter(IRobotControlAdapter):
         """
         Shuts down the world simulation
         """
+        logger.info("Shutting down the world simulation")
         self.__endWorld()
 
     def reset(self):
         """
         Resets the physics simulation
         """
+        logger.info("Resetting the world simulation")
         self.__reset()
 
     def unpause(self):
         """
         Unpaused the physics
         """
+        logger.info("Unpausing the world simulation")
         if (self.is_paused):
             self.__unpause_client()
 
@@ -139,5 +151,6 @@ class RosControlAdapter(IRobotControlAdapter):
         """
         Pause the physics
         """
+        logger.info("Pausing the world simulation")
         if (not self.is_paused):
             self.__pause_client()

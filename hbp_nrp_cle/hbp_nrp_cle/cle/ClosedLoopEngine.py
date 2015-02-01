@@ -9,6 +9,9 @@ from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
 from hbp_nrp_cle.tf_framework import ITransferFunctionManager
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ControlThread(threading.Thread):
@@ -138,6 +141,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.rct_flag = threading.Event()
         self.rct = ControlThread(self.rca, self.rct_flag)
         self.rct.start()
+        logger.info("robot control adapter ready")
 
         # set up the brain control adapter thread
         assert isinstance(brain_control_adapter, IBrainControlAdapter)
@@ -145,6 +149,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.bct_flag = threading.Event()
         self.bct = ControlThread(self.bca, self.bct_flag)
         self.bct.start()
+        logger.info("brain control adapter ready")
 
         # set up the transfer function thread
         assert isinstance(transfer_function_manager, ITransferFunctionManager)
@@ -153,6 +158,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.tft = TransferFunctionsThread(self.tfm, robot_comm_adapter, brain_comm_adapter,
                                            self.tft_flag)
         self.tft.start()
+        logger.info("transfer function ready")
 
         # default timestep
         self.timestep = dt
@@ -161,6 +167,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.started = False
         self.stop_flag = threading.Event()
         self.stop_flag.set()
+        logger.info("CLE started")
 
         # step wait
         self.running_flag = threading.Event()
@@ -180,6 +187,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.tfm.initialize('tfnode')
         self.clock = 0.0
         self.initialized = True
+        logger.info("CLE initialized")
 
     @property
     def is_initialized(self):
@@ -229,6 +237,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         """
         self.rca.shutdown()
         self.bca.shutdown()
+        logger.info("simulations shutdown")
 
     def start(self):
         """
@@ -239,6 +248,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
             threading.Thread.start(self)
         else:
             self.stop_flag.set()
+        logger.info("simulation started")
 
     def run(self):
         """
@@ -253,6 +263,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         Stops the orchestrated simulations.
         """
         self.stop_flag.clear()
+        logger.info("simulation stopped")
 
     def reset(self):
         """
@@ -264,6 +275,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.bca.reset()
         self.tfm.reset()
         self.clock = 0.0
+        logger.info("CLE reset")
 
     @property
     def time(self):

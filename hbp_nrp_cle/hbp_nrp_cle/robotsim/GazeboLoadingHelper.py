@@ -8,6 +8,9 @@ from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion
 from lxml import etree
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def load_gazebo_world_file(world_file):
@@ -27,16 +30,19 @@ def load_gazebo_world_file(world_file):
         # This is because ROS is based on an old and deprecated version of SDF.
         # Anyway, regardless of the warning, the lights are loaded with their correct
         # positions.
+        logger.info("Loading light \"%s\" in Gazebo", light.xpath("@name")[0])
         load_gazebo_sdf(light.xpath("@name")[0],
                          "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
                          etree.tostring(light) +
                          "</sdf>")
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
+        logger.info("Loading model \"%s\" in Gazebo", model.xpath("@name")[0])
         load_gazebo_sdf(model.xpath("@name")[0],
                          "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
                          etree.tostring(model) +
                          "</sdf>")
+    logger.info("%s successfully loaded in Gazebo", world_file)
 
 
 def load_gazebo_model_file(model_name, model_file, initial_pose=None):
@@ -57,6 +63,7 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
 
     # spawn model
     load_gazebo_sdf(model_name, model_sdf, initial_pose)
+    logger.info("%s successfully loaded in Gazebo", model_file)
 
 
 def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):

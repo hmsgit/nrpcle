@@ -6,6 +6,9 @@ moduleauthor: probst@fzi.de
 from .BrainInterface import IBrainControlAdapter
 import pyNN.nest as sim
 from . import BrainLoader
+import logging
+
+logger = logging.getLogger(__name__)
 
 __author__ = 'DimitriProbst'
 
@@ -49,6 +52,9 @@ class PyNNControlAdapter(IBrainControlAdapter):
                                             self.__populations)
             self.__is_initialized = True
             self.__is_alive = True
+            logger.info("neuronal simulator initialized")
+        else:
+            logger.warn("trying to initialize an already initialized controller")
         return self.__is_initialized
 
     def is_alive(self):  # -> bool:
@@ -71,6 +77,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         self.__is_alive = False
         sim.end()
+        logger.info("neuronal simulator ended")
 
     def reset(self):  # -> None:
         """
@@ -84,3 +91,4 @@ class PyNNControlAdapter(IBrainControlAdapter):
         if not self.__network_file == '':
             BrainLoader.load_h5_network(self.__network_file,
                                         self.__populations)
+        logger.info("neuronal simulator reset")

@@ -9,6 +9,7 @@ from hbp_nrp_cle.mocks.tf_framework import MockTransferFunctionManager
 
 import unittest
 import time
+from testfixtures import log_capture, LogCapture
 
 __author__ = 'Nino Cauli'
 
@@ -24,13 +25,24 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         Sets up the cle and the mocks for the adapters.
         """
-        rca = MockRobotControlAdapter()
-        rcm = MockRobotCommunicationAdapter()
-        bca = MockBrainControlAdapter()
-        bcm = MockBrainCommunicationAdapter()
-        tfm = MockTransferFunctionManager()
-        self._cle = ClosedLoopEngine(rca, rcm, bca, bcm, tfm, 0.01)
-        self._cle.initialize()
+        with LogCapture('hbp_nrp_cle.cle.ClosedLoopEngine') as l:
+            rca = MockRobotControlAdapter()
+            rcm = MockRobotCommunicationAdapter()
+            bca = MockBrainControlAdapter()
+            bcm = MockBrainCommunicationAdapter()
+            tfm = MockTransferFunctionManager()
+            self._cle = ClosedLoopEngine(rca, rcm, bca, bcm, tfm, 0.01)
+            self._cle.initialize()
+        l.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                 'robot control adapter ready'),
+                ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                 'brain control adapter ready'),
+                ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                 'transfer function ready'),
+                ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                 'CLE started'),
+                ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                 'CLE initialized'))
 
     def test_run_step(self):
         """
@@ -46,7 +58,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         self._cle.wait_step()
         self.assertEqual(self._cle.time, 0.05)
 
-    def test_start_stop(self):
+    @log_capture('hbp_nrp_cle.cle.ClosedLoopEngine')
+    def test_start_stop(self, logcapture):
         """
         Test start, pause and restart.
         """
@@ -58,18 +71,34 @@ class TestClosedLoopEngine(unittest.TestCase):
         time.sleep(2)
         self._cle.stop()
         time.sleep(1)
+        logcapture.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'simulation started'),
+                         ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'simulation stopped'),
+                         ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'simulation started'),
+                         ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'simulation stopped'))
 
-    def test_reset(self):
+    @log_capture('hbp_nrp_cle.cle.ClosedLoopEngine')
+    def test_reset(self, logcapture):
         self._cle.run_step(0.05)
         self._cle.wait_step()
         self._cle.reset()
         self.assertEqual(self._cle.time, 0.0)
+        logcapture.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'simulation stopped'),
+                         ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'CLE reset'))
 
-    def test_shutdown(self):
+    @log_capture('hbp_nrp_cle.cle.ClosedLoopEngine')
+    def test_shutdown(self, logcapture):
         """
         Test shutdown.
         """
         self._cle.shutdown()
+        logcapture.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
+                          'simulations shutdown'))
 
 
 if __name__ == '__main__':

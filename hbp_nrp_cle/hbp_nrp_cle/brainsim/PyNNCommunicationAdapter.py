@@ -17,6 +17,9 @@ from .__devices.PyNNLeakyIntegratorExp import PyNNLeakyIntegratorExp
 from .__devices.PyNNPopulationRate import PyNNPopulationRate
 from .__devices.PyNNSpikeRecorder import PyNNSpikeRecorder
 from .__devices.PyNNDeviceGroup import PyNNDeviceGroup
+import logging
+
+logger = logging.getLogger(__name__)
 
 __author__ = 'DimitriProbst'
 
@@ -50,6 +53,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         Marks the PyNN adapter as initialized
         """
         self.__is_initialized = True
+        logger.info("PyNN communication adapter initialized")
 
     def register_spike_source(self, populations, spike_generator_type, **params):
         """
@@ -67,6 +71,9 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                 spike_generator_type](**params)
             device.connect(populations, **params)
             self.__generator_devices.append(device)
+            logger.info("Communication object with spike generator\
+ type \"%s\" requested (device)",
+                        spike_generator_type)
             return device
         else:
             device_list = []
@@ -77,6 +84,9 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                 device_list.append(device)
             self.__generator_devices += device_list
             device_group = PyNNDeviceGroup(device_list)
+            logger.info("Communication object with spike generator\
+ type \"%s\" requested (device group)",
+                        spike_generator_type)
             return device_group
 
     def register_spike_sink(self, populations, spike_detector_type, **params):
@@ -95,6 +105,9 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                 spike_detector_type](**params)
             device.connect(populations, **params)
             self.__detector_devices.append(device)
+            logger.info("Communication object with spike detector\
+ type \"%s\" requested (device)",
+                        spike_detector_type)
             return device
         else:
             device_list = []
@@ -105,6 +118,9 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                 device_list.append(device)
             self.__detector_devices += device_list
             device_group = PyNNDeviceGroup(device_list)
+            logger.info("Communication object with spike detector\
+ type \"%s\" requested (device group)",
+                        spike_detector_type)
             return device_group
 
     def refresh_buffers(self, t):
