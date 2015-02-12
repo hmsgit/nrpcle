@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def load_gazebo_world_file(world_file):
+def load_gazebo_world_file(world_file, notification_fn=None):
     """
     Load a sdf world file into the ROS connected gazebo running instance.
     :param world_file: The name of the world inside the NRP_MODELS_DIRECTORY \
@@ -31,17 +31,21 @@ def load_gazebo_world_file(world_file):
         # Anyway, regardless of the warning, the lights are loaded with their correct
         # positions.
         logger.info("Loading light \"%s\" in Gazebo", light.xpath("@name")[0])
+        if (notification_fn is not None):
+            notification_fn("Loading light " + light.xpath("@name")[0], False)
         load_gazebo_sdf(light.xpath("@name")[0],
-                         "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
-                         etree.tostring(light) +
-                         "</sdf>")
+                        "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
+                        etree.tostring(light) +
+                        "</sdf>")
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
         logger.info("Loading model \"%s\" in Gazebo", model.xpath("@name")[0])
+        if (notification_fn is not None):
+            notification_fn("Loading model " + model.xpath("@name")[0], False)
         load_gazebo_sdf(model.xpath("@name")[0],
-                         "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
-                         etree.tostring(model) +
-                         "</sdf>")
+                        "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
+                        etree.tostring(model) +
+                        "</sdf>")
     logger.info("%s successfully loaded in Gazebo", world_file)
 
 
@@ -56,11 +60,9 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
     :param initial_pose: Initial pose of the model. Uses the Gazebo \
         "Pose" type.
     """
-
     model_file_sdf = open(os.path.join(_get_basepath(__file__), model_file), 'r')
     model_sdf = model_file_sdf.read()
     model_file_sdf.close()
-
     # spawn model
     load_gazebo_sdf(model_name, model_sdf, initial_pose)
     logger.info("%s successfully loaded in Gazebo", model_file)
@@ -74,13 +76,11 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
     :param initial_pose: Initial pose of the model. Uses the Gazebo \
         "Pose" type.
     """
-
     # set initial pose
     if initial_pose is None:
         initial_pose = Pose()
         initial_pose.position = Point(0, 0, 0)
         initial_pose.orientation = Quaternion(0, 0, 0, 1)
-
     # spawn model
     rospy.wait_for_service('/gazebo/spawn_sdf_model')
     spawn_model_prox = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
@@ -92,7 +92,7 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
     spawn_model_prox.close()
 
 
-def empty_gazebo_world():
+def empty_gazebo_world(notification_fn=None):
     """
     Clean up the ROS connected running instance.
     Remove all models and all lights.
@@ -107,9 +107,13 @@ def empty_gazebo_world():
     rospy.wait_for_service('gazebo/delete_model')
     delete_model_proxy = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
     for model in world_properties.model_names:
+        if (notification_fn is not None):
+            notification_fn("Cleaning model " + model, False)
         delete_model_proxy(model)
     delete_model_proxy.close()
 
+    if (notification_fn is not None):
+        notification_fn("Cleaning lights", False)
     rospy.wait_for_service('gazebo/delete_lights')
     delete_lights_proxy = rospy.ServiceProxy('gazebo/delete_lights', Empty)
     delete_lights_proxy()

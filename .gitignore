@@ -12,3 +12,5 @@ coverage.xml
 packages/
 rpmbuild/
 build/
+.project
+.pydevproject

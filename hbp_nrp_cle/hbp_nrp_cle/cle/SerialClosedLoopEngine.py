@@ -101,9 +101,13 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         # default timestep
         self.timestep = dt
 
-        # main thread control
+        # stop flag ask the main loop to stop
         self.stop_flag = threading.Event()
         self.stop_flag.clear()
+
+        # stopped flag indicate if the main loop is stopped
+        self.stopped_flag = threading.Event()
+        self.stopped_flag.set()
 
         # step wait
         self.running_flag = threading.Event()
@@ -168,6 +172,9 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         """
         Shuts down both simulations.
         """
+        self.stop_flag.set()
+        self.stopped_flag.wait(5)
+        self.tfm.shutdown()
         self.rca.shutdown()
         self.bca.shutdown()
 
@@ -178,9 +185,11 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         """
         self.stop_flag.clear()
         self.rca.unpause()
+        self.stopped_flag.clear()
         while not self.stop_flag.isSet():
             self.run_step(self.timestep)
         self.rca.pause()
+        self.stopped_flag.set()
 
     def stop(self):
         """

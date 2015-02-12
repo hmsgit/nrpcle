@@ -92,3 +92,8 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         """
         Resets the transfer functions
         """
+
+    def shutdown(self):
+        """
+        Shutdown the tf manager
+        """

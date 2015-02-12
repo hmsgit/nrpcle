@@ -19,6 +19,9 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     Represents a robot communication adapter actually using ROS
     """
 
+    def __init__(self):
+        IRobotCommunicationAdapter.__init__(self)
+
     def initialize(self, name):
         """
         Initializes this robot communication adapter
@@ -26,7 +29,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         try:
             rospy.init_node(name)
-            logger.info("robot comunication adapter initialized")
+            logger.info("Robot comunication adapter initialized")
         except rospy.exceptions.ROSException:
             logger.warn("ROS node already initialized")
 
@@ -79,7 +82,7 @@ class RosPublishedTopic(IRobotPublishedTopic):
         """
         self.__lastSent = None
         assert isinstance(topic, Topic)
-        logger.info("ros publisher created: topic name = %s, topic type = %s",
+        logger.info("ROS publisher created: topic name = %s, topic type = %s",
                      topic.name, topic.topic_type)
         self.__pub = rospy.Publisher(topic.name, topic.topic_type,
                                      queue_size=10)
@@ -90,10 +93,21 @@ class RosPublishedTopic(IRobotPublishedTopic):
         :param value: The message to be sent
         """
         # if value != self.__lastSent:
-        self.__pub.publish(value)
-        self.__lastSent = value
-        logger.info("ros message published: topic value = %s",
-                     value)
+        if self.__pub is not None:
+            self.__pub.publish(value)
+            self.__lastSent = value
+            logger.debug("ROS message published: topic value = %s",
+                         value)
+        else:
+            logger.error("Trying to publish messages on an unregistered topic")
+
+    def unregister(self):
+        """
+        Unregister the Topic. After this call, nobody can publish
+        anymore.
+        """
+        self.__pub.unregister()
+        self.__pub = None
 
 
 class RosPublishedPreprocessedTopic(RosPublishedTopic):
@@ -133,7 +147,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         assert isinstance(topic, Topic)
         self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
                                              self._callback)
-        logger.info("ros subscriber created: topic name = %s, topic type = %s",
+        logger.info("ROS subscriber created: topic name = %s, topic type = %s",
                      topic.name, topic.topic_type)
 
     def _callback(self, data):
@@ -141,7 +155,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         This method is called whenever new data is available from ROS
         :param data: The incoming data on this topic
         """
-        logger.info("ros subscriber callback")
+        logger.debug("ROS subscriber callback")
         self.__changed = True
         self.__value = data
 

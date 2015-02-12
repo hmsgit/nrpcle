@@ -18,5 +18,5 @@ Two implementation of the CLE interface are given:
     by running the neural simulation and the transfer functions in the same
     thread, obviously reducing the performances.
 
-The ROSCLEWrapper module provides utility classes to run the Closed Loop
+The ROSCLEServer module provides utility classes to run the Closed Loop
 Engine in a separate process, while comunicating with it through ROS services.

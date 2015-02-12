@@ -1,5 +1,8 @@
 #!/bin/sh -x
 
+# This file is not used anymore in production (as of 2015-02-11)
+# but could still be used to build RPM packages.
+
 if [ "$(id -u)" == "0" ]; then
   echo "Build shouldn't be done as root" 1>&2
   exit 1

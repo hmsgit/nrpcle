@@ -106,6 +106,16 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)
 
+    def shutdown(self):
+        """
+        Shutdown the manager and clean up registered topics.
+        After this call, the manager is not usable anymore.
+        """
+        for _n2r in self.__n2r:
+            if _n2r.topic is not None:
+                print ("unregister topic", repr(_n2r))
+                _n2r.topic.unregister()
+
     @staticmethod
     def __select_neurons(neurons):
         """

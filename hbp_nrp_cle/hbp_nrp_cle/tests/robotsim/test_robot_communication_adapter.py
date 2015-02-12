@@ -50,13 +50,13 @@ class TestSequenceFunctions(unittest.TestCase):
 
             # Wait until subscriber and publisher are initialized!
             time.sleep(0.5)
-        l.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'WARNING', 
-                 'ROS node already initialized'),
+        l.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO', 
+                 'Robot comunication adapter initialized'),
                 ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO', 
-                 'ros publisher created: \
+                 'ROS publisher created: \
 topic name = /float_test, topic type = <class \'std_msgs.msg._Float32.Float32\'>'),
                 ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO', 
-                 'ros subscriber created: \
+                 'ROS subscriber created: \
 topic name = /float_test, topic type = <class \'std_msgs.msg._Float32.Float32\'>'))
 
     @log_capture('hbp_nrp_cle.robotsim.RosCommunicationAdapter')
@@ -98,10 +98,10 @@ topic name = /float_test, topic type = <class \'std_msgs.msg._Float32.Float32\'>
 #        ch1 = cv2.split(received_image)[0]
 #        cnt = cv2.countNonZero(ch1)
 #        self.assertNotEqual(cnt, 0)
-        logcapture.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO',
-                          'ros message published: topic value = 1.2'),
-                         ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO',
-                          'ros subscriber callback'))
+        logcapture.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'DEBUG',
+                          'ROS message published: topic value = 1.2'),
+                         ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'DEBUG',
+                          'ROS subscriber callback'))
 
     def test_refresh_buffers(self):
         '''
