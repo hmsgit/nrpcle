@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>ROSCLEServicesDefinitions</name>
+  <version>0.0.0</version>
+  <description>The ROSCLEServicesDefinitions package</description>
+  <maintainer email="bbp-dev-neuroroboticsplatform@groupes.epfl.ch">HBP SP10 neurorobotics team</maintainer>
+  <license>Undefined</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>
