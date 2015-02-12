@@ -9,7 +9,7 @@ from std_msgs.msg import String
 from std_srvs.srv import Empty
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of the CLE (this) repository.
-from ROSCLEServicesDefinitions import srv
+from cle_ros_msgs import srv
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"

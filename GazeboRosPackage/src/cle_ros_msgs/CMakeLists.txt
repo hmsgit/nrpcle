@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ROSCLEServicesDefinitions)
+project(cle_ros_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -40,11 +40,12 @@ find_package(catkin REQUIRED message_generation std_msgs)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+   FILES
+   SpikeCount.msg
+   SpikeRate.msg
+   SpikeEvent.msg
+)
 
 ## Generate services in the 'srv' folder
 add_service_files(

@@ -11,7 +11,7 @@ import argparse
 import sys
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of the CLE (this) repository.
-from ROSCLEServicesDefinitions import srv
+from cle_ros_msgs import srv
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 

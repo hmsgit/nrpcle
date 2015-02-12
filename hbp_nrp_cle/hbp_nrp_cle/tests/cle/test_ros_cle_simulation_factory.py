@@ -9,7 +9,7 @@ from testfixtures import log_capture
 import unittest
 import json
 import threading
-from ROSCLEServicesDefinitions import srv
+from cle_ros_msgs import srv
 import os
 
 __author__ = 'HBP NRP software team'
