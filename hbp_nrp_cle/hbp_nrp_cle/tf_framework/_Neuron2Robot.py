@@ -96,7 +96,8 @@ class MapSpikeSink(object):
         """
         adapter = transfer_function_manager.brain_adapter
         assert isinstance(adapter, IBrainCommunicationAdapter)
-        return adapter.register_spike_sink(config.brain_root.actors,
+        neurons = config.brain_root.actors[self.neurons.index]
+        return adapter.register_spike_sink(neurons,
                                            self.device_type,
                                            **self.config)
 
@@ -115,7 +116,8 @@ class MapSpikeSource(MapSpikeSink):
         """
         adapter = transfer_function_manager.brain_adapter
         assert isinstance(adapter, IBrainCommunicationAdapter)
-        return adapter.register_spike_source(config.brain_root.sensors,
+        neurons = config.brain_root.sensors[self.neurons.index]
+        return adapter.register_spike_source(neurons,
                                              self.device_type,
                                              **self.config)
 

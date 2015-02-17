@@ -17,10 +17,13 @@ class Test1(unittest.TestCase):
 
         nrp.start_new_tf_manager()
 
+        brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
+
         # The annotation Neuron2Robot registers this function as a transfer function
         # As the parameter neuron0 is not explicitly mapped, the framework will assume a mapping
         # to the neuron with the GID 0 and associate with a leaky_integrator_alpha for this neuron
-        @nrp.MapSpikeSink("neuron0", [[10, 13], [10, 14]], nrp.leaky_integrator_alpha,
+        @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)])
         @nrp.Neuron2Robot(Husky.RightArm.pose)
         def right_arm(t, neuron0):
@@ -30,9 +33,9 @@ class Test1(unittest.TestCase):
         # This time, the neuron parameter is explicitly mapped to an array of neurons
         # More precisely, the parameter is mapped to a group of __devices that are each connected to a single neuron
         # The neuron2 parameter will thus be a list of recorders
-        @nrp.MapSpikeSink("neuron1", [[42, 23, 41], [0, 8, 15]], nrp.leaky_integrator_alpha,
+        @nrp.MapSpikeSink("neuron1", nrp.brain.actors[slice(2, 4, 1)], nrp.leaky_integrator_alpha,
                                 updates=[(1.0, 0.4)], v_rest=1.0)
-        @nrp.MapSpikeSink("neuron2", [[42, 23], [0, 8, 15]], nrp.leaky_integrator_alpha,
+        @nrp.MapSpikeSink("neuron2", nrp.brain.actors[slice(4, 6, 1)], nrp.leaky_integrator_alpha,
                                 updates=[(1.0, 0.4)], v_rest=1.0)
         @nrp.Neuron2Robot(Husky.LeftArm.twist)
         def left_arm_tw(t, neuron1, neuron2):
@@ -53,18 +56,22 @@ class Test1(unittest.TestCase):
         # physical Nest device, but do some processing internally and use a less specialized
         # device type internally
         @nrp.MapRobotSubscriber("camera", Husky.Eye.camera)
-        @nrp.MapSpikeSource("camera_device", range(45, 645),
+        @nrp.MapSpikeSource("camera_device", nrp.brain.sensors[slice(0, 600, 1)],
                                 TestDevice())
         @nrp.Robot2Neuron()
         def transform_camera(t, camera, camera_device):
             if camera.changed:
                 camera_device.inner.amplitude = 42.0
 
-        brain = MockBrainCommunicationAdapter()
-        robot = MockRobotCommunicationAdapter()
-
         nrp.set_nest_adapter(brain)
         nrp.set_robot_adapter(robot)
+
+        brain.__dict__["actors"] = [[10, 13], [10, 14]]
+        brain.__dict__["actors"] += [[42, 23, 41], [0, 8, 15]]
+        brain.__dict__["actors"] += [[42, 23], [0, 8, 15]]
+        brain.__dict__["sensors"] = range(45, 645)
+        config.brain_root = brain
+
         nrp.initialize("MyTransferFunctions")
 
         husky_right_arm = right_arm.topic
