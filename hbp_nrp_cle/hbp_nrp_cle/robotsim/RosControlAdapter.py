@@ -130,7 +130,7 @@ class RosControlAdapter(IRobotControlAdapter):
         Shuts down the world simulation
         """
         logger.info("Shutting down the world simulation")
-        self.__endWorld()
+        # Do not call endWorld here, it makes Gazebo Stop !
 
     def reset(self):
         """
