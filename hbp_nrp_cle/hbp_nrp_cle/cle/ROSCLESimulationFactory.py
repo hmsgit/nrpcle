@@ -54,11 +54,6 @@ class ROSCLESimulationFactory(object):
         if ((self.running_simulation_thread is None) or
                 (not self.running_simulation_thread.is_alive())):
             logger.info("No simulation running, starting a new simulation.")
-            # Avoid zombie threads
-            if (self.running_simulation_thread is not None):
-                # The join should always work since we checked previously that
-                # the thread is not running (with the is_alive() call).
-                self.running_simulation_thread.join(timeout=1)
 
             # Currently, gazebo enters an infinite loop when restarting. This call
             # should be cleaned when the bug will be fixed.
@@ -68,9 +63,10 @@ class ROSCLESimulationFactory(object):
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
             self.running_simulation_thread = threading.Thread(
-                target=self.simulation,
+                target=self.__simulation,
                 args=(service_request.environment_file,
-                      service_request.generated_cle_script_file))
+                      service_request.generated_cle_script_file)
+            )
             self.running_simulation_thread.daemon = True
             logger.info("Spawning new thread that will manage the experiment execution.")
             self.running_simulation_thread.start()
@@ -83,7 +79,7 @@ class ROSCLESimulationFactory(object):
         return [result, error_message]
 
     # pylint: disable=R0201
-    def simulation(self, environment_file, generated_cle_script_file):
+    def __simulation(self, environment_file, generated_cle_script_file):
         """
         Main simulation method. Start the simulation from the given script file.
         :param: environment_file: Gazebo world file containing
