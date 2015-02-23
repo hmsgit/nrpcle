@@ -8,10 +8,30 @@ from mock import patch, MagicMock
 from testfixtures import log_capture
 import unittest
 import json
+import threading
+from functools import wraps
+from multiprocessing import Process
 
 
 __author__ = 'HBP NRP software team'
 
+# Code for timeout decorator from
+# http://stackoverflow.com/questions/14366761/
+class TimeoutError(Exception):
+    pass
+
+def timeout(seconds=5, error_message="Timeout"):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            process = Process(None, func, None, args, kwargs)
+            process.start()
+            process.join(seconds)
+            if process.is_alive():
+                process.terminate()
+                raise TimeoutError(error_message)
+
+        return wraps(func)(wrapper)
+    return decorator
 
 class TestROSCLEServer(unittest.TestCase):
 
@@ -59,9 +79,29 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertEqual(4, self.__mocked_rospy.Service.call_count)
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
 
-    # TODO(Stefan) test the main method as well!
-    def test_main(self):
-        pass
+    def __get_handlers_for_testing_main(self):
+        self.__mocked_cle.is_initialized = True
+        self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
+
+        # Get the ROS Service handlers; this will always be the third argument.
+        start_handler = self.__mocked_rospy.Service.call_args_list[0][0][2]
+        pause_handler = self.__mocked_rospy.Service.call_args_list[1][0][2]
+        stop_handler = self.__mocked_rospy.Service.call_args_list[2][0][2]
+        reset_handler = self.__mocked_rospy.Service.call_args_list[3][0][2]
+
+        return (start_handler, pause_handler, stop_handler, reset_handler)
+
+    @timeout(10, "Main loop did not terminate")
+    def test_main_termination(self):
+        (_, _, stop_handler, _) = self.__get_handlers_for_testing_main()
+        # start a timer which calls the registered stop handler after 5 seconds
+        timer = threading.Timer(5, stop_handler, ['irrelevant_argument'])
+        timer.start()
+        # now start the "infinite loop"
+        self.__ros_cle_server.main()
+
+        self.__mocked_cle.stop.assert_called_once_with()
+        self.__mocked_cle.wait_step.assert_called_once_with()
 
     def test_run(self):
         self.__ros_cle_server.run()

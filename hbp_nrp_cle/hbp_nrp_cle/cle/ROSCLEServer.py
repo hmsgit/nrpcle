@@ -22,6 +22,82 @@ class ROSCLEServer(threading.Thread):
     ROS_CLE_NODE_NAME = "ros_cle_simulation"
     ROS_CLE_URI_PREFIX = "/" + ROS_CLE_NODE_NAME
 
+    class State(object):
+        """
+        Represents the state in which a ROSCLEServer instance can be.
+        This is the base class defining the basic behavior, which means
+        that no transitions are to be made to other states and this base
+        state itself is not a final state.
+        """
+        def __init__(self, context):
+            self._context = context
+            self._is_final = False
+
+        # We disable the docstring here since there is nothing more to say than
+        # what the method name already reveals.
+        # pylint: disable=missing-docstring
+        def reset_simulation(self, _):
+            pass
+
+        def stop_simulation(self, _):
+            pass
+
+        def pause_simulation(self, _):
+            pass
+
+        def start_simulation(self, _):
+            pass
+
+        def is_final_state(self):
+            return self._is_final
+
+    class InitialState(State):
+        """
+        The initial state in which an instance of ROSCLEServer starts its lifecycle.
+        """
+        def start_simulation(self, _):
+            result = self._context.start_simulation()
+            self._context.set_state(ROSCLEServer.RunningState(self._context))
+            return result
+
+    class RunningState(State):
+        """
+        Represents a running ROSCLEServer.
+        """
+        def reset_simulation(self, _):
+            return self._context.reset_simulation()
+
+        def stop_simulation(self, _):
+            result = self._context.stop_simulation()
+            self._context.set_state(ROSCLEServer.StoppedState(self._context))
+            return result
+
+    class StoppedState(State):
+        """
+        Represents a stopped ROSCLEServer.
+        """
+        def is_final_state(self):
+            return True
+
+    class PausedState(State):
+        """
+        Represents a paused ROSCLEServer.
+        """
+        def start_simulation(self, _):
+            result = self._context.start_simulation()
+            self._context.set_state(ROSCLEServer.RunningState(self._context))
+            return result
+
+        def stop_simulation(self, _):
+            result = self._context.stop_simulation()
+            self._context.set_state(ROSCLEServer.StoppedState(self._context))
+            return result
+
+        def reset_simulation(self, _):
+            result = self._context.reset_simulation()
+            self._context.set_state(ROSCLEServer.RunningState(self._context))
+            return result
+
     def __init__(self):
         """
         Create the wrapper server
@@ -35,9 +111,7 @@ class ROSCLEServer(threading.Thread):
 
         self.__event_flag = threading.Event()
         self.__event_flag.clear()
-        self.__reset = False
-        self.__stop = False
-        self.__simulate = False
+        self.__state = ROSCLEServer.InitialState(self)
 
         self.__service_start = None
         self.__service_pause = None
@@ -52,6 +126,14 @@ class ROSCLEServer(threading.Thread):
         self.__current_subtask_count = 0
         self.__current_subtask_index = 0
 
+    def set_state(self, state):
+        """
+        Sets the current state of the ROSCLEServer. This is used from the State Pattern
+        implementation.
+        """
+        self.__state = state
+        self.__event_flag.set()
+
     def prepare_simulation(self, cle):
         """
         The CLE will be initialized within this method and ROS services for
@@ -62,36 +144,44 @@ class ROSCLEServer(threading.Thread):
         if not self.__cle.is_initialized:
             self.__cle.initialize()
 
-        self.__service_start = rospy.Service(self.ROS_CLE_URI_PREFIX + '/start',
-                                             Empty, self.__start_handler)
-        self.__service_pause = rospy.Service(self.ROS_CLE_URI_PREFIX + '/pause',
-                                             Empty, self.__pause_handler)
-        self.__service_stop = rospy.Service(self.ROS_CLE_URI_PREFIX + '/stop',
-                                            Empty, self.__stop_handler)
-        self.__service_reset = rospy.Service(self.ROS_CLE_URI_PREFIX + '/reset',
-                                             Empty, self.__reset_handler)
+        logger.info("Registering ROS Service handlers")
 
+        # We have to use lambdas here (!) because otherwise we bind to the state which is in place
+        # during the time we set the callback! I.e. we would bind directly to the initial state.
+        # pylint: disable=unnecessary-lambda
+        self.__service_start = rospy.Service(self.ROS_CLE_URI_PREFIX + '/start', Empty,
+                                             lambda x: self.__state.start_simulation(x))
+
+        self.__service_pause = rospy.Service(self.ROS_CLE_URI_PREFIX + '/pause', Empty,
+                                             lambda x: self.__state.pause_simulation(x))
+
+        self.__service_stop = rospy.Service(self.ROS_CLE_URI_PREFIX + '/stop', Empty,
+                                             lambda x: self.__state.stop_simulation(x))
+
+        self.__service_reset = rospy.Service(self.ROS_CLE_URI_PREFIX + '/reset', Empty,
+                                             lambda x: self.__state.reset_simulation(x))
+
+    # TODO(Stefan)
+    # Probably it would be better to only have a run method and get rid of main.
+    # This is the conventional use of Thread and users expect to call Thread.start() which
+    # in turn calls the run method.
+    # The reason why we have a main method here is that we want to have rospy.spin() called
+    # from the run method. This can most probably be made much cleaner by using something like
+    # "Thread( ... target=rospy.spin)"
+    # But we would have to check out first how this exactly works ...
     def main(self):
         """
-        Main control loop.
+        Main control loop. From outside only the main method should be called, which calls
+        itself self.start() that triggers run().
         """
         self.start()
+        self.__state.start_simulation(None)
 
-        while True:
+        while not self.__state.is_final_state():
             self.__event_flag.wait()  # waits until an event is set
             self.__event_flag.clear()
 
-            if self.__reset:  # reset simulation
-                self.__reset = False
-                self.__cle.reset()
-
-            if self.__stop:  # stop simulation and quit
-                self.__stop = False
-                break
-
-            if self.__simulate:  # simulate until __cle.stop is called
-                self.__simulate = False
-                self.__cle.start()
+        logger.info("Finished main loop")
 
     def run(self):
         """
@@ -103,15 +193,15 @@ class ROSCLEServer(threading.Thread):
         """
         Unregister every ROS services and topics
         """
-        logger.info("Unregister status topic ")
+        logger.info("Unregister status topic")
         self.__ros_status_pub.unregister()
-        logger.info("shutting down start service ")
+        logger.info("Shutting down start service")
         self.__service_start.shutdown()
-        logger.info("shutting down pause services ")
+        logger.info("Shutting down pause services")
         self.__service_pause.shutdown()
-        logger.info("shutting down stop services ")
+        logger.info("Shutting down stop services")
         self.__service_stop.shutdown()
-        logger.info("shutting down reset services ")
+        logger.info("Shutting down reset services")
         self.__service_reset.shutdown()
         self.__cle.shutdown()
 
@@ -175,40 +265,43 @@ class ROSCLEServer(threading.Thread):
         self.__current_subtask_index = 0
         self.__current_task = None
 
-    def __start_handler(self, _):
+    # pylint: disable=no-self-use
+    def start_simulation(self):
         """
         Handler for both the start and the resume calls.
         """
-        self.__simulate = True
-        self.__event_flag.set()
+        # Next line is needed as a result for a ROS Service call!
+        # Returning None (i.e. omitting the return statement) would produce an error.
         return []
 
-    def __pause_handler(self, _):
+    def pause_simulation(self):
         """
         Handler for the pause call.
         """
         self.__cle.stop()
         self.__cle.wait_step()
+        # Next line is needed as a result for a ROS Service call!
+        # Returning None (i.e. omitting the return statement) would produce an error.
         return []
 
-    def __stop_handler(self, _):
+    def stop_simulation(self):
         """
         Handler for the __stop call.
         """
-        self.__stop = True
-        self.__event_flag.set()
         self.__cle.stop()
         self.__cle.wait_step()
+        # Next line is needed as a result for a ROS Service call!
+        # Returning None (i.e. omitting the return statement) would produce an error.
         return []
 
-    def __reset_handler(self, _):
+    def reset_simulation(self):
         """
         Handler for the __reset call.
         """
-        self.__reset = True
-        self.__event_flag.set()
         self.__cle.stop()
         self.__cle.wait_step()
+        # Next line is needed as a result for a ROS Service call!
+        # Returning None (i.e. omitting the return statement) would produce an error.
         return []
 
     def __push_status_on_ros(self, message):
