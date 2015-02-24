@@ -1,0 +1,29 @@
+\documentclass[tikz,border=2pt]{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage{pgf}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+
+\begin{document}
+
+\begin{tikzpicture}[->,>=stealth',auto,semithick,node distance=5cm]
+
+    \node[initial,state] (created) {Created};
+    \node[state]         (initial) [below of=created]{Initial};
+    \node[state]         (running) [right of=initial]{Running};
+    \node[state]         (paused) [above of=running]{Paused};
+    \node[state]         (stopped)[right of=running]{Stopped};
+
+    \path (created) edge node [left] {$\epsilon$} (initial)
+          (initial)	edge [bend right] node {$start()$} (running)
+          (paused)	edge [bend right] node {$reset()$} (initial)
+                    edge [bend left] node{$start()$} (running)
+                    edge [bend left] node{$stop()$} (stopped)
+          (running)	edge [bend left] node[above]{$pause()$} (paused)
+                    edge [bend right] node{$reset()$} (initial)
+                    edge node{$stop()$} (stopped);
+
+\end{tikzpicture}
+
+\end{document}

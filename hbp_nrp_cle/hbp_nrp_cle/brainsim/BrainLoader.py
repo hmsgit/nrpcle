@@ -15,21 +15,22 @@ from progressbar import ProgressBar, Percentage, Bar, ETA
 # the variables are reasonable in this case
 def load_pointneuron_circuit(h5_filename, neuron_ids=None,
                              synapse_model='TsodyksMarkramMechanism'):
-    '''Loads the h5 point-neuron circuit into PyNN. The result dictionnary will
+    '''Loads the h5 point-neuron circuit into PyNN. The result dictionary will
     contain a set of PyNN neurons that are correctly connected together.
 
     .. WARNING::
         The output NEST neurons will be of type 'aeif_cond_exp' and will have
-        the default NEST parameters. The dictionnary that is returned by this
+        the default NEST parameters. The dictionary that is returned by this
         function will contains a set of better parameter that can be used
         (mtype, a, b, V_th, Delta_T, C_m, g_L, V_reset, tau_w, t_ref, V_peak,
-        E_L, E_ex, E_in, excitatory)
+        E_L, E_ex, E_in, excitatory).
 
     .. WARNING::
         If the input file has been collapsed using
         :func:`convert_h5_to_collapsed_h5`, collapsed
         need to be set to True. The synapse model will then be forced to
         'quantal_stp_synapse'.
+
     .. WARNING::
         This function will not reset NEST kernel. GIDs of NEST neurons
         and bluepy neurons might be different.

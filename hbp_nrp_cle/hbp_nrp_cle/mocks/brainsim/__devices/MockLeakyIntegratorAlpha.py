@@ -21,6 +21,7 @@ class MockLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         The obligatory threshold voltage 'v_thresh' is set to "infinity"
         is set to infinity by default in order to forbid the neuron to elicit
         spikes.
+
         :param params: Dictionary of neuron configuration parameters
         """
         self.__voltage = params.get('v_rest', 0.0)
@@ -36,6 +37,7 @@ class MockLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
     def refresh(self, time):
         """
         Refreshes the voltage value
+
         :param time: The current simulation time
         """
         if hasattr(self.__update, '__getitem__'):
@@ -50,7 +52,8 @@ class MockLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
     def updates(self):
         """
         Gets the scheduled updates for this device
-        :return:
+
+        :return: A list of tuples when the mock device should be updated
         """
         return self.__update
 
@@ -58,7 +61,9 @@ class MockLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
     def updates(self, updates):
         """
         Sets the scheduled updates for this device
-        :param updates:
+
+        :param updates: A new list of update information. This list must consist of tuples where
+         the first argument is the simulation time and the second argument is the voltage
         """
         self.__update = updates
         if updates is None:

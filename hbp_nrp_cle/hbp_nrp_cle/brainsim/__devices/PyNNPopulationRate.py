@@ -28,6 +28,7 @@ class PyNNPopulationRate(IPopulationRate):
         than the falling time constant. If tau_rise > tau_fall,
         "tau_rise" is interpreted as falling time constant and
         "tau_fall" as rising time constant.
+
         :param params: Dictionary of neuron configuration parameters
         :param tau_rise: Rising time constant, default: 10.0 ms
         :param tau_fall: Falling time constant, default: 20.0 ms
@@ -42,19 +43,20 @@ class PyNNPopulationRate(IPopulationRate):
 
     @property
     def rate(self):
-        '''
+        """
         Returns the population firing rate
-        '''
+        """
         return self.__cell.get_v()[-1, -1]
 
     def create_device(self, **params):
-        '''
+        """
         Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses.
+
         :param params: Dictionary of neuron configuration parameters
         :param tau_rise: Rising time constant, default: 10.0 ms
         :param tau_fall: Falling time constant, default: 20.0 ms
-        '''
+        """
         cellparams = {'v_thresh': float('inf'),
                       'cm': 1.0,
                       'tau_m': params.get('tau_fall', 20.0),
@@ -64,11 +66,11 @@ class PyNNPopulationRate(IPopulationRate):
         sim.initialize(self.__cell, 'v', self.__cell[0].v_rest)
 
     def calculate_weight(self):
-        '''
+        """
         Calculates the weight of a neuron from the population to the device
         such that the area below the resulting PSP is 1. The exact shape of a
         PSP can be found e.g. in Bytschok, I., Diploma thesis.
-        '''
+        """
         tau_c = (1. / self.__cell[0].tau_syn_E - 1. / self.__cell[0].tau_m) ** -1
         t_end = -np.log(1e-10) * self.__cell[0].tau_m
         x_new = np.arange(0., t_end, 0.1)
@@ -78,15 +80,16 @@ class PyNNPopulationRate(IPopulationRate):
         self.__weight = 1.0 / simps(y_new, dx=sim.state.dt)
 
     def start_record_rate(self):
-        '''
+        """
         Records the rate of a neuronal population
-        '''
+        """
         self.__cell.record_v()
 
     def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
         device.
+
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
@@ -97,10 +100,11 @@ class PyNNPopulationRate(IPopulationRate):
                        method=connector, target='excitatory')
 
     def refresh(self, time):
-        '''
+        """
         Refreshes the rate value
+
         :param time: The current simulation time
-        '''
+        """
         if self.__update[0] is not time:
             self.__update[0] = time
             self.__update[1] = self.rate

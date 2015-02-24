@@ -19,6 +19,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
     def __init__(self, **params):
         """
         Initializes a Poisson spike generator.
+
         :param params: Optional configuration parameters
         :param duration: Duration of spike train, default: infinity
         :param start: Start time of spike train, default: 0.0 ms
@@ -41,27 +42,29 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
 
     @property
     def rate(self):
-        '''
+        """
         Returns the frequency of the Poisson spike generator
-        '''
+        """
         return self.__generator.get('rate')[0]
 
     @rate.setter
     def rate(self, value):
-        '''
+        """
         Sets the frequency of the Poisson spike generator
+
         :param value: float
-        '''
+        """
         self.__generator.set('rate', value)
 
     def create_device(self, **params):
-        '''
+        """
         Create Poisson spike generator device
+
         :param params: generator configuration parameters
         :param duration: Duration of spike train, default: infinity
         :param start: Start time of spike train, default: 0.0 ms
         :param rate: Rate/frequency of spike train, default: 0.0 Hz
-        '''
+        """
         params = {'duration': params.get('duration', float('inf')),
                   'start': params.get('start', 0.0),
                   'rate': params.get('rate', 0.0)}
@@ -74,6 +77,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         PyNN connection object "connector". If "connector" is None,
         the weights and delays between the neurons and the device
         are sampled from a uniform distribution.
+
         :param neurons: must be a Population, PopulationView or
             Assembly object
         :param params: optional configuration parameters

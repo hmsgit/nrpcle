@@ -9,15 +9,12 @@ Welcome to Closed Loop Engine's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
-   python_cle
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   architecture
+   installing_and_running
+   tutorials
+   howtos
+   hbp_nrp_cle
+   glossary
 

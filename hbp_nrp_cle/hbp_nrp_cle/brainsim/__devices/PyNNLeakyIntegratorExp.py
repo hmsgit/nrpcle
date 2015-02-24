@@ -23,6 +23,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         The obligatory threshold voltage 'v_thresh' is set to infinity
         by default in order to forbid the neuron to elicit
         spikes.
+
         :param params: Dictionary of neuron configuration parameters
         :param v_thresh: Threshold voltage , default: infinity
         :param cm: Membrane capacitance, default: 1.0 nF
@@ -54,9 +55,9 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
 
     @property
     def voltage(self):
-        '''
+        """
         Returns the membrane voltage of the cell
-        '''
+        """
         ### HACK ###
         # The usual PyNN get_v() call
         # return self.__cell.get_v()[-1, -1]
@@ -66,9 +67,10 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         return sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
 
     def create_device(self, **params):
-        '''
+        """
         Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses
+
         :param params: Dictionary of neuron configuration parameters
         :param v_thresh: Threshold voltage , default: infinity
         :param cm: Membrane capacitance, default: 1.0 nF
@@ -79,7 +81,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         :param v_reset: Reset potential, default: 0.0 mV
         :param tau_refrac: Refractory time constant, default: 0.1 ms
         :param i_offset: Offset current, default: 0.0 nA
-        '''
+        """
         cellparams = {'v_thresh': params.get('v_thresh', float('inf')),
                       'cm': params.get('cm', 1.0),
                       'tau_m': params.get('tau_m', 20.0),
@@ -93,9 +95,9 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         sim.initialize(self.__cell, 'v', self.__cell[0].v_rest)
 
     def start_record_voltage(self):
-        '''
+        """
         Records the voltage of the neuron
-        '''
+        """
         self.__cell.record_v()
 
     def connect(self, neurons, **params):
@@ -105,6 +107,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         PyNN connection object "connector". If "connector" is None,
         the weights and delays between the neurons and the device
         are sampled from a uniform distribution.
+
         :param neurons: must be a Population, PopulationView or
             Assembly object
         :param params: Optional configuration parameters
@@ -173,10 +176,11 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         return proj
 
     def refresh(self, time):
-        '''
+        """
         Refreshes the voltage value
+
         :param time: The current simulation time
-        '''
+        """
         if self.__update[0] is not time:
             self.__update[0] = time
             self.__update[1] = self.voltage

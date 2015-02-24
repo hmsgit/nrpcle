@@ -16,6 +16,7 @@ class MockDCSource(IDCSource):
     def __init__(self, **params):
         """
         Initializes an alternating current generator.
+
         :param amplitude: Amplitude of alternating current, default: 1.0 nA
         """
         self.__amplitude = params.get('amplitude', 1.0)
@@ -32,6 +33,7 @@ class MockDCSource(IDCSource):
     def amplitude(self, amplitude):
         """
         Sets the amplitude of the current
+
         :param amplitude: float
         """
         self.__amplitude = amplitude
@@ -41,6 +43,7 @@ class MockDCSource(IDCSource):
     def history(self):
         """
         Lists the amplitudes assigned to this device
+
         :return: A list of float values
         """
         return self.__history

@@ -21,6 +21,7 @@ class ISpikeGenerator(object):  # pragma: no cover
     def reset(self, transfer_function_manager):
         """
         Resets the device
+
         :param transfer_function_manager: The transfer function manager the device belongs to
         :return: The reset adapter
         """
@@ -34,6 +35,7 @@ class ICurrentGenerator(object):  # pragma: no cover
     def reset(self, transfer_function_manager):
         """
         Resets the device
+
         :param transfer_function_manager: The transfer function manager the device belongs to
         :return: The reset adapter
         """
@@ -56,6 +58,7 @@ class IFixedSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     def rate(self, value):
         """
         Sets the rate in which spikes should be generated
+
         :param value: The new rate in which spikes are generated
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
@@ -77,6 +80,7 @@ class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
     def rate(self, value):
         """
         Sets the rate in which spikes should be generated
+
         :param value: The new rate in which spikes are generated
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
@@ -98,6 +102,7 @@ class IDCSource(ICurrentGenerator):  # pragma: no cover
     def amplitude(self, value):
         """
         Sets the amplitude to the new value
+
         :param value: The new amplitude
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
@@ -120,6 +125,7 @@ class IACSource(ICurrentGenerator):  # pragma: no cover
         """
         Sets the amplitude to the new value
         :param value: The new amplitude
+
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
@@ -140,6 +146,7 @@ class INCSource(ICurrentGenerator):  # pragma: no cover
     def mean(self, value):
         """
         Sets the mean value for the noisy current to the given value
+
         :param value: The new mean current
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
@@ -152,6 +159,7 @@ class ISpikeDetector(object):  # pragma: no cover
     def reset(self, transfer_function_manager):
         """
         Resets the device
+
         :param transfer_function_manager: The transfer function manager the device belongs to
         :return: The reset adapter
         """
@@ -226,6 +234,7 @@ class ICustomDevice(object):  # pragma: no cover
     def apply(self, neurons, brain_adapter, **config):
         """
         Apply the device type to the neurons with the given set of GIDs and the given adapter
+
         :param config: Additional device configuration
         :param neurons: A list of neuron GIDs for which to create the custom device
         :param brain_adapter: The brain communication adapter
@@ -235,6 +244,7 @@ class ICustomDevice(object):  # pragma: no cover
     def reset(self, transfer_function_manager):
         """
         Resets the device
+
         :param transfer_function_manager: The transfer function manager the device belongs to
         :return: The reset adapter
         """
@@ -256,9 +266,9 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         """
         Requests a communication object with the given spike generator type for the given set of
         neurons
+
         :param neurons: A reference to the neurons to which the spike generator should be connected
-        :param spike_generator_type: A spike generator type (see documentation for a list of allowed
-         values)
+        :param spike_generator_type: A spike generator type (:doc:`brain_adapter`)
         :param kwargs: A dictionary of configuration parameters
         :return: A communication object
         """
@@ -268,9 +278,9 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         """
         Requests a communication object with the given spike detector type for the given set of
         neurons
+
         :param neurons: A reference to the neurons which should be connected to the spike detector
-        :param spike_detector_type: A spike detector type (see documentation for a list of allowed
-        values)
+        :param spike_detector_type: A spike detector type (see :doc:`brain_adapter`)
         :param kwargs: A dictionary of configuration parameters
         :return: A Communication object
         """
@@ -279,6 +289,7 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
     def refresh_buffers(self, t):  # -> None:
         """
         Refreshes all detector buffers
+
         :param t: The simulation time
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
@@ -298,6 +309,7 @@ class IBrainControlAdapter(object):  # pragma: no cover
     def is_alive(self):  # -> bool:
         """
         Gets a status whether the neuronal simulator is still alive
+
         :return: True if the simulator is alive, otherwise False
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
@@ -305,6 +317,7 @@ class IBrainControlAdapter(object):  # pragma: no cover
     def run_step(self, dt):  # -> None:
         """
         Runs the neuronal simulator for the given amount of simulated time
+
         :param dt the simulated time
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")

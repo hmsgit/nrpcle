@@ -28,27 +28,29 @@ class PyNNSpikeRecorder(ISpikeRecorder):
 
     @property
     def spiked(self):
-        '''
+        """
         Returns the recorded spikes
         "1": neuron spiked within the last time step
         "0": neuron was silent within the last time step
-        '''
+        """
         self.__previous_spike_count = self.__spike_count
         self.__spike_count = np.array(
             self.__neurons.get_spike_counts().values())
         return self.__spike_count > self.__previous_spike_count
 
     def start_record_spikes(self):
-        '''
+        """
         Records the spikes of "neurons"
+
         :param neurons: Population, PopulationView or Assembly
-        '''
+        """
         self.__neurons.record()
 
     def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
         spike recorder
+
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
@@ -57,10 +59,11 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         self.start_record_spikes()
 
     def refresh(self, time):
-        '''
+        """
         Refreshes the voltage value
+
         :param time: The current simulation time
-        '''
+        """
         if self.__update[0] is not time:
             self.__update[0] = time
             self.__update[1] = self.spiked

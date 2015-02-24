@@ -19,6 +19,7 @@ class PyNNNCSource(INCSource):
     def __init__(self, **params):
         """
         Initializes a noisy current generator.
+
         :param params: Dictionary of neuron configuration parameters
         :param mean: Mean value of the noisy current, default: 0.0 nA
         :param stdev: Standard deviation of the noisy current, default: 1.0 nA
@@ -35,37 +36,40 @@ class PyNNNCSource(INCSource):
 
     @property
     def mean(self):
-        '''
+        """
         Returns the mean of the current
-        '''
+        """
         return self.__generator.mean
 
     @mean.setter
     def mean(self, value):
-        '''
+        """
         Sets the mean of the current
+
         :param value: float
-        '''
+        """
         self.__generator.mean = value
 
     @property
     def stdev(self):
-        '''
+        """
         Returns the stdev of the current
-        '''
+        """
         return self.__generator.stdev
 
     @stdev.setter
     def stdev(self, value):
-        '''
+        """
         Sets the stdev of the current
+
         :param value: float
-        '''
+        """
         self.__generator.stdev = value
 
     def create_device(self, **params):
-        '''
+        """
         Create a noisy current source
+
         :param params: Dictionary of neuron configuration parameters
         :param mean: Mean value of the noisy current, default: 0.0 nA
         :param stdev: Standard deviation of the noisy current, default: 1.0 nA
@@ -75,7 +79,7 @@ class PyNNNCSource(INCSource):
         :param stop: Stop time of current injection, default: infinity
         :param rng: an RNG object from the `pyNN.random` module,
             default: NativeRNG of the back-end
-        '''
+        """
         self.__generator = sim.NoisyCurrentSource(
             mean=params.get('mean', 0.0),
             stdev=params.get('stdev', 1.0),
@@ -88,6 +92,6 @@ class PyNNNCSource(INCSource):
         """
         Connects the neurons specified by "neurons" to the device.
         param neurons: must be a Population, PopulationView or
-            Assembly object
+        Assembly object
         """
         self.__generator.inject_into(neurons)

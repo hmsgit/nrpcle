@@ -201,7 +201,7 @@ class SerialClosedLoopEngine(IClosedLoopControl):
 
     def reset(self):
         """
-        Reset the orchestrated simulations.
+        Reset the orchestrated simulations (stops them before resetting).
         """
         self.stop()
         self.wait_step()

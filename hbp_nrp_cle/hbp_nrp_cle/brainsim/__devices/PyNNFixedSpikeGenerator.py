@@ -21,6 +21,7 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
     def __init__(self, **params):
         """
         Initializes a Fixed spike generator.
+
         :param params: Optional configuration parameters
         :param rate: Rate/frequency of spike train, default: 0.0 Hz
         :param connector: a PyNN Connector object, or, if neurons is
@@ -43,23 +44,24 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
 
     @property
     def rate(self):
-        '''
+        """
         Returns the frequency of the Fixed spike generator
-        '''
+        """
         return self.__rate
 
     @rate.setter
     def rate(self, value):
-        '''
+        """
         Sets the frequency of the Fixed spike generator
+
         :param value: float
-        '''
+        """
         self.__currentsource.amplitude = self.set_current(value)
 
     def create_device(self):
-        '''
+        """
         Create a fixed spike-distance device
-        '''
+        """
         cellparams = {'cm': 1.0,
                       'tau_m': 1000.0,
                       'tau_refrac': sim.state.dt,
@@ -73,10 +75,11 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
         self.__currentsource.inject_into(self.__generator)
 
     def set_current(self, rate):
-        '''
+        """
         Returns current in nA corresponding to frequency "rate"
+
         :param rate: Frequency in Hz
-        '''
+        """
         self.__rate = rate
         gL = self.__generator[0].cm / self.__generator[0].tau_m
         nom = gL * (self.__generator[0].v_thresh - self.__generator[0].v_rest)
@@ -93,6 +96,7 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
         PyNN connection object "connector". If "connector" is None,
         the weights and delays between the neurons and the device
         are sampled from a uniform distribution.
+
         :param neurons: must be a Population, PopulationView or
             Assembly object
         :param params: optional configuration parameters

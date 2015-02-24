@@ -316,7 +316,7 @@ class ROSCLEServer(threading.Thread):
     # pylint: disable=no-self-use
     def start_simulation(self):
         """
-        Handler for both the start and the resume calls.
+        Handler for the CLE start() call, also used for resuming after pause().
         """
         self.__to_be_executed_within_main_thread = self.__cle.start
         # Next line is needed as a result for a ROS Service call!
@@ -325,7 +325,7 @@ class ROSCLEServer(threading.Thread):
 
     def pause_simulation(self):
         """
-        Handler for the pause call.
+        Handler for the CLE pause() call. Actually call to CLE stop(), as CLE has no real pause().
         """
         # CLE has no explicit pause command, use stop() instead
         self.__cle.stop()
@@ -337,7 +337,7 @@ class ROSCLEServer(threading.Thread):
 
     def stop_simulation(self):
         """
-        Handler for the __stop call.
+        Handler for the CLE stop() call, includes waiting for the current simulation step to finish.
         """
         self.__cle.stop()
         # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
@@ -348,7 +348,7 @@ class ROSCLEServer(threading.Thread):
 
     def reset_simulation(self):
         """
-        Handler for the __reset call.
+        Handler for the CLE reset() call, additionally triggers a CLE stop().
         """
         # CLE reset() already includes stop() and wait_step()
         self.__to_be_executed_within_main_thread = self.__cle.reset
