@@ -49,7 +49,8 @@ find_package(catkin REQUIRED message_generation std_msgs)
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
-   start_new_simulation.srv 
+   start_new_simulation.srv
+   get_simulation_state.srv
 )
 
 ## Generate actions in the 'action' folder
