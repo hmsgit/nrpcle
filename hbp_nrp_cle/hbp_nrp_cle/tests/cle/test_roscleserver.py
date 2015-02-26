@@ -128,6 +128,105 @@ class TestROSCLEServer(unittest.TestCase):
         self.__mocked_ros_status_pub.publish.assert_called_with(
             json.dumps(message))
 
+    def test_statemachine_exceptions(self):
+        # Initializing the state with no context is okay,
+        # since the calls to be tested won't use it
+        initialized = ROSCLEServer.ROSCLEServer.InitialState(None)
+
+        # Test pausing in InitialState
+        try:
+            threw_exception = False
+            initialized.pause_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot pause the simulation while in InitialState.")
+        self.assertTrue(threw_exception)
+
+        # Test stopping in InitialState
+        try:
+            threw_exception = False
+            initialized.stop_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot stop the simulation while in InitialState.")
+        self.assertTrue(threw_exception)
+
+        # Test resetting in InitialState
+        try:
+            threw_exception = False
+            initialized.reset_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot reset the simulation while in InitialState.")
+        self.assertTrue(threw_exception)
+
+        # Test starting in RunningState
+        running = ROSCLEServer.ROSCLEServer.RunningState(None)
+        try:
+            threw_exception = False
+            running.start_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot start the simulation while in RunningState.")
+        self.assertTrue(threw_exception)
+
+        # Test pausing in RunningState
+        paused = ROSCLEServer.ROSCLEServer.PausedState(None)
+        try:
+            threw_exception = False
+            paused.pause_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot pause the simulation while in PausedState.")
+        self.assertTrue(threw_exception)
+
+        stopped = ROSCLEServer.ROSCLEServer.StoppedState(None)
+
+        # Test starting in StoppedState
+        try:
+            threw_exception = False
+            stopped.start_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot start the simulation while in StoppedState.")
+        self.assertTrue(threw_exception)
+
+        # Test pausing in StoppedState
+        try:
+            threw_exception = False
+            stopped.pause_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot pause the simulation while in StoppedState.")
+        self.assertTrue(threw_exception)
+
+        # Test stopping in StoppedState
+        try:
+            threw_exception = False
+            stopped.stop_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot stop the simulation while in StoppedState.")
+        self.assertTrue(threw_exception)
+
+        # Test resetting in StoppedState
+        try:
+            threw_exception = False
+            stopped.reset_simulation()
+        except RuntimeError as exception:
+            threw_exception = True
+            self.assertEqual(exception.__str__(),
+                             "You cannot reset the simulation while in StoppedState.")
+        self.assertTrue(threw_exception)
+
     @log_capture(level=logging.WARNING)
     def test_notify_current_task(self, logcapture):
         self.__ros_cle_server.notify_current_task("new_subtask", True, True)

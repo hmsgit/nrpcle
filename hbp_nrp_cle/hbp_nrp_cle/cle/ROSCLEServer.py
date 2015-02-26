@@ -40,16 +40,20 @@ class ROSCLEServer(threading.Thread):
         # what the method name already reveals.
         # pylint: disable=missing-docstring
         def reset_simulation(self):
-            pass
+            raise RuntimeError('You cannot reset the simulation while in %s.' %
+                               (type(self).__name__))
 
         def stop_simulation(self):
-            pass
+            raise RuntimeError('You cannot stop the simulation while in %s.' %
+                               (type(self).__name__))
 
         def pause_simulation(self):
-            pass
+            raise RuntimeError('You cannot pause the simulation while in %s.' %
+                               (type(self).__name__))
 
         def start_simulation(self):
-            pass
+            raise RuntimeError('You cannot start the simulation while in %s.' %
+                               (type(self).__name__))
 
         # pylint: disable=no-self-use
         def is_final_state(self):
