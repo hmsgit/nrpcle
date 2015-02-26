@@ -8,7 +8,7 @@ __author__ = 'LorenzoVannucci'
 from hbp_nrp_cle.cle.SerialClosedLoopEngine import SerialClosedLoopEngine \
     as ClosedLoopEngine
 
-import PyNNScript
+from demo import PyNNScript
 from hbp_nrp_cle.robotsim.RosControlAdapter import RosControlAdapter
 from hbp_nrp_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter
 
