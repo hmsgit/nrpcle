@@ -19,6 +19,7 @@ class ControlThread(threading.Thread):
     def __init__(self, controladapter, end_flag):
         """
         Constructor
+
         :param controladapter: the adapter (able to do run_step)
         :param endFlag: the flag on wich the CLE waits
                         for the simulation to end
@@ -36,6 +37,7 @@ class ControlThread(threading.Thread):
     def run_step(self, timestep):
         """
         Makes the simulation run.
+
         :param timestep: the simulation time in seconds
         """
         self.timestep = timestep
@@ -71,6 +73,7 @@ class SerialClosedLoopEngine(IClosedLoopControl):
                  dt):
         """
         Create an instance of the serial cle.
+
         :param robot_control_adapter: an instance of IRobotContolAdapter
         :param robot_comm_adapter: an instance of IRobotCommunicationAdapter
         :param brain_control_adapter: an instance of IBrainContolAdapter
@@ -138,6 +141,7 @@ class SerialClosedLoopEngine(IClosedLoopControl):
     def run_step(self, timestep):
         """
         Runs both simulations for the given time step in seconds.
+
         :param timestep: simulation time, in seconds
         :return: Updated simulation time, otherwise -1
         """

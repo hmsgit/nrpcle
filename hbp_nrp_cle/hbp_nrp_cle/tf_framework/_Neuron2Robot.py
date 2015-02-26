@@ -27,6 +27,7 @@ class MapSpikeSink(object):
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """
         Maps a parameter to a neuron
+
         :param key: the parameter name
         :param value: the neuron reference
         :param kwargs: Additional configuration
@@ -58,6 +59,7 @@ class MapSpikeSink(object):
     def is_supported(self, device_type):  # pylint: disable=R0201
         """
         Gets a value indicating whether the given device type is supported
+
         :param device_type: The device type that should be looked for
         """
         return device_type in MapSpikeSink.supported_device_types
@@ -124,6 +126,7 @@ class MapSpikeSource(MapSpikeSink):
     def is_supported(self, device_type):
         """
         Gets a value indicating whether the given device type is supported
+
         :param device_type: The device type that should be looked for
         """
         return device_type in MapSpikeSource.supported_device_types
@@ -137,6 +140,7 @@ class Neuron2Robot(TransferFunction):
     def __init__(self, robot_topic=None):
         """
         Defines a new transfer function from robots to neurons
+
         :param robot_topic: the robot topic reference
         :param other_topics: other topics required by this transfer function
         """
@@ -158,6 +162,7 @@ class Neuron2Robot(TransferFunction):
     def topic(self, robot_topic):  # -> None:
         """
         Sets the main robot topic
+
         :param robot_topic: The new main robot topic
         """
         self.__main_topic = robot_topic
@@ -165,6 +170,7 @@ class Neuron2Robot(TransferFunction):
     def __call__(self, func):  # -> Neuron2Robot:
         """
         Applies the transfer functions object to the given function
+
         :param func: The function body for this transfer function
         :return The transfer function object
         """
@@ -200,6 +206,7 @@ class Neuron2Robot(TransferFunction):
     def run(self, t):  # -> None:
         """
         Runs this transfer function at the given simulation time
+
         :param t: The simulation time
         """
         self._params[0] = t

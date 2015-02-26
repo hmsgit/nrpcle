@@ -18,6 +18,7 @@ class TransferFunction(object):
         """
         Gets the simulation adapters for this transfer function, either robot subscriber, publisher
         or neuronal simulator device adapters
+
         :return: A list of adapters
         """
         return self._params

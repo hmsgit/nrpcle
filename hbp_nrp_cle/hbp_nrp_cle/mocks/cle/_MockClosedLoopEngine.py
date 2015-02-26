@@ -18,6 +18,7 @@ class MockClosedLoopEngine(IClosedLoopControl,
     def __init__(self, dt):
         """
         Create an instance of the cle.
+
         :param dt: The CLE time step in seconds
         """
         super(MockClosedLoopEngine, self).__init__()
@@ -53,6 +54,7 @@ class MockClosedLoopEngine(IClosedLoopControl,
     def run_step(self, timestep):
         """
         Runs both simulations for the given time step in seconds.
+
         :param dt: The CLE time step in seconds
         :return: Updated simulation time, otherwise -1
         """

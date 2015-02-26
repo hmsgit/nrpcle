@@ -27,6 +27,7 @@ class IClosedLoopControl(object):  # pragma: no cover
     def run_step(self, timestep):  # -> float64:
         """
         Runs both simulations for the given time step in seconds.
+
         :param timestep: The CLE time step in seconds
         :return: Updated simulation time, otherwise -1
         """

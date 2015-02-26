@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 def load_gazebo_world_file(world_file, notification_fn=None):
     """
     Load a sdf world file into the ROS connected gazebo running instance.
+
     :param world_file: The name of the world inside the NRP_MODELS_DIRECTORY \
         folder. If the NRP_MODELS_DIRECTORY environment variable is not set, \
         this script will search the model in its own folder.
@@ -52,6 +53,7 @@ def load_gazebo_world_file(world_file, notification_fn=None):
 def load_gazebo_model_file(model_name, model_file, initial_pose=None):
     """
     Load a sdf model file into the ROS connected running gazebo instance.
+
     :param model_name: Name of the model (can be anything)
     :param model_file: The name of the model sdf file inside the \
         NRP_MODELS_DIRECTORY folder. If the NRP_MODELS_DIRECTORY \
@@ -71,6 +73,7 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
 def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
     """
     Load a gazebo model (sdf) into the ROS connected running gazebo instance.
+
     :param model_name: Name of the model (can be anything).
     :param model_sdf: The SDF xml code describing the model.
     :param initial_pose: Initial pose of the model. Uses the Gazebo \
@@ -123,6 +126,7 @@ def empty_gazebo_world(notification_fn=None):
 def _get_basepath(adjacent_file=None):
     """
     :return the basepath for retrieving Models / \
+
     There are three possible cases. They
     are evaluated in the following order: \
     1. The NRP_MODELS_DIRECTORY variable is set, then return the \

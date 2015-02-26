@@ -21,6 +21,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
     def __init__(self, network_file='', **populations):
         """
         Initializes the PyNN control adapter
+
         :param network_file: The path to the .5h file containing the network
         :param sensors: list of sensor units IDs
         :param actors: list of actor units IDs
@@ -35,6 +36,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
     def initialize(self, **params):
         """
         Initializes the neuronal simulator
+
         :param params: A dictionary of configuration parameters
         :return: True if the simulator is initialized, otherwise False
         """
@@ -60,6 +62,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
     def is_alive(self):  # -> bool:
         """
         Gets a status whether the neuronal simulator is still alive
+
         :return: True if the simulator is alive, otherwise False
         """
         return self.__is_alive
@@ -67,6 +70,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
     def run_step(self, dt):  # -> None:
         """
         Runs the neuronal simulator for the given amount of simulated time
+
         :param dt: the simulated time in milliseconds
         """
         sim.run(dt)

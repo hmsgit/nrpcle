@@ -59,10 +59,11 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         """
         Requests a communication object with the given spike generator type
         for the given set of neurons
+
         :param populations: A reference to the populations to which the spike generator
-        should be connected
+         should be connected
         :param spike_generator_type: A spike generator type (see documentation
-        or a list of allowed values)
+         or a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A communication object or a group of objects
         """
@@ -93,10 +94,11 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         '''
         Requests a communication object with the given spike detector type
         for the given set of neurons
+
         :param populations: A reference to the populations which should be connected
-        to the spike detector
+         to the spike detector
         :param spike_detector_type: A spike detector type (see documentation
-        for a list of allowed values)
+         for a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A Communication object or a group of objects
         '''
@@ -126,6 +128,8 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
     def refresh_buffers(self, t):
         """
         Refreshes all detector buffers
+
+        :param t: The simulation time in milliseconds
         """
         for detector in self.__detector_devices:
             if hasattr(detector, "refresh"):

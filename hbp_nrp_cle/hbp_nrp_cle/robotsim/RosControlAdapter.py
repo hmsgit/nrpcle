@@ -64,6 +64,7 @@ class RosControlAdapter(IRobotControlAdapter):
     def time_step(self):
         """
         Gets the physics simulation time step in seconds
+
         :param dt: The physics simulation time step in seconds
         :return: The physics simulation time step in seconds
         """
@@ -72,6 +73,7 @@ class RosControlAdapter(IRobotControlAdapter):
     def set_time_step(self, time_step):
         """
         Sets the physics simulation time step in seconds
+
         :param dt: The physics simulation time step in seconds
         :return: True, if the physics simulation time step is updated, otherwise False
         """
@@ -92,6 +94,7 @@ class RosControlAdapter(IRobotControlAdapter):
     def is_paused(self):
         """
         Queries the current status of the physics simulation
+
         :return: True, if the physics simulation is paused, otherwise False
         """
         physics = self.__get_physics_properties()
@@ -102,6 +105,7 @@ class RosControlAdapter(IRobotControlAdapter):
     def is_alive(self):
         """
         Queries the current status of the world simulation
+
         :return: True, if the world simulation is alive, otherwise False
         """
         world = self.__get_world_properties()
@@ -111,6 +115,7 @@ class RosControlAdapter(IRobotControlAdapter):
     def run_step(self, dt):
         """
         Runs the world simulation for the given CLE time step in seconds
+
         :param dt: The CLE time step in seconds
         :return: Updated simulation time, otherwise -1
         """

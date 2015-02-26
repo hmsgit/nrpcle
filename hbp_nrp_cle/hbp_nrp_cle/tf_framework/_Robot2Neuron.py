@@ -20,6 +20,7 @@ class MapRobotPublisher(object):
     def __init__(self, key, value, **kwargs):  # -> None:
         """
         Maps a parameter to a robot topic
+
         :param key: the name of the parameter
         :param value: the value for the parameter
         :param subscribe: A boolean value indicating whether the topic should be subscribed
@@ -101,6 +102,7 @@ class Robot2Neuron(TransferFunction):
     def __call__(self, func):  # -> Robot2Neuron:
         """
         Attaches the given function to the current transfer function object
+
         :param func: The function implementing the transfer function
         :return: The transfer function object
         """
@@ -119,7 +121,8 @@ class Robot2Neuron(TransferFunction):
     def check_params(self):  # -> None:
         """
         Checks whether all parameters have been mapped to a robot topic
-        :exception Exception if a parameter was not mapped to a robot topic
+
+        :exception: Exception if a parameter was not mapped to a robot topic
         """
         for topic in self._params:
             if topic != "t" and type(topic) == str:
@@ -128,6 +131,7 @@ class Robot2Neuron(TransferFunction):
     def run(self, t):  # -> None:
         """
         Runs this transfer function at the given simulated time
+
         :param t: The simulation time
         """
         self._params[0] = t

@@ -22,6 +22,7 @@ class ControlThread(threading.Thread):
     def __init__(self, control_adapter, end_flag):
         """
         Constructor
+
         :param control_adapter: the adapter (able to do run_step)
         :param endFlag: the flag on wich the CLE waits
                         for the simulation to end
@@ -39,6 +40,7 @@ class ControlThread(threading.Thread):
     def run_step(self, timestep):
         """
         Makes the simulation run.
+
         :param timestep: the simulation time in seconds
         """
         self.timestep = timestep
@@ -64,6 +66,7 @@ class TransferFunctionsThread(threading.Thread):
     def __init__(self, transfer_function_manager, robot_comm_adapter, brain_comm_adapter, end_flag):
         """
         Constructor
+
         :param transfer_function_manager: the adapter (able to do run_step)
         :param robot_comm_adapter: The robot comm adapter
         :param brain_comm_adapter: The brain comm adapter
@@ -89,6 +92,7 @@ class TransferFunctionsThread(threading.Thread):
     def run_step(self, simtime):
         """
         Makes the simulation run.
+
         :param simtime: the simulation time in seconds
         """
         self.simtime = simtime
@@ -125,6 +129,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
                  dt):
         """
         Create an instance of the cle.
+
         :param robot_control_adapter: an instance of IRobotContolAdapter
         :param robot_comm_adapter: an instance of IRobotCommunicationAdapter
         :param brain_control_adapter: an instance of IBrainContolAdapter
@@ -199,6 +204,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
     def run_step(self, timestep):
         """
         Runs both simulations for the given time step in seconds.
+
         :param timestep: simulation time, in seconds
         :return: Updated simulation time, otherwise -1
         """

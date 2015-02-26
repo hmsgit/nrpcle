@@ -16,6 +16,7 @@ class PropertyPath(object):
     def __getattr__(self, item):
         """
         Gets the attribute with the specified name
+
         :param item: The attribute name
         """
         return AttributePathSegment(item, self)
@@ -23,6 +24,7 @@ class PropertyPath(object):
     def __getitem__(self, item):
         """
         Gets the item at the specified index
+
         :param item: The index
         """
         return IndexPathSegment(item, self)
@@ -36,6 +38,7 @@ class PropertyPath(object):
     def select(self, root):
         """
         Selects the path represented by this instance started from the given root object
+
         :param root: The specified root object
         """
         return root
@@ -58,6 +61,7 @@ class AttributePathSegment(PropertyPath):
     def __init__(self, name, parent):
         """
         Creates a new path segment with the given attribute name based on the given parent path
+
         :param name: The attribute name
         :param parent: The parent path
         """
@@ -69,6 +73,7 @@ class AttributePathSegment(PropertyPath):
     def name(self):
         """
         Gets the attribute name
+
         :return: The attribute name
         """
         return self.__name
@@ -77,11 +82,12 @@ class AttributePathSegment(PropertyPath):
         """
         Gets a string representation of the path
         """
-        return self.__parent.__repr__() + "." + self.__name
+        return repr(self.__parent) + "." + self.__name
 
     def select(self, root):
         """
         Selects the path represented by this instance started from the given root object
+
         :param root: The specified root object
         """
         parent = self.__parent.select(root)
@@ -99,6 +105,7 @@ class IndexPathSegment(PropertyPath):
     def __init__(self, index, parent):
         """
         Creates a new index path segment for the given index and parent path
+
         :param index: The index to be used to get to the child element
         :param parent: The parent path
         """
@@ -125,6 +132,7 @@ class IndexPathSegment(PropertyPath):
     def select(self, root):
         """
         Selects the path represented by this instance started from the given root object
+
         :param root: The specified root object
         """
         parent = self.__parent.select(root)

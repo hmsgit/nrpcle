@@ -38,32 +38,30 @@ brain = _PropertyPath.PropertyPath()
 def initialize(name):  # -> None:
     """
     Initializes and starts the TF node
+
     :param name: The name of the TF node
     """
     config.active_node.initialize(name)
 
 
-def send_robot(topic, value):  # -> None:
-    """
-    Send data to the given robot topic
-    :param topic: The robot topic
-    :param value: The values sent to the robot
-    """
-    print("Sending ", value, " to robot ", topic)
-
-
 def set_nest_adapter(nest_adapter):  # -> None:
     """
-    Sets the brainsim adapter. Must be executed before tf node initialization
+    Sets the brainsim adapter.
+
     :param nest_adapter: The brainsim adapter
+
+    .. WARNING:: Must be executed before tf node initialization
     """
     config.active_node.brain_adapter = nest_adapter
 
 
 def set_robot_adapter(robot_adapter):  # -> None:
     """
-    Sets the robot adapter. Must be run before tf node initialization
+    Sets the robot adapter.
+
     :param robot_adapter: The robot adapter
+
+    .. WARNING:: Must be executed before tf node initialization
     """
     config.active_node.robot_adapter = robot_adapter
 

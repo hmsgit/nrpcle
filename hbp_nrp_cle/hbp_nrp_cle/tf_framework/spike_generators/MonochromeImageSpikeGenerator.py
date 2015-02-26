@@ -16,6 +16,7 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
     def __init__(self, width, height):
         """
         Initializes a new camera spike generator
+
         :param width: The image width
         :param height: The image height
         """
@@ -26,6 +27,7 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
     def apply(self, neurons, brain_adapter):
         """
         Binds the current image spike generator
+
         :param neurons: The target image neurons
         :param brain_adapter: The brain communication adapter
         """
@@ -40,6 +42,7 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
     def update_image(self, image):
         """
         Updates the image for this device
+
         :param image: The image to be processed
         """
         # TODO: Implement
@@ -49,6 +52,7 @@ class MonochromeImageSpikeGenerator(ICustomDevice):
     def reset(self, transfer_function_manager):
         """
         Resets the device
+
         :param transfer_function_manager: The transfer function manager the device belongs to
         :return: The reset adapter
         """

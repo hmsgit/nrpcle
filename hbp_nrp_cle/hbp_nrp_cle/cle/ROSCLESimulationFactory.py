@@ -51,6 +51,7 @@ class ROSCLESimulationFactory(object):
         """
         Handler for the ROS service. Spawn a new simulation.
         Warning: Multiprocesses can not be used: https://code.ros.org/trac/ros/ticket/972
+
         :param: service_request: ROS service message (defined in hbp ROS packages)
         """
         logger.info("Start new simulation request")
@@ -87,6 +88,7 @@ class ROSCLESimulationFactory(object):
     def __simulation(self, environment_file, generated_cle_script_file):
         """
         Main simulation method. Start the simulation from the given script file.
+
         :param: environment_file: Gazebo world file containing
                                   the environment (without the robot)
         :param: generated_cle_script_file: Generated CLE python script (main loop)

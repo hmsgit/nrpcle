@@ -47,6 +47,7 @@ class TransferFunctionManager(ITransferFunctionManager):
     def run_neuron_to_robot(self, t):  # -> None:
         """
         Runs the transfer functions from the neuronal simulator towards the robot
+
         :param t: The simulation time
         """
         for _n2r in self.__n2r:
@@ -56,6 +57,7 @@ class TransferFunctionManager(ITransferFunctionManager):
     def run_robot_to_neuron(self, t):  # -> None:
         """
         Runs the transfer functions from the world simulation towards the neuronal simulation
+
         :param t:  The simulation time
         """
         for _r2n in self.__r2n:
@@ -65,6 +67,7 @@ class TransferFunctionManager(ITransferFunctionManager):
     def initialize(self, name):
         """
         Initializes the transfer Function node with the given name
+
         :param name: The name for this transfer function node
         """
         print("Initialize transfer functions node ", name)
@@ -120,6 +123,7 @@ class TransferFunctionManager(ITransferFunctionManager):
     def __select_neurons(neurons):
         """
         Selects the neurons represented by the given property path
+
         :param neurons:
         """
         if isinstance(neurons, PropertyPath):
@@ -140,6 +144,7 @@ class TransferFunctionManager(ITransferFunctionManager):
     def robot_adapter(self, robot_adapter):  # -> None:
         """
         Sets the robot adapter
+
         :param robot_adapter: The new robot adapter
         """
         if self.__initialized:
@@ -159,6 +164,7 @@ class TransferFunctionManager(ITransferFunctionManager):
     def brain_adapter(self, nest_adapter):  # -> None:
         """
         Sets the nest adapter
+
         :param nest_adapter: The new brain simulation adapter
         """
         if self.__initialized:

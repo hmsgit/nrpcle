@@ -21,6 +21,9 @@ class Roscore(object):
     def connect(self, pub, sub):
         """
         Connect a publisher to a subscriber"
+
+        :param pub: An IRobotPublishedTopic instance
+        :param sub: An IRobotSubscribedTopic instance
         """
         self._associations.append((pub, sub))
 
@@ -48,7 +51,8 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     def initialize(self, name):
         """
         Initializes the mock with the given name
-        :param name: The name
+
+        :param name: The name for the mock
         """
         self.__name = name
 
@@ -62,6 +66,7 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     def create_topic_publisher(self, topic, config):
         """
         Creates a publisher object for the given topic
+
         :param topic: The topic
         :param config: Additional configuration for the publisher
         :return: A publisher object
@@ -71,6 +76,7 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     def create_topic_subscriber(self, topic, config):
         """
         Creates the subscription object for the given topic
+
         :param topic: The topic
         :param config: Additional configuration for the subscriber
         :return: A subscription object
@@ -80,6 +86,7 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
     def refresh_buffers(self, t):
         """
         Refreshes the subscribed topic buffers for the given simulation time
+
         :param t: The simulation time
         """
         pass
@@ -98,6 +105,7 @@ class MockPublishedTopic(IRobotPublishedTopic):
     def send_message(self, value):
         """
         Send a message to the robot topic represented by this instance
+
         :param value: The message to be sent to the robot
         """
         self.__sent.append(value)
@@ -141,6 +149,7 @@ class MockSubscribedTopic(IRobotSubscribedTopic):
     def value(self, value):  # pylint: disable=W0221
         """
         Sets the current value of the subscribed topic
+
         :param value: The new current value
         """
         self.__changed = (value != self.__value)

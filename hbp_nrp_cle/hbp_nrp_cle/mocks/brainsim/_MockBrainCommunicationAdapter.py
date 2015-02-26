@@ -58,10 +58,11 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         """
         Requests a communication object with the given spike generator type
         for the given set of neurons
+
         :param neurons: A reference to the neurons to which the spike generator
-        should be connected
+         should be connected
         :param spike_generator_type: A spike generator type (see documentation
-        or a list of allowed values)
+         or a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A communication object
         """
@@ -78,10 +79,11 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         '''
         Requests a communication object with the given spike detector type
         for the given set of neurons
+
         :param neurons: A reference to the neurons which should be connected
-        to the spike detector
+         to the spike detector
         :param spike_detector_type: A spike detector type (see documentation
-        for a list of allowed values)
+         for a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A Communication object
         '''
@@ -97,6 +99,7 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
     def refresh_buffers(self, t):
         """
         Refreshes buffered values for time t
+
         :param t: The brain simulation time
         """
         self.__refreshed_at.append(t)

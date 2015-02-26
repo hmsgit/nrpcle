@@ -12,8 +12,20 @@ bridge = CvBridge()
 
 def detect_red(image):
     """
-    Detects a red image
+    Performs a very simple image detection as used in the Braitenberg demo.
+    An incoming image is analyzed per pixel. If r > (g + b), i.e. if the color is quite red as
+    according to the HSV color model, then pixel is regarded as red.
+
     :param image: The image
+    :returns: An object with three properties:
+        - *left*: This is the percentage of red pixels in the left half of the image
+        - *right*: This is the percentage of red pixels in the right half of the image
+        - *go_on*: This is the percentage of non-red pixels of the overall image
+
+    :example: A completely red image (255,0,0) results in (1,1,0)
+    :example: A completely yellow image (255,255,0) results in (0,0,1)
+
+    The lightest color that is recognized as red is (255,127,127).
     """
     # assert isinstance(image, sensor_msgs.msg.Image)
     red_left_rate = 0.
@@ -32,7 +44,7 @@ def detect_red(image):
                 g = cv_image[i, j, 1]
                 b = cv_image[i, j, 2]
 
-                if r > 2 * (g + b):
+                if r > (g + b):
                     if j < cv_image.shape[1] / 2:
                         red_left_rate += 1.
                     else:
@@ -47,18 +59,6 @@ def detect_red(image):
         print "red_left_rate: ", red_left_rate
         print "red_right_rate: ", red_right_rate
         print "green_blue_rate: ", green_blue_rate
-
-#        for i in range(0, cv_image.shape[0]):
-#            for j in range(0, cv_image.shape[1]):
-#                if j < cv_image.shape[1] / 2:
-#                    red_left_rate += cv_image[i, j, 0]
-#                else:
-#                    red_right_rate += cv_image[i, j, 0]
-#                green_blue_rate += cv_image[i, j, 1]
-#                green_blue_rate += cv_image[i, j, 2]
-#        red_left_rate *= (1. / cv_image.size)
-#        red_right_rate *= (1. / cv_image.size)
-#        green_blue_rate *= (1. / cv_image.size)
 
     class __results(object):
         """

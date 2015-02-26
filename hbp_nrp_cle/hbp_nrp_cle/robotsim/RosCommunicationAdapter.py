@@ -25,6 +25,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     def initialize(self, name):
         """
         Initializes this robot communication adapter
+
         :param name: The name of this node
         """
         try:
@@ -36,6 +37,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     def create_topic_publisher(self, topic, config):
         """
         Creates a publisher object for the given topic
+
         :param topic: The topic
         :param config: Additional configuration for the publisher
         :return: A publisher object
@@ -47,6 +49,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     def create_topic_subscriber(self, topic, config):
         """
         Creates the subscription object for the given topic
+
         :param topic: The topic
         :param config: Additional configuration for the subscriber
         :return: A subscription object
@@ -65,7 +68,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     def refresh_buffers(self, t):
         """
         Resets the changed bit for all subscribers
-        :param t: The world simulation time
+
+        :param t: The world simulation time in milliseconds
         """
         for key in self.subscribed_topics:
             self.subscribed_topics[key].reset_changed()
@@ -78,6 +82,7 @@ class RosPublishedTopic(IRobotPublishedTopic):
     def __init__(self, topic):
         """
         Creates a new robot topic publisher
+
         :param topic: The topic where data should be sent to
         """
         self.__lastSent = None
@@ -90,7 +95,8 @@ class RosPublishedTopic(IRobotPublishedTopic):
     def send_message(self, value):
         """
         Sends a message
-        :param value: The message to be sent
+
+        :param value: The message to be sent (the type must match the topic type)
         """
         # if value != self.__lastSent:
         if self.__pub is not None:
@@ -117,6 +123,7 @@ class RosPublishedPreprocessedTopic(RosPublishedTopic):
     def __init__(self, topic):
         """
         Creates a new robot topic publisher
+
         :param topic: The topic where data should be sent to
         """
         super(RosPublishedPreprocessedTopic, self).__init__(topic)
@@ -140,6 +147,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
     def __init__(self, topic):
         """
         Initializes a new subscriber for the given topic
+
         :param topic: The topic that is subscribed
         """
         self.__changed = False
@@ -153,6 +161,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
     def _callback(self, data):
         """
         This method is called whenever new data is available from ROS
+
         :param data: The incoming data on this topic
         """
         logger.debug("ROS subscriber callback")
@@ -183,6 +192,9 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
     def reset(self, transfer_function_manager):
         """
         Gets a reset subscriber
+
+        :param transfer_function_manager: The transfer function manager in which the subscribed
+         topic is contained
         """
         self.reset_changed()
         return self
@@ -196,6 +208,7 @@ class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
     def __init__(self, topic):
         """
         Creates a new preprocessing topic subscriber
+
         :param topic: The topic that is subscribed
         """
         super(RosSubscribedPreprocessedTopic, self).__init__(topic)
@@ -205,6 +218,7 @@ class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
     def _callback(self, data):
         """
         This method is called whenever new data is available from ROS
+
         :param data: The incoming data
         """
         pre_processed = self.__pre_processor(data)

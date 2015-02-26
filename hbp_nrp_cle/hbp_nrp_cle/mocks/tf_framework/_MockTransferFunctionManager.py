@@ -25,6 +25,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
     def initialize(self, name):
         """
         Initializes the mocked transfer functions
+
         :param name: The user friendly name of this manager
         """
         self.__name = name
@@ -32,6 +33,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
     def run_neuron_to_robot(self, t):
         """
         Runs the transfer function mocks for neuron to robot direction
+
         :param t: The simulation time of the neuronal simulator
         """
         self.__n2rTimes.append(t)
@@ -40,6 +42,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
     def run_robot_to_neuron(self, t):
         """
         Runs the transfer function mocks for the robot to neuron direction
+
         :param t: The simulation time of the world simulator
         """
         self.__r2nTimes.append(t)
@@ -84,6 +87,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
     def sleep_time(self, sleep_time):
         """
         Sets the sleep time when the transfer functions are called
+
         :param sleep_time: The new sleep time for this mock
         """
         self.__sleepTime = sleep_time
