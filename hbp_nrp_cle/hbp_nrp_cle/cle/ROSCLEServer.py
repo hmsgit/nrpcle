@@ -31,7 +31,6 @@ class ROSCLEServer(threading.Thread):
         """
         def __init__(self, context):
             self._context = context
-            self._is_final = False
 
         # We disable the docstring here since there is nothing more to say than
         # what the method name already reveals.
@@ -48,8 +47,9 @@ class ROSCLEServer(threading.Thread):
         def start_simulation(self, _):
             pass
 
+        # pylint: disable=no-self-use
         def is_final_state(self):
-            return self._is_final
+            return False
 
     class InitialState(State):
         """
