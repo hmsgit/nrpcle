@@ -3,6 +3,7 @@ ROSCLEServer unit test
 """
 
 from hbp_nrp_cle.cle import ROSCLEServer
+from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 import logging
 from mock import patch, MagicMock
 from testfixtures import log_capture
@@ -76,7 +77,7 @@ class TestROSCLEServer(unittest.TestCase):
     def test_prepare_initialization(self):
         self.__mocked_cle.is_initialized = False
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
-        self.assertEqual(4, self.__mocked_rospy.Service.call_count)
+        self.assertEqual(5, self.__mocked_rospy.Service.call_count)
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
 
     def __get_handlers_for_testing_main(self):
@@ -88,18 +89,21 @@ class TestROSCLEServer(unittest.TestCase):
         pause_handler = self.__mocked_rospy.Service.call_args_list[1][0][2]
         stop_handler = self.__mocked_rospy.Service.call_args_list[2][0][2]
         reset_handler = self.__mocked_rospy.Service.call_args_list[3][0][2]
+        state_handler = self.__mocked_rospy.Service.call_args_list[4][0][2]
 
-        return (start_handler, pause_handler, stop_handler, reset_handler)
+        return (start_handler, pause_handler, stop_handler, reset_handler, state_handler)
 
     @timeout(10, "Main loop did not terminate")
     def test_main_termination(self):
-        (_, _, stop_handler, _) = self.__get_handlers_for_testing_main()
+        (start_handler, _, stop_handler, _, state_handler) = self.__get_handlers_for_testing_main()
+        start_handler(_)
         # start a timer which calls the registered stop handler after 5 seconds
         timer = threading.Timer(5, stop_handler, ['irrelevant_argument'])
         timer.start()
         # now start the "infinite loop"
+        self.assertEqual(str(state_handler(_)), ROSCLEState.STARTED)
         self.__ros_cle_server.main()
-
+        self.assertEqual(str(state_handler(_)), ROSCLEState.STOPPED)
         self.__mocked_cle.stop.assert_called_once_with()
         self.__mocked_cle.wait_step.assert_called_once_with()
 

@@ -3,10 +3,14 @@ ROS wrapper around the CLE
 """
 import json
 import logging
+import threading
 import rospy
 from std_msgs.msg import String
 from std_srvs.srv import Empty
-import threading
+# This package comes from the catkin package ROSCLEServicesDefinitions
+# in the GazeboRosPackage folder at the root of the CLE (this) repository.
+from ROSCLEServicesDefinitions import srv
+from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
@@ -35,16 +39,16 @@ class ROSCLEServer(threading.Thread):
         # We disable the docstring here since there is nothing more to say than
         # what the method name already reveals.
         # pylint: disable=missing-docstring
-        def reset_simulation(self, _):
+        def reset_simulation(self):
             pass
 
-        def stop_simulation(self, _):
+        def stop_simulation(self):
             pass
 
-        def pause_simulation(self, _):
+        def pause_simulation(self):
             pass
 
-        def start_simulation(self, _):
+        def start_simulation(self):
             pass
 
         # pylint: disable=no-self-use
@@ -55,22 +59,33 @@ class ROSCLEServer(threading.Thread):
         """
         The initial state in which an instance of ROSCLEServer starts its lifecycle.
         """
-        def start_simulation(self, _):
+        def start_simulation(self):
             result = self._context.start_simulation()
             self._context.set_state(ROSCLEServer.RunningState(self._context))
             return result
+
+        def __repr__(self):
+            return ROSCLEState.INITIALIZED
 
     class RunningState(State):
         """
         Represents a running ROSCLEServer.
         """
-        def reset_simulation(self, _):
+        def reset_simulation(self):
             return self._context.reset_simulation()
 
-        def stop_simulation(self, _):
+        def stop_simulation(self):
             result = self._context.stop_simulation()
             self._context.set_state(ROSCLEServer.StoppedState(self._context))
             return result
+
+        def pause_simulation(self):
+            result = self._context.pause_simulation()
+            self._context.set_state(ROSCLEServer.PausedState(self._context))
+            return result
+
+        def __repr__(self):
+            return ROSCLEState.STARTED
 
     class StoppedState(State):
         """
@@ -79,24 +94,30 @@ class ROSCLEServer(threading.Thread):
         def is_final_state(self):
             return True
 
+        def __repr__(self):
+            return ROSCLEState.STOPPED
+
     class PausedState(State):
         """
         Represents a paused ROSCLEServer.
         """
-        def start_simulation(self, _):
+        def start_simulation(self):
             result = self._context.start_simulation()
             self._context.set_state(ROSCLEServer.RunningState(self._context))
             return result
 
-        def stop_simulation(self, _):
+        def stop_simulation(self):
             result = self._context.stop_simulation()
             self._context.set_state(ROSCLEServer.StoppedState(self._context))
             return result
 
-        def reset_simulation(self, _):
+        def reset_simulation(self):
             result = self._context.reset_simulation()
             self._context.set_state(ROSCLEServer.RunningState(self._context))
             return result
+
+        def __repr__(self):
+            return ROSCLEState.PAUSED
 
     def __init__(self):
         """
@@ -117,6 +138,7 @@ class ROSCLEServer(threading.Thread):
         self.__service_pause = None
         self.__service_stop = None
         self.__service_reset = None
+        self.__service_state = None
         self.__cle = None
 
         self.__ros_status_pub = rospy.Publisher(
@@ -138,6 +160,7 @@ class ROSCLEServer(threading.Thread):
         """
         The CLE will be initialized within this method and ROS services for
         starting, pausing, stopping and resetting are setup here.
+
         :param __cle: the closed loop engine
         """
         self.__cle = cle
@@ -148,18 +171,28 @@ class ROSCLEServer(threading.Thread):
 
         # We have to use lambdas here (!) because otherwise we bind to the state which is in place
         # during the time we set the callback! I.e. we would bind directly to the initial state.
+        # The x parameter is defined because of the architecture of rospy.
+        # rospy is expecting to have handlers which takes two arguments (self and x). The
+        # second one holds all the arguments sent through ROS (defined in the srv file).
+        # Even when there is no input argument for the service, rospy requires this.
+
         # pylint: disable=unnecessary-lambda
         self.__service_start = rospy.Service(self.ROS_CLE_URI_PREFIX + '/start', Empty,
-                                             lambda x: self.__state.start_simulation(x))
+                                             lambda x: self.__state.start_simulation())
 
         self.__service_pause = rospy.Service(self.ROS_CLE_URI_PREFIX + '/pause', Empty,
-                                             lambda x: self.__state.pause_simulation(x))
+                                             lambda x: self.__state.pause_simulation())
 
         self.__service_stop = rospy.Service(self.ROS_CLE_URI_PREFIX + '/stop', Empty,
-                                             lambda x: self.__state.stop_simulation(x))
+                                            lambda x: self.__state.stop_simulation())
 
         self.__service_reset = rospy.Service(self.ROS_CLE_URI_PREFIX + '/reset', Empty,
-                                             lambda x: self.__state.reset_simulation(x))
+                                             lambda x: self.__state.reset_simulation())
+
+        self.__service_state = rospy.Service(
+                    self.ROS_CLE_URI_PREFIX + '/state',
+                    srv.get_simulation_state,
+                    lambda x: str(self.__state))
 
     # TODO(Stefan)
     # Probably it would be better to only have a run method and get rid of main.
@@ -175,7 +208,6 @@ class ROSCLEServer(threading.Thread):
         itself self.start() that triggers run().
         """
         self.start()
-        self.__state.start_simulation(None)
 
         while not self.__state.is_final_state():
             self.__event_flag.wait()  # waits until an event is set
@@ -197,12 +229,14 @@ class ROSCLEServer(threading.Thread):
         self.__ros_status_pub.unregister()
         logger.info("Shutting down start service")
         self.__service_start.shutdown()
-        logger.info("Shutting down pause services")
+        logger.info("Shutting down pause service")
         self.__service_pause.shutdown()
-        logger.info("Shutting down stop services")
+        logger.info("Shutting down stop service")
         self.__service_stop.shutdown()
-        logger.info("Shutting down reset services")
+        logger.info("Shutting down reset service")
         self.__service_reset.shutdown()
+        logger.info("Shutting down state service")
+        self.__service_state.shutdown()
         self.__cle.shutdown()
 
     def notify_start_task(self, task_name, subtask_name, number_of_subtasks, block_ui):
@@ -210,6 +244,7 @@ class ROSCLEServer(threading.Thread):
         Sends a status notification that a task starts on the ROS status topic.
         This method will save the task name and the task size in class members so that
         it could be reused in subsequent call to the notify_current_task method.
+
         :param: task_name: Title of the task (example: initializing experiment).
         :param: subtask_name: Title of the first subtask. Could be empty
                 (example: loading Virtual Room).
@@ -233,6 +268,7 @@ class ROSCLEServer(threading.Thread):
     def notify_current_task(self, new_subtask_name, update_progress, block_ui):
         """
         Sends a status notification that the current task is updated with a new subtask.
+
         :param: subtask_name: Title of the first subtask. Could be empty
                 (example: loading Virtual Room).
         :param: update_progress: Boolean indicating if the index of the current subtask
@@ -307,6 +343,7 @@ class ROSCLEServer(threading.Thread):
     def __push_status_on_ros(self, message):
         """
         Push the given message to ROS
+
         :param: message: The message to publish
         """
         self.__ros_status_pub.publish(message)
