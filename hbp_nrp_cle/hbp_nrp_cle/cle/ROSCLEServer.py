@@ -145,6 +145,8 @@ class ROSCLEServer(threading.Thread):
         self.__service_state = None
         self.__cle = None
 
+        self.__to_be_executed_within_main_thread = None
+
         self.__ros_status_pub = rospy.Publisher(
             self.ROS_CLE_URI_PREFIX + '/status', String)
 
@@ -214,6 +216,10 @@ class ROSCLEServer(threading.Thread):
         self.start()
 
         while not self.__state.is_final_state():
+
+            if (self.__to_be_executed_within_main_thread is not None):
+                self.__to_be_executed_within_main_thread()
+                self.__to_be_executed_within_main_thread = None
             self.__event_flag.wait()  # waits until an event is set
             self.__event_flag.clear()
 
@@ -310,6 +316,7 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for both the start and the resume calls.
         """
+        self.__to_be_executed_within_main_thread = self.__cle.start
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []
@@ -338,6 +345,7 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for the __reset call.
         """
+        self.__to_be_executed_within_main_thread = self.__cle.reset
         self.__cle.stop()
         self.__cle.wait_step()
         # Next line is needed as a result for a ROS Service call!
