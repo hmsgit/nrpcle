@@ -7,12 +7,17 @@ import rospy
 import imp
 import threading
 import os
+import argparse
+import sys
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of the CLE (this) repository.
 from ROSCLEServicesDefinitions import srv
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger('hbp_nrp_cle')
+# Warning: We do not use __name__  here, since it translates to __main__
+# when this file is run directly (such as python ROSCLESimulationFactory.py)
 
 
 class ROSCLESimulationFactory(object):
@@ -89,15 +94,43 @@ class ROSCLESimulationFactory(object):
         logger.info("Preparting new simulation with environment file: " +
                     environment_file +
                     " and generated script file " +
-                    generated_cle_script_file +
-                    ".")
+                    generated_cle_script_file + ".")
         logger.info("Starting the experiment closed loop engine.")
         experiment_generated_script = imp.load_source(
             'experiment_generated_script', generated_cle_script_file)
         experiment_generated_script.cle_function(environment_file)
 
 
+def set_up_logger(logfile_name):
+    """
+    Configure the root logger of the CLE application
+    :param: logfile_name: name of the file created to collect logs
+    """
+    # We initialize the logging in the startup of the whole CLE application.
+    # This way we can access the already set up logger in the children modules.
+    # Also the following configuration can later be easily stored in an external
+    # configuration file (and then set by the user).
+    log_format = '%(asctime)s [%(threadName)-12.12s] [%(name)-12.12s] [%(levelname)s]  %(message)s'
+
+    try:
+        file_handler = logging.FileHandler(logfile_name)
+        file_handler.setFormatter(logging.Formatter(log_format))
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(file_handler)
+    except (AttributeError, IOError) as _:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(logging.Formatter(log_format))
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(console_handler)
+        logger.warn("Could not write to specified logfile or no logfile specified, " +
+                    "logging to stdout now!")
+
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--logfile', dest='logfile', help='specify the CLE logfile')
+    args = parser.parse_args()
+    set_up_logger(args.logfile)
     server = ROSCLESimulationFactory()
     server.run()
     logger.info("CLE Server exiting.")

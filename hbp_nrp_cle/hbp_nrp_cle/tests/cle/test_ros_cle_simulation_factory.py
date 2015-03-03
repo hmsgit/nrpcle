@@ -10,13 +10,14 @@ import unittest
 import json
 import threading
 from ROSCLEServicesDefinitions import srv
+import os
 
 __author__ = 'HBP NRP software team'
 
 
 class TestROSCLESimulationFactory(unittest.TestCase):
 
-    LOGGER_NAME = ROSCLESimulationFactory.__name__
+    LOGGER_NAME = 'hbp_nrp_cle'
 
     class MockedServiceRequest(object):
         environment_file = "environment_file.sdf"
@@ -91,6 +92,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
 
         self.assertTrue(result)
         self.assertEqual(error_message, "")
+
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
     def test_start_new_simulation_living_thread(self, mocked_logger):
         self.mockThreading()
@@ -110,6 +112,18 @@ class TestROSCLESimulationFactory(unittest.TestCase):
 
         self.assertFalse(result)
         self.assertNotEqual(error_message, "")
+
+    @log_capture(level=logging.WARNING)
+    def test_set_up_logger(self, logcapture):
+        ROSCLESimulationFactory.set_up_logger('cle_logfile.txt')
+        self.assertTrue(os.path.isfile('cle_logfile.txt'))
+        os.remove('cle_logfile.txt')
+
+        ROSCLESimulationFactory.set_up_logger(None)
+        logcapture.check(
+                        ('hbp_nrp_cle', 'WARNING',
+                            'Could not write to specified logfile or no logfile specified, logging to stdout now!')
+        )
 
 
 if __name__ == '__main__':
