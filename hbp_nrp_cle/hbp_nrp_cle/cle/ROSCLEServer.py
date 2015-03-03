@@ -76,7 +76,9 @@ class ROSCLEServer(threading.Thread):
         Represents a running ROSCLEServer.
         """
         def reset_simulation(self):
-            return self._context.reset_simulation()
+            result = self._context.reset_simulation()
+            self._context.set_state(ROSCLEServer.InitialState(self._context))
+            return result
 
         def stop_simulation(self):
             result = self._context.stop_simulation()
@@ -117,7 +119,7 @@ class ROSCLEServer(threading.Thread):
 
         def reset_simulation(self):
             result = self._context.reset_simulation()
-            self._context.set_state(ROSCLEServer.RunningState(self._context))
+            self._context.set_state(ROSCLEServer.InitialState(self._context))
             return result
 
         def __repr__(self):
@@ -325,7 +327,9 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for the pause call.
         """
+        # CLE has no explicit pause command, use stop() instead
         self.__cle.stop()
+        # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
         self.__cle.wait_step()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
@@ -336,6 +340,7 @@ class ROSCLEServer(threading.Thread):
         Handler for the __stop call.
         """
         self.__cle.stop()
+        # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
         self.__cle.wait_step()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
@@ -345,9 +350,8 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for the __reset call.
         """
+        # CLE reset() already includes stop() and wait_step()
         self.__to_be_executed_within_main_thread = self.__cle.reset
-        self.__cle.stop()
-        self.__cle.wait_step()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []
