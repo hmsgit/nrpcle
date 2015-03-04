@@ -9,7 +9,7 @@
 # deployed VM, you just have to use the following commands: 
 #
 # export DEV_VM=bbpce013.epfl.ch # ADAPT TO YOUR VM'S NAME
-# ssh -t root@$DEV_VM 'ps aux | grep gzserver | grep -v grep || /etc/init.d/gzserver restart' # start gzserver (needed by CLE tests)
+# ssh -t root@$DEV_VM 'ps aux | grep gzserver | grep -v grep || nohup /etc/init.d/gzserver restart 2>&1 >/dev/null' # start gzserver (needed by CLE tests)
 # if [ ! -d ContinuousIntegration ]; then make; fi
 # rsync -avzP -e ssh --exclude 'platform_venv' --delete . root@$DEV_VM:~/CLE
 # ssh -t root@$DEV_VM 'cd ~/CLE && ./dev_run_all_tests_remote.sh'
