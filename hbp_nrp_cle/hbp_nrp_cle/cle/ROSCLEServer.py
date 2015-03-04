@@ -5,15 +5,106 @@ import json
 import logging
 import threading
 import rospy
+import math
 from std_msgs.msg import String
 from std_srvs.srv import Empty
+from threading import Thread, Event
 # This package comes from the catkin package ROSCLEServicesDefinitions
-# in the GazeboRosPackage folder at the root of the CLE (this) repository.
+# in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
+
+
+# from http://stackoverflow.com/questions/12435211/
+#             python-threading-timer-repeat-function-every-n-seconds
+class DoubleTimer(Thread):
+    """
+    Timer that runs two functions, one every n1 seconds and the other
+    every n2 seconds, using only one thread
+    """
+
+    def __init__(self, interval1, callback1, interval2, callback2):
+        """
+        Construct the timer. To make it work properly, interval2 must be a
+        multiple of interval1.
+
+        :param interval1: the time interval of the first function
+        :param callback1: the first function to be called
+        :param interval2: the time interval of the second function
+        :param callback2: the second function to be called
+        """
+        Thread.__init__(self)
+        self.setDaemon(True)
+        if interval1 <= 0 or interval2 <= 0:
+            logger.error("interval1 or interval2 must be positive")
+            raise ValueError("interval1 or interval2 must be positive")
+        if math.fmod(interval2, interval1) > 1e-10:
+            logger.error("interval2 of Double timer is not a multiple \
+                          of interval1")
+            raise ValueError("interval2 is not a multiple of interval1")
+        self.interval1 = interval1
+        self.callback1 = callback1
+        self.interval2 = interval2
+        self.callback2 = callback2
+        self.stopped = Event()
+        self.stopped.clear()
+        self.counter = 0
+        self.expiring = False
+
+    def run(self):
+        """
+        Exec the function and restart the timer.
+        """
+        while not self.stopped.wait(self.interval1):
+            self.callback1()
+            if self.expiring:
+                self.counter = self.counter + 1
+                if self.counter >= self.interval2 / self.interval1:
+                    self.counter = 0
+                    self.expiring = False
+                    self.callback2()
+
+    def is_expiring(self):
+        """
+        Return True if the second callback is active, False otherwise.
+        """
+        return self.expiring
+
+    def cancel_all(self):
+        """
+        Cancel the timer.
+        """
+        self.disable_second_callback()
+        self.stopped.set()
+
+    def enable_second_callback(self):
+        """
+        Enable calling of the second callback (one call only).
+        """
+        self.expiring = True
+
+    def disable_second_callback(self):
+        """
+        Disable calling of the second callback and reset its timer.
+        """
+        self.expiring = False
+        self.counter = 0
+
+    def get_remaining_time(self):
+        """
+        Get remaining time before the second callback is executed.
+        If the callback is disabled, the function will return the full
+        interval2.
+
+        :return: the remaining time before the callback
+        """
+        if not self.expiring:
+            return self.interval2
+        else:
+            return self.interval2 - self.counter * self.interval1
 
 
 # pylint: disable=R0902
@@ -25,6 +116,7 @@ class ROSCLEServer(threading.Thread):
     """
     ROS_CLE_NODE_NAME = "ros_cle_simulation"
     ROS_CLE_URI_PREFIX = "/" + ROS_CLE_NODE_NAME
+    STATUS_UPDATE_INTERVAL = 1.0
 
     class State(object):
         """
@@ -156,6 +248,10 @@ class ROSCLEServer(threading.Thread):
         self.__current_subtask_count = 0
         self.__current_subtask_index = 0
 
+        # timeout stuff
+        self.__timeout = None
+        self.__double_timer = None
+
     def set_state(self, state):
         """
         Sets the current state of the ROSCLEServer. This is used from the State Pattern
@@ -164,12 +260,14 @@ class ROSCLEServer(threading.Thread):
         self.__state = state
         self.__event_flag.set()
 
-    def prepare_simulation(self, cle):
+    def prepare_simulation(self, cle, timeout=300):
         """
         The CLE will be initialized within this method and ROS services for
         starting, pausing, stopping and resetting are setup here.
 
         :param __cle: the closed loop engine
+        :param timeout: the timeout time of the simulation,
+            default is 5 minutes
         """
         self.__cle = cle
         if not self.__cle.is_initialized:
@@ -201,6 +299,49 @@ class ROSCLEServer(threading.Thread):
                     self.ROS_CLE_URI_PREFIX + '/state',
                     srv.get_simulation_state,
                     lambda x: str(self.__state))
+
+        self.__timeout = timeout
+        self.__double_timer = DoubleTimer(self.STATUS_UPDATE_INTERVAL,
+                                          self.__publish_state_update,
+                                          self.__timeout,
+                                          self.quit_by_timeout)
+        self.__double_timer.start()
+
+    def __get_remaining(self):
+        """
+        Get the remaining time of the simulation
+        """
+        return self.__double_timer.get_remaining_time()
+
+    def start_timeout(self):
+        """
+        Start the timeout on the current simulation
+        """
+        self.__double_timer.enable_second_callback()
+        logger.info("Simulation will timeout in %f seconds", self.__timeout)
+
+    def stop_timeout(self):
+        """
+        Stop the timeout
+        """
+        if self.__double_timer.is_expiring:
+            self.__double_timer.disable_second_callback()
+            logger.info("Timeout stopped")
+
+    def quit_by_timeout(self):
+        """
+        Stops the simulation
+        """
+        self.__state.stop_simulation()
+        logger.info("Force quitting the simulation")
+
+    def __publish_state_update(self):
+        """
+        Publish the state and the remaining timeout
+        """
+        message = {'state': str(self.__state),
+                   'timeout': self.__get_remaining()}
+        self.__push_status_on_ros(json.dumps(message))
 
     # TODO(Stefan)
     # Probably it would be better to only have a run method and get rid of main.
@@ -237,8 +378,6 @@ class ROSCLEServer(threading.Thread):
         """
         Unregister every ROS services and topics
         """
-        logger.info("Unregister status topic")
-        self.__ros_status_pub.unregister()
         logger.info("Shutting down start service")
         self.__service_start.shutdown()
         logger.info("Shutting down pause service")
@@ -249,6 +388,10 @@ class ROSCLEServer(threading.Thread):
         self.__service_reset.shutdown()
         logger.info("Shutting down state service")
         self.__service_state.shutdown()
+        if self.__current_task is not None:
+            self.notify_finish_task()
+        logger.info("Unregister status topic")
+        self.__ros_status_pub.unregister()
         self.__cle.shutdown()
 
     def notify_start_task(self, task_name, subtask_name, number_of_subtasks, block_ui):
@@ -319,6 +462,7 @@ class ROSCLEServer(threading.Thread):
         Handler for the CLE start() call, also used for resuming after pause().
         """
         self.__to_be_executed_within_main_thread = self.__cle.start
+        self.start_timeout()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []
@@ -339,6 +483,9 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for the CLE stop() call, includes waiting for the current simulation step to finish.
         """
+        self.stop_timeout()
+        self.__double_timer.cancel_all()
+        self.__double_timer.join()
         self.__cle.stop()
         # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
         self.__cle.wait_step()
@@ -351,6 +498,7 @@ class ROSCLEServer(threading.Thread):
         Handler for the CLE reset() call, additionally triggers a CLE stop().
         """
         # CLE reset() already includes stop() and wait_step()
+        self.stop_timeout()
         self.__to_be_executed_within_main_thread = self.__cle.reset
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
