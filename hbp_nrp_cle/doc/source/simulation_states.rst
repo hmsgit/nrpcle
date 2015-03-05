@@ -18,7 +18,7 @@ State machine of the CLC
 
 .. _state-machine:
 .. figure:: img/stateMachine.png
-    :width: 100%
+    :align: center
 
     The state machine of the SerialClosedLoopEngine
 
@@ -40,7 +40,7 @@ The state machine of the CLE is exposed via ROS through the ROS CLE server. This
 
 .. _state-machine-server:
 .. figure:: img/stateMachineServer.png
-    :width: 100%
+    :align: center
 
     The state machine of the ROSCLEServer (internally mapped to the SerialClosedLoopEngine state machine)
 

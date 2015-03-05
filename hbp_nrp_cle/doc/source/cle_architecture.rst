@@ -1,6 +1,6 @@
-================
-CLE architecture
-================
+===============================
+Closed Loop Engine Architecture
+===============================
 
 Purpose
 -------
@@ -9,7 +9,7 @@ The Closed Loop Engine (CLE) is responsible for transferring data between the ne
 
 .. _architecture-overview:
 .. figure:: img/architecture_overview.png
-   :align: center
+   :width: 100%
 
    Overview of HBP SP10
 

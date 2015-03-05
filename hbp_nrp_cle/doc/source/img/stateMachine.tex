@@ -7,7 +7,7 @@
 
 \begin{document}
 
-\begin{tikzpicture}[->,>=stealth',auto,semithick,node distance=5cm]
+\begin{tikzpicture}[->,>=stealth',auto,semithick,node distance=4cm]
 
 	\node[initial,state] (created) {Created};
 	\node[state]         (stopped) [below right of=created]{Stopped};
@@ -19,7 +19,7 @@
 				(stopped)			edge [bend left] node [right] {$run\_step(d_t)$} (stop)
 											edge [loop left] node {$reset()$} (stopped)
 											edge node{$start()$} (started)
-											edge node{$shutdown()$} (shutdown)
+											edge node [below] {$shutdown()$} (shutdown)
 				(started)			edge node[above]{$stop()$} (stop)
 				(stop)				edge [bend left] node[right]{$\epsilon$} (stopped);
 

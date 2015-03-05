@@ -1,6 +1,6 @@
-*******************************
-Closed Loop Engine Architecture
-*******************************
+************
+Architecture
+************
 
 .. toctree::
    :maxdepth: 2
@@ -13,3 +13,4 @@ Closed Loop Engine Architecture
    simulation_states
    brain_adapter
    robot_adapter
+
