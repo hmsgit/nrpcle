@@ -13,7 +13,7 @@ Contents:
 
    architecture
    installing_and_running
-   tutorials
+   tutorials/index
    howtos
    hbp_nrp_cle
    glossary

@@ -69,7 +69,7 @@ The second part of the transfer function is the specification of the result, i.e
 
 The third part of a transfer function is the actual function, i.e. the specification how the robot topics and device configuration (either for sending or receiving data) is connected. This specification can be done through arbitrary Python code. The data source is fed into the function as a formal parameter, whereas the return value is taken and sent to the target sink, i.e. the targeted robot topic or device. Further communication is possible through communication objects directly.
 
-A quick overview on how these concepts are implemented in the TF framework can be found :doc:`here<tutorial_tf>`.
+A quick overview on how these concepts are implemented in the TF framework can be found :doc:`here<tutorials/index>`.
 
 Transfer Function Framework Architecture
 ----------------------------------------
@@ -143,7 +143,9 @@ and the following spike sources:
 *   Poisson: Generates spikes based on a Poisson distribution. The rate sets the parameter of the Poisson distribution.
 *   AC, DC and NC source: Issue current to connected neurons. The amplitude defines the maximal current issued to the neurons.
 
-Additionally, developers may add custom devices that can take over the coupling to a neuronal simulator given a brain communication adapter.
+Details on the device types can be found in at the brain interface module :mod:`hbp_nrp_cle.brainsim.BrainInterface`
+
+Additionally, developers may add custom devices that can take over the coupling to a neuronal simulator given a brain communication adapter, see :doc:`tutorials/deviceGroups`
 
 Neuron selection specification
 """"""""""""""""""""""""""""""

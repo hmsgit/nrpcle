@@ -27,7 +27,7 @@ At first, the XML file is loaded into memory using model representation classes 
 BIBI Configuration File Format (checked in into the Models repository). Then, this configuration model is transformed to Python code using **Jinja2** templates. These generated files are then loaded into memory
 by using the **imp** module.
 
-The **imp** module represents the internals of the *import* statement of python. Therefore, the same machinery is used asfor usual Python code. That means for a typical environment running CPython
+The **imp** module represents the internals of the *import* statement of python. Therefore, the same machinery is used as for usual Python code. That means for a typical environment running CPython
 that C code will be generated for the user defined transfer functions which is then run at every timestep. We use this machinery to minimize the cost of transfer functions for the overall simulations.
 
 .. _bibi-security:

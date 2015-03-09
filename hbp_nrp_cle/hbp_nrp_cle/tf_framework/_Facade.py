@@ -29,9 +29,6 @@ ac_source = IACSource
 nc_source = INCSource
 population_rate = IPopulationRate
 
-subscriber = True
-publisher = False
-
 brain = _PropertyPath.PropertyPath()
 
 
