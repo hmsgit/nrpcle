@@ -168,6 +168,9 @@ public:
   /// \brief Both SDFs and converted URDFs get sent to this function for further manipulation from a ROS Service call
   bool spawnSDFModel(gazebo_msgs::SpawnModel::Request &req,gazebo_msgs::SpawnModel::Response &res);
 
+  /// \brief Light SDFs gets sent to this function for further manipulation from a ROS Service call
+  bool spawnSDFLight(gazebo_msgs::SpawnModel::Request &req,gazebo_msgs::SpawnModel::Response &res);
+
   /// \brief delete model given name
   bool deleteModel(gazebo_msgs::DeleteModel::Request &req,gazebo_msgs::DeleteModel::Response &res);
 
@@ -310,12 +313,16 @@ private:
   /// \brief Update the model name of the URDF file before sending to Gazebo
   void updateURDFName(TiXmlDocument &gazebo_model_xml, std::string model_name);
 
+  /// \brief Update the inital pause and replace model name
+  bool updateInitialPoseAndModelName(TiXmlDocument &gazebo_model_xml, gazebo_msgs::SpawnModel::Request &req,
+                                       gazebo_msgs::SpawnModel::Response &res);
+
   /// \brief
   void walkChildAddRobotNamespace(TiXmlNode* robot_xml);
 
   /// \brief
   bool spawnAndConform(TiXmlDocument &gazebo_model_xml, std::string model_name, 
-                       gazebo_msgs::SpawnModel::Response &res);
+                       gazebo_msgs::SpawnModel::Response &res, bool isLight = false);
 
   /// \brief helper function for applyBodyWrench
   ///        shift wrench from reference frame to target frame
@@ -395,6 +402,7 @@ private:
 
   ros::ServiceServer spawn_gazebo_model_service_; // DEPRECATED IN HYDRO
   ros::ServiceServer spawn_sdf_model_service_;
+  ros::ServiceServer spawn_sdf_light_service_; // patched for HBP
   ros::ServiceServer spawn_urdf_model_service_;
   ros::ServiceServer delete_model_service_;
   ros::ServiceServer get_model_state_service_;

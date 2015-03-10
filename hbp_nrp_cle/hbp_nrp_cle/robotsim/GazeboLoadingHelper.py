@@ -9,8 +9,11 @@ from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion
 from lxml import etree
 import logging
+from hbp_nrp_cle.cle import ROSCLEClient
 
 logger = logging.getLogger(__name__)
+
+TIMEOUT = ROSCLEClient.ROSCLEClient.ROS_SERVICE_TIMEOUT
 
 
 def load_gazebo_world_file(world_file, notification_fn=None):
@@ -34,10 +37,10 @@ def load_gazebo_world_file(world_file, notification_fn=None):
         logger.info("Loading light \"%s\" in Gazebo", light.xpath("@name")[0])
         if (notification_fn is not None):
             notification_fn("Loading light " + light.xpath("@name")[0], False)
-        load_gazebo_sdf(light.xpath("@name")[0],
-                        "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
-                        etree.tostring(light) +
-                        "</sdf>")
+        load_light_sdf(light.xpath("@name")[0],
+                       "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
+                       etree.tostring(light) +
+                       "</sdf>")
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
         logger.info("Loading model \"%s\" in Gazebo", model.xpath("@name")[0])
@@ -58,7 +61,7 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
     :param model_file: The name of the model sdf file inside the \
         NRP_MODELS_DIRECTORY folder. If the NRP_MODELS_DIRECTORY \
         environment variable is not set, this script will search \
-        the model in its own folder.
+        the model in its own folder.\
     :param initial_pose: Initial pose of the model. Uses the Gazebo \
         "Pose" type.
     """
@@ -68,6 +71,31 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
     # spawn model
     load_gazebo_sdf(model_name, model_sdf, initial_pose)
     logger.info("%s successfully loaded in Gazebo", model_file)
+
+
+def load_light_sdf(light_name, light_sdf, initial_pose=None):
+    """
+    Load a gazebo light (sdf) into the ROS connected running gazebo instance.
+
+    :param light_name: Name of the light (can be anything).
+    :param light_sdf: The SDF xml code describing the light.
+    :param initial_pose: Initial pose of the light. Uses the Gazebo \
+        "Pose" type.
+    """
+    # set initial pose
+    if initial_pose is None:
+        initial_pose = Pose()
+        initial_pose.position = Point(0, 0, 0)
+        initial_pose.orientation = Quaternion(0, 0, 0, 1)
+    # spawn light
+    rospy.wait_for_service('/gazebo/spawn_sdf_light', TIMEOUT)
+    spawn_light_prox = rospy.ServiceProxy('/gazebo/spawn_sdf_light', SpawnModel)
+    spawn_light_prox(light_name,
+                     light_sdf,
+                     "",
+                     initial_pose,
+                     "")
+    spawn_light_prox.close()
 
 
 def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
@@ -85,7 +113,7 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
         initial_pose.position = Point(0, 0, 0)
         initial_pose.orientation = Quaternion(0, 0, 0, 1)
     # spawn model
-    rospy.wait_for_service('/gazebo/spawn_sdf_model')
+    rospy.wait_for_service('/gazebo/spawn_sdf_model', TIMEOUT)
     spawn_model_prox = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
     spawn_model_prox(model_name,
                      model_sdf,
@@ -101,13 +129,13 @@ def empty_gazebo_world(notification_fn=None):
     Remove all models and all lights.
     """
 
-    rospy.wait_for_service('gazebo/get_world_properties')
+    rospy.wait_for_service('gazebo/get_world_properties', TIMEOUT)
     get_world_properties_proxy = rospy.ServiceProxy('gazebo/get_world_properties',
                                                     GetWorldProperties)
     world_properties = get_world_properties_proxy()
     get_world_properties_proxy.close()
 
-    rospy.wait_for_service('gazebo/delete_model')
+    rospy.wait_for_service('gazebo/delete_model', TIMEOUT)
     delete_model_proxy = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
     for model in world_properties.model_names:
         if (notification_fn is not None):
@@ -117,7 +145,7 @@ def empty_gazebo_world(notification_fn=None):
 
     if (notification_fn is not None):
         notification_fn("Cleaning lights", False)
-    rospy.wait_for_service('gazebo/delete_lights')
+    rospy.wait_for_service('gazebo/delete_lights', TIMEOUT)
     delete_lights_proxy = rospy.ServiceProxy('gazebo/delete_lights', Empty)
     delete_lights_proxy()
     delete_lights_proxy.close()

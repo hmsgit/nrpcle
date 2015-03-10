@@ -8,7 +8,7 @@ import rospy
 from std_msgs.msg import String
 from std_srvs.srv import Empty
 # This package comes from the catkin package ROSCLEServicesDefinitions
-# in the GazeboRosPackage folder at the root of the CLE (this) repository.
+# in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 
