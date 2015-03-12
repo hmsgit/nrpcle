@@ -366,6 +366,7 @@ class ROSCLEServer(threading.Thread):
             self.__event_flag.wait()  # waits until an event is set
             self.__event_flag.clear()
 
+        self.__publish_state_update()
         logger.info("Finished main loop")
 
     def run(self):
@@ -378,6 +379,7 @@ class ROSCLEServer(threading.Thread):
         """
         Unregister every ROS services and topics
         """
+        self.__double_timer.join()
         logger.info("Shutting down start service")
         self.__service_start.shutdown()
         logger.info("Shutting down pause service")
@@ -393,6 +395,7 @@ class ROSCLEServer(threading.Thread):
         logger.info("Unregister status topic")
         self.__ros_status_pub.unregister()
         self.__cle.shutdown()
+        self.__double_timer.join()
 
     def notify_start_task(self, task_name, subtask_name, number_of_subtasks, block_ui):
         """
@@ -485,7 +488,6 @@ class ROSCLEServer(threading.Thread):
         """
         self.stop_timeout()
         self.__double_timer.cancel_all()
-        self.__double_timer.join()
         self.__cle.stop()
         # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
         self.__cle.wait_step()
