@@ -395,7 +395,6 @@ class ROSCLEServer(threading.Thread):
         logger.info("Unregister status topic")
         self.__ros_status_pub.unregister()
         self.__cle.shutdown()
-        self.__double_timer.join()
 
     def notify_start_task(self, task_name, subtask_name, number_of_subtasks, block_ui):
         """
