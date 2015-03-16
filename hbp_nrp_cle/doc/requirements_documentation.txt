@@ -1,2 +1,4 @@
 #the following is required for the unit testing
+sphinx==1.2
+sphinxcontrib-napoleon==0.2.7
 sphinx_numfig
