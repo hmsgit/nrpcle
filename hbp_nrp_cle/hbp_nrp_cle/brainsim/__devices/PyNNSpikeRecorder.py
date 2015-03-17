@@ -24,7 +24,6 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         self.__spike_count = None
         self.__previous_spike_count = None
         self.__neurons = None
-        self.__update = [0.0, None]
 
     @property
     def spiked(self):
@@ -33,9 +32,6 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         "1": neuron spiked within the last time step
         "0": neuron was silent within the last time step
         """
-        self.__previous_spike_count = self.__spike_count
-        self.__spike_count = np.array(
-            self.__neurons.get_spike_counts().values())
         return self.__spike_count > self.__previous_spike_count
 
     def start_record_spikes(self):
@@ -58,13 +54,14 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         self.__spike_count = np.zeros(len(self.__neurons))
         self.start_record_spikes()
 
+    # simulation time not necessary for this device
+    # pylint: disable=W0613
     def refresh(self, time):
         """
         Refreshes the voltage value
 
         :param time: The current simulation time
         """
-        if self.__update[0] is not time:
-            self.__update[0] = time
-            self.__update[1] = self.spiked
-        return self.__update[1]
+        self.__previous_spike_count = self.__spike_count
+        self.__spike_count = np.array(
+            self.__neurons.get_spike_counts().values())

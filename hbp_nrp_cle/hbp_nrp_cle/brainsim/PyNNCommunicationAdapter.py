@@ -91,7 +91,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
             return device_group
 
     def register_spike_sink(self, populations, spike_detector_type, **params):
-        '''
+        """
         Requests a communication object with the given spike detector type
         for the given set of neurons
 
@@ -101,7 +101,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
          for a list of allowed values)
         :param params: A dictionary of configuration parameters
         :return: A Communication object or a group of objects
-        '''
+        """
         if not isinstance(populations, list):
             device = PyNNCommunicationAdapter.__device_dict[
                 spike_detector_type](**params)

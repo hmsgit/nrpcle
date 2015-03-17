@@ -37,7 +37,11 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         Initializes the neuronal simulator
 
-        :param params: A dictionary of configuration parameters
+        :param timestep: The timestep used for the neuronal simulation
+        :param min_delay: The minimum delay
+        :param max_delay: The maximum delay
+        :param threads: The amount of threads that should be used to run the simulation
+        :param rng_seeds: The rng seeds for the simulation
         :return: True if the simulator is initialized, otherwise False
         """
         if not self.__is_initialized:
@@ -87,12 +91,14 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         Resets the neuronal simulator
         """
-        self.__rank = sim.setup(timestep=sim.get_time_step(),
-                                min_delay=sim.get_min_delay(),
-                                max_delay=sim.get_max_delay(),
-                                threads=1,
-                                rng_seeds=[1234])
-        if not self.__network_file == '':
-            BrainLoader.load_h5_network(self.__network_file,
-                                        self.__populations)
+        # Don't do anything here since we can reuse the brain network as is
+        # Otherwise, the devices must be reconfigured
+        # self.__rank = sim.setup(timestep=sim.get_time_step(),
+        #                         min_delay=sim.get_min_delay(),
+        #                         max_delay=sim.get_max_delay(),
+        #                         threads=1,
+        #                         rng_seeds=[1234])
+        # if not self.__network_file == '':
+        #     BrainLoader.load_h5_network(self.__network_file,
+        #                                 self.__populations)
         logger.info("neuronal simulator reset")

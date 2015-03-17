@@ -35,7 +35,7 @@ class PyNNPopulationRate(IPopulationRate):
         """
         self.__cell = None
         self.__weight = None
-        self.__update = [0.0, 0.0]
+        self.__rate = None
 
         self.create_device(**params)
         self.calculate_weight()
@@ -46,7 +46,7 @@ class PyNNPopulationRate(IPopulationRate):
         """
         Returns the population firing rate
         """
-        return self.__cell.get_v()[-1, -1]
+        return self.__rate
 
     def create_device(self, **params):
         """
@@ -99,13 +99,18 @@ class PyNNPopulationRate(IPopulationRate):
                        postsynaptic_population=self.__cell,
                        method=connector, target='excitatory')
 
+    # simulation time not necessary for this device
+    # pylint: disable=W0613
     def refresh(self, time):
         """
         Refreshes the rate value
 
         :param time: The current simulation time
         """
-        if self.__update[0] is not time:
-            self.__update[0] = time
-            self.__update[1] = self.rate
-        return self.__update[1]
+        ### HACK ###
+        # The usual PyNN get_v() call
+        # return self.__cell.get_v()[-1, -1]
+        # takes too much time.
+        # In the meantime, until the PyNN call gets fixed, we can use the
+        # function of the NEST back-end.
+        self.__rate = sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
