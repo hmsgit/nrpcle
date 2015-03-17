@@ -4,9 +4,10 @@ moduleauthor: probst@fzi.de
 '''
 
 from .BrainInterface import IBrainCommunicationAdapter, \
-    ILeakyIntegratorAlpha, ISpikeDetector, IPoissonSpikeGenerator, \
-    IDCSource, IACSource, INCSource, \
-    ILeakyIntegratorExp, IPopulationRate, IFixedSpikeGenerator
+    ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
+    IDCSource, IACSource, INCSource, ISpikeDetector, \
+    ILeakyIntegratorExp, IPopulationRate, IFixedSpikeGenerator, ISpikeRecorder
+
 from .__devices.PyNNPoissonSpikeGenerator import PyNNPoissonSpikeGenerator
 from .__devices.PyNNFixedSpikeGenerator import PyNNFixedSpikeGenerator
 from .__devices.PyNNDCSource import PyNNDCSource
@@ -38,6 +39,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                      ILeakyIntegratorAlpha: PyNNLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: PyNNLeakyIntegratorExp,
                      IPopulationRate: PyNNPopulationRate,
+                     ISpikeRecorder: PyNNSpikeRecorder,
                      ISpikeDetector: PyNNSpikeRecorder}
 
     def __init__(self):

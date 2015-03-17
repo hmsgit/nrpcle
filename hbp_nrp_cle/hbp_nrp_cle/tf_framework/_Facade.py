@@ -8,7 +8,7 @@ from . import config
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
-    ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate
+    ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
 
 # pylint: disable=W0611
 
@@ -28,6 +28,8 @@ dc_source = IDCSource
 ac_source = IACSource
 nc_source = INCSource
 population_rate = IPopulationRate
+spike_recorder = ISpikeRecorder
+
 
 subscriber = True
 publisher = False

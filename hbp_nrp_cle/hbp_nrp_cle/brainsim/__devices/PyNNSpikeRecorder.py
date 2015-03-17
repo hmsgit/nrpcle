@@ -38,6 +38,20 @@ class PyNNSpikeRecorder(ISpikeRecorder):
             self.__neurons.get_spike_counts().values())
         return self.__spike_count > self.__previous_spike_count
 
+    @property
+    def times(self):
+        """
+        Returns the times of the recorded spikes within the last time step.
+        :return:
+        """
+        a = self.__neurons.getSpikes()
+
+        if a.shape[0] == 0:
+            return []
+        else:
+            val = list(a[self.__previous_spike_count:, 1])
+            return val
+
     def start_record_spikes(self):
         """
         Records the spikes of "neurons"
