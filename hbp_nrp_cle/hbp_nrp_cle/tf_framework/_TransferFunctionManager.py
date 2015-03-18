@@ -11,6 +11,9 @@ from ._Robot2Neuron import Robot2Neuron
 from ._TransferFunctionInterface import ITransferFunctionManager
 from ._PropertyPath import PropertyPath
 from . import config
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TransferFunctionManager(ITransferFunctionManager):
@@ -70,7 +73,7 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         :param name: The name for this transfer function node
         """
-        print("Initialize transfer functions node ", name)
+        logger.info("Initialize transfer functions node " + name)
         if self.__nestAdapter is None:
             raise Exception("No brain simulation adapter has been specified")
 
@@ -116,7 +119,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         for _n2r in self.__n2r:
             if _n2r.topic is not None:
-                print ("unregister topic", repr(_n2r))
+                logger.info("unregister topic" + repr(_n2r))
                 _n2r.topic.unregister()
 
     @staticmethod
@@ -209,7 +212,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         Resets the transfer functions
         """
-        print("Resetting transfer functions")
+        logger.info("Resetting transfer functions")
         if self.__nestAdapter is None:
             raise Exception("No brain simulation adapter has been specified")
 

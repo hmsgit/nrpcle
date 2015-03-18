@@ -52,3 +52,13 @@ class PyNNDeviceGroup(IDeviceGroup):
             else:
                 for device in self.devices:
                     setattr(device, attrname, value)
+
+    def refresh(self, t):
+        """
+        Refreshes all inner devices at time t
+
+        :param t: The current simulation time
+        """
+        for device in self.devices:
+            if hasattr(device, 'refresh'):
+                device.refresh(t)

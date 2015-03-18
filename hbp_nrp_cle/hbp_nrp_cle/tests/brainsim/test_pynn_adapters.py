@@ -68,7 +68,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         """
         self.control.reset()
         population = sim.Population(10, sim.IF_cond_exp)
-        self.assertEqual(population.all_cells[9], 10)
+        self.assertEqual(population.all_cells[9], 100)
         logcapture.check(('hbp_nrp_cle.brainsim.PyNNControlAdapter', 'INFO',
                           'neuronal simulator reset'))
 

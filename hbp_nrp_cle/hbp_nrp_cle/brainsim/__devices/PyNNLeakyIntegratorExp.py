@@ -48,7 +48,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
             synaptic plasticity mechanisms to use
         """
         self.__cell = None
-        self.__update = [0.0, params.get('v_rest', 0.0)]
+        self.__voltage = None
 
         self.create_device(**params)
         self.start_record_voltage()
@@ -58,13 +58,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         """
         Returns the membrane voltage of the cell
         """
-        ### HACK ###
-        # The usual PyNN get_v() call
-        # return self.__cell.get_v()[-1, -1]
-        # takes too much time.
-        # In the meantime, until the PyNN call gets fixed, we can use the
-        # function of the NEST back-end.
-        return sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
+        return self.__voltage
 
     def create_device(self, **params):
         """
@@ -175,13 +169,18 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
                               label=label, rng=rng)
         return proj
 
+    # simulation time not necessary for this device
+    # pylint: disable=W0613
     def refresh(self, time):
         """
         Refreshes the voltage value
 
         :param time: The current simulation time
         """
-        if self.__update[0] is not time:
-            self.__update[0] = time
-            self.__update[1] = self.voltage
-        return self.__update[1]
+        ### HACK ###
+        # The usual PyNN get_v() call
+        # return self.__cell.get_v()[-1, -1]
+        # takes too much time.
+        # In the meantime, until the PyNN call gets fixed, we can use the
+        # function of the NEST back-end.
+        self.__voltage = sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
