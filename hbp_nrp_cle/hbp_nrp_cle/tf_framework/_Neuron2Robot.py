@@ -9,7 +9,7 @@ from hbp_nrp_cle.robotsim.RobotInterface import Topic
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, \
-    ICustomDevice, IBrainCommunicationAdapter
+    ICustomDevice, IBrainCommunicationAdapter, ISpikeRecorder
 from . import config
 from ._TransferFunction import TransferFunction
 
@@ -22,7 +22,7 @@ class MapSpikeSink(object):
     """
 
     supported_device_types = [ISpikeDetector, ILeakyIntegratorAlpha, ILeakyIntegratorExp,
-                              IPopulationRate]
+                              IPopulationRate, ISpikeRecorder]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """
