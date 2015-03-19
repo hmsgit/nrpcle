@@ -37,14 +37,28 @@ pip install netifaces
 pip install rosinstall
 pip install rosinstall_generator
 
+#pip install rosdep 
+#sudo pip install --upgrade setuptools # Was necessary in the virtual machine
+
 rm -rf build
 mkdir -p build/src
 cd build/src
-# ROS bridge
-git clone https://github.com/RobotWebTools/rosbridge_suite.git
+wstool init
+
+# ROS Control
+wstool merge https://raw.github.com/ros-controls/ros_control/indigo-devel/ros_control.rosinstall
+
+# ROS Bridge
+roslocate info rosbridge_suite | wstool merge -
+
 # ROS auth (dependency of ROS bridge)
-git clone -b develop https://github.com/WPI-RAIL/rosauth.git
+roslocate info rosauth | wstool merge -
 
+# ROS image_common (needed by gazebo_ros_control)
+roslocate info image_common | wstool merge -
+
+wstool update
 cd ..
-catkin_make -DCATKIN_ENABLE_TESTING=0 -DCMAKE_INSTALL_PREFIX=/nfs4/bbp.epfl.ch/sw/neurorobotics/ros-thirdparty/hydro/rhel-6.5-x86_64/gcc-4.4.7/x86_64/ install
+rm -rf src/ros_control/rqt_controller_manager
 
+catkin_make   -DCATKIN_ENABLE_TESTING=0 -DCMAKE_INSTALL_PREFIX=/nfs4/bbp.epfl.ch/sw/neurorobotics/ros-thirdparty/hydro/rhel-6.5-x86_64/gcc-4.4.7/x86_64/ install
