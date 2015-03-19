@@ -29,6 +29,7 @@ catkin_package(
 
 link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(include
+  ${TBB_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}

@@ -56,6 +56,7 @@ generate_dynamic_reconfigure_options(
 )
 
 include_directories(include
+  ${TBB_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
@@ -65,6 +66,7 @@ include_directories(include
 
 link_directories(
   ${GAZEBO_LIBRARY_DIRS}
+  ${OGRE_LIBRARY_DIRS}
 )
 
 catkin_package(
@@ -75,8 +77,9 @@ catkin_package(
   gazebo_ros_camera_utils 
   gazebo_ros_camera 
   gazebo_ros_multicamera 
-  gazebo_ros_depth_camera 
-  gazebo_ros_openni_kinect 
+# HBP: deactivated since we do not have a actual sensor_msgs package (sensor_msgs/point_cloud2_iterator.h is missing)
+#  gazebo_ros_depth_camera 
+#  gazebo_ros_openni_kinect 
   gazebo_ros_gpu_laser 
   gazebo_ros_laser 
   gazebo_ros_block_laser 
@@ -165,13 +168,15 @@ add_library(gazebo_ros_multicamera src/gazebo_ros_multicamera.cpp)
 add_dependencies(gazebo_ros_multicamera ${PROJECT_NAME}_gencfg)
 target_link_libraries(gazebo_ros_multicamera gazebo_ros_camera_utils ${GAZEBO_LIBRARIES} MultiCameraPlugin ${catkin_LIBRARIES})
 
-add_library(gazebo_ros_depth_camera src/gazebo_ros_depth_camera.cpp)
-add_dependencies(gazebo_ros_depth_camera ${PROJECT_NAME}_gencfg)
-target_link_libraries(gazebo_ros_depth_camera gazebo_ros_camera_utils ${GAZEBO_LIBRARIES} DepthCameraPlugin ${catkin_LIBRARIES})
+# HBP: deactivated since we do not have a actual sensor_msgs package (sensor_msgs/point_cloud2_iterator.h is missing)
+#add_library(gazebo_ros_depth_camera src/gazebo_ros_depth_camera.cpp)
+#add_dependencies(gazebo_ros_depth_camera ${PROJECT_NAME}_gencfg)
+#target_link_libraries(gazebo_ros_depth_camera gazebo_ros_camera_utils ${GAZEBO_LIBRARIES} DepthCameraPlugin ${catkin_LIBRARIES})
 
-add_library(gazebo_ros_openni_kinect src/gazebo_ros_openni_kinect.cpp)
-add_dependencies(gazebo_ros_openni_kinect ${PROJECT_NAME}_gencfg)
-target_link_libraries(gazebo_ros_openni_kinect gazebo_ros_camera_utils ${GAZEBO_LIBRARIES} DepthCameraPlugin ${catkin_LIBRARIES})
+# HBP: deactivated since we do not have a actual sensor_msgs package (sensor_msgs/point_cloud2_iterator.h is missing)
+#add_library(gazebo_ros_openni_kinect src/gazebo_ros_openni_kinect.cpp)
+#add_dependencies(gazebo_ros_openni_kinect ${PROJECT_NAME}_gencfg)
+#target_link_libraries(gazebo_ros_openni_kinect gazebo_ros_camera_utils ${GAZEBO_LIBRARIES} DepthCameraPlugin ${catkin_LIBRARIES})
 
 add_library(gazebo_ros_gpu_laser src/gazebo_ros_gpu_laser.cpp)
 target_link_libraries(gazebo_ros_gpu_laser ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} GpuRayPlugin)
@@ -260,9 +265,9 @@ install(TARGETS
   gazebo_ros_camera
   gazebo_ros_multicamera
   MultiCameraPlugin
-  gazebo_ros_depth_camera
-  gazebo_ros_openni_kinect
-  gazebo_ros_openni_kinect
+# HBP: deactivated since we do not have a actual sensor_msgs package (sensor_msgs/point_cloud2_iterator.h is missing)
+#  gazebo_ros_depth_camera
+#  gazebo_ros_openni_kinect
   gazebo_ros_laser
   gazebo_ros_block_laser
   gazebo_ros_p3d
