@@ -1,0 +1,6 @@
+string environment_file           # name of the Gazebo World file to be loaded
+string generated_cle_script_file  # name of the CLE generated python script
+---
+bool success                      # return true if the experiment is started properly
+string status_message             # comments if available
+

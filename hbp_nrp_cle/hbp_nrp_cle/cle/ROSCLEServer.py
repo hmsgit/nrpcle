@@ -297,7 +297,7 @@ class ROSCLEServer(threading.Thread):
 
         self.__service_state = rospy.Service(
                     self.ROS_CLE_URI_PREFIX + '/state',
-                    srv.get_simulation_state,
+                    srv.GetSimulationState,
                     lambda x: str(self.__state))
 
         self.__timeout = timeout

@@ -38,7 +38,7 @@ class ROSCLEClient(object):
         self.__cle_stop = self.__init_ros_service(self.ROS_CLE_URI_PREFIX + '/stop', Empty)
         self.__cle_reset = self.__init_ros_service(self.ROS_CLE_URI_PREFIX + '/reset', Empty)
         self.__cle_state = self.__init_ros_service(self.ROS_CLE_URI_PREFIX + '/state',
-                                                   srv.get_simulation_state)
+                                                   srv.GetSimulationState)
 
     def __init_ros_service(self, service_name, service_class):
         """

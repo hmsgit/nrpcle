@@ -2,6 +2,7 @@
 ROSCLESimulationFactory unit test
 """
 
+import hbp_nrp_cle
 from hbp_nrp_cle.cle import ROSCLESimulationFactory
 import logging
 from mock import patch, MagicMock
@@ -60,11 +61,17 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     def test_run(self):
         self.__ros_cle_simulation_factory.run()
         self.__mocked_rospy.init_node.assert_called_once_with(self.__ros_cle_simulation_factory.ROS_CLE_NODE_NAME)
-        self.__mocked_rospy.Service.assert_called_once_with(
+        self.__mocked_rospy.Service.assert_any_call(
             self.__ros_cle_simulation_factory.ROS_CLE_URI_PREFIX + "/start_new_simulation",
-            srv.start_new_simulation,
+            srv.StartNewSimulation,
             self.__ros_cle_simulation_factory.start_new_simulation
         )
+        self.__mocked_rospy.Service.assert_any_call(
+            self.__ros_cle_simulation_factory.ROS_CLE_URI_PREFIX + "/version",
+            srv.GetVersion,
+            self.__ros_cle_simulation_factory.get_version
+        )
+        self.assertEqual(self.__mocked_rospy.Service.call_count, 2)
         self.__mocked_rospy.spin.assert_called_once_with()
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
@@ -125,6 +132,9 @@ class TestROSCLESimulationFactory(unittest.TestCase):
                             'Could not write to specified logfile or no logfile specified, logging to stdout now!')
         )
 
+    def test_get_version(self):
+        cle_version = str(self.__ros_cle_simulation_factory.get_version(None))
+        self.assertEqual(cle_version, hbp_nrp_cle.__version__)
 
 if __name__ == '__main__':
     unittest.main()

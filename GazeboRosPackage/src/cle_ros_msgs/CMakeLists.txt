@@ -50,8 +50,9 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
-   start_new_simulation.srv
-   get_simulation_state.srv
+   StartNewSimulation.srv
+   GetSimulationState.srv
+   GetVersion.srv
 )
 
 ## Generate actions in the 'action' folder

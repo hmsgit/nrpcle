@@ -12,8 +12,9 @@
 #            "chmod a-w /nfs4/bbp.epfl.ch/sw/neurorobotics/ros-hbp-packages"
 #
 #            Some unusual yum packages are needed to build this:
-#            tinyxml-devel, freeimage-devel, cmake, log4cxx-devel
-# ------------------------------------------------------------------
+#            tinyxml-devel, freeimage-devel, cmake, log4cxx-devel, libbuid-devel, poco-devel, yaml-cpp-devel
+# -----------------------------------------------------------------------------------------------------------
+
 
 # We need python 2.7
 source /opt/rh/python27/enable

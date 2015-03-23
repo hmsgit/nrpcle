@@ -9,6 +9,7 @@ import threading
 import os
 import argparse
 import sys
+import hbp_nrp_cle
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
@@ -43,9 +44,24 @@ class ROSCLESimulationFactory(object):
         rospy.init_node(self.ROS_CLE_NODE_NAME)
         rospy.Service(
             self.ROS_CLE_URI_PREFIX + "/start_new_simulation",
-            srv.start_new_simulation,
+            srv.StartNewSimulation,
             self.start_new_simulation)
+        rospy.Service(
+            self.ROS_CLE_URI_PREFIX + "/version",
+            srv.GetVersion,
+            self.get_version)
         rospy.spin()
+
+    # service_request is an unused but mandatory argument
+    #pylint: disable=unused-argument, no-self-use
+    def get_version(self, service_request):
+        """
+        Handler for the ROS service. Retrieve the CLE version.
+        Warning: Multiprocesses can not be used: https://code.ros.org/trac/ros/ticket/972
+
+        :param: service_request: ROS service message (defined in hbp ROS packages)
+        """
+        return str(hbp_nrp_cle.__version__)
 
     def start_new_simulation(self, service_request):
         """
@@ -84,7 +100,7 @@ class ROSCLESimulationFactory(object):
             result = False
         return [result, error_message]
 
-    # pylint: disable=R0201
+    # pylint: disable=no-self-use
     def __simulation(self, environment_file, generated_cle_script_file):
         """
         Main simulation method. Start the simulation from the given script file.
