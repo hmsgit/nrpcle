@@ -1,0 +1,5 @@
+To generate generated_bibi_api or any other Python classes from an XML Schema document, run the following command:
+
+python generateDS.py -o <generated file>.py <XML Schema document>.xsd
+
+GenerateDS supports other options, but this suffices for our purposes

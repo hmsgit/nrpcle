@@ -19,7 +19,7 @@ echo "Starting gazebo"
 rosrun gazebo_ros gzserver &
 sleep 5
 
-export IGNORE_LINT="platform_venv|GazeboRosPackage/devel/lib|GazeboRosPackage/build|GazeboRosPackage/devel|GazeboRosPackage/install|GazeboRosPackage/src/gazebo_ros_pkgs|build"
+export IGNORE_LINT="platform_venv|GazeboRosPackage/devel/lib|GazeboRosPackage/build|GazeboRosPackage/devel|GazeboRosPackage/install|GazeboRosPackage/src/gazebo_ros_pkgs|build|hbp_nrp_cle/hbp_nrp_cle/bibi_config/generated"
 
 make verify
 
