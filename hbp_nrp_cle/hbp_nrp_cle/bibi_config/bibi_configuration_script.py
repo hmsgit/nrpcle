@@ -33,12 +33,18 @@ __operator_symbols = {generated_bibi_api.Subtract: '({0} - {1})',
                       generated_bibi_api.Max: 'max({0}, {1})'}
 
 __monitoring_types = {'PopulationRate': 'cle_ros_msgs.msg.SpikeRate',
+                      'LeakyIntegratorAlpha': 'cle_ros_msgs.msg.SpikeRate',
+                      'LeakyIntegratorExp': 'cle_ros_msgs.msg.SpikeRate',
                       'SpikeRecorder': 'cle_ros_msgs.msg.SpikeEvent'}
 # 1 = simulation time, 2 = spikes, 3 = port name, 4 = number of monitored neurons
 __monitoring_factory = {'PopulationRate': '{0}({1}, {2}, "{3}")',
+                        'LeakyIntegratorAlpha': '{0}({1}, {2}, "{3}")',
+                        'LeakyIntegratorExp': '{0}({1}, {2}, "{3}")',
                         'SpikeRecorder': 'monitoring.create_spike_recorder_message'
                                          '({1}, {4}, {2}, "{3}")'}
 __monitoring_topics = {'PopulationRate': '/monitor/population_rate',
+                       'LeakyIntegratorAlpha': '/monitor/leaky_integrator_alpha',
+                       'LeakyIntegratorExp': '/monitor/leaky_integrator_exp',
                        'SpikeRecorder': '/monitor/spike_recorder'}
 
 
