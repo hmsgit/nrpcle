@@ -12,7 +12,7 @@
 #            "chmod a-w /nfs4/bbp.epfl.ch/sw/neurorobotics/ros-hbp-packages"
 #
 #            Some unusual yum packages are needed to build this:
-#            tinyxml-devel, freeimage-devel, cmake, log4cxx-devel, libbuid-devel, poco-devel, yaml-cpp-devel
+#            tinyxml-devel, freeimage-devel, cmake, log4cxx-devel, libuuid-devel, poco-devel, yaml-cpp-devel
 # -----------------------------------------------------------------------------------------------------------
 
 
