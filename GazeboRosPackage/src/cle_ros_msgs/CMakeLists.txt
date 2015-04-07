@@ -45,6 +45,7 @@ add_message_files(
    SpikeCount.msg
    SpikeRate.msg
    SpikeEvent.msg
+   SpikeData.msg
 )
 
 ## Generate services in the 'srv' folder

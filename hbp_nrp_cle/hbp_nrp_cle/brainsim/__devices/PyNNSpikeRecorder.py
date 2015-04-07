@@ -21,8 +21,8 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         Represents a device which returns a "1" whenever one of the recorded
         neurons has spiked, otherwise a "0"
         """
-        self.__spike_count = None
-        self.__previous_spike_count = None
+        self.__spikes = np.array([[], []])
+        self.__previous_spike_count = 0
         self.__neurons = None
 
     @property
@@ -32,29 +32,21 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         "1": neuron spiked within the last time step
         "0": neuron was silent within the last time step
         """
-        return self.__spike_count > self.__previous_spike_count
+        return self.__spikes.shape[0] > self.__previous_spike_count
 
     @property
     def times(self):
         """
-        Returns the times of the recorded spikes within the last time step.
+        Returns the times and neuron IDs of the recorded spikes within the last time step.
         :return:
         """
-        a = self.__neurons.getSpikes()
-
-        if a.shape[0] == 0:
-            return []
-        else:
-            val = list(a[self.__previous_spike_count:, 1])
-            return val
+        return self.__spikes[self.__previous_spike_count:, :]
 
     def start_record_spikes(self):
         """
         Records the spikes of "neurons"
-
-        :param neurons: Population, PopulationView or Assembly
         """
-        self.__neurons.record()
+        self.__neurons.record('spikes')
 
     def connect(self, neurons):
         """
@@ -65,7 +57,6 @@ class PyNNSpikeRecorder(ISpikeRecorder):
             Assembly object
         """
         self.__neurons = neurons
-        self.__spike_count = np.zeros(len(self.__neurons))
         self.start_record_spikes()
 
     # simulation time not necessary for this device
@@ -76,6 +67,5 @@ class PyNNSpikeRecorder(ISpikeRecorder):
 
         :param time: The current simulation time
         """
-        self.__previous_spike_count = self.__spike_count
-        self.__spike_count = np.array(
-            self.__neurons.get_spike_counts().values())
+        self.__previous_spike_count = self.__spikes.shape[0]
+        self.__spikes = self.__neurons.getSpikes()
