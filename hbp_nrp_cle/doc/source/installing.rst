@@ -35,7 +35,7 @@ This assumes work on Ubuntu (>= 13.10), otherwise use `ROS Hydro <http://wiki.ro
       wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
       sudo apt-get update
       sudo apt-get install gazebo4
-      sudo apt-get install ros-indigo-gazebo4-msgs ros-indigo-gazebo4-plugins ros-indigo-gazebo4-ros ros-indigo-gazebo4-ros-control ros-indigo-gazebo4-ros-pkgs
+      sudo apt-get install ros-indigo-gazebo4-msgs ros-indigo-gazebo4-plugins ros-indigo-gazebo4-ros ros-indigo-gazebo4-ros-control ros-indigo-gazebo4-ros-pkgs ros-indigo-joint-limits-interface
 
 
 Installation of the NEST simulator
