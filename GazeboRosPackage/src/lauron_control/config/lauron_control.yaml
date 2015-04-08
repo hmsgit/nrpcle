@@ -4,6 +4,17 @@ joint_state_controller:
   publish_rate: 50
 
 # Joint Position Controllers ---------------------------------------
+# Head
+robot_head_pan_joint_pos_cntr:
+  type: effort_controllers/JointPositionController
+  joint: robot_ptu_pan_joint
+  pid: {p: 500.0, i: 0.01, d: 10.0}
+
+robot_head_tilt_joint_pos_cntr:
+  type: effort_controllers/JointPositionController
+  joint: robot_ptu_tilt_joint
+  pid: {p: 500.0, i: 0.01, d: 10.0}
+
 # Leg 0
 robot_leg0_delta_joint_pos_cntr:
   type: effort_controllers/JointPositionController

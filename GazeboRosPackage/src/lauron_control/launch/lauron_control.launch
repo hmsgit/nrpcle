@@ -19,7 +19,7 @@
 
   <!-- load the controllers -->
   <node name="controller_spawner_$(arg ns)" pkg="controller_manager" type="spawner" respawn="false"
-        ns="/" output="screen" args="joint_state_controller
+        ns="/" output="screen" args="joint_state_controller robot_head_pan_joint_pos_cntr robot_head_tilt_joint_pos_cntr
                               robot_leg0_delta_joint_pos_cntr robot_leg0_alpha_joint_pos_cntr robot_leg0_beta_joint_pos_cntr robot_leg0_gamma_joint_pos_cntr
                               robot_leg1_delta_joint_pos_cntr robot_leg1_alpha_joint_pos_cntr robot_leg1_beta_joint_pos_cntr robot_leg1_gamma_joint_pos_cntr
                               robot_leg2_delta_joint_pos_cntr robot_leg2_alpha_joint_pos_cntr robot_leg2_beta_joint_pos_cntr robot_leg2_gamma_joint_pos_cntr
