@@ -143,16 +143,6 @@ class TestROSCLEServer(unittest.TestCase):
                              "You cannot pause the simulation while in InitialState.")
         self.assertTrue(threw_exception)
 
-        # Test stopping in InitialState
-        try:
-            threw_exception = False
-            initialized.stop_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot stop the simulation while in InitialState.")
-        self.assertTrue(threw_exception)
-
         # Test resetting in InitialState
         try:
             threw_exception = False
@@ -174,7 +164,7 @@ class TestROSCLEServer(unittest.TestCase):
                              "You cannot start the simulation while in RunningState.")
         self.assertTrue(threw_exception)
 
-        # Test pausing in RunningState
+        # Test pausing in PausedState
         paused = ROSCLEServer.ROSCLEServer.PausedState(None)
         try:
             threw_exception = False
