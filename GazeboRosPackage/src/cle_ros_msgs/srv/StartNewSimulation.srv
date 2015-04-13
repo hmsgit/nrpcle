@@ -1,5 +1,6 @@
 string environment_file           # name of the Gazebo World file to be loaded
 string generated_cle_script_file  # name of the CLE generated python script
+string gzserver_host              # configuration parameter for the gzserver host machine
 ---
 bool success                      # return true if the experiment is started properly
 string status_message             # comments if available

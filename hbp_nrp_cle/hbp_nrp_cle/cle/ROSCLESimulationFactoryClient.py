@@ -29,8 +29,9 @@ class ROSCLESimulationFactoryClient(object):
             srv.StartNewSimulation)
         self.__start_new_simulation_service.wait_for_service(timeout=10)
 
-    def start_new_simulation(self, environment_file, generated_cle_script_file):
+    def start_new_simulation(self, environment_file, generated_cle_script_file, gzserver_host):
         """
         Start the simulation.
         """
-        self.__start_new_simulation_service(environment_file, generated_cle_script_file)
+        self.__start_new_simulation_service(environment_file, generated_cle_script_file,
+                                            gzserver_host)
