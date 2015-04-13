@@ -32,7 +32,7 @@ config = {
                  'hbp_nrp_cle.mocks.brainsim.__devices', 'hbp_nrp_cle.mocks.cle',
                  'hbp_nrp_cle.mocks.robotsim', 'hbp_nrp_cle.tf_framework',
                  'hbp_nrp_cle.tf_framework.spike_generators', 'hbp_nrp_cle.robotsim'],
-    'data_files': [('hbp_nrp_cle/bibi_config', 'hbp_nrp_cle/bibi_config/cle_template.pyt')],
+    'package_data': {'hbp_nrp_cle.bibi_config': ['cle_template.pyt']},
     'scripts': [],
     'name': 'hbp-nrp-cle',
     'include_package_data': True,
