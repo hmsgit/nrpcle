@@ -160,6 +160,11 @@ class ROSCLEServer(threading.Thread):
             self._context.set_state(ROSCLEServer.RunningState(self._context))
             return result
 
+        def stop_simulation(self):
+            result = self._context.stop_simulation()
+            self._context.set_state(ROSCLEServer.StoppedState(self._context))
+            return result
+
         def __repr__(self):
             return ROSCLEState.INITIALIZED
 
@@ -260,7 +265,7 @@ class ROSCLEServer(threading.Thread):
         self.__state = state
         self.__event_flag.set()
 
-    def prepare_simulation(self, cle, timeout=300):
+    def prepare_simulation(self, cle, timeout=600):
         """
         The CLE will be initialized within this method and ROS services for
         starting, pausing, stopping and resetting are setup here.
@@ -306,6 +311,7 @@ class ROSCLEServer(threading.Thread):
                                           self.__timeout,
                                           self.quit_by_timeout)
         self.__double_timer.start()
+        self.start_timeout()
 
     def __get_remaining(self):
         """
@@ -464,7 +470,6 @@ class ROSCLEServer(threading.Thread):
         Handler for the CLE start() call, also used for resuming after pause().
         """
         self.__to_be_executed_within_main_thread = self.__cle.start
-        self.start_timeout()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []
