@@ -23,6 +23,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     class MockedServiceRequest(object):
         environment_file = "environment_file.sdf"
         generated_cle_script_file = "path/to/the/generated/cle/script/file"
+        gzserver_host = "local"
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
     def setUp(self, mocked_logger):
