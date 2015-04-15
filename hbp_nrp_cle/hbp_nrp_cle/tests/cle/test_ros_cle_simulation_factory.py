@@ -5,7 +5,7 @@ ROSCLESimulationFactory unit test
 import hbp_nrp_cle
 from hbp_nrp_cle.cle import ROSCLESimulationFactory
 import logging
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 from testfixtures import log_capture
 import unittest
 import json
@@ -31,7 +31,8 @@ class TestROSCLESimulationFactory(unittest.TestCase):
 
         # Mock the respective objects and make them available for all tests.
         # Also have a look at the following link:
-        # https://docs.python.org/3.5/library/unittest.mock-examples.html#applying-the-same-patch-to-every-test-method
+        # https://docs.python.org/3.5/library/unittest.mock-examples.html
+        # #applying-the-same-patch-to-every-test-method
         rospy_patcher = patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.rospy')
 
         # Ensure that the patchers are cleaned up correctly even in exceptional cases
@@ -53,7 +54,8 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.__mocked_threading = threading_patcher.start()
         self.__mocked_thread = ROSCLESimulationFactory.threading.Thread()
         self.__mocked_threading.Thread = MagicMock(return_value=self.__mocked_thread)
-        self.__ros_cle_simulation_factory.running_simulation_thread = MagicMock(spec=threading.Thread)
+        self.__ros_cle_simulation_factory.\
+            running_simulation_thread = MagicMock(spec=threading.Thread)
 
     def tearDown(self):
         # remove all handlers after each test!
@@ -62,7 +64,9 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     def test_run(self):
         self.__ros_cle_simulation_factory.initialize()
         self.__ros_cle_simulation_factory.run()
-        self.__mocked_rospy.init_node.assert_called_once_with(self.__ros_cle_simulation_factory.ROS_CLE_NODE_NAME)
+        self.__mocked_rospy.init_node.assert_called_once_with(
+            self.__ros_cle_simulation_factory.ROS_CLE_NODE_NAME
+        )
         self.__mocked_rospy.Service.assert_any_call(
             self.__ros_cle_simulation_factory.ROS_CLE_URI_PREFIX + "/start_new_simulation",
             srv.StartNewSimulation,
@@ -77,22 +81,31 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.__mocked_rospy.spin.assert_called_once_with()
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
-    @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.os')
+    @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
     def test_start_new_simulation_dead_thread(self, mocked_os, mocked_logger):
         self.mockThreading()
-        self.__ros_cle_simulation_factory.running_simulation_thread.is_alive = MagicMock(return_value=False)
+        self.__ros_cle_simulation_factory.\
+            running_simulation_thread.is_alive = MagicMock(return_value=False)
 
-        messages = self.__ros_cle_simulation_factory.start_new_simulation(self.mocked_service_request)
+        with patch('hbp_nrp_cle.robotsim.LocalGazebo.LocalGazeboServerInstance.gazebo_master_uri')\
+            as mock_gazebo_master_uri:
+            mock_gazebo_master_uri.__get__ = Mock(return_value=None)
+            messages = self.__ros_cle_simulation_factory.start_new_simulation(
+                self.mocked_service_request
+            )
 
         self.assertEqual(mocked_logger.info.call_count, 3)
         self.assertEqual(mocked_logger.error.call_count, 0)
 
         self.assertEqual(self.__mocked_threading.Thread.call_count, 1)
-        mocked_os.system.assert_any_call("/etc/init.d/gzserver restart")
-        mocked_os.system.assert_any_call("/etc/init.d/gzbridge restart")
+        mocked_os.system.assert_any_call("/etc/init.d/gzserver start")
+        mocked_os.system.assert_any_call("/etc/init.d/gzbridge start")
         self.assertEqual(mocked_os.system.call_count, 2)
 
-        self.assertEqual(self.__ros_cle_simulation_factory.running_simulation_thread, self.__mocked_thread)
+        self.assertEqual(
+            self.__ros_cle_simulation_factory.running_simulation_thread,
+            self.__mocked_thread
+        )
         self.assertTrue(self.__mocked_thread.daemon)
         self.assertTrue(self.__mocked_thread.start.called)
         self.assertEqual(len(messages), 2)
@@ -105,15 +118,21 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
     def test_start_new_simulation_living_thread(self, mocked_logger):
         self.mockThreading()
-        self.__ros_cle_simulation_factory.running_simulation_thread.is_alive = MagicMock(return_value=True)
+        self.__ros_cle_simulation_factory.running_simulation_thread.is_alive = MagicMock(
+            return_value=True
+        )
 
-        messages = self.__ros_cle_simulation_factory.start_new_simulation(self.mocked_service_request)
+        messages = self.__ros_cle_simulation_factory.start_new_simulation(
+            self.mocked_service_request
+        )
 
         self.assertEqual(mocked_logger.info.call_count, 1)
         self.assertEqual(mocked_logger.error.call_count, 1)
 
-        self.assertNotEqual(self.__ros_cle_simulation_factory.running_simulation_thread, self.__mocked_thread)
-        self.__ros_cle_simulation_factory.running_simulation_thread.is_alive.assert_called_once_with()
+        self.assertNotEqual(self.__ros_cle_simulation_factory.running_simulation_thread,
+                            self.__mocked_thread)
+        self.__ros_cle_simulation_factory.running_simulation_thread.is_alive.\
+            assert_called_once_with()
 
         self.assertEqual(len(messages), 2)
         result = messages[0]
@@ -122,6 +141,40 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.assertFalse(result)
         self.assertNotEqual(error_message, "")
 
+    def test_gzserver_host_parameter(self):
+        _mocked_service_request = self.mocked_service_request
+
+        _mocked_service_request.gzserver_host = 'local'
+        self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
+        loc = ROSCLESimulationFactory.LocalGazeboServerInstance
+        _oldgmu = loc.gazebo_master_uri
+        _oldstr = loc.start
+        loc.gazebo_master_uri = Mock()
+        loc.gazebo_master_uri.__get__ = Mock(return_value=None)
+        loc.start = Mock()
+        self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)
+        self.assertEqual(loc.start.call_count, 1)
+        loc.gazebo_master_uri = _oldgmu
+        loc.start = _oldstr
+
+        _mocked_service_request.gzserver_host = 'lugano'
+        self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
+        lug = ROSCLESimulationFactory.LuganoVizClusterGazebo
+        _oldgmu = lug.gazebo_master_uri
+        _oldstr = lug.start
+        lug.gazebo_master_uri = Mock()
+        lug.gazebo_master_uri.__get__ = Mock(return_value=None)
+        lug.start = Mock()
+        self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)
+        self.assertEqual(lug.start.call_count, 1)
+        lug.gazebo_master_uri = _oldgmu
+        lug.start = _oldstr
+
+        _mocked_service_request.gzserver_host = 'random string'
+        self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
+        self.assertRaises(Exception, self.__ros_cle_simulation_factory.start_new_simulation,
+                          _mocked_service_request)
+
     @log_capture(level=logging.WARNING)
     def test_set_up_logger(self, logcapture):
         ROSCLESimulationFactory.set_up_logger('cle_logfile.txt')
@@ -129,10 +182,11 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         os.remove('cle_logfile.txt')
 
         ROSCLESimulationFactory.set_up_logger(None)
-        logcapture.check(
-                        ('hbp_nrp_cle', 'WARNING',
-                            'Could not write to specified logfile or no logfile specified, logging to stdout now!')
-        )
+        logcapture.check((
+            'hbp_nrp_cle',
+            'WARNING',
+            'Could not write to specified logfile or no logfile specified, logging to stdout now!'
+        ))
 
     def test_get_version(self):
         cle_version = str(self.__ros_cle_simulation_factory.get_version(None))

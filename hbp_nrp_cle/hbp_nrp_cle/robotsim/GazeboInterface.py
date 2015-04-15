@@ -28,9 +28,9 @@ class IGazeboServerInstance(object):   # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
     @property
-    def get_gzserver_master_URI(self):
+    def gazebo_master_uri(self):
         """
-        Returns a string containing the gzserver master
+        Returns a string containing the gazebo master
         URI (like:'http://bbpviz001.cscs.ch:11345')
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")

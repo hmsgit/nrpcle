@@ -9,21 +9,19 @@ import threading
 import os
 import argparse
 import sys
+import netifaces
 import hbp_nrp_cle
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-import zmq
+from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboServerInstance, LocalGazeboBridgeInstance
+from hbp_nrp_cle.robotsim.LuganoVizClusterGazebo import LuganoVizClusterGazebo
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
 logger = logging.getLogger('hbp_nrp_cle')
 # Warning: We do not use __name__  here, since it translates to __main__
 # when this file is run directly (such as python ROSCLESimulationFactory.py)
-
-LCLHOST = '10.80.68.13'
-GZMGRHOST = '10.80.68.16'
-GZMGRPORT = 1789
 
 
 class ROSCLESimulationFactory(object):
@@ -41,6 +39,7 @@ class ROSCLESimulationFactory(object):
         """
         logger.debug("Creating new CLE server.")
         self.running_simulation_thread = None
+        self.__sim = None  # We need to keep this object
 
     def initialize(self):
         """
@@ -56,16 +55,17 @@ class ROSCLESimulationFactory(object):
             srv.GetVersion,
             self.get_version)
 
-    # pylint: disable=R0201
-    def run(self):
+    @staticmethod
+    def run():
         """
         Start the factory and wait indefinitely. (see rospy.spin documentation)
         """
         rospy.spin()
 
     # service_request is an unused but mandatory argument
-    #pylint: disable=unused-argument, no-self-use, E1101
-    def get_version(self, service_request):
+    # pylint: disable=unused-argument
+    @staticmethod
+    def get_version(service_request):
         """
         Handler for the ROS service. Retrieve the CLE version.
         Warning: Multiprocesses can not be used: https://code.ros.org/trac/ros/ticket/972
@@ -89,34 +89,28 @@ class ROSCLESimulationFactory(object):
                 (not self.running_simulation_thread.is_alive())):
             logger.info("No simulation running, starting a new simulation.")
 
+            gz_class = None
+
             if service_request.gzserver_host == 'local':
-                # Currently, gazebo enters an infinite loop when restarting. This call
-                # should be cleaned when the bug will be fixed.
-                os.system("/etc/init.d/gzserver restart")
-                os.system("/etc/init.d/gzbridge restart")
-            elif service_request.gzserver_host == 'remote':
-                start_gzweb_cmd = '%s/gzweb/start_gzweb.sh' % os.environ["HBP"]
-                stop_gzweb_cmd = '%s/gzweb/stop_gzweb.sh' % os.environ["HBP"]
-
-                # Ask the gzserver manager to start a new server for us
-                context = zmq.Context()
-                socket = context.socket(zmq.REQ)
-                socket.connect("tcp://%s:%d" % (GZMGRHOST, GZMGRPORT))
-                # ROS should be already running at this point, so just using ROS_MASTER_URI
-                # should be enough
-                socket.send_multipart(["start_gzserver", "http://%s:11311" % LCLHOST])
-                answer = socket.recv_multipart()
-                # TODO: of course using an hardcoded string is not the way
-                assert len(answer) > 1
-                print answer
-                os.environ["GAZEBO_MASTER_URI"] = answer[0]
-                os.environ["GZSERVER_HOST"] = answer[1]
-                os.environ["GZSERVER_PORT"] = answer[2]
-
-                os.system(stop_gzweb_cmd)
-                os.system("%s %s %s" % (start_gzweb_cmd, answer[1], answer[2]))
+                gz_class = LocalGazeboServerInstance
+            elif service_request.gzserver_host == 'lugano':
+                gz_class = LuganoVizClusterGazebo
             else:
                 raise Exception("Invalid value for gzserver_host")
+
+            self.__sim = gz_class()
+
+            local_ip = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
+            ros_master_uri = os.environ.get("ROS_MASTER_URI")
+            ros_master_uri = ros_master_uri.replace('localhost', local_ip)
+            self.__sim.start(ros_master_uri)
+            gzweb = LocalGazeboBridgeInstance()
+            if self.__sim.gazebo_master_uri is None:
+                gzweb.start('', '')
+            else:
+                os.environ['GAZEBO_MASTER_URI'] = self.__sim.gazebo_master_uri
+                gzhost, gzport = self.__sim.gazebo_master_uri.replace('http://', '').split(':')
+                gzweb.start(gzhost, gzport)
 
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
@@ -136,7 +130,6 @@ class ROSCLESimulationFactory(object):
             result = False
         return [result, error_message]
 
-    # pylint: disable=no-self-use
     def __simulation(self, environment_file, generated_cle_script_file):
         """
         Main simulation method. Start the simulation from the given script file.
@@ -153,6 +146,8 @@ class ROSCLESimulationFactory(object):
         experiment_generated_script = imp.load_source(
             'experiment_generated_script', generated_cle_script_file)
         experiment_generated_script.cle_function(environment_file)
+        self.__sim.stop()
+        self.__sim = None
 
 
 def set_up_logger(logfile_name):

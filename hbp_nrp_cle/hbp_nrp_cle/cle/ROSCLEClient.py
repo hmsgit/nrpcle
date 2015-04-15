@@ -15,11 +15,17 @@ __author__ = "Lorenzo Vannucci, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
 
 
+class ROSCLEClientException(Exception):
+    """
+    Exception within the CLE client
+    """
+    pass
+
+
 class ROSCLEClient(object):
     """
     Client around the ROS controlled Closed Loop Engine.
     """
-
     ROS_SERVICE_TIMEOUT = 120
     ROS_CLE_NODE_NAME = "ros_cle_simulation"
     ROS_CLE_URI_PREFIX = "/" + ROS_CLE_NODE_NAME
@@ -123,7 +129,7 @@ class ROSCLEClient(object):
                 state = str(self.__cle_state().state)
             except rospy.ServiceException as e:
                 logger.error("Error while trying to retrieve simulation state: " +
-                             e.message +
+                             str(e) +
                              ". Returning stopped as state.")
         else:
             logger.warn("Trying to retrieve the state of a simulation from an invalid client " +
@@ -131,15 +137,3 @@ class ROSCLEClient(object):
                         self.__invalid_reason +
                         ") ")
         return state
-
-
-class ROSCLEClientException(Exception):
-    """
-    Exception within the CLE client
-    """
-    def __init__(self, value):
-        super(ROSCLEClientException, self).__init__()
-        self.parameter = value
-
-    def __str__(self):
-        return repr(self.parameter)
