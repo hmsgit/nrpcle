@@ -42,9 +42,9 @@ class ROSCLESimulationFactory(object):
         logger.debug("Creating new CLE server.")
         self.running_simulation_thread = None
 
-    def run(self):
+    def initialize(self):
         """
-        Start the factory and wait indefinitely. (see rospy.spin documentation)
+        Initializes the Simulation factory
         """
         rospy.init_node(self.ROS_CLE_NODE_NAME)
         rospy.Service(
@@ -55,6 +55,12 @@ class ROSCLESimulationFactory(object):
             self.ROS_CLE_URI_PREFIX + "/version",
             srv.GetVersion,
             self.get_version)
+
+    # pylint: disable=R0201
+    def run(self):
+        """
+        Start the factory and wait indefinitely. (see rospy.spin documentation)
+        """
         rospy.spin()
 
     # service_request is an unused but mandatory argument
@@ -183,5 +189,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     set_up_logger(args.logfile)
     server = ROSCLESimulationFactory()
+    server.initialize()
     server.run()
     logger.info("CLE Server exiting.")
