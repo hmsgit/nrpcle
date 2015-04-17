@@ -169,13 +169,13 @@ def set_up_logger(logfile_name):
     try:
         file_handler = logging.FileHandler(logfile_name)
         file_handler.setFormatter(logging.Formatter(log_format))
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(file_handler)
+        logging.root.setLevel(logging.DEBUG)
+        logging.root.addHandler(file_handler)
     except (AttributeError, IOError) as _:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(logging.Formatter(log_format))
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(console_handler)
+        logging.root.setLevel(logging.DEBUG)
+        logging.root.addHandler(console_handler)
         logger.warn("Could not write to specified logfile or no logfile specified, " +
                     "logging to stdout now!")
 
@@ -187,8 +187,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--logfile', dest='logfile', help='specify the CLE logfile')
     args = parser.parse_args()
-    set_up_logger(args.logfile)
     server = ROSCLESimulationFactory()
     server.initialize()
+    set_up_logger(args.logfile)
     server.run()
     logger.info("CLE Server exiting.")

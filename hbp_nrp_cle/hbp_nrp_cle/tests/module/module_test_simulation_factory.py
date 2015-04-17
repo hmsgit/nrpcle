@@ -12,6 +12,8 @@ import logging
 
 error_publisher = None
 
+logger = logging.getLogger("SimFactory")
+
 def unhandled_exception(type, value, traceback):
     error_message = "Unhandled exception of type {0}: {1}".format(type, value)
     if error_publisher is not None:
@@ -22,13 +24,13 @@ def unhandled_exception(type, value, traceback):
 if __name__ == "__main__":
     sys.excepthook = unhandled_exception
 
-    ROSCLESimulationFactory.set_up_logger(None)
 
     server = ROSCLESimulationFactory.ROSCLESimulationFactory()
-    print "Initialize CLE server"
+    logger.info("Initialize CLE server")
     server.initialize()
-    print "Create publisher for exceptions"
+    ROSCLESimulationFactory.set_up_logger(None)
+    logger.info("Create publisher for exceptions")
     error_publisher = rospy.Publisher("/integration_test/exceptions", std_msgs.msg.String, queue_size=10)
-    print "Starting CLE server"
+    logger.info("Starting CLE server")
     server.run()
-    print "CLE server shutdown"
+    logger.info("CLE server shutdown")

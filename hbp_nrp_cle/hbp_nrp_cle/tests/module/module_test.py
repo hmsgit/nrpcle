@@ -68,6 +68,8 @@ def run_integration_test():
         sim_factory = subprocess.Popen([sys.executable, run_masked_simulation])
 
         rospy.init_node('integration_test_monitor')
+        # rospy overrides logging!
+        logging.root.addHandler(console_handler)
         rospy.Subscriber("/monitor/population_rate", SpikeRate, monitor_callback)
         rospy.Subscriber("/integration_test/exceptions", std_msgs.msg.String, exception_callback)
         monitor_thread = Thread(target=rospy.spin)
