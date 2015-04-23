@@ -39,7 +39,8 @@ class ROSCLESimulationFactory(object):
         """
         logger.debug("Creating new CLE server.")
         self.running_simulation_thread = None
-        self.__sim = None  # We need to keep this object
+        self.__simulator = None  # The robot simulator
+        self.__simulator_bridge = None # The bridge from the simulator to websockets
 
     def initialize(self):
         """
@@ -90,7 +91,6 @@ class ROSCLESimulationFactory(object):
             logger.info("No simulation running, starting a new simulation.")
 
             gz_class = None
-
             if service_request.gzserver_host == 'local':
                 gz_class = LocalGazeboServerInstance
             elif service_request.gzserver_host == 'lugano':
@@ -98,19 +98,25 @@ class ROSCLESimulationFactory(object):
             else:
                 raise Exception("Invalid value for gzserver_host")
 
-            self.__sim = gz_class()
+            self.__simulator = gz_class()
 
             local_ip = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
             ros_master_uri = os.environ.get("ROS_MASTER_URI")
             ros_master_uri = ros_master_uri.replace('localhost', local_ip)
-            self.__sim.start(ros_master_uri)
-            gzweb = LocalGazeboBridgeInstance()
-            if self.__sim.gazebo_master_uri is None:
-                gzweb.start('', '')
+            self.__simulator.start(ros_master_uri)
+            self.__simulator_bridge = LocalGazeboBridgeInstance()
+            if self.__simulator.gazebo_master_uri is None:
+                # Restart the bridge to make sure that we have a new instance.
+                self.__simulator_bridge.restart('', '')
             else:
-                os.environ['GAZEBO_MASTER_URI'] = self.__sim.gazebo_master_uri
-                gzhost, gzport = self.__sim.gazebo_master_uri.replace('http://', '').split(':')
-                gzweb.start(gzhost, gzport)
+                logger.info(
+                    "Starting gzweb with gazebo master sitting at " +
+                    self.__simulator.gazebo_master_uri)
+                os.environ['GAZEBO_MASTER_URI'] = self.__simulator.gazebo_master_uri
+                gzhost, gzport = self.__simulator.gazebo_master_uri.replace(
+                    'http://', '').split(':')
+                # Restart the bridge to make sure that we have a new instance.
+                self.__simulator_bridge.restart(gzhost, gzport)
 
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
@@ -146,8 +152,11 @@ class ROSCLESimulationFactory(object):
         experiment_generated_script = imp.load_source(
             'experiment_generated_script', generated_cle_script_file)
         experiment_generated_script.cle_function(environment_file)
-        self.__sim.stop()
-        self.__sim = None
+        logger.info("Stopping robotics simulator")
+        self.__simulator.stop()
+        self.__simulator = None
+        self.__simulator_bridge.stop()
+        self.__simulator_bridge = None
 
 
 def set_up_logger(logfile_name):

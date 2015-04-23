@@ -62,8 +62,11 @@ class IGazeboBridgeInstance(object):
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def restart(self):
+    def restart(self, gzserver_host, gzserver_port):
         """
         Restarts the gzbridge instance represented by the object.
+
+        :param gzserver_host The host where gzserver is running
+        :param gzserver_port The port on which gzserver is running
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
