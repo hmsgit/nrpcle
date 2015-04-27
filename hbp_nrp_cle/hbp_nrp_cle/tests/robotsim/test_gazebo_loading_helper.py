@@ -14,6 +14,13 @@ from testfixtures import log_capture, LogCapture
 
 class TestGazeboLoadingHelper(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        # Make sure that gazebo is running on the server. Does nothing on other machines.
+        GAZEBO_INIT_D_SCRIPT = "/etc/init.d/gzserver"
+        if os.path.isfile(GAZEBO_INIT_D_SCRIPT):
+            os.system(GAZEBO_INIT_D_SCRIPT + " restart")
+
     @log_capture('hbp_nrp_cle.robotsim.GazeboLoadingHelper')
     def test_load_gazebo_model_file(self, logcapture):
         with patch("hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_gazebo_sdf") as mocked_load_gazebo_sdf:

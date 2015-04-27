@@ -99,7 +99,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
 
         self.assertEqual(self.__mocked_threading.Thread.call_count, 1)
         mocked_os.system.assert_any_call("/etc/init.d/gzserver start")
-        mocked_os.system.assert_any_call("/etc/init.d/gzbridge start")
+        mocked_os.system.assert_any_call("/etc/init.d/gzbridge restart")
         self.assertEqual(mocked_os.system.call_count, 2)
 
         self.assertEqual(

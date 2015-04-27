@@ -66,6 +66,9 @@ class ROSCLEClient(object):
                 # http://docs.ros.org/api/rospy/html/rospy-module.html#wait_for_service
                 error = "Timeout while connecting to the CLE (waiting on " + service_name + ")."
                 logger.error(error)
+                # Dificult to understand why pylint considers ROSCLEClientException as a
+                # non standard exception. If you have an idea, please correct it!
+                # pylint: disable=nonstandard-exception
                 raise ROSCLEClientException(error)
         return handler
 
@@ -84,11 +87,14 @@ class ROSCLEClient(object):
                 self.__valid = False
                 self.__invalid_reason = "a previous communication error"
                 error_message = "Impossible to communicate with the CLE, discarding the client."
+                # pylint: disable=nonstandard-exception
                 raise ROSCLEClientException(error_message)
         else:
-            raise ROSCLEClientException("Client has been discarded due to " +
-                                        self.__invalid_reason +
-                                        ".")
+            error_message = ("Client has been discarded due to " +
+                             self.__invalid_reason +
+                             ".")
+            # pylint: disable=nonstandard-exception
+            raise ROSCLEClientException(error_message)
 
     def start(self):
         """

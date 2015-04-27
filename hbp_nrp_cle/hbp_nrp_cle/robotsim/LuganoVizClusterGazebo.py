@@ -316,11 +316,11 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
 
         self.__gazebo_remote_process = self.__spawn_vglconnect()
 
+        self.__gazebo_remote_process.sendline('source /opt/rh/python27/enable')
         self.__gazebo_remote_process.sendline('export DISPLAY=:' + str(self.__remote_display_port))
         self.__gazebo_remote_process.sendline('export ROS_MASTER_URI=' + ros_master_uri)
-        self.__gazebo_remote_process.sendline('source /opt/rh/python27/enable')
         self.__gazebo_remote_process.sendline(
-            'source ' + self.__remote_working_directory + '/ros/bin/activate')
+            'source /nfs4/bbp.epfl.ch/sw/neurorobotics/ros_gazebo_venv/bbpviz.cscs.ch/bin/activate')
         self.__gazebo_remote_process.sendline(
             'export GAZEBO_MODEL_PATH=' + self.__remote_working_directory + '/models')
 
