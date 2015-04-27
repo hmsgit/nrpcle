@@ -7,6 +7,10 @@ __author__ = 'GeorgHinkel'
 
 import jinja2
 import os
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 __device_types = {'ACSource': 'ac_source', 'DCSource': 'dc_source',
                   'FixedFrequency': 'fixed_frequency',
@@ -267,11 +271,13 @@ def generate_cle(bibi_conf, script_file_name, timeout):
     :param script_file_name: The file name of the script to be generated
     :param timeout: The timeout found in the ExDConfig
     """
+    logger.info("Generating CLE launch script")
+    logger.debug("Loading template")
     templatePath = os.path.join(os.path.split(__file__)[0], 'cle_template.pyt')
     templateFile = open(templatePath, 'r')
     template = jinja2.Template(templateFile.read())
     templateFile.close()
-
+    logger.debug("Loading BIBI Configuration")
     config = generated_bibi_api.parse(bibi_conf, silence=True)
     names = dict(globals())
     names['config'] = config
@@ -279,6 +285,7 @@ def generate_cle(bibi_conf, script_file_name, timeout):
     # system functions are somehow not included in globals
     names['len'] = len
     names['timeout'] = timeout
+    logger.debug("Instantiate CLE Template")
     outputFile = open(script_file_name, 'w')
     outputFile.write(template.render(names))
     outputFile.close()
