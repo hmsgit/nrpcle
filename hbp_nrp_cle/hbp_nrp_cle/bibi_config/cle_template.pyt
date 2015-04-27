@@ -18,6 +18,7 @@ import netifaces
 import subprocess
 import logging
 from hbp_nrp_cle.bibi_config.notificator import Notificator
+from hbp_nrp_cle import config
 
 logger = logging.getLogger(__name__)
 
@@ -65,21 +66,25 @@ def cle_function_init(world_file):
 {% for topic in tf.topic %}{% if is_not_none(topic.body) %}
     @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% else %}
     @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
-    @nrp.MapSpikeSource("{{dev.name}}", nrp.brain.{{get_neurons(dev)}}, nrp.{{get_device_name(dev.type_)}}){% else %}
-    @nrp.MapSpikeSink("{{dev.name}}", nrp.brain.{{get_neurons(dev)}}, nrp.{{get_device_name(dev.type_)}}){% endif %}{% endfor %}
+    @nrp.MapSpikeSource("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% else %}
+    @nrp.MapSpikeSink("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% endif %}{% endfor %}{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+    @nrp.MapSpikeSource("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% else %}
+    @nrp.MapSpikeSink("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% endif %}{% endfor %}
     @nrp.Neuron2Robot({% if is_not_none(tf.returnValue) %}Topic('{{tf.returnValue.topic}}', {{tf.returnValue.type_}}){% endif %})
-    def {{tf.name}}(t{% for t in tf.topic %}, {{t.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}):
+    def {{tf.name}}(t{% for t in tf.topic %}, {{t.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}{% for group in tf.deviceGroup %}, {{group.name}}{%endfor%}):
 {% for local in tf.local %}
         {{local.name}} = {{print_expression(local.body)}}{% endfor %}
 {% for dev in tf.device %}{% if is_not_none(dev.body) %}
         {{dev.name}}.{{get_default_property(dev.type_)}} = {{print_expression(dev.body)}}{% endif %}{% endfor %}
+{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+        {{group.name}}.{{get_default_property(group.type_)}} = {{print_expression(group.body)}}{% endif %}{% endfor %}
 {% for top in tf.topic %}{% if is_not_none(top.body) %}
         {{top.name}}.send_message({{print_expression(top.body)}}){% endif %}{% endfor %}
 {% if is_not_none(tf.returnValue) %}
         return {{print_expression(tf.returnValue.body)}}{% endif %}
 
 {% elif tf.extensiontype_ == 'Neuron2Monitor' %}
-    @nrp.MapSpikeSink("{{tf.device.name}}", nrp.brain.{{get_neurons(tf.device)}}, nrp.{{get_device_name(tf.device.type_)}})
+    @nrp.MapSpikeSink("{{tf.device.name}}", {{print_neurons(tf.device.neurons)}}, nrp.{{get_device_name(tf.device.type_)}})
     @nrp.Neuron2Robot(Topic('{{get_monitoring_topic(tf)}}', {{get_monitoring_type(tf)}}))
     def {{tf.name}}(t, {{tf.device.name}}):
         return {{get_monitoring_impl(tf)}}
@@ -87,14 +92,18 @@ def cle_function_init(world_file):
 {% else %}{% for topic in tf.topic %}{% if is_not_none(topic.body) %}
     @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% else %}
     @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
-    @nrp.MapSpikeSource("{{dev.name}}", nrp.brain.{{get_neurons(dev)}}, nrp.{{get_device_name(dev.type_)}}){% else %}
-    @nrp.MapSpikeSink("{{dev.name}}", nrp.brain.{{get_neurons(dev)}}, nrp.{{get_device_name(dev.type_)}}){% endif %}{% endfor %}
+    @nrp.MapSpikeSource("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% else %}
+    @nrp.MapSpikeSink("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% endif %}{% endfor %}{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+    @nrp.MapSpikeSource("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% else %}
+    @nrp.MapSpikeSink("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% endif %}{% endfor %}
     @nrp.Robot2Neuron()
-    def {{tf.name}}(t{% for topic in tf.topic %}, {{topic.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}):
+    def {{tf.name}}(t{% for topic in tf.topic %}, {{topic.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}{% for group in tf.deviceGroup %}, {{group.name}}{%endfor%}):
 {% for local in tf.local %}
         {{local.name}} = {{print_expression(local.body)}}{% endfor %}
 {% for dev in tf.device %}{% if is_not_none(dev.body) %}
         {{dev.name}}.{{get_default_property(dev.type_)}} = {{print_expression(dev.body)}}{% endif %}{% endfor %}
+{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+        {{group.name}}.{{get_default_property(group.type_)}} = {{print_expression(group.body)}}{% endif %}{% endfor %}
 {% for top in tf.topic %}{% if is_not_none(top.body) %}
         {{top.name}}.send_message({{print_expression(top.body)}}){% endif %}{% endfor %}{% endif %}{% endfor %}
 
@@ -107,7 +116,7 @@ def cle_function_init(world_file):
 
     Notificator.notify("Resetting Gazebo robotic simulator", True)
 
-    local_ip = netifaces.ifaddresses(config.config.get('network', 'main-interface'))[netifaces.AF_INET][0]['addr']()
+    local_ip = netifaces.ifaddresses(config.config.get('network', 'main-interface'))[netifaces.AF_INET][0]['addr']
     ros_master_uri = os.environ.get("ROS_MASTER_URI")
     ros_master_uri = ros_master_uri.replace('localhost', local_ip)
 
@@ -170,11 +179,11 @@ def cle_function_init(world_file):
     # communication adapter
     braincomm = PyNNCommunicationAdapter()
 {% if config.brainModel.file.endswith('.h5') %}
-    braincontrol.load_h5_brain(brainfilepath{% for p in config.brainModel.neuronGroup %},
-                               {{p.population}}={{print_neurons(p)}}{% endfor %})
+    braincontrol.load_h5_brain(brainfilepath{% for p in config.brainModel.populations %},
+                               {{p.population}}={{get_neurons_index(p)}}{% endfor %})
 {% else %}
-    braincontrol.load_python_brain(brainfilepath{% for p in config.brainModel.neuronGroup %},
-                                   {{p.population}}={{print_neurons(p)}}{% endfor %})
+    braincontrol.load_python_brain(brainfilepath{% for p in config.brainModel.populations %},
+                                   {{p.population}}={{get_neurons_index(p)}}{% endfor %})
 {% endif %}
     # Create transfer functions manager
     cle_server.notify_current_task("Connecting neural simulator to neurobot",

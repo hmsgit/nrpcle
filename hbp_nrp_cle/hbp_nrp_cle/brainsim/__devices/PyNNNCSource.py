@@ -16,7 +16,7 @@ class PyNNNCSource(INCSource):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes a noisy current generator.
 
@@ -32,7 +32,7 @@ class PyNNNCSource(INCSource):
         """
         self.__generator = None
 
-        self.create_device(**params)
+        self.create_device(params)
 
     @property
     def mean(self):
@@ -66,7 +66,7 @@ class PyNNNCSource(INCSource):
         """
         self.__generator.stdev = value
 
-    def create_device(self, **params):
+    def create_device(self, params):
         """
         Create a noisy current source
 
@@ -88,7 +88,9 @@ class PyNNNCSource(INCSource):
             stop=params.get('stop', None),
             rng=params.get('rng', sim.NativeRNG()))
 
-    def connect(self, neurons):
+    # No connection parameters necessary for this device
+    # pylint: disable=W0613
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the device.
         param neurons: must be a Population, PopulationView or

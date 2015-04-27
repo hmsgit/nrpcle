@@ -134,7 +134,7 @@ class ROSCLESimulationFactory(object):
                 cle_function_init(environment_file)
         # pylint: disable=broad-except
         except Exception as e:
-            logger.error("Initialization failed")
+            logger.exception("Initialization failed")
             self.simulation_exception_during_init = e
             self.simulation_initialized_event.set()
             return

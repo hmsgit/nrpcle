@@ -11,7 +11,14 @@ class IDeviceGroup(object):
     """
     Gathers multiple devices to a group
     """
-    pass
+    def reset(self, tf_manager):
+        """
+        Resets the current device group
+
+        :param tf_manager: The parent TF manager
+        :return: A new device group
+        """
+        return self
 
 
 class ISpikeGenerator(object):  # pragma: no cover

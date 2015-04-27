@@ -20,7 +20,7 @@ class PyNNPopulationRate(IPopulationRate):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes the neuron whose membrane potential is read out and
         normalized. The obligatory threshold voltage 'v_thresh' is set to
@@ -37,7 +37,7 @@ class PyNNPopulationRate(IPopulationRate):
         self.__weight = None
         self.__rate = None
 
-        self.create_device(**params)
+        self.create_device(params)
         self.calculate_weight()
         self.start_record_rate()
 
@@ -48,7 +48,7 @@ class PyNNPopulationRate(IPopulationRate):
         """
         return self.__rate
 
-    def create_device(self, **params):
+    def create_device(self, params):
         """
         Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses.
@@ -85,7 +85,9 @@ class PyNNPopulationRate(IPopulationRate):
         """
         self.__cell.record_v()
 
-    def connect(self, neurons):
+    # No connection parameters necessary for this device
+    # pylint: disable=W0613
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the
         device.

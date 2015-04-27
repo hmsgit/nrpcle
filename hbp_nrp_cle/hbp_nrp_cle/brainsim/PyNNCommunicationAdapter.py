@@ -71,8 +71,8 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         """
         if not isinstance(populations, list):
             device = PyNNCommunicationAdapter.__device_dict[
-                spike_generator_type](**params)
-            device.connect(populations, **params)
+                spike_generator_type](params)
+            device.connect(populations, params)
             self.__generator_devices.append(device)
             logger.info("Communication object with spike generator\
  type \"%s\" requested (device)",
@@ -80,10 +80,12 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
             return device
         else:
             device_list = []
-            for pop in populations:
-                device = PyNNCommunicationAdapter.__device_dict[
-                    spike_generator_type](**params)
-                device.connect(pop, **params)
+            device_type = PyNNCommunicationAdapter.__device_dict[
+                spike_generator_type]
+            for (pop_index, pop) in enumerate(populations):
+                device = device_type(
+                    PyNNCommunicationAdapter.__create_device_config(params, pop_index))
+                device.connect(pop, params)
                 device_list.append(device)
             self.__generator_devices += device_list
             device_group = PyNNDeviceGroup(device_list)
@@ -106,8 +108,8 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         """
         if not isinstance(populations, list):
             device = PyNNCommunicationAdapter.__device_dict[
-                spike_detector_type](**params)
-            device.connect(populations, **params)
+                spike_detector_type](params)
+            device.connect(populations, params)
             self.__detector_devices.append(device)
             logger.info("Communication object with spike detector\
  type \"%s\" requested (device)",
@@ -115,10 +117,12 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
             return device
         else:
             device_list = []
-            for pop in populations:
-                device = PyNNCommunicationAdapter.__device_dict[
-                    spike_detector_type](**params)
-                device.connect(pop, **params)
+            device_type = PyNNCommunicationAdapter.__device_dict[
+                spike_detector_type]
+            for (pop_index, pop) in enumerate(populations):
+                device = device_type(
+                    PyNNCommunicationAdapter.__create_device_config(params, pop_index))
+                device.connect(pop, params)
                 device_list.append(device)
             self.__detector_devices += device_list
             device_group = PyNNDeviceGroup(device_list)
@@ -136,6 +140,23 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         for detector in self.__detector_devices:
             if hasattr(detector, "refresh"):
                 detector.refresh(t)
+
+    @staticmethod
+    def __create_device_config(params, index):
+        """
+        Creates the configuration for the device with the given index
+
+        :param params: The original parameters
+        :param index: The index of the device
+        :return: A parameter array
+        """
+        new_params = {}
+        for key in params:
+            value = params[key]
+            if hasattr(value, '__getitem__'):
+                value = value[index]
+            new_params[key] = value
+        return new_params
 
     @property
     def detector_devices(self):
