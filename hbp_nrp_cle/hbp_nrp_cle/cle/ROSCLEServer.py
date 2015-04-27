@@ -464,7 +464,6 @@ class ROSCLEServer(threading.Thread):
         self.__current_subtask_index = 0
         self.__current_task = None
 
-    # pylint: disable=no-self-use
     def start_simulation(self):
         """
         Handler for the CLE start() call, also used for resuming after pause().

@@ -131,91 +131,42 @@ class TestROSCLEServer(unittest.TestCase):
     def test_statemachine_exceptions(self):
         # Initializing the state with no context is okay,
         # since the calls to be tested won't use it
+
+        # Testing invalid transitions in InitialState
         initialized = ROSCLEServer.ROSCLEServer.InitialState(None)
 
         # Test pausing in InitialState
-        try:
-            threw_exception = False
-            initialized.pause_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot pause the simulation while in InitialState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, initialized.pause_simulation)
 
         # Test resetting in InitialState
-        try:
-            threw_exception = False
-            initialized.reset_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot reset the simulation while in InitialState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, initialized.reset_simulation)
+
+        # Testing invalid transitions in RunningState
+        running = ROSCLEServer.ROSCLEServer.RunningState(None)
 
         # Test starting in RunningState
-        running = ROSCLEServer.ROSCLEServer.RunningState(None)
-        try:
-            threw_exception = False
-            running.start_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot start the simulation while in RunningState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, running.start_simulation)
+
+        # Testing invalid transitions in PausedState
+        paused = ROSCLEServer.ROSCLEServer.PausedState(None)
 
         # Test pausing in PausedState
-        paused = ROSCLEServer.ROSCLEServer.PausedState(None)
-        try:
-            threw_exception = False
-            paused.pause_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot pause the simulation while in PausedState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, paused.pause_simulation)
 
+        # Testing invalid transitions in StoppedState
         stopped = ROSCLEServer.ROSCLEServer.StoppedState(None)
 
         # Test starting in StoppedState
-        try:
-            threw_exception = False
-            stopped.start_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot start the simulation while in StoppedState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, stopped.start_simulation)
 
         # Test pausing in StoppedState
-        try:
-            threw_exception = False
-            stopped.pause_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot pause the simulation while in StoppedState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, stopped.pause_simulation)
 
         # Test stopping in StoppedState
-        try:
-            threw_exception = False
-            stopped.stop_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot stop the simulation while in StoppedState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, stopped.stop_simulation)
 
         # Test resetting in StoppedState
-        try:
-            threw_exception = False
-            stopped.reset_simulation()
-        except RuntimeError as exception:
-            threw_exception = True
-            self.assertEqual(exception.__str__(),
-                             "You cannot reset the simulation while in StoppedState.")
-        self.assertTrue(threw_exception)
+        self.assertRaises(RuntimeError, stopped.reset_simulation)
 
     @log_capture(level=logging.WARNING)
     def test_notify_current_task(self, logcapture):
