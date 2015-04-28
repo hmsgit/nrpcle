@@ -2,6 +2,8 @@
 Helper class for gazebo loading operations
 """
 
+__author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
+
 import rospy
 import os
 from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel
@@ -35,7 +37,7 @@ def load_gazebo_world_file(world_file, notification_fn=None):
         # Anyway, regardless of the warning, the lights are loaded with their correct
         # positions.
         logger.info("Loading light \"%s\" in Gazebo", light.xpath("@name")[0])
-        if (notification_fn is not None):
+        if notification_fn is not None:
             notification_fn("Loading light " + light.xpath("@name")[0], False)
         load_light_sdf(light.xpath("@name")[0],
                        "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
@@ -44,7 +46,7 @@ def load_gazebo_world_file(world_file, notification_fn=None):
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
         logger.info("Loading model \"%s\" in Gazebo", model.xpath("@name")[0])
-        if (notification_fn is not None):
+        if notification_fn is not None:
             notification_fn("Loading model " + model.xpath("@name")[0], False)
         load_gazebo_sdf(model.xpath("@name")[0],
                         "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
@@ -89,13 +91,13 @@ def load_light_sdf(light_name, light_sdf, initial_pose=None):
         initial_pose.orientation = Quaternion(0, 0, 0, 1)
     # spawn light
     rospy.wait_for_service('/gazebo/spawn_sdf_light', TIMEOUT)
-    spawn_light_prox = rospy.ServiceProxy('/gazebo/spawn_sdf_light', SpawnModel)
-    spawn_light_prox(light_name,
-                     light_sdf,
-                     "",
-                     initial_pose,
-                     "")
-    spawn_light_prox.close()
+    spawn_light_proxy = rospy.ServiceProxy('/gazebo/spawn_sdf_light', SpawnModel)
+    spawn_light_proxy(light_name,
+                      light_sdf,
+                      "",
+                      initial_pose,
+                      "")
+    spawn_light_proxy.close()
 
 
 def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
