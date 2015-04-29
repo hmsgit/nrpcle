@@ -177,14 +177,6 @@ def cle_function(world_file):
 def __shutdown(cle_server, update_progress_function, models_path):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world
 
-{% if is_not_none(config.extRobotController) %}    # optionally stop all external robot controllers
-    robot_controller_filepath = os.path.join(models_path, '{{config.extRobotController}}')
-    if os.path.isfile(robot_controller_filepath):
-        cle_server.notify_current_task("Stopping external robot controllers",
-                                    True,  # update_progress
-                                    True)  # block_ui
-        subprocess.call([robot_controller_filepath, 'stop'])
-{% endif %}
     # Once we do reach this point, the simulation is stopped and we could clean after ourselves.
     # Clean up gazebo after ourselves
     cle_server.notify_start_task("Stopping simulation",
@@ -192,6 +184,14 @@ def __shutdown(cle_server, update_progress_function, models_path):
                               2, # number of subtasks
                               False)  # block_ui
     empty_gazebo_world(update_progress_function)
+{% if is_not_none(config.extRobotController) %}    # optionally stop all external robot controllers
+    robot_controller_filepath = os.path.join(models_path, '{{config.extRobotController}}')
+    if os.path.isfile(robot_controller_filepath):
+        cle_server.notify_current_task("Stopping external robot controllers",
+                                    True,  # update_progress
+                                    False)  # block_ui
+        subprocess.check_call([robot_controller_filepath, 'stop'])
+{% endif %}
     # Shutdown CLE
     update_progress_function = lambda subtask, update_progress: cle_server.notify_current_task(subtask, update_progress,
         False)
