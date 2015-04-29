@@ -5,7 +5,7 @@ ROSCLEServer unit test
 from hbp_nrp_cle.cle import ROSCLEServer
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 import logging
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 from testfixtures import log_capture
 import unittest
 import json
@@ -141,45 +141,79 @@ class TestROSCLEServer(unittest.TestCase):
         self.__mocked_ros_status_pub.publish.assert_called_with(
             json.dumps(message))
 
-    def test_statemachine_exceptions(self):
-        # Initializing the state with no context is okay,
-        # since the calls to be tested won't use it
+    def test_plain_state(self):
+        # Testing class State
+        state = ROSCLEServer.ROSCLEServer.State(None)
+        self.assertRaises(RuntimeError, state.start_simulation)
+        self.assertRaises(RuntimeError, state.pause_simulation)
+        self.assertRaises(RuntimeError, state.stop_simulation)
+        self.assertRaises(RuntimeError, state.reset_simulation)
+        self.assertFalse(state.is_final_state())
 
-        # Testing invalid transitions in InitialState
-        initialized = ROSCLEServer.ROSCLEServer.InitialState(None)
+    def test_initialized_state(self):
+        # Testing class InitialState
+        ctx = Mock()
+        ctx.start_simulation = Mock()
+        ctx.stop_simulation = Mock()
 
-        # Test pausing in InitialState
+        initialized = ROSCLEServer.ROSCLEServer.InitialState(ctx)
         self.assertRaises(RuntimeError, initialized.pause_simulation)
-
-        # Test resetting in InitialState
         self.assertRaises(RuntimeError, initialized.reset_simulation)
+        self.assertFalse(initialized.is_final_state())
 
-        # Testing invalid transitions in RunningState
-        running = ROSCLEServer.ROSCLEServer.RunningState(None)
+        initialized.start_simulation()
+        initialized.stop_simulation()
+        self.assertEqual(ctx.start_simulation.call_count, 1)
+        self.assertEqual(ctx.stop_simulation.call_count, 1)
+        self.assertEqual(str(initialized), ROSCLEState.INITIALIZED)
 
-        # Test starting in RunningState
+    def test_running_state(self):
+        # Testing class RunningState
+        ctx = Mock()
+        ctx.start_simulation = Mock()
+        ctx.stop_simulation = Mock()
+        ctx.pause_simulation = Mock()
+
+        running = ROSCLEServer.ROSCLEServer.RunningState(ctx)
         self.assertRaises(RuntimeError, running.start_simulation)
+        self.assertFalse(running.is_final_state())
 
-        # Testing invalid transitions in PausedState
-        paused = ROSCLEServer.ROSCLEServer.PausedState(None)
+        running.reset_simulation()
+        running.stop_simulation()
+        running.pause_simulation()
+        self.assertEqual(ctx.reset_simulation.call_count, 1)
+        self.assertEqual(ctx.stop_simulation.call_count, 1)
+        self.assertEqual(ctx.pause_simulation.call_count, 1)
+        self.assertEqual(str(running), ROSCLEState.STARTED)
 
-        # Test pausing in PausedState
+    def test_paused_state(self):
+        # Testing class PausedState
+        ctx = Mock()
+        ctx.start_simulation = Mock()
+        ctx.stop_simulation = Mock()
+        ctx.reset_simulation = Mock()
+
+        paused = ROSCLEServer.ROSCLEServer.PausedState(ctx)
         self.assertRaises(RuntimeError, paused.pause_simulation)
+        self.assertFalse(paused.is_final_state())
 
-        # Testing invalid transitions in StoppedState
+        paused.start_simulation()
+        paused.stop_simulation()
+        paused.reset_simulation()
+        self.assertEqual(ctx.start_simulation.call_count, 1)
+        self.assertEqual(ctx.stop_simulation.call_count, 1)
+        self.assertEqual(ctx.reset_simulation.call_count, 1)
+        self.assertEqual(str(paused), ROSCLEState.PAUSED)
+
+    def test_stopped_state(self):
+        # Testing class StoppedState
         stopped = ROSCLEServer.ROSCLEServer.StoppedState(None)
-
-        # Test starting in StoppedState
         self.assertRaises(RuntimeError, stopped.start_simulation)
-
-        # Test pausing in StoppedState
         self.assertRaises(RuntimeError, stopped.pause_simulation)
-
-        # Test stopping in StoppedState
         self.assertRaises(RuntimeError, stopped.stop_simulation)
-
-        # Test resetting in StoppedState
         self.assertRaises(RuntimeError, stopped.reset_simulation)
+        self.assertTrue(stopped.is_final_state())
+        self.assertEqual(str(stopped), ROSCLEState.STOPPED)
 
     @log_capture(level=logging.WARNING)
     def test_notify_current_task(self, logcapture):
