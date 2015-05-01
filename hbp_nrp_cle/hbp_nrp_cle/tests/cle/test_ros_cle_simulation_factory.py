@@ -81,8 +81,9 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.__mocked_rospy.spin.assert_called_once_with()
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
+    @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.os')
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
-    def test_start_new_simulation_dead_thread(self, mocked_os, mocked_logger):
+    def test_start_new_simulation_dead_thread(self, mocked_os, mocked_cle_os, mocked_logger):
         self.mockThreading()
         self.__ros_cle_simulation_factory.\
             running_simulation_thread.is_alive = MagicMock(return_value=False)
@@ -94,12 +95,13 @@ class TestROSCLESimulationFactory(unittest.TestCase):
                 self.mocked_service_request
             )
 
-        self.assertEqual(mocked_logger.info.call_count, 3)
+        self.assertEqual(mocked_logger.info.call_count, 4)
         self.assertEqual(mocked_logger.error.call_count, 0)
 
         self.assertEqual(self.__mocked_threading.Thread.call_count, 1)
         mocked_os.system.assert_any_call("/etc/init.d/gzserver start")
         mocked_os.system.assert_any_call("/etc/init.d/gzbridge restart")
+        mocked_cle_os.system.assert_any_call("supervisorctrl restart rosbridge")
         self.assertEqual(mocked_os.system.call_count, 2)
 
         self.assertEqual(
