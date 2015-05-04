@@ -58,6 +58,8 @@ class TestROSCLEServer(unittest.TestCase):
         # Set up our object under test and get sure it calls rospy.init in its
         # constructor.
         self.__ros_cle_server = ROSCLEServer.ROSCLEServer()
+        self.__ros_cle_server.start_timeout = MagicMock();
+        self.__ros_cle_server.stop_timeout = MagicMock();
         self.__mocked_rospy.init_node.assert_called_with('ros_cle_simulation')
 
         # Be sure we create a publisher exactly once.
@@ -79,6 +81,17 @@ class TestROSCLEServer(unittest.TestCase):
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
         self.assertEqual(5, self.__mocked_rospy.Service.call_count)
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
+        self.assertEqual(1, self.__ros_cle_server.start_timeout.call_count)
+    
+    def test_reset_timeout(self):
+        self.__mocked_cle.is_initialized = False
+        self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
+        self.__ros_cle_server.start_simulation()
+        self.__ros_cle_server.pause_simulation()
+        self.__ros_cle_server.reset_simulation()
+        # start_timeout has been called in prepare_simulation AND in reset_simulation
+        self.assertEqual(2, self.__ros_cle_server.start_timeout.call_count)
+        self.assertEqual(1, self.__ros_cle_server.stop_timeout.call_count)
 
     def __get_handlers_for_testing_main(self):
         self.__mocked_cle.is_initialized = True
