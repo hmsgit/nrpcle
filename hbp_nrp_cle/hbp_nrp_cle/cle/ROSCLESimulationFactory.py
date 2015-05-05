@@ -104,6 +104,9 @@ class ROSCLESimulationFactory(object):
             ros_master_uri = os.environ.get("ROS_MASTER_URI")
             ros_master_uri = ros_master_uri.replace('localhost', local_ip)
             self.__simulator.start(ros_master_uri)
+            # Restart rosbridge since this piece of software is quite unstable.
+            logger.info("Restarting rosbridge")
+            os.system("supervisorctrl restart rosbridge")
             self.__simulator_bridge = LocalGazeboBridgeInstance()
             if self.__simulator.gazebo_master_uri is None:
                 # Restart the bridge to make sure that we have a new instance.
