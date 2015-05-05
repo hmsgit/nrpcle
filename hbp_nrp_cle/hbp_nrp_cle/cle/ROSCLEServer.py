@@ -505,6 +505,7 @@ class ROSCLEServer(threading.Thread):
         # CLE reset() already includes stop() and wait_step()
         self.stop_timeout()
         self.__to_be_executed_within_main_thread = self.__cle.reset
+        self.start_timeout()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []
