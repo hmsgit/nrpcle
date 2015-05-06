@@ -189,6 +189,10 @@ class TestROSCLESimulationFactory(unittest.TestCase):
             'WARNING',
             'Could not write to specified logfile or no logfile specified, logging to stdout now!'
         ))
+        self.assertEqual(logging.getLogger().getEffectiveLevel(), logging.INFO)
+
+        ROSCLESimulationFactory.set_up_logger(None, True)
+        self.assertEqual(logging.getLogger().getEffectiveLevel(), logging.DEBUG)
 
     def test_get_version(self):
         cle_version = str(self.__ros_cle_simulation_factory.get_version(None))

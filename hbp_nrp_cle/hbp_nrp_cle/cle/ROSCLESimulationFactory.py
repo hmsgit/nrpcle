@@ -162,10 +162,11 @@ class ROSCLESimulationFactory(object):
         self.__simulator_bridge = None
 
 
-def set_up_logger(logfile_name):
+def set_up_logger(logfile_name, verbose=False):
     """
     Configure the root logger of the CLE application
     :param: logfile_name: name of the file created to collect logs
+    :param: verbose: increase logging verbosity
     """
     # We initialize the logging in the startup of the whole CLE application.
     # This way we can access the already set up logger in the children modules.
@@ -176,16 +177,14 @@ def set_up_logger(logfile_name):
     try:
         file_handler = logging.FileHandler(logfile_name)
         file_handler.setFormatter(logging.Formatter(log_format))
-        logging.root.setLevel(logging.DEBUG)
         logging.root.addHandler(file_handler)
     except (AttributeError, IOError) as _:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(logging.Formatter(log_format))
-        logging.root.setLevel(logging.DEBUG)
         logging.root.addHandler(console_handler)
         logger.warn("Could not write to specified logfile or no logfile specified, " +
                     "logging to stdout now!")
-
+    logging.root.setLevel(logging.DEBUG if verbose else logging.INFO)
 
 if __name__ == '__main__':
     if os.environ["ROS_MASTER_URI"] == "":
@@ -193,9 +192,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--logfile', dest='logfile', help='specify the CLE logfile')
+    parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                        action="store_true")
     args = parser.parse_args()
     server = ROSCLESimulationFactory()
     server.initialize()
-    set_up_logger(args.logfile)
+    set_up_logger(args.logfile, args.verbose)
     server.run()
     logger.info("CLE Server exiting.")
