@@ -57,7 +57,7 @@ class TestBibiConfigurationScript(unittest.TestCase):
         milestone2 = os.path.join(directory, 'milestone2.xml')
         generated_script = os.path.join(directory, 'generated_cle_script.py')
         milestone2_script = os.path.join(directory, 'milestone2_cle_script.py')
-        generate_cle(milestone2, generated_script, 300.0)
+        generate_cle(milestone2, generated_script, 300.0, 'local')
 
         file1 = open(generated_script, 'r')
         file2 = open(milestone2_script, 'r')

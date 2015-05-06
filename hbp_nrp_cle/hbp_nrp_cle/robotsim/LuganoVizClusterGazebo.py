@@ -116,7 +116,11 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     SMALL_TIMEOUT = 2
     DEFAULT_GZSERVER_PORT = 11345
 
-    def __init__(self):
+    def __init__(self, notification_fn=lambda x, y: ()):
+        """
+        :param notification_fn: A function used to notify the current status.
+        (default: lambda x: ())
+        """
         self.__allocation_process = None
         self.__x_server_process = None
         self.__remote_xvnc_process = None
@@ -127,6 +131,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         # Holds the state of the SLURM job. The states are defined in SLURM.
         self.__state = "UNDEFINED"
         self.__node = None
+        self.__notification_fn = notification_fn
 
     def __spawn_ssh_SLURM_frontend(self):
         """
@@ -141,12 +146,13 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         result = ssh_SLURM_frontend_process.expect(['[bbpsoatest@bbpviz1 ~]$',
                                                     'password',
                                                     pexpect.TIMEOUT], self.TIMEOUT)
-        if (result == 1):
+        if result == 1:
             raise(Exception("SLURM front-end node can't be used without password."))
-        if (result == 2):
+        if result == 2:
             raise(Exception("Cannot connect to the SLURM front-end node."))
 
         logger.info("Connected to the SLURM front-end node.")
+        self.__notification_fn("Connected to the SLURM front-end node.", False)
         return ssh_SLURM_frontend_process
 
     def __allocate_job(self):
@@ -171,7 +177,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__allocation_process.sendline("scontrol show job " + str(self.__job_ID))
         self.__allocation_process.expect('JobState=[A-Z]+')
         self.__state = self.__allocation_process.after[9:]
-        if (self.__state != 'RUNNING'):
+        if self.__state != 'RUNNING':
             raise Exception("Job is not running.")
         self.__allocation_process.expect(r' NodeList=(\w+)')
         self.__node = self.__allocation_process.match.groups()[0]
@@ -182,7 +188,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         that exiting from the terminal opened through the allocation causes SLURM
         to complete the Job.
         """
-        if (self.__allocation_process is not None):
+        if self.__allocation_process is not None:
             self.__allocation_process.sendline('exit')
             self.__allocation_process = None
             self.__job_ID = None
@@ -208,7 +214,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         Return a pexpect object connected to the allocated viz cluster node.
         """
-        if (self.__node is None or self.__allocation_process is None):
+        if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
 
         vglconnect_process = pexpect.spawn('bash',
@@ -222,9 +228,9 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         result = vglconnect_process.expect([r'\[bbpsoatest@' + self.__node + r'\ ~\]\$',
                                             'password',
                                             pexpect.TIMEOUT])
-        if (result == 1):
+        if result == 1:
             raise(Exception("Viz cluster node can't be used without password."))
-        if (result == 2):
+        if result == 2:
             raise(Exception("Cannot connect to node."))
 
         return vglconnect_process  # This object has to live until the end.
@@ -233,7 +239,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         Create a temporary working directory on the allocated viz cluster node.
         """
-        if (self.__node is None or self.__allocation_process is None):
+        if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
         create_temporary_folder_process = self.__spawn_vglconnect()
         create_temporary_folder_process.sendline('mktemp -d')
@@ -255,7 +261,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         Start a remote Xvnc server. This is the only (known to us) way to have Gazebo using
         the graphic card.
         """
-        if (self.__node is None or self.__allocation_process is None):
+        if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
 
         self.__remote_xvnc_process = self.__spawn_vglconnect()
@@ -272,9 +278,9 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         Copy the local models (assumed to be in $HOME/.gazebo/models) to the remote
         viz cluster node
         """
-        if (self.__node is None or self.__allocation_process is None):
+        if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
-        if (self.__remote_working_directory is None):
+        if self.__remote_working_directory is None:
             raise(Exception("Syncing the models cannot work without a remote working directory"))
         os.system(
             "scp -r $HOME/.gazebo/models bbpsoatest@" +
@@ -288,9 +294,9 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         Install all the needed ROS dependencies on the allocated viz cluster node
         (in the remote working directory).
         """
-        if (self.__node is None or self.__allocation_process is None):
+        if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
-        if (self.__remote_working_directory is None):
+        if self.__remote_working_directory is None:
             raise(Exception("Installing ROS dependencies cannot work without" +
                             " a remote working directory"))
         install_ros_dependencies_process = self.__spawn_vglconnect()
@@ -307,11 +313,11 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         Start gazebo on the remote server
         """
-        if (self.__node is None or self.__allocation_process is None):
+        if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
-        if (self.__remote_display_port == -1):
+        if self.__remote_display_port == -1:
             raise(Exception("Gazebo needs a remote X Server running"))
-        if (self.__remote_working_directory is None):
+        if self.__remote_working_directory is None:
             raise(Exception("Gazebo needs a remote working directory"))
 
         self.__gazebo_remote_process = self.__spawn_vglconnect()
@@ -369,18 +375,26 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         Start gzserver on the Lugano viz cluster
         """
+
+        self.__notification_fn("Starting gzserver", False)
         logger.info('Allocating one job on the vizualization cluster')
+        self.__notification_fn('Allocating one job on the vizualization cluster', False)
         self.__allocate_job()
         logger.info('Start an XServer without attached screen')
+        self.__notification_fn('Start an XServer without attached screen', False)
         self.__start_fake_X()
         logger.info('Sync models on the remote node')
+        self.__notification_fn('Sync models on the remote node', False)
         self.__create_remote_working_directory()
         self.__sync_models()
         logger.info('Install ROS python dependencies')
+        self.__notification_fn('Install ROS python dependencies', False)
         self.__install_ros_dependencies()
         logger.info('Start Xvnc on the remote node')
+        self.__notification_fn('Start Xvnc on the remote node', False)
         self.__start_xvnc()
         logger.info('Start gzserver on the remote node')
+        self.__notification_fn('Start gzserver on the remote node', False)
         self.__start_gazebo(ros_master_uri)
 
     @property
@@ -389,7 +403,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         Returns a string containing the gzserver master
         URI (like:'http://bbpviz001.cscs.ch:11345')
         """
-        if (self.__node is not None):
+        if self.__node is not None:
             return ('http://' +
                     self.__node +
                     self.NODE_DOMAIN +
@@ -399,12 +413,14 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             return None
 
     def stop(self):
+        self.__notification_fn("Stopping gzserver", False)
         self.__clean_remote_working_directory()
         self.__deallocate_job()
 
-    def restart(self):
+    def restart(self, ros_master_uri):
+        self.__notification_fn("Restarting gzserver", False)
         self.stop()
-        self.start()
+        self.start(ros_master_uri)
 
 
 def _get_roscore_master_uri():

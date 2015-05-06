@@ -26,7 +26,7 @@ class ROSCLEClient(object):
     """
     Client around the ROS controlled Closed Loop Engine.
     """
-    ROS_SERVICE_TIMEOUT = 120
+    ROS_SERVICE_TIMEOUT = 180
     ROS_CLE_NODE_NAME = "ros_cle_simulation"
     ROS_CLE_URI_PREFIX = "/" + ROS_CLE_NODE_NAME
 
@@ -130,7 +130,7 @@ class ROSCLEClient(object):
         # By default, we assume an experiment is in the stop state
         # (whether it is really stop or if something bad did happen.)
         state = ROSCLEState.STOPPED
-        if (self.__valid):
+        if self.__valid:
             try:
                 state = str(self.__cle_state().state)
             except rospy.ServiceException as e:

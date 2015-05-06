@@ -9,13 +9,10 @@ import threading
 import os
 import argparse
 import sys
-import netifaces
 import hbp_nrp_cle
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboServerInstance, LocalGazeboBridgeInstance
-from hbp_nrp_cle.robotsim.LuganoVizClusterGazebo import LuganoVizClusterGazebo
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
@@ -83,43 +80,14 @@ class ROSCLESimulationFactory(object):
         :param: service_request: ROS service message (defined in hbp ROS packages)
         """
         logger.info("Start new simulation request")
-        result = False
         error_message = ""
 
         if ((self.running_simulation_thread is None) or
                 (not self.running_simulation_thread.is_alive())):
             logger.info("No simulation running, starting a new simulation.")
 
-            gz_class = None
-            if service_request.gzserver_host == 'local':
-                gz_class = LocalGazeboServerInstance
-            elif service_request.gzserver_host == 'lugano':
-                gz_class = LuganoVizClusterGazebo
-            else:
+            if service_request.gzserver_host not in ['local', 'lugano']:
                 raise Exception("Invalid value for gzserver_host")
-
-            self.__simulator = gz_class()
-
-            local_ip = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
-            ros_master_uri = os.environ.get("ROS_MASTER_URI")
-            ros_master_uri = ros_master_uri.replace('localhost', local_ip)
-            self.__simulator.start(ros_master_uri)
-            # Restart rosbridge since this piece of software is quite unstable.
-            logger.info("Restarting rosbridge")
-            os.system("supervisorctl restart rosbridge")
-            self.__simulator_bridge = LocalGazeboBridgeInstance()
-            if self.__simulator.gazebo_master_uri is None:
-                # Restart the bridge to make sure that we have a new instance.
-                self.__simulator_bridge.restart('', '')
-            else:
-                logger.info(
-                    "Starting gzweb with gazebo master sitting at " +
-                    self.__simulator.gazebo_master_uri)
-                os.environ['GAZEBO_MASTER_URI'] = self.__simulator.gazebo_master_uri
-                gzhost, gzport = self.__simulator.gazebo_master_uri.replace(
-                    'http://', '').split(':')
-                # Restart the bridge to make sure that we have a new instance.
-                self.__simulator_bridge.restart(gzhost, gzport)
 
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
@@ -137,6 +105,7 @@ class ROSCLESimulationFactory(object):
                 previous one has not been terminated."""
             logger.error(error_message)
             result = False
+
         return [result, error_message]
 
     def __simulation(self, environment_file, generated_cle_script_file):

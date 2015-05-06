@@ -95,15 +95,10 @@ class TestROSCLESimulationFactory(unittest.TestCase):
                 self.mocked_service_request
             )
 
-        self.assertEqual(mocked_logger.info.call_count, 4)
+        self.assertEqual(mocked_logger.info.call_count, 3)
         self.assertEqual(mocked_logger.error.call_count, 0)
 
         self.assertEqual(self.__mocked_threading.Thread.call_count, 1)
-        mocked_os.system.assert_any_call("/etc/init.d/gzserver start")
-        mocked_os.system.assert_any_call("/etc/init.d/gzbridge restart")
-        mocked_cle_os.system.assert_any_call("supervisorctl restart rosbridge")
-        self.assertEqual(mocked_os.system.call_count, 2)
-
         self.assertEqual(
             self.__ros_cle_simulation_factory.running_simulation_thread,
             self.__mocked_thread
@@ -148,29 +143,15 @@ class TestROSCLESimulationFactory(unittest.TestCase):
 
         _mocked_service_request.gzserver_host = 'local'
         self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
-        loc = ROSCLESimulationFactory.LocalGazeboServerInstance
-        _oldgmu = loc.gazebo_master_uri
-        _oldstr = loc.start
-        loc.gazebo_master_uri = Mock()
-        loc.gazebo_master_uri.__get__ = Mock(return_value=None)
-        loc.start = Mock()
-        self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)
-        self.assertEqual(loc.start.call_count, 1)
-        loc.gazebo_master_uri = _oldgmu
-        loc.start = _oldstr
+        self.assertTrue(
+            self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)[0]
+        )
 
         _mocked_service_request.gzserver_host = 'lugano'
         self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
-        lug = ROSCLESimulationFactory.LuganoVizClusterGazebo
-        _oldgmu = lug.gazebo_master_uri
-        _oldstr = lug.start
-        lug.gazebo_master_uri = Mock()
-        lug.gazebo_master_uri.__get__ = Mock(return_value=None)
-        lug.start = Mock()
-        self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)
-        self.assertEqual(lug.start.call_count, 1)
-        lug.gazebo_master_uri = _oldgmu
-        lug.start = _oldstr
+        self.assertTrue(
+            self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)[0]
+        )
 
         _mocked_service_request.gzserver_host = 'random string'
         self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()

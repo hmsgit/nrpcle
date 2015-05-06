@@ -327,7 +327,7 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
     def test_restart(self):
         self.instance.start = Mock()
         self.instance.stop = Mock()
-        self.instance.restart()
+        self.instance.restart('')
         self.assertEqual(self.instance.start.call_count, 1)
         self.assertEqual(self.instance.stop.call_count, 1)
 

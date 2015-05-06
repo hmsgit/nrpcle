@@ -13,8 +13,12 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
     Represents a local instance of gzserver.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, notification_fn=lambda x, y: ()):
+        """
+        :param notification_fn: A function used to notify the current status.
+        (default: lambda x: ())
+        """
+        self.__notification_fn = notification_fn
 
     def start(self, ros_master_uri): # pylint: disable=unused-argument
         """
@@ -23,18 +27,21 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
 
         :param: ros_master_uri The ros master uri where to connect gzserver.
         """
+        self.__notification_fn("Starting gzserver", False)
         os.system('/etc/init.d/gzserver start')
 
     def stop(self):
         """
         Stops the gzserver instance.
         """
+        self.__notification_fn("Stopping gzserver", False)
         os.system('/etc/init.d/gzserver stop')
 
-    def restart(self):
+    def restart(self, ros_master_uri):
         """
         Restarts the gzserver instance.
         """
+        self.__notification_fn("Restarting gzserver", False)
         os.system('/etc/init.d/gzserver restart')
 
     @property
@@ -51,29 +58,30 @@ class LocalGazeboBridgeInstance(IGazeboBridgeInstance):
     Represents a local instance of gzbridge.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, notification_fn=lambda x, y: ()):
+        """
+        :param notification_fn: A function used to notify the current status.
+        (default: lambda x: ())
+        """
+        self.__notification_fn = notification_fn
 
-    def start(self, gzserver_host, gzserver_port): # pylint: disable=unused-argument
+    def start(self): # pylint: disable=unused-argument
         """
         Starts the gzbridge instance represented by the object.
-
-        :param gzserver_host The host where gzserver is running
-        :param gzserver_port The port on which gzserver is running
         """
+        self.__notification_fn("Starting gzbridge", False)
         os.system('/etc/init.d/gzbridge start')
 
     def stop(self):
         """
         Stops the gzbridge instance represented by the object.
         """
+        self.__notification_fn("Stopping gzbridge", False)
         os.system('/etc/init.d/gzbridge stop')
 
-    def restart(self, gzserver_host, gzserver_port): # pylint: disable=unused-argument
+    def restart(self): # pylint: disable=unused-argument
         """
         Restarts the gzbridge instance represented by the object.
-
-        :param gzserver_host The host where gzserver is running
-        :param gzserver_port The port on which gzserver is running
         """
+        self.__notification_fn("Restarting gzbridge", False)
         os.system('/etc/init.d/gzbridge restart')

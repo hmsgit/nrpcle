@@ -24,7 +24,7 @@ class TestROSCLEClient(unittest.TestCase):
         ServiceProxyMock.side_effect = ServiceProxyMocks
         client = ROSCLEClient.ROSCLEClient()
         for mocks in ServiceProxyMocks:
-            mocks.wait_for_service.assert_called_with(timeout=120)
+            mocks.wait_for_service.assert_called_with(timeout=180)
 
     @patch('rospy.ServiceProxy')
     def test_constructor_timeout(self, ServiceProxyMock):
@@ -33,9 +33,9 @@ class TestROSCLEClient(unittest.TestCase):
         ServiceProxyMock.side_effect = ServiceProxyMocks
         with self.assertRaises(ROSCLEClient.ROSCLEClientException):
             client = ROSCLEClient.ROSCLEClient()
-        ServiceProxyMocks[0].wait_for_service.assert_called_with(timeout=120)
-        ServiceProxyMocks[1].wait_for_service.assert_called_with(timeout=120)
-        ServiceProxyMocks[2].wait_for_service.assert_called_with(timeout=120)
+        ServiceProxyMocks[0].wait_for_service.assert_called_with(timeout=180)
+        ServiceProxyMocks[1].wait_for_service.assert_called_with(timeout=180)
+        ServiceProxyMocks[2].wait_for_service.assert_called_with(timeout=180)
         self.assertEqual(len(ServiceProxyMocks[3].wait_for_service.mock_calls), 0)
         self.assertEqual(len(ServiceProxyMocks[4].wait_for_service.mock_calls), 0)
 

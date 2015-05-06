@@ -23,7 +23,7 @@ class TestLocalGazeboServerInstance(unittest.TestCase):
 
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
     def test_restart(self, mocked_os):
-        self.instance.restart()
+        self.instance.restart('')
         mocked_os.system.assert_any_call('/etc/init.d/gzserver restart')
 
 if __name__ == '__main__':

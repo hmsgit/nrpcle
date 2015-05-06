@@ -14,11 +14,13 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 from std_msgs.msg import Float32, Int32, String
 from os.path import expanduser
 import os
+import netifaces
 import subprocess
 import logging
 
 logger = logging.getLogger(__name__)
-
+gzweb = None
+gzserver = None
 
 def cle_function(world_file):
 
@@ -104,6 +106,27 @@ def cle_function(world_file):
     models_path = os.environ.get('NRP_MODELS_DIRECTORY')
 
     update_progress_function("Resetting Gazebo robotic simulator", True)
+
+    local_ip = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
+    ros_master_uri = os.environ.get("ROS_MASTER_URI")
+    ros_master_uri = ros_master_uri.replace('localhost', local_ip)
+
+    from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboBridgeInstance
+    gzweb = LocalGazeboBridgeInstance(update_progress_function)
+
+{% if gzserver_host == 'local' %}
+    from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboServerInstance
+    gzserver = LocalGazeboServerInstance(update_progress_function)
+    gzserver.start(ros_master_uri)
+{% elif gzserver_host == 'lugano' %}
+    from hbp_nrp_cle.robotsim.LuganoVizClusterGazebo import LuganoVizClusterGazebo
+    gzserver = LuganoVizClusterGazebo(update_progress_function)
+    gzserver.start(ros_master_uri)
+{% endif %}
+
+    os.environ['GAZEBO_MASTER_URI'] = gzserver.gazebo_master_uri
+    gzweb.start()
+
     empty_gazebo_world(update_progress_function)
 
     cle_server.notify_current_task("Loading experiment environment",
@@ -184,6 +207,10 @@ def __shutdown(cle_server, update_progress_function, models_path):
                               2, # number of subtasks
                               False)  # block_ui
     empty_gazebo_world(update_progress_function)
+
+    gzweb.stop()
+    gzserver.stop()
+
 {% if is_not_none(config.extRobotController) %}    # optionally stop all external robot controllers
     robot_controller_filepath = os.path.join(models_path, '{{config.extRobotController}}')
     if os.path.isfile(robot_controller_filepath):
