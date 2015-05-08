@@ -3,6 +3,7 @@ This module contains the classes needed to have all gazebo services running loca
 """
 
 from hbp_nrp_cle.robotsim.GazeboInterface import IGazeboServerInstance, IGazeboBridgeInstance
+from hbp_nrp_cle.bibi_config.notificator import Notificator
 import os
 
 __author__ = 'Alessandro Ambrosano'
@@ -13,13 +14,6 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
     Represents a local instance of gzserver.
     """
 
-    def __init__(self, notification_fn=lambda x, y: ()):
-        """
-        :param notification_fn: A function used to notify the current status.
-        (default: lambda x: ())
-        """
-        self.__notification_fn = notification_fn
-
     def start(self, ros_master_uri): # pylint: disable=unused-argument
         """
         Starts a gzserver instance connected to the local roscore (provided by
@@ -27,21 +21,21 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
 
         :param: ros_master_uri The ros master uri where to connect gzserver.
         """
-        self.__notification_fn("Starting gzserver", False)
+        Notificator.notify("Starting gzserver", False)
         os.system('/etc/init.d/gzserver start')
 
     def stop(self):
         """
         Stops the gzserver instance.
         """
-        self.__notification_fn("Stopping gzserver", False)
+        Notificator.notify("Stopping gzserver", False)
         os.system('/etc/init.d/gzserver stop')
 
     def restart(self, ros_master_uri):
         """
         Restarts the gzserver instance.
         """
-        self.__notification_fn("Restarting gzserver", False)
+        Notificator.notify("Restarting gzserver", False)
         os.system('/etc/init.d/gzserver restart')
 
     @property
@@ -58,30 +52,23 @@ class LocalGazeboBridgeInstance(IGazeboBridgeInstance):
     Represents a local instance of gzbridge.
     """
 
-    def __init__(self, notification_fn=lambda x, y: ()):
-        """
-        :param notification_fn: A function used to notify the current status.
-        (default: lambda x: ())
-        """
-        self.__notification_fn = notification_fn
-
     def start(self): # pylint: disable=unused-argument
         """
         Starts the gzbridge instance represented by the object.
         """
-        self.__notification_fn("Starting gzbridge", False)
+        Notificator.notify("Starting gzbridge", False)
         os.system('/etc/init.d/gzbridge start')
 
     def stop(self):
         """
         Stops the gzbridge instance represented by the object.
         """
-        self.__notification_fn("Stopping gzbridge", False)
+        Notificator.notify("Stopping gzbridge", False)
         os.system('/etc/init.d/gzbridge stop')
 
     def restart(self): # pylint: disable=unused-argument
         """
         Restarts the gzbridge instance represented by the object.
         """
-        self.__notification_fn("Restarting gzbridge", False)
+        Notificator.notify("Restarting gzbridge", False)
         os.system('/etc/init.d/gzbridge restart')

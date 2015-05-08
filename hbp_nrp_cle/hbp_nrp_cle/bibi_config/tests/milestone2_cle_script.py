@@ -17,8 +17,10 @@ import os
 import netifaces
 import subprocess
 import logging
+from hbp_nrp_cle.bibi_config.notificator import Notificator
 
 logger = logging.getLogger(__name__)
+
 
 def cle_function(world_file):
 
@@ -26,7 +28,9 @@ def cle_function(world_file):
 
     # Create ROS server
     cle_server = ROSCLEServer()
-    update_progress_function = lambda subtask, update_progress: cle_server.notify_current_task(subtask, update_progress, True)
+    Notificator.register_notification_function(
+        lambda subtask, update_progress: cle_server.notify_current_task(subtask, update_progress, True)
+    )
 
     cle_server.notify_start_task("Initializing the Neurorobotic Closed Loop Engine",
                                  "Importing needed packages",
@@ -99,30 +103,30 @@ def cle_function(world_file):
     # set models path variable
     models_path = os.environ.get('NRP_MODELS_DIRECTORY')
 
-    update_progress_function("Resetting Gazebo robotic simulator", True)
+    Notificator.notify("Resetting Gazebo robotic simulator", True)
 
     local_ip = netifaces.ifaddresses('eth0')[netifaces.AF_INET][0]['addr']
     ros_master_uri = os.environ.get("ROS_MASTER_URI")
     ros_master_uri = ros_master_uri.replace('localhost', local_ip)
 
     from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboBridgeInstance
-    gzweb = LocalGazeboBridgeInstance(update_progress_function)
+    gzweb = LocalGazeboBridgeInstance()
 
 
     from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboServerInstance
-    gzserver = LocalGazeboServerInstance(update_progress_function)
+    gzserver = LocalGazeboServerInstance()
     gzserver.start(ros_master_uri)
 
 
     os.environ['GAZEBO_MASTER_URI'] = gzserver.gazebo_master_uri
     gzweb.start()
 
-    empty_gazebo_world(update_progress_function)
+    empty_gazebo_world()
 
     cle_server.notify_current_task("Loading experiment environment",
                                 True,  # update_progress
                                 True)  # block_ui
-    load_gazebo_world_file(world_file, update_progress_function)
+    load_gazebo_world_file(world_file)
 
     # Create interfaces to Gazebo
     cle_server.notify_current_task("Loading neuRobot",
@@ -174,10 +178,10 @@ def cle_function(world_file):
     
     # Main infinite loop (until the ROS stop service is called)
     cle_server.main()
-    __shutdown(cle_server, update_progress_function, models_path, gzweb, gzserver)
+    __shutdown(cle_server, models_path, gzweb, gzserver)
 
 
-def __shutdown(cle_server, update_progress_function, models_path, gzweb, gzserver):
+def __shutdown(cle_server, models_path, gzweb, gzserver):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world
 
     # Once we do reach this point, the simulation is stopped and we could clean after ourselves.
@@ -186,15 +190,17 @@ def __shutdown(cle_server, update_progress_function, models_path, gzweb, gzserve
                               "Emptying 3D world",
                               2, # number of subtasks
                               False)  # block_ui
-    empty_gazebo_world(update_progress_function)
+    empty_gazebo_world()
 
     gzweb.stop()
     gzserver.stop()
 
 
     # Shutdown CLE
-    update_progress_function = lambda subtask, update_progress: cle_server.notify_current_task(subtask, update_progress,
+    Notificator.register_notification_function(
+        lambda subtask, update_progress: cle_server.notify_current_task(subtask, update_progress,\
         False)
+    )
     cle_server.notify_current_task("Shutting down Closed Loop Engine",
                                 True,  # update_progress
                                 False)  # block_ui

@@ -13,6 +13,7 @@ import sys
 import netifaces
 from hbp_nrp_cle.robotsim.GazeboInterface import IGazeboServerInstance
 from random import randint
+from hbp_nrp_cle.bibi_config.notificator import Notificator
 
 
 logger = logging.getLogger('hbp_nrp_cle')
@@ -120,11 +121,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     SMALL_TIMEOUT = 2
     DEFAULT_GZSERVER_PORT = 11345
 
-    def __init__(self, notification_fn=lambda x, y: ()):
-        """
-        :param notification_fn: A function used to notify the current status.
-        (default: lambda x: ())
-        """
+    def __init__(self):
         self.__allocation_process = None
         self.__x_server_process = None
         self.__remote_xvnc_process = None
@@ -135,7 +132,6 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         # Holds the state of the SLURM job. The states are defined in SLURM.
         self.__state = "UNDEFINED"
         self.__node = None
-        self.__notification_fn = notification_fn
 
     def __spawn_ssh_SLURM_frontend(self):
         """
@@ -156,7 +152,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             raise(Exception("Cannot connect to the SLURM front-end node."))
 
         logger.info("Connected to the SLURM front-end node.")
-        self.__notification_fn("Connected to the SLURM front-end node.", False)
+        Notificator.notify("Connected to the SLURM front-end node.", False)
         return ssh_SLURM_frontend_process
 
     def __allocate_job(self):
@@ -380,25 +376,25 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         Start gzserver on the Lugano viz cluster
         """
 
-        self.__notification_fn("Starting gzserver", False)
+        Notificator.notify("Starting gzserver", False)
         logger.info('Allocating one job on the vizualization cluster')
-        self.__notification_fn('Allocating one job on the vizualization cluster', False)
+        Notificator.notify('Allocating one job on the vizualization cluster', False)
         self.__allocate_job()
         logger.info('Start an XServer without attached screen')
-        self.__notification_fn('Start an XServer without attached screen', False)
+        Notificator.notify('Start an XServer without attached screen', False)
         self.__start_fake_X()
         logger.info('Sync models on the remote node')
-        self.__notification_fn('Sync models on the remote node', False)
+        Notificator.notify('Sync models on the remote node', False)
         self.__create_remote_working_directory()
         self.__sync_models()
         logger.info('Install ROS python dependencies')
-        self.__notification_fn('Install ROS python dependencies', False)
+        Notificator.notify('Install ROS python dependencies', False)
         self.__install_ros_dependencies()
         logger.info('Start Xvnc on the remote node')
-        self.__notification_fn('Start Xvnc on the remote node', False)
+        Notificator.notify('Start Xvnc on the remote node', False)
         self.__start_xvnc()
         logger.info('Start gzserver on the remote node')
-        self.__notification_fn('Start gzserver on the remote node', False)
+        Notificator.notify('Start gzserver on the remote node', False)
         self.__start_gazebo(ros_master_uri)
 
     @property
@@ -417,12 +413,12 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             return None
 
     def stop(self):
-        self.__notification_fn("Stopping gzserver", False)
+        Notificator.notify("Stopping gzserver", False)
         self.__clean_remote_working_directory()
         self.__deallocate_job()
 
     def restart(self, ros_master_uri):
-        self.__notification_fn("Restarting gzserver", False)
+        Notificator.notify("Restarting gzserver", False)
         self.stop()
         self.start(ros_master_uri)
 

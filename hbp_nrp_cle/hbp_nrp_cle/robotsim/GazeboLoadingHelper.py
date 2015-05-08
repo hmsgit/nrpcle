@@ -12,21 +12,20 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 from lxml import etree
 import logging
 from hbp_nrp_cle.cle import ROSCLEClient
+from hbp_nrp_cle.bibi_config.notificator import Notificator
 
 logger = logging.getLogger(__name__)
 
 TIMEOUT = ROSCLEClient.ROSCLEClient.ROS_SERVICE_TIMEOUT
 
 
-def load_gazebo_world_file(world_file, notification_fn=lambda x, y: ()):
+def load_gazebo_world_file(world_file):
     """
     Load a sdf world file into the ROS connected gazebo running instance.
 
     :param world_file: The name of the world inside the NRP_MODELS_DIRECTORY \
         folder. If the NRP_MODELS_DIRECTORY environment variable is not set, \
         this script will search the model in its own folder.
-    :param notification_fn: A function used to notify the current status.
-        (default: lambda x: ())
     """
     world_file_sdf = etree.parse(os.path.join(_get_basepath(__file__), world_file))
 
@@ -39,7 +38,7 @@ def load_gazebo_world_file(world_file, notification_fn=lambda x, y: ()):
         # Anyway, regardless of the warning, the lights are loaded with their correct
         # positions.
         logger.info("Loading light \"%s\" in Gazebo", light.xpath("@name")[0])
-        notification_fn("Loading light " + light.xpath("@name")[0], False)
+        Notificator.notify("Loading light " + light.xpath("@name")[0], False)
         load_light_sdf(light.xpath("@name")[0],
                        "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
                        etree.tostring(light) +
@@ -47,7 +46,7 @@ def load_gazebo_world_file(world_file, notification_fn=lambda x, y: ()):
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
         logger.info("Loading model \"%s\" in Gazebo", model.xpath("@name")[0])
-        notification_fn("Loading model " + model.xpath("@name")[0], False)
+        Notificator.notify("Loading model " + model.xpath("@name")[0], False)
         load_gazebo_sdf(model.xpath("@name")[0],
                         "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
                         etree.tostring(model) +
@@ -125,13 +124,10 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
     spawn_model_prox.close()
 
 
-def empty_gazebo_world(notification_fn=lambda x, y: ()):
+def empty_gazebo_world():
     """
     Clean up the ROS connected running instance.
     Remove all models and all lights.
-
-    :param notification_fn: A function used to notify the current status.
-        (default: lambda x: ())
     """
 
     rospy.wait_for_service('gazebo/get_world_properties', TIMEOUT)
@@ -143,11 +139,11 @@ def empty_gazebo_world(notification_fn=lambda x, y: ()):
     rospy.wait_for_service('gazebo/delete_model', TIMEOUT)
     delete_model_proxy = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
     for model in world_properties.model_names:
-        notification_fn("Cleaning model " + model, False)
+        Notificator.notify("Cleaning model " + model, False)
         delete_model_proxy(model)
     delete_model_proxy.close()
 
-    notification_fn("Cleaning lights", False)
+    Notificator.notify("Cleaning lights", False)
     rospy.wait_for_service('gazebo/delete_lights', TIMEOUT)
     delete_lights_proxy = rospy.ServiceProxy('gazebo/delete_lights', Empty)
     delete_lights_proxy()
