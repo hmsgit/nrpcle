@@ -36,8 +36,6 @@ class ROSCLESimulationFactory(object):
         """
         logger.debug("Creating new CLE server.")
         self.running_simulation_thread = None
-        self.__simulator = None  # The robot simulator
-        self.__simulator_bridge = None # The bridge from the simulator to websockets
 
     def initialize(self):
         """
@@ -108,6 +106,7 @@ class ROSCLESimulationFactory(object):
 
         return [result, error_message]
 
+    # pylint: disable=no-self-use
     def __simulation(self, environment_file, generated_cle_script_file):
         """
         Main simulation method. Start the simulation from the given script file.
@@ -124,11 +123,6 @@ class ROSCLESimulationFactory(object):
         experiment_generated_script = imp.load_source(
             'experiment_generated_script', generated_cle_script_file)
         experiment_generated_script.cle_function(environment_file)
-        logger.info("Stopping robotics simulator")
-        self.__simulator.stop()
-        self.__simulator = None
-        self.__simulator_bridge.stop()
-        self.__simulator_bridge = None
 
 
 def set_up_logger(logfile_name, verbose=False):

@@ -19,8 +19,6 @@ import subprocess
 import logging
 
 logger = logging.getLogger(__name__)
-gzweb = None
-gzserver = None
 
 def cle_function(world_file):
 
@@ -176,10 +174,10 @@ def cle_function(world_file):
     
     # Main infinite loop (until the ROS stop service is called)
     cle_server.main()
-    __shutdown(cle_server, update_progress_function, models_path)
+    __shutdown(cle_server, update_progress_function, models_path, gzweb, gzserver)
 
 
-def __shutdown(cle_server, update_progress_function, models_path):
+def __shutdown(cle_server, update_progress_function, models_path, gzweb, gzserver):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world
 
     # Once we do reach this point, the simulation is stopped and we could clean after ourselves.
