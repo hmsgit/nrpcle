@@ -84,9 +84,6 @@ class ROSCLESimulationFactory(object):
                 (not self.running_simulation_thread.is_alive())):
             logger.info("No simulation running, starting a new simulation.")
 
-            if service_request.gzserver_host not in ['local', 'lugano']:
-                raise Exception("Invalid value for gzserver_host")
-
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
             self.running_simulation_thread = threading.Thread(
