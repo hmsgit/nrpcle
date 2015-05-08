@@ -138,26 +138,6 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.assertFalse(result)
         self.assertNotEqual(error_message, "")
 
-    def test_gzserver_host_parameter(self):
-        _mocked_service_request = self.mocked_service_request
-
-        _mocked_service_request.gzserver_host = 'local'
-        self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
-        self.assertTrue(
-            self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)[0]
-        )
-
-        _mocked_service_request.gzserver_host = 'lugano'
-        self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
-        self.assertTrue(
-            self.__ros_cle_simulation_factory.start_new_simulation(_mocked_service_request)[0]
-        )
-
-        _mocked_service_request.gzserver_host = 'random string'
-        self.__ros_cle_simulation_factory = ROSCLESimulationFactory.ROSCLESimulationFactory()
-        self.assertRaises(Exception, self.__ros_cle_simulation_factory.start_new_simulation,
-                          _mocked_service_request)
-
     @log_capture(level=logging.WARNING)
     def test_set_up_logger(self, logcapture):
         ROSCLESimulationFactory.set_up_logger('cle_logfile.txt')
