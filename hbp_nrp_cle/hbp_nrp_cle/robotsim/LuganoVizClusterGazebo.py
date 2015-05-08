@@ -49,6 +49,10 @@ _set_up_logger()
 class LuganoVizClusterGazebo(IGazeboServerInstance):
     """
     Represents an instance of gzserver running on the Lugano viz cluster.
+
+    There is a wide usage of pexpect in this class because of the remote connections via
+    ssh needed to access the Lugano machines. Every time a remote command is launched,
+    expect() is used to match strings with the shell output in order to understand its status.
     """
 
     CLUSTER_SLURM_FRONTEND = 'ssh -K bbpsoatest@bbpviz1.cscs.ch'
