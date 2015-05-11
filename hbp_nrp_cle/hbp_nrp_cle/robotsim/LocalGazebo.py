@@ -44,7 +44,12 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
         Returns a string containing the gazebo master
         URI (like:'http://bbpviz001.cscs.ch:11345')
         """
-        return os.environ.get("GAZEBO_MASTER_URI")
+
+        result = os.environ.get("GAZEBO_MASTER_URI")
+        if (not result):
+            # Default gazebo URI (when environment variable is empty)
+            result = "http://localhost:11345"
+        return result
 
 
 class LocalGazeboBridgeInstance(IGazeboBridgeInstance):
