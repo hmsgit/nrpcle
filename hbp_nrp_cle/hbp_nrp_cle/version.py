@@ -1,2 +1,2 @@
 '''version string'''
-VERSION = "0.0.7.dev2"
+VERSION = "0.1.0"
