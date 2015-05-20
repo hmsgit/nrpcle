@@ -21,8 +21,7 @@ from hbp_nrp_cle.bibi_config.notificator import Notificator
 
 logger = logging.getLogger(__name__)
 
-
-def cle_function(world_file):
+def cle_function_init(world_file):
 
     from hbp_nrp_cle.cle.ROSCLEServer import ROSCLEServer
 
@@ -97,8 +96,7 @@ def cle_function(world_file):
 
 
     # consts
-    TIMESTEP = 0.01
-    MAX_SIM_TIME = 5
+    TIMESTEP = 0.02
 
     # set models path variable
     models_path = os.environ.get('NRP_MODELS_DIRECTORY')
@@ -119,7 +117,8 @@ def cle_function(world_file):
 
 
     os.environ['GAZEBO_MASTER_URI'] = gzserver.gazebo_master_uri
-    gzweb.start()
+    # We do not know here in which state the previous user did let us gzweb.
+    gzweb.restart()
 
     empty_gazebo_world()
 
@@ -176,12 +175,9 @@ def cle_function(world_file):
     # Loading is completed.
     cle_server.notify_finish_task()
     
-    # Main infinite loop (until the ROS stop service is called)
-    cle_server.main()
-    __shutdown(cle_server, models_path, gzweb, gzserver)
+    return [cle_server, models_path, gzweb, gzserver]
 
-
-def __shutdown(cle_server, models_path, gzweb, gzserver):
+def shutdown(cle_server, models_path, gzweb, gzserver):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world
 
     # Once we do reach this point, the simulation is stopped and we could clean after ourselves.

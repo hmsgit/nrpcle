@@ -23,24 +23,24 @@ class RosControlAdapter(IRobotControlAdapter):
     def __init__(self):
         rospy.wait_for_service('/gazebo/get_physics_properties')
         self.__get_physics_properties = rospy.ServiceProxy(
-                      'gazebo/get_physics_properties', GetPhysicsProperties)
+                      'gazebo/get_physics_properties', GetPhysicsProperties, persistent=True)
         rospy.wait_for_service('/gazebo/get_world_properties')
         self.__get_world_properties = rospy.ServiceProxy(
-                      'gazebo/get_world_properties', GetWorldProperties)
+                      'gazebo/get_world_properties', GetWorldProperties, persistent=True)
         rospy.wait_for_service('/gazebo/set_physics_properties')
         self.__set_physics_properties = rospy.ServiceProxy(
-                      'gazebo/set_physics_properties', SetPhysicsProperties)
+                      'gazebo/set_physics_properties', SetPhysicsProperties, persistent=True)
         rospy.wait_for_service('/gazebo/pause_physics')
-        self.__pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty)
+        self.__pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty, persistent=True)
         rospy.wait_for_service('/gazebo/unpause_physics')
-        self.__unpause_client = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
+        self.__unpause_client = rospy.ServiceProxy('gazebo/unpause_physics', Empty, persistent=True)
         rospy.wait_for_service('/gazebo/reset_sim')
-        self.__reset = rospy.ServiceProxy('gazebo/reset_sim', Empty)
+        self.__reset = rospy.ServiceProxy('gazebo/reset_sim', Empty, persistent=True)
         rospy.wait_for_service('gazebo/end_world')
-        self.__endWorld = rospy.ServiceProxy('gazebo/end_world', Empty)
+        self.__endWorld = rospy.ServiceProxy('gazebo/end_world', Empty, persistent=True)
         rospy.wait_for_service('gazebo/advance_simulation')
         self.__advance_simulation = rospy.ServiceProxy(
-                       'gazebo/advance_simulation', AdvanceSimulation)
+                       'gazebo/advance_simulation', AdvanceSimulation, persistent=True)
         self.__time_step = 0.0
         self.__is_initialized = False
 
@@ -108,6 +108,7 @@ class RosControlAdapter(IRobotControlAdapter):
 
         :return: True, if the world simulation is alive, otherwise False
         """
+        logger.debug("Getting the world properties to check if we are alive")
         world = self.__get_world_properties()
         success = world.success
         return success
@@ -117,18 +118,14 @@ class RosControlAdapter(IRobotControlAdapter):
         Runs the world simulation for the given CLE time step in seconds
 
         :param dt: The CLE time step in seconds
-        :return: Updated simulation time, otherwise -1
         """
         if math.fmod(dt, self.__time_step) < 1e-10:
             steps = dt / self.__time_step
+            logger.debug("Advancing simulation")
             self.__advance_simulation(steps)
-            world = self.__get_world_properties()
-            simTime = world.sim_time
         else:
-            simTime = -1
             logger.error("dt is not multiple of the physics time step")
             raise ValueError("dt is not multiple of the physics time step")
-        return simTime
 
     def shutdown(self):
         """

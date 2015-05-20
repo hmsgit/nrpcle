@@ -3,7 +3,10 @@ Contains a library of transfer functions
 """
 
 # import sensor_msgs.msg
+from __future__ import division
 from cv_bridge import CvBridge
+import cv2
+import numpy
 
 __author__ = 'GeorgHinkel'
 
@@ -13,8 +16,6 @@ bridge = CvBridge()
 def detect_red(image):
     """
     Performs a very simple image detection as used in the Braitenberg demo.
-    An incoming image is analyzed per pixel. If r > (g + b), i.e. if the color is quite red as
-    according to the HSV color model, then pixel is regarded as red.
 
     :param image: The image
     :returns: An object with three properties:
@@ -27,38 +28,25 @@ def detect_red(image):
 
     The lightest color that is recognized as red is (255,127,127).
     """
-    # assert isinstance(image, sensor_msgs.msg.Image)
-    red_left_rate = 0.
-    red_right_rate = 0.
-    green_blue_rate = 0.
-    if not isinstance(image, type(None)):  # Problem: starts as NoneType
-        # print eye_sensor.changed
-        # load image in [0,1]
-        cv_image = bridge.imgmsg_to_cv2(image, "rgb8") / 256.
-        # intensify values but keep in [0,1]
-        cv_image = 5000 ** cv_image / 5000
-
-        for i in range(0, cv_image.shape[0]):
-            for j in range(0, cv_image.shape[1]):
-                r = cv_image[i, j, 0]
-                g = cv_image[i, j, 1]
-                b = cv_image[i, j, 2]
-
-                if r > (g + b):
-                    if j < cv_image.shape[1] / 2:
-                        red_left_rate += 1.
-                    else:
-                        red_right_rate += 1.
-                else:
-                    green_blue_rate += 1.
-
-        red_left_rate *= (6. / cv_image.size)
-        red_right_rate *= (6. / cv_image.size)
-        green_blue_rate *= (3. / cv_image.size)
-
-        print "red_left_rate: ", red_left_rate
-        print "red_right_rate: ", red_right_rate
-        print "green_blue_rate: ", green_blue_rate
+    red_left = red_right = green_blue = 0
+    if not isinstance(image, type(None)):
+        lower_red = numpy.array([0, 30, 30])
+        upper_red = numpy.array([0, 255, 255])
+        cv_image = bridge.imgmsg_to_cv2(image, "rgb8")
+        # Transform image to HSV (easier to detect colors).
+        hsv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2HSV)
+        # Create a mask where every non red pixel will be a Zero.
+        mask = cv2.inRange(hsv_image, lower_red, upper_red)
+        image_size = (cv_image.shape[0] * cv_image.shape[1])
+        if (image_size > 0):
+            half = cv_image.shape[1] // 2
+            # Get the number of red pixels in the image.
+            red_left = cv2.countNonZero(mask[:, :half])
+            red_right = cv2.countNonZero(mask[:, half:])
+            green_blue = (image_size - (red_left + red_right)) / image_size
+            # We have to mutiply the rate by two since it is for an half image only.
+            red_left = 2 * (red_left / image_size)
+            red_right = 2 * (red_right / image_size)
 
     class __results(object):
         """
@@ -69,4 +57,4 @@ def detect_red(image):
             self.right = right
             self.go_on = go_on
 
-    return __results(red_left_rate, red_right_rate, green_blue_rate)
+    return __results(red_left, red_right, green_blue)

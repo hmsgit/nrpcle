@@ -13,6 +13,15 @@
 
 import sys, os
 import hbp_nrp_cle
+import mock
+
+# Unfortunately, nest is not a good friend of automodules.
+# When importing, nest put itself in very high verbosity
+# producing gigabytes of logs.
+MOCK_MODULES = ['nest']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

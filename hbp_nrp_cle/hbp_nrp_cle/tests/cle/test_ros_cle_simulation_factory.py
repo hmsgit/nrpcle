@@ -56,6 +56,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.__mocked_threading.Thread = MagicMock(return_value=self.__mocked_thread)
         self.__ros_cle_simulation_factory.\
             running_simulation_thread = MagicMock(spec=threading.Thread)
+        self.__ros_cle_simulation_factory.simulation_initialized_event.wait = MagicMock(return_value=True)
 
     def tearDown(self):
         # remove all handlers after each test!

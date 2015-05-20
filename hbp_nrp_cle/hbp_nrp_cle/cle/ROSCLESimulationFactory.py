@@ -36,6 +36,8 @@ class ROSCLESimulationFactory(object):
         """
         logger.debug("Creating new CLE server.")
         self.running_simulation_thread = None
+        self.simulation_initialized_event = threading.Event()
+        self.simulation_exception_during_init = None
 
     def initialize(self):
         """
@@ -79,6 +81,7 @@ class ROSCLESimulationFactory(object):
         """
         logger.info("Start new simulation request")
         error_message = ""
+        result = True
 
         if ((self.running_simulation_thread is None) or
                 (not self.running_simulation_thread.is_alive())):
@@ -86,6 +89,7 @@ class ROSCLESimulationFactory(object):
 
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
+            self.simulation_initialized_event.clear()
             self.running_simulation_thread = threading.Thread(
                 target=self.__simulation,
                 args=(service_request.environment_file,
@@ -94,13 +98,19 @@ class ROSCLESimulationFactory(object):
             self.running_simulation_thread.daemon = True
             logger.info("Spawning new thread that will manage the experiment execution.")
             self.running_simulation_thread.start()
-            result = True
+            self.simulation_initialized_event.wait()
+            # Raising the exception here will send it back through ROS to the ExDBackend.
+            if (self.simulation_exception_during_init):
+                # Known pylint bug: goo.gl/WNg0TJ
+                # pylint: disable=raising-bad-type
+                raise(self.simulation_exception_during_init)
         else:
             error_message = """Trying to initialize a new simulation even though the
                 previous one has not been terminated."""
             logger.error(error_message)
             result = False
 
+        logger.debug("Start_new_simulation return with status: " + str(result))
         return [result, error_message]
 
     # pylint: disable=no-self-use
@@ -117,9 +127,28 @@ class ROSCLESimulationFactory(object):
                     " and generated script file " +
                     generated_cle_script_file + ".")
         logger.info("Starting the experiment closed loop engine.")
+        cle_server = models_path = gzweb = gzserver = None
+        self.simulation_exception_during_init = None
         experiment_generated_script = imp.load_source(
             'experiment_generated_script', generated_cle_script_file)
-        experiment_generated_script.cle_function(environment_file)
+        logger.info("Executing script: " + generated_cle_script_file)
+        # We want any exception raised during initialization in this tread
+        # to be pass to the main thread so that it can be handled properly.
+        try:
+            [cle_server, models_path, gzweb, gzserver] = experiment_generated_script.\
+                cle_function_init(environment_file)
+        # pylint: disable=broad-except
+        except Exception as e:
+            logger.error("Initialization failed")
+            self.simulation_exception_during_init = e
+            self.simulation_initialized_event.set()
+            return
+
+        logger.info("Initialization done")
+        self.simulation_initialized_event.set()
+
+        cle_server.main()
+        experiment_generated_script.shutdown(cle_server, models_path, gzweb, gzserver)
 
 
 def set_up_logger(logfile_name, verbose=False):

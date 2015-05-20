@@ -2,3 +2,4 @@
 sphinx==1.2
 sphinxcontrib-napoleon==0.2.7
 sphinx_numfig
+mock==1.0.1

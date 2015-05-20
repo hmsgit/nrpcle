@@ -115,7 +115,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     KINIT_COMMAND = 'kinit bbpsoatest@INTRANET.EPFL.CH -k -t /etc/krb5.keytab.d/bbpsoatest.keytab'
     NODE_DOMAIN = '.cscs.ch'
     # Timeout used for pexpect ssh connection calls.
-    TIMEOUT = 10
+    TIMEOUT = 20
     # Timeout used for pexpect calls that should return immediately (default pexpect timeout is 30
     # seconds).
     SMALL_TIMEOUT = 2
@@ -162,6 +162,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         allocation will be cancelled.
         """
         self.__allocation_process = self.__spawn_ssh_SLURM_frontend()
+        Notificator.notify("Waiting on a cluster node allocation to be granted.", False)
         self.__allocation_process.sendline(self.ALLOCATION_COMMAND)
         result = self.__allocation_process.expect(['Granted job allocation ([0-9]+)',
                                                    'Submitted batch job [0-9]+',
