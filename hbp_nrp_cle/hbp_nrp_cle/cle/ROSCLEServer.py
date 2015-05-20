@@ -346,7 +346,10 @@ class ROSCLEServer(threading.Thread):
         Publish the state and the remaining timeout
         """
         message = {'state': str(self.__state),
-                   'timeout': self.__get_remaining()}
+                   'timeout': self.__get_remaining(),
+                   'simulationTime': int(self.__cle.simulation_time),
+                   'realTime': int(self.__cle.real_time)}
+        logger.info(json.dumps(message))
         self.__push_status_on_ros(json.dumps(message))
 
     # TODO(Stefan)
@@ -479,8 +482,6 @@ class ROSCLEServer(threading.Thread):
         """
         # CLE has no explicit pause command, use stop() instead
         self.__cle.stop()
-        # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
-        self.__cle.wait_step()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []
@@ -492,8 +493,6 @@ class ROSCLEServer(threading.Thread):
         self.stop_timeout()
         self.__double_timer.cancel_all()
         self.__cle.stop()
-        # CLE stop() only sets a flag, so we have to wait until current simulation step is finished
-        self.__cle.wait_step()
         # Next line is needed as a result for a ROS Service call!
         # Returning None (i.e. omitting the return statement) would produce an error.
         return []

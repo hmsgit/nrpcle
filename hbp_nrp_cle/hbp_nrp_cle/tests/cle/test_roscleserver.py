@@ -118,7 +118,6 @@ class TestROSCLEServer(unittest.TestCase):
         self.__ros_cle_server.main()
         self.assertEqual(str(state_handler(_)), ROSCLEState.STOPPED)
         self.__mocked_cle.stop.assert_called_once_with()
-        self.__mocked_cle.wait_step.assert_called_once_with()
 
     def test_run(self):
         self.__ros_cle_server.run()

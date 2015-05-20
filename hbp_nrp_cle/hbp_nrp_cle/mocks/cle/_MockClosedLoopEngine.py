@@ -35,6 +35,10 @@ class MockClosedLoopEngine(IClosedLoopControl,
 
         self.clock = 0.0
 
+        self.running = False
+        self.start_time = 0.0
+        self.elapsed_time = 0.0
+
         self.initialized = False
 
     def initialize(self):
@@ -74,6 +78,8 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         Starts the orchestrated simulations.
         """
+        self.start_time = time.time()
+        self.running = True
         if not self.started:
             self.started = True
             threading.Thread.start(self)
@@ -90,9 +96,13 @@ class MockClosedLoopEngine(IClosedLoopControl,
 
     def stop(self):
         """
-        Stops the orchestrated simulations.
+        Stops the orchestrated simulations. Also waits for the current
+        simulation step to end.
         """
         self.stop_flag.clear()
+        self.wait_step()
+        self.running = False
+        self.elapsed_time += time.time() - self.start_time
 
     def reset(self):
         """
@@ -101,13 +111,25 @@ class MockClosedLoopEngine(IClosedLoopControl,
         self.stop()
         self.wait_step()
         self.clock = 0.0
+        self.start_time = 0.0
+        self.elapsed_time = 0.0
+        self.running = False
 
     @property
-    def time(self):
+    def simulation_time(self):  # -> float64
         """
         Get the current simulation time.
         """
         return self.clock
+
+    @property
+    def real_time(self):  # -> float64
+        """
+        Get the current simulation time.
+        """
+        if self.running:
+            return self.elapsed_time + time.time() - self.start_time
+        return self.elapsed_time
 
     def wait_step(self):
         """
