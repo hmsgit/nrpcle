@@ -5,6 +5,7 @@ Implementation of the closed loop engine.
 __author__ = 'LorenzoVannucci'
 
 import threading
+import time
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
@@ -183,6 +184,17 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
 
         self.initialized = False
 
+        # time measurements
+        # The real time is measured this way: each time play is called
+        # start_time is set to the current clock time. Each time the stop
+        # function is called (pausing the simulation) elapsed_time is
+        # incremented with (stop time - start_time). Thus, the real time is
+        # elapsed_time                               if paused
+        # elapsed_time + (current time - start_time) if running
+        self.running = False
+        self.start_time = 0.0
+        self.elapsed_time = 0.0
+
     def initialize(self):
         """
         Initializes the closed loop engine.
@@ -192,6 +204,9 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.tfm.initialize('tfnode')
         self.clock = 0.0
         self.initialized = True
+        self.running = False
+        self.start_time = 0.0
+        self.elapsed_time = 0.0
         logger.info("CLE initialized")
 
     @property
@@ -249,6 +264,8 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         """
         Starts the orchestrated simulations.
         """
+        self.start_time = time.time()
+        self.running = True
         if not self.started:
             self.started = True
             threading.Thread.start(self)
@@ -266,9 +283,13 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
 
     def stop(self):
         """
-        Stops the orchestrated simulations.
+        Stops the orchestrated simulations. Also waits for the current
+        simulation step to end.
         """
         self.stop_flag.clear()
+        self.wait_step()
+        self.running = False
+        self.elapsed_time += time.time() - self.start_time
         logger.info("simulation stopped")
 
     def reset(self):
@@ -281,14 +302,26 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.bca.reset()
         self.tfm.reset()
         self.clock = 0.0
+        self.start_time = 0.0
+        self.elapsed_time = 0.0
+        self.running = False
         logger.info("CLE reset")
 
     @property
-    def time(self):
+    def simulation_time(self):  # -> float64
         """
         Get the current simulation time.
         """
         return self.clock
+
+    @property
+    def real_time(self):  # -> float64
+        """
+        Get the total execution time.
+        """
+        if self.running:
+            return self.elapsed_time + time.time() - self.start_time
+        return self.elapsed_time
 
     def wait_step(self):
         """

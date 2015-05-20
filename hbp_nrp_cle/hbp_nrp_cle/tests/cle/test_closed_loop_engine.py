@@ -56,7 +56,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         self._cle.run_step(0.05)
         self._cle.wait_step()
-        self.assertEqual(self._cle.time, 0.05)
+        self.assertEqual(self._cle.simulation_time, 0.05)
 
     @log_capture('hbp_nrp_cle.cle.ClosedLoopEngine')
     def test_start_stop(self, logcapture):
@@ -65,6 +65,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         self._cle.start()
         time.sleep(2)
+        self.assertGreater(self._cle.real_time, 0.0)
         self._cle.stop()
         time.sleep(1)
         self._cle.start()
@@ -85,7 +86,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         self._cle.run_step(0.05)
         self._cle.wait_step()
         self._cle.reset()
-        self.assertEqual(self._cle.time, 0.0)
+        self.assertEqual(self._cle.simulation_time, 0.0)
+        self.assertEqual(self._cle.real_time, 0.0)
         logcapture.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
                           'simulation stopped'),
                          ('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',

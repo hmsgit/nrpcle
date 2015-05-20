@@ -47,7 +47,8 @@ class IClosedLoopControl(object):  # pragma: no cover
 
     def stop(self):  # -> None:
         """
-        Stops the orchestrated simulations.
+        Stops the orchestrated simulations. Also waits for the current
+        simulation step to end.
         """
         raise NotImplementedError("Method not implemented")
 
@@ -58,9 +59,16 @@ class IClosedLoopControl(object):  # pragma: no cover
         raise NotImplementedError("Method not implemented")
 
     @property
-    def time(self):  # -> float64
+    def simulation_time(self):  # -> float64
         """
         Get the current simulation time.
+        """
+        raise NotImplementedError("Method not implemented")
+
+    @property
+    def real_time(self):  # -> float64
+        """
+        Get the total execution time.
         """
         raise NotImplementedError("Method not implemented")
 
