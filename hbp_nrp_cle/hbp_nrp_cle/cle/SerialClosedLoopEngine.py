@@ -4,12 +4,15 @@ Implementation of the closed loop engine.
 
 __author__ = 'LorenzoVannucci'
 
-import threading
 import time
+import logging
+import threading
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
 from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
+
+logger = logging.getLogger('hbp_nrp_cle')
 
 
 class ControlThread(threading.Thread):
@@ -50,8 +53,9 @@ class ControlThread(threading.Thread):
         """
         while True:
             self.start_flag.wait()
-#            print 'Simulating...'
+            logger.debug("Control thread: running step")
             self.ctrlad.run_step(self.timestep)
+            logger.debug("Control thread: done, setting the flag !")
             self.start_flag.clear()
             self.end_flag.set()
 
@@ -163,16 +167,18 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         self.running_flag.clear()
 
         # robot simulation
+        logger.debug("Run step: Robot simulation.")
         self.rct_flag.clear()
-        if not self.rca.is_alive:
-            return -1
         self.rct.run_step(timestep)
 
         # brain simulation
+        logger.debug("Run step: Brain simulation")
         self.bca.run_step(timestep * 1000.0)
 
         # transfer functions
+        logger.debug("Run step: Transfer functions")
         clk = self.clock
+
         self.bcm.refresh_buffers(clk)
         self.rcm.refresh_buffers(clk)
         self.tfm.run_neuron_to_robot(clk)
@@ -182,9 +188,11 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         self.clock += timestep
 
         # wait for all thread to finish
+        logger.debug("Run_step: waiting on Control thread")
         self.rct_flag.wait()
 
         self.running_flag.set()
+        logger.debug("Run_step: done !")
         return self.clock
 
     def shutdown(self):

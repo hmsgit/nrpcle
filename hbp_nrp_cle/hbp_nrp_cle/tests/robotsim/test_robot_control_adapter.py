@@ -30,7 +30,6 @@ class TestRosControlAdapter(unittest.TestCase):
 
     @log_capture('hbp_nrp_cle.robotsim.RosControlAdapter')
     def test_run_step(self, logcapture):
-        self.assertEqual(self._rca.run_step(0.05), 0.05)
         with self.assertRaises(ValueError):
             self._rca.run_step(0.0001)
         logcapture.check(('hbp_nrp_cle.robotsim.RosControlAdapter', 'ERROR',
@@ -40,8 +39,9 @@ class TestRosControlAdapter(unittest.TestCase):
     def test_reset(self, logcapture):
         self._rca.run_step(0.05)
         self._rca.reset()
-        self.assertEqual(self._rca.run_step(0.05), 0.05)
-        logcapture.check(('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
+        logcapture.check(('hbp_nrp_cle.robotsim.RosControlAdapter', 'DEBUG',
+                          'Advancing simulation'),
+                         ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
                           'Resetting the world simulation'))
 
     @log_capture('hbp_nrp_cle.robotsim.RosControlAdapter')
@@ -49,18 +49,18 @@ class TestRosControlAdapter(unittest.TestCase):
         pastTime = self._rca.run_step(0.1)
         self._rca.unpause()
         self.assertFalse(self._rca.is_paused)
-        self.assertNotEqual(self._rca.run_step(0.1), pastTime + 0.1)
         self._rca.pause()
         self.assertTrue(self._rca.is_paused)
-        pastTime = self._rca.run_step(0.05)
-        self.assertEqual(round(self._rca.run_step(0.05), 3), round(pastTime + 0.05, 3))
-        logcapture.check(('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
+        self._rca.run_step(0.05)
+        logcapture.check(('hbp_nrp_cle.robotsim.RosControlAdapter', 'DEBUG',
+                          'Advancing simulation'),
+                         ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
                           'Unpausing the world simulation'),
                          ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
-                          'Pausing the world simulation'))
+                          'Pausing the world simulation'),
+                         ('hbp_nrp_cle.robotsim.RosControlAdapter', 'DEBUG',
+                          'Advancing simulation'))
 
-#     def test_shutdown(self):
-#         self._rca.shutdown()
 
 
 if __name__ == '__main__':
