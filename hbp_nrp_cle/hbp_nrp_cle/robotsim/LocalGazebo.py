@@ -5,6 +5,7 @@ This module contains the classes needed to have all gazebo services running loca
 from hbp_nrp_cle.robotsim.GazeboInterface import IGazeboServerInstance, IGazeboBridgeInstance
 from hbp_nrp_cle.bibi_config.notificator import Notificator
 import os
+from hbp_nrp_cle import config
 
 __author__ = 'Alessandro Ambrosano'
 
@@ -22,21 +23,21 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
         :param: ros_master_uri The ros master uri where to connect gzserver.
         """
         Notificator.notify("Starting gzserver", False)
-        os.system('/etc/init.d/gzserver start')
+        os.system(config.conf.get('gazebo', 'start-cmd'))
 
     def stop(self):
         """
         Stops the gzserver instance.
         """
         Notificator.notify("Stopping gzserver", False)
-        os.system('/etc/init.d/gzserver stop')
+        os.system(config.conf.get('gazebo', 'stop-cmd'))
 
     def restart(self, ros_master_uri):
         """
         Restarts the gzserver instance.
         """
         Notificator.notify("Restarting gzserver", False)
-        os.system('/etc/init.d/gzserver restart')
+        os.system(config.conf.get('gazebo', 'restart-cmd'))
 
     @property
     def gazebo_master_uri(self):
@@ -62,18 +63,18 @@ class LocalGazeboBridgeInstance(IGazeboBridgeInstance):
         Starts the gzbridge instance represented by the object.
         """
         Notificator.notify("Starting gzbridge", False)
-        os.system('/etc/init.d/gzbridge start')
+        os.system(config.conf.get('gzbridge', 'start-cmd'))
 
     def stop(self):
         """
         Stops the gzbridge instance represented by the object.
         """
         Notificator.notify("Stopping gzbridge", False)
-        os.system('/etc/init.d/gzbridge stop')
+        os.system(config.conf.get('gzbridge', 'stop-cmd'))
 
     def restart(self): # pylint: disable=unused-argument
         """
         Restarts the gzbridge instance represented by the object.
         """
         Notificator.notify("Restarting gzbridge", False)
-        os.system('/etc/init.d/gzbridge restart')
+        os.system(config.conf.get('gzbridge', 'restart-cmd'))

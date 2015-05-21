@@ -83,8 +83,8 @@ class ROSCLESimulationFactory(object):
         error_message = ""
         result = True
 
-        if ((self.running_simulation_thread is None) or
-                (not self.running_simulation_thread.is_alive())):
+        if (self.running_simulation_thread is None) or\
+                (not self.running_simulation_thread.is_alive()):
             logger.info("No simulation running, starting a new simulation.")
 
             # In the future, it would be great to move the CLE script generation logic here.
@@ -100,13 +100,13 @@ class ROSCLESimulationFactory(object):
             self.running_simulation_thread.start()
             self.simulation_initialized_event.wait()
             # Raising the exception here will send it back through ROS to the ExDBackend.
-            if (self.simulation_exception_during_init):
+            if self.simulation_exception_during_init:
                 # Known pylint bug: goo.gl/WNg0TJ
                 # pylint: disable=raising-bad-type
-                raise(self.simulation_exception_during_init)
+                raise self.simulation_exception_during_init
         else:
-            error_message = """Trying to initialize a new simulation even though the
-                previous one has not been terminated."""
+            error_message = "Trying to initialize a new simulation even though the " \
+                            "previous one has not been terminated."
             logger.error(error_message)
             result = False
 
@@ -171,7 +171,7 @@ def set_up_logger(logfile_name, verbose=False):
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(logging.Formatter(log_format))
         logging.root.addHandler(console_handler)
-        logger.warn("Could not write to specified logfile or no logfile specified, " +
+        logger.warn("Could not write to specified logfile or no logfile specified, "
                     "logging to stdout now!")
     logging.root.setLevel(logging.DEBUG if verbose else logging.INFO)
 
