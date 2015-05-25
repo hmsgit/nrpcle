@@ -7,6 +7,7 @@ import rospy
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of the CLE (this) repository.
 from cle_ros_msgs import srv
+from hbp_nrp_cle.cle import TOPIC_START_NEW_SIMULATION
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
@@ -25,8 +26,8 @@ class ROSCLESimulationFactoryClient(object):
         """
 
         self.__start_new_simulation_service = rospy.ServiceProxy(
-            '/ros_cle_simulation/start_new_simulation',
-            srv.StartNewSimulation)
+            TOPIC_START_NEW_SIMULATION, srv.StartNewSimulation
+        )
         self.__start_new_simulation_service.wait_for_service(timeout=10)
 
     def start_new_simulation(self, environment_file, generated_cle_script_file):

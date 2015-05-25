@@ -20,7 +20,7 @@ class TestROSCLEClient(unittest.TestCase):
     def test_constructor(self, ServiceProxyMock):
         ServiceProxyMocks = [MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock()]
         ServiceProxyMock.side_effect = ServiceProxyMocks
-        client = ROSCLEClient.ROSCLEClient()
+        client = ROSCLEClient.ROSCLEClient(0)
         for mocks in ServiceProxyMocks:
             mocks.wait_for_service.assert_called_with(timeout=client.ROS_SERVICE_TIMEOUT)
 
@@ -30,7 +30,7 @@ class TestROSCLEClient(unittest.TestCase):
         ServiceProxyMocks[2].wait_for_service.side_effect = rospy.ROSException()
         ServiceProxyMock.side_effect = ServiceProxyMocks
         with self.assertRaises(ROSCLEClient.ROSCLEClientException):
-            client = ROSCLEClient.ROSCLEClient()
+            client = ROSCLEClient.ROSCLEClient(0)
             ServiceProxyMocks[0].wait_for_service.assert_called_with(timeout=client.ROS_SERVICE_TIMEOUT)
             ServiceProxyMocks[1].wait_for_service.assert_called_with(timeout=client.ROS_SERVICE_TIMEOUT)
             ServiceProxyMocks[2].wait_for_service.assert_called_with(timeout=client.ROS_SERVICE_TIMEOUT)
@@ -41,7 +41,7 @@ class TestROSCLEClient(unittest.TestCase):
     def test_start_pause_reset(self, ServiceProxyMock):
         ServiceProxyMocks = [MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock()]
         ServiceProxyMock.side_effect = ServiceProxyMocks
-        client = ROSCLEClient.ROSCLEClient()
+        client = ROSCLEClient.ROSCLEClient(0)
         client.start()
         ServiceProxyMocks[0].assert_called_with()
         self.assertEqual(len(ServiceProxyMocks[1].mock_calls), 1)
@@ -65,7 +65,7 @@ class TestROSCLEClient(unittest.TestCase):
     def test_stop(self, ServiceProxyMock):
         ServiceProxyMocks = [MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock()]
         ServiceProxyMock.side_effect = ServiceProxyMocks
-        client = ROSCLEClient.ROSCLEClient()
+        client = ROSCLEClient.ROSCLEClient(0)
         client.start()
         ServiceProxyMocks[0].assert_called_with()
         client.stop()

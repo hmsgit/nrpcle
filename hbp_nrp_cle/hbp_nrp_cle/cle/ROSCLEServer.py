@@ -12,6 +12,8 @@ from threading import Thread, Event
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, TOPIC_SIM_START_ID, \
+    TOPIC_SIM_PAUSE_ID, TOPIC_SIM_STOP_ID, TOPIC_SIM_RESET_ID, TOPIC_SIM_STATE_ID
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
@@ -61,7 +63,7 @@ class DoubleTimer(Thread):
         while not self.stopped.wait(self.interval1):
             self.callback1()
             if self.expiring:
-                self.counter = self.counter + 1
+                self.counter += 1
                 if self.counter >= self.interval2 / self.interval1:
                     self.counter = 0
                     self.expiring = False
@@ -114,8 +116,6 @@ class ROSCLEServer(threading.Thread):
     """
     A ROS server wrapper around the Closed Loop Engine.
     """
-    ROS_CLE_NODE_NAME = "ros_cle_simulation"
-    ROS_CLE_URI_PREFIX = "/" + ROS_CLE_NODE_NAME
     STATUS_UPDATE_INTERVAL = 1.0
 
     class State(object):
@@ -133,19 +133,19 @@ class ROSCLEServer(threading.Thread):
         # pylint: disable=missing-docstring
         def reset_simulation(self):
             raise RuntimeError('You cannot reset the simulation while in %s.' %
-                               (type(self).__name__))
+                               (type(self).__name__, ))
 
         def stop_simulation(self):
             raise RuntimeError('You cannot stop the simulation while in %s.' %
-                               (type(self).__name__))
+                               (type(self).__name__, ))
 
         def pause_simulation(self):
             raise RuntimeError('You cannot pause the simulation while in %s.' %
-                               (type(self).__name__))
+                               (type(self).__name__, ))
 
         def start_simulation(self):
             raise RuntimeError('You cannot start the simulation while in %s.' %
-                               (type(self).__name__))
+                               (type(self).__name__, ))
 
         # pylint: disable=no-self-use
         def is_final_state(self):
@@ -222,16 +222,18 @@ class ROSCLEServer(threading.Thread):
         def __repr__(self):
             return ROSCLEState.PAUSED
 
-    def __init__(self):
+    def __init__(self, sim_id):
         """
         Create the wrapper server
+
+        :param sim_id: The simulation id
         """
         super(ROSCLEServer, self).__init__()
         self.daemon = True
 
         # ROS allows multiple calls to init_node, as long as
         # the arguments are the same.
-        rospy.init_node(self.ROS_CLE_NODE_NAME)
+        rospy.init_node(ROS_CLE_NODE_NAME)
 
         self.__event_flag = threading.Event()
         self.__event_flag.clear()
@@ -246,8 +248,8 @@ class ROSCLEServer(threading.Thread):
 
         self.__to_be_executed_within_main_thread = None
 
-        self.__ros_status_pub = rospy.Publisher(
-            self.ROS_CLE_URI_PREFIX + '/status', String)
+        self.__simulation_id = sim_id
+        self.__ros_status_pub = rospy.Publisher(TOPIC_STATUS, String)
 
         self.__current_task = None
         self.__current_subtask_count = 0
@@ -288,28 +290,38 @@ class ROSCLEServer(threading.Thread):
         # Even when there is no input argument for the service, rospy requires this.
 
         # pylint: disable=unnecessary-lambda
-        self.__service_start = rospy.Service(self.ROS_CLE_URI_PREFIX + '/start', Empty,
-                                             lambda x: self.__state.start_simulation())
+        self.__service_start = rospy.Service(
+            TOPIC_SIM_START_ID(self.__simulation_id), Empty,
+            lambda x: self.__state.start_simulation()
+        )
 
-        self.__service_pause = rospy.Service(self.ROS_CLE_URI_PREFIX + '/pause', Empty,
-                                             lambda x: self.__state.pause_simulation())
+        self.__service_pause = rospy.Service(
+            TOPIC_SIM_PAUSE_ID(self.__simulation_id), Empty,
+            lambda x: self.__state.pause_simulation()
+        )
 
-        self.__service_stop = rospy.Service(self.ROS_CLE_URI_PREFIX + '/stop', Empty,
-                                            lambda x: self.__state.stop_simulation())
+        self.__service_stop = rospy.Service(
+            TOPIC_SIM_STOP_ID(self.__simulation_id), Empty,
+            lambda x: self.__state.stop_simulation()
+        )
 
-        self.__service_reset = rospy.Service(self.ROS_CLE_URI_PREFIX + '/reset', Empty,
-                                             lambda x: self.__state.reset_simulation())
+        self.__service_reset = rospy.Service(
+            TOPIC_SIM_RESET_ID(self.__simulation_id), Empty,
+            lambda x: self.__state.reset_simulation()
+        )
 
         self.__service_state = rospy.Service(
-                    self.ROS_CLE_URI_PREFIX + '/state',
-                    srv.GetSimulationState,
-                    lambda x: str(self.__state))
+            TOPIC_SIM_STATE_ID(self.__simulation_id), srv.GetSimulationState,
+            lambda x: str(self.__state)
+        )
 
         self.__timeout = timeout
-        self.__double_timer = DoubleTimer(self.STATUS_UPDATE_INTERVAL,
-                                          self.__publish_state_update,
-                                          self.__timeout,
-                                          self.quit_by_timeout)
+        self.__double_timer = DoubleTimer(
+            self.STATUS_UPDATE_INTERVAL,
+            self.__publish_state_update,
+            self.__timeout,
+            self.quit_by_timeout
+        )
         self.__double_timer.start()
         self.start_timeout()
 
@@ -345,10 +357,12 @@ class ROSCLEServer(threading.Thread):
         """
         Publish the state and the remaining timeout
         """
-        message = {'state': str(self.__state),
-                   'timeout': self.__get_remaining(),
-                   'simulationTime': int(self.__cle.simulation_time),
-                   'realTime': int(self.__cle.real_time)}
+        message = {
+            'state': str(self.__state),
+            'timeout': self.__get_remaining(),
+            'simulationTime': int(self.__cle.simulation_time),
+            'realTime': int(self.__cle.real_time)
+        }
         logger.info(json.dumps(message))
         self.__push_status_on_ros(json.dumps(message))
 
@@ -369,7 +383,7 @@ class ROSCLEServer(threading.Thread):
 
         while not self.__state.is_final_state():
 
-            if (self.__to_be_executed_within_main_thread is not None):
+            if self.__to_be_executed_within_main_thread is not None:
                 self.__to_be_executed_within_main_thread()
                 self.__to_be_executed_within_main_thread = None
             self.__event_flag.wait()  # waits until an event is set

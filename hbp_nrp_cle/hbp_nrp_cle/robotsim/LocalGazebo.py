@@ -23,21 +23,21 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
         :param: ros_master_uri The ros master uri where to connect gzserver.
         """
         Notificator.notify("Starting gzserver", False)
-        os.system(config.conf.get('gazebo', 'start-cmd'))
+        os.system(config.config.get('gazebo', 'start-cmd'))
 
     def stop(self):
         """
         Stops the gzserver instance.
         """
         Notificator.notify("Stopping gzserver", False)
-        os.system(config.conf.get('gazebo', 'stop-cmd'))
+        os.system(config.config.get('gazebo', 'stop-cmd'))
 
     def restart(self, ros_master_uri):
         """
         Restarts the gzserver instance.
         """
         Notificator.notify("Restarting gzserver", False)
-        os.system(config.conf.get('gazebo', 'restart-cmd'))
+        os.system(config.config.get('gazebo', 'restart-cmd'))
 
     @property
     def gazebo_master_uri(self):
@@ -63,18 +63,18 @@ class LocalGazeboBridgeInstance(IGazeboBridgeInstance):
         Starts the gzbridge instance represented by the object.
         """
         Notificator.notify("Starting gzbridge", False)
-        os.system(config.conf.get('gzbridge', 'start-cmd'))
+        os.system(config.config.get('gzbridge', 'start-cmd'))
 
     def stop(self):
         """
         Stops the gzbridge instance represented by the object.
         """
         Notificator.notify("Stopping gzbridge", False)
-        os.system(config.conf.get('gzbridge', 'stop-cmd'))
+        os.system(config.config.get('gzbridge', 'stop-cmd'))
 
     def restart(self): # pylint: disable=unused-argument
         """
         Restarts the gzbridge instance represented by the object.
         """
         Notificator.notify("Restarting gzbridge", False)
-        os.system(config.conf.get('gzbridge', 'restart-cmd'))
+        os.system(config.config.get('gzbridge', 'restart-cmd'))

@@ -20,5 +20,16 @@ b.  SerialClosedLoopEngine is an implementation that overcomes the NEST bug
 The ROSCLEServer module provides utility classes to run the Closed Loop
 Engine in a separate process, while comunicating with it through ROS services.
 """
+from hbp_nrp_cle import config
 
 __author__ = 'LorenzoVannucci'
+
+ROS_CLE_NODE_NAME = config.config.get('ros', 'ros-cle-node-name')
+TOPIC_VERSION = '/%s/version' % (ROS_CLE_NODE_NAME, )
+TOPIC_STATUS = '/%s/status' % (ROS_CLE_NODE_NAME, )
+TOPIC_START_NEW_SIMULATION = '/%s/start_new_simulation' % (ROS_CLE_NODE_NAME, )
+TOPIC_SIM_START_ID = lambda sim_id: '/%s/%d/start' % (ROS_CLE_NODE_NAME, sim_id)
+TOPIC_SIM_STOP_ID = lambda sim_id: '/%s/%d/stop' % (ROS_CLE_NODE_NAME, sim_id)
+TOPIC_SIM_PAUSE_ID = lambda sim_id: '/%s/%d/pause' % (ROS_CLE_NODE_NAME, sim_id)
+TOPIC_SIM_RESET_ID = lambda sim_id: '/%s/%d/reset' % (ROS_CLE_NODE_NAME, sim_id)
+TOPIC_SIM_STATE_ID = lambda sim_id: '/%s/%d/state' % (ROS_CLE_NODE_NAME, sim_id)

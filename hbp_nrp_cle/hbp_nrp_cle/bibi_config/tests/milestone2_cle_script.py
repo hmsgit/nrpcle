@@ -27,7 +27,7 @@ def cle_function_init(world_file):
     from hbp_nrp_cle.cle.ROSCLEServer import ROSCLEServer
 
     # Create ROS server
-    cle_server = ROSCLEServer()
+    cle_server = ROSCLEServer(0)
     Notificator.register_notification_function(
         lambda subtask, update_progress: cle_server.notify_current_task(subtask, update_progress, True)
     )
