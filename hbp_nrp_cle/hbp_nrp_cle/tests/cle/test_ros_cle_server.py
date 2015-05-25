@@ -16,10 +16,12 @@ from multiprocessing import Process
 
 __author__ = 'HBP NRP software team'
 
+
 # Code for timeout decorator from
 # http://stackoverflow.com/questions/14366761/
 class TimeoutError(Exception):
     pass
+
 
 def timeout(seconds=5, error_message="Timeout"):
     def decorator(func):
@@ -33,6 +35,7 @@ def timeout(seconds=5, error_message="Timeout"):
 
         return wraps(func)(wrapper)
     return decorator
+
 
 class TestROSCLEServer(unittest.TestCase):
 
@@ -57,9 +60,9 @@ class TestROSCLEServer(unittest.TestCase):
 
         # Set up our object under test and get sure it calls rospy.init in its
         # constructor.
-        self.__ros_cle_server = ROSCLEServer.ROSCLEServer()
-        self.__ros_cle_server.start_timeout = MagicMock();
-        self.__ros_cle_server.stop_timeout = MagicMock();
+        self.__ros_cle_server = ROSCLEServer.ROSCLEServer(0)
+        self.__ros_cle_server.start_timeout = MagicMock()
+        self.__ros_cle_server.stop_timeout = MagicMock()
         self.__mocked_rospy.init_node.assert_called_with('ros_cle_simulation')
 
         # Be sure we create a publisher exactly once.
@@ -104,7 +107,7 @@ class TestROSCLEServer(unittest.TestCase):
         reset_handler = self.__mocked_rospy.Service.call_args_list[3][0][2]
         state_handler = self.__mocked_rospy.Service.call_args_list[4][0][2]
 
-        return (start_handler, pause_handler, stop_handler, reset_handler, state_handler)
+        return start_handler, pause_handler, stop_handler, reset_handler, state_handler
 
     @timeout(10, "Main loop did not terminate")
     def test_main_termination(self):

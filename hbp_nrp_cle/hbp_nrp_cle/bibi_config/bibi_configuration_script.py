@@ -263,7 +263,7 @@ def is_not_none(item):
     return item is not None
 
 
-def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host):
+def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id):
     """
     Generates Code to run the CLE based on the given configuration file
 
@@ -272,6 +272,7 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host):
     :param timeout: The timeout found in the ExDConfig
     :param gzserver_host: The host where the gzserver will run, local for local machine
         lugano for remote Lugano viz cluster.
+    :param sim_id: The simulation id
     """
     logger.info("Generating CLE launch script")
     logger.debug("Loading template")
@@ -288,6 +289,7 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host):
     names['len'] = len
     names['timeout'] = timeout
     names['gzserver_host'] = gzserver_host
+    names['sim_id'] = sim_id
     logger.debug("Instantiate CLE Template")
     outputFile = open(script_file_name, 'w')
     outputFile.write(template.render(names))

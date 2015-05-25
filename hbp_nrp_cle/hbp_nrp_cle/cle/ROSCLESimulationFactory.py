@@ -13,6 +13,7 @@ import hbp_nrp_cle
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_START_NEW_SIMULATION, TOPIC_VERSION
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
@@ -27,9 +28,6 @@ class ROSCLESimulationFactory(object):
     provide a ROS service for that. Only one simulation can run at a time.
     """
 
-    ROS_CLE_NODE_NAME = "ros_cle_simulation"
-    ROS_CLE_URI_PREFIX = "/" + ROS_CLE_NODE_NAME
-
     def __init__(self):
         """
         Create a CLE simulation factory.
@@ -43,15 +41,11 @@ class ROSCLESimulationFactory(object):
         """
         Initializes the Simulation factory
         """
-        rospy.init_node(self.ROS_CLE_NODE_NAME)
+        rospy.init_node(ROS_CLE_NODE_NAME)
         rospy.Service(
-            self.ROS_CLE_URI_PREFIX + "/start_new_simulation",
-            srv.StartNewSimulation,
-            self.start_new_simulation)
-        rospy.Service(
-            self.ROS_CLE_URI_PREFIX + "/version",
-            srv.GetVersion,
-            self.get_version)
+            TOPIC_START_NEW_SIMULATION, srv.StartNewSimulation, self.start_new_simulation
+        )
+        rospy.Service(TOPIC_VERSION, srv.GetVersion, self.get_version)
 
     @staticmethod
     def run():
@@ -122,10 +116,11 @@ class ROSCLESimulationFactory(object):
                                   the environment (without the robot)
         :param: generated_cle_script_file: Generated CLE python script (main loop)
         """
-        logger.info("Preparting new simulation with environment file: " +
-                    environment_file +
-                    " and generated script file " +
-                    generated_cle_script_file + ".")
+        logger.info(
+            "Preparing new simulation with environment file: %s "
+            "and generated script file %s.",
+            environment_file, generated_cle_script_file
+        )
         logger.info("Starting the experiment closed loop engine.")
         cle_server = models_path = gzweb = gzserver = None
         self.simulation_exception_during_init = None

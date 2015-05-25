@@ -3,7 +3,7 @@ ROSCLESimulationFactory unit test
 """
 
 import hbp_nrp_cle
-from hbp_nrp_cle.cle import ROSCLESimulationFactory
+from hbp_nrp_cle.cle import ROSCLESimulationFactory, ROS_CLE_NODE_NAME, TOPIC_VERSION, TOPIC_START_NEW_SIMULATION
 import logging
 from mock import patch, MagicMock, Mock
 from testfixtures import log_capture
@@ -65,16 +65,14 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     def test_run(self):
         self.__ros_cle_simulation_factory.initialize()
         self.__ros_cle_simulation_factory.run()
-        self.__mocked_rospy.init_node.assert_called_once_with(
-            self.__ros_cle_simulation_factory.ROS_CLE_NODE_NAME
-        )
+        self.__mocked_rospy.init_node.assert_called_once_with(ROS_CLE_NODE_NAME)
         self.__mocked_rospy.Service.assert_any_call(
-            self.__ros_cle_simulation_factory.ROS_CLE_URI_PREFIX + "/start_new_simulation",
+            TOPIC_START_NEW_SIMULATION,
             srv.StartNewSimulation,
             self.__ros_cle_simulation_factory.start_new_simulation
         )
         self.__mocked_rospy.Service.assert_any_call(
-            self.__ros_cle_simulation_factory.ROS_CLE_URI_PREFIX + "/version",
+            TOPIC_VERSION,
             srv.GetVersion,
             self.__ros_cle_simulation_factory.get_version
         )
