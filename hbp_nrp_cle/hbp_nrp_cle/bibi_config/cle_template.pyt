@@ -18,7 +18,6 @@ import netifaces
 import subprocess
 import logging
 from hbp_nrp_cle.bibi_config.notificator import Notificator
-from hbp_nrp_cle.cle.CLELib import get_local_ip
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +107,7 @@ def cle_function_init(world_file):
 
     Notificator.notify("Resetting Gazebo robotic simulator", True)
 
-    local_ip = get_local_ip()
+    local_ip = netifaces.ifaddresses(config.config.get('network', 'main-interface'))[netifaces.AF_INET][0]['addr']()
     ros_master_uri = os.environ.get("ROS_MASTER_URI")
     ros_master_uri = ros_master_uri.replace('localhost', local_ip)
 

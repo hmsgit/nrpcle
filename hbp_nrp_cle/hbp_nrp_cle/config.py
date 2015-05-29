@@ -10,8 +10,27 @@ a singleton fashion.
 """
 
 import ConfigParser
+import logging
 import os
+import netifaces
 
+
+logger = logging.getLogger(__name__)
 
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.ini'))
+
+logger.info('Checking network interfaces.')
+for iface in config.get('network', 'interfaces').split(','):
+    logger.info('Trying %s... ', iface)
+    if iface in netifaces.interfaces():
+        logger.info('OK')
+        config.set('network', 'main-interface', iface)
+        break
+    else:
+        logger.info('FAIL')
+
+try:
+    config.get('network', 'main-interface')
+except ConfigParser.NoOptionError:
+    config.set('network', 'main-interface', 'lo')
