@@ -6,7 +6,6 @@ using ROS
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, \
     Topic, PreprocessedTopic, IRobotSubscribedTopic, IRobotPublishedTopic
 import rospy
-# import std_msgs.msg
 import logging
 
 logger = logging.getLogger(__name__)
@@ -88,9 +87,8 @@ class RosPublishedTopic(IRobotPublishedTopic):
         self.__lastSent = None
         assert isinstance(topic, Topic)
         logger.info("ROS publisher created: topic name = %s, topic type = %s",
-                     topic.name, topic.topic_type)
-        self.__pub = rospy.Publisher(topic.name, topic.topic_type,
-                                     queue_size=10)
+                    topic.name, topic.topic_type)
+        self.__pub = rospy.Publisher(topic.name, topic.topic_type, queue_size=10)
 
     def send_message(self, value):
         """

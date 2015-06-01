@@ -33,3 +33,21 @@ TOPIC_SIM_STOP_ID = lambda sim_id: '/%s/%d/stop' % (ROS_CLE_NODE_NAME, sim_id)
 TOPIC_SIM_PAUSE_ID = lambda sim_id: '/%s/%d/pause' % (ROS_CLE_NODE_NAME, sim_id)
 TOPIC_SIM_RESET_ID = lambda sim_id: '/%s/%d/reset' % (ROS_CLE_NODE_NAME, sim_id)
 TOPIC_SIM_STATE_ID = lambda sim_id: '/%s/%d/state' % (ROS_CLE_NODE_NAME, sim_id)
+
+
+def ros_handler(func):
+    """
+    A decorator for ROS handlers.
+
+    :param func: the function to decorate.
+    :return: a wrapped function
+    """
+
+    def inner(*args, **kwargs):
+        """
+        A function that wraps func returning [] when func returns None.
+        """
+        q = func(*args, **kwargs)
+        return [] if q is None else q
+
+    return inner

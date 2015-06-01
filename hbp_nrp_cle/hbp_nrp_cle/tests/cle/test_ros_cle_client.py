@@ -83,5 +83,34 @@ class TestROSCLEClient(unittest.TestCase):
         # get state can still answer (with a warning though)
         assert (ROSCLEState.STOPPED == client.get_simulation_state())
 
+    @patch('rospy.ServiceProxy')
+    def test_call_service(self, ServiceProxyMock):
+        ServiceProxyMocks = [MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+        ServiceProxyMock.side_effect = ServiceProxyMocks
+        srv = MagicMock()
+        srv.side_effect = rospy.ServiceException()
+        client = ROSCLEClient.ROSCLEClient(0)
+        self.assertRaises(Exception, client._ROSCLEClient__call_service, srv)
+
+    @patch('rospy.ServiceProxy')
+    def test_get_simulation_state(self, ServiceProxyMock):
+        ServiceProxyMocks = [MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+        ServiceProxyMock.side_effect = ServiceProxyMocks
+        srv = MagicMock()
+        srv.side_effect = rospy.ServiceException()
+
+        client = ROSCLEClient.ROSCLEClient(0)
+        client._ROSCLEClient__valid = False
+        client.get_simulation_state()
+
+        client._ROSCLEClient__valid = True
+        client._ROSCLEClient__cle_state = MagicMock()
+        client.get_simulation_state()
+        self.assertEquals(client._ROSCLEClient__cle_state.call_count, 1)
+
+        client._ROSCLEClient__cle_state.side_effect = rospy.ServiceException()
+        client.get_simulation_state()
+        self.assertEquals(client._ROSCLEClient__cle_state.call_count, 2)
+
 if __name__ == '__main__':
     unittest.main()

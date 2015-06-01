@@ -41,6 +41,14 @@ class TestROSCLEServer(unittest.TestCase):
 
     LOGGER_NAME = ROSCLEServer.__name__
 
+    def craft_ros_cle_server(self, mock_timeout=False):
+        # Set up our object under test and get sure it calls rospy.init in its
+        # constructor.
+        self.__ros_cle_server = ROSCLEServer.ROSCLEServer(0)
+        if mock_timeout:
+            self.__ros_cle_server.start_timeout = MagicMock()
+            self.__ros_cle_server.stop_timeout = MagicMock()
+
     def setUp(self):
         unittest.TestCase.setUp(self)
 
@@ -58,11 +66,7 @@ class TestROSCLEServer(unittest.TestCase):
         self.__mocked_cle = cle_patcher.start()
         self.__mocked_rospy = rospy_patcher.start()
 
-        # Set up our object under test and get sure it calls rospy.init in its
-        # constructor.
-        self.__ros_cle_server = ROSCLEServer.ROSCLEServer(0)
-        self.__ros_cle_server.start_timeout = MagicMock()
-        self.__ros_cle_server.stop_timeout = MagicMock()
+        self.craft_ros_cle_server(True)
         self.__mocked_rospy.init_node.assert_called_with('ros_cle_simulation')
 
         # Be sure we create a publisher exactly once.
@@ -78,6 +82,37 @@ class TestROSCLEServer(unittest.TestCase):
     def tearDown(self):
         # remove all handlers after each test!
         logging.getLogger(self.LOGGER_NAME).handlers = []
+
+    def test_set_state(self):
+        self.craft_ros_cle_server()
+        st = ROSCLEServer.ROSCLEServer.InitialState(self.__ros_cle_server)
+        self.__ros_cle_server.set_state(st)
+        self.assertEquals(self.__ros_cle_server._ROSCLEServer__state, st)
+
+    @patch('hbp_nrp_cle.cle.ROSCLEServer.DoubleTimer.enable_second_callback')
+    def test_start_timeout(self, mock_enable):
+        self.craft_ros_cle_server()
+        self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
+        self.__ros_cle_server.start_timeout()
+        self.assertGreaterEqual(mock_enable.call_count, 1)
+
+    @patch('hbp_nrp_cle.cle.ROSCLEServer.DoubleTimer')
+    def test_stop_timeout(self, mock_double_timer):
+        self.craft_ros_cle_server()
+        mock_double_timer.expiring = True
+        mock_double_timer.disable_second_callback = Mock()
+        self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
+        self.__ros_cle_server._ROSCLEServer__double_timer = mock_double_timer
+        self.__ros_cle_server.stop_timeout()
+        self.assertGreaterEqual(mock_double_timer.disable_second_callback.call_count, 1)
+
+    @patch('hbp_nrp_cle.cle.ROSCLEServer.ROSCLEServer.State')
+    def test_quit_by_timeout(self, mock_state):
+        self.craft_ros_cle_server()
+        mock_state.stop_simulation = Mock()
+        self.__ros_cle_server.set_state(mock_state)
+        self.__ros_cle_server.quit_by_timeout()
+        self.assertEquals(mock_state.stop_simulation.call_count, 1)
 
     def test_prepare_initialization(self):
         self.__mocked_cle.is_initialized = False
@@ -111,6 +146,7 @@ class TestROSCLEServer(unittest.TestCase):
 
     @timeout(10, "Main loop did not terminate")
     def test_main_termination(self):
+        self.craft_ros_cle_server(True)
         (start_handler, _, stop_handler, _, state_handler) = self.__get_handlers_for_testing_main()
         start_handler(_)
         # start a timer which calls the registered stop handler after 5 seconds
@@ -123,11 +159,13 @@ class TestROSCLEServer(unittest.TestCase):
         self.__mocked_cle.stop.assert_called_once_with()
 
     def test_run(self):
+        self.craft_ros_cle_server(True)
         self.__ros_cle_server.run()
         self.assertTrue(self.__mocked_rospy.spin.called)
         self.assertEqual(1, self.__mocked_rospy.spin.call_count)
 
     def test_notify_start_task(self):
+        self.craft_ros_cle_server(True)
         task_name = 'test_name'
         subtask_name = 'test_subtaskname'
         number_of_subtasks = 1
@@ -144,6 +182,7 @@ class TestROSCLEServer(unittest.TestCase):
             json.dumps(message))
 
     def test_plain_state(self):
+        self.craft_ros_cle_server(True)
         # Testing class State
         state = ROSCLEServer.ROSCLEServer.State(None)
         self.assertRaises(RuntimeError, state.start_simulation)
@@ -153,6 +192,7 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertFalse(state.is_final_state())
 
     def test_initialized_state(self):
+        self.craft_ros_cle_server(True)
         # Testing class InitialState
         ctx = Mock()
         ctx.start_simulation = Mock()
@@ -170,6 +210,7 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertEqual(str(initialized), ROSCLEState.INITIALIZED)
 
     def test_running_state(self):
+        self.craft_ros_cle_server(True)
         # Testing class RunningState
         ctx = Mock()
         ctx.start_simulation = Mock()
@@ -189,6 +230,7 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertEqual(str(running), ROSCLEState.STARTED)
 
     def test_paused_state(self):
+        self.craft_ros_cle_server(True)
         # Testing class PausedState
         ctx = Mock()
         ctx.start_simulation = Mock()
@@ -208,6 +250,7 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertEqual(str(paused), ROSCLEState.PAUSED)
 
     def test_stopped_state(self):
+        self.craft_ros_cle_server(True)
         # Testing class StoppedState
         stopped = ROSCLEServer.ROSCLEServer.StoppedState(None)
         self.assertRaises(RuntimeError, stopped.start_simulation)
@@ -217,8 +260,37 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertTrue(stopped.is_final_state())
         self.assertEqual(str(stopped), ROSCLEState.STOPPED)
 
+    @patch('hbp_nrp_cle.cle.ROSCLEServer.ROSCLEServer._ROSCLEServer__push_status_on_ros')
+    def test_task(self, mock_publisher):
+        self.craft_ros_cle_server(True)
+        self.__ros_cle_server.notify_start_task('task', 'subtask', 1, False)
+        self.assertEquals(mock_publisher.call_count, 1)
+        self.__ros_cle_server.notify_current_task('new_subtask', True, False)
+        self.assertEquals(mock_publisher.call_count, 2)
+        self.__ros_cle_server.notify_finish_task()
+        self.assertEquals(mock_publisher.call_count, 3)
+
+    def test_shutdown(self):
+        self.craft_ros_cle_server()
+        a = self.__ros_cle_server._ROSCLEServer__double_timer = MagicMock()
+        b = self.__ros_cle_server._ROSCLEServer__service_start = MagicMock()
+        c = self.__ros_cle_server._ROSCLEServer__service_pause = MagicMock()
+        d = self.__ros_cle_server._ROSCLEServer__service_stop = MagicMock()
+        e = self.__ros_cle_server._ROSCLEServer__service_reset = MagicMock()
+        f = self.__ros_cle_server._ROSCLEServer__service_state = MagicMock()
+        g = self.__ros_cle_server._ROSCLEServer__current_task = None
+        h = self.__ros_cle_server._ROSCLEServer__ros_status_pub = MagicMock()
+        i = self.__ros_cle_server._ROSCLEServer__cle = MagicMock()
+
+        self.__ros_cle_server.shutdown()
+        for x in [b, c, d, e, f, i]:
+            self.assertEquals(x.shutdown.call_count, 1)
+        self.assertEquals(a.join.call_count, 1)
+        self.assertEquals(h.unregister.call_count, 1)
+
     @log_capture(level=logging.WARNING)
     def test_notify_current_task(self, logcapture):
+        self.craft_ros_cle_server(True)
         self.__ros_cle_server.notify_current_task("new_subtask", True, True)
         logcapture.check(
             (self.LOGGER_NAME, 'WARNING', "Can't update a non existing task.")
@@ -226,6 +298,7 @@ class TestROSCLEServer(unittest.TestCase):
 
     @log_capture(level=logging.WARNING)
     def test_notify_finish_task_no_task(self, logcapture):
+        self.craft_ros_cle_server(True)
         self.__ros_cle_server.notify_finish_task()
         logcapture.check(
             (self.LOGGER_NAME, 'WARNING', "Can't finish a non existing task.")

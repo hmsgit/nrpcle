@@ -153,7 +153,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         :param kwargs: Additional configuration parameters
         :return: A subscription object that holds the current data
         """
-        if not topic in self.__subscribed_topics:
+        if topic not in self.__subscribed_topics:
             subscriber = self.create_topic_subscriber(topic, kwargs)
             self.__subscribed_topics[topic] = subscriber
             return subscriber
@@ -168,7 +168,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         :param kwargs: Additional configuration parameters
         :return: A publisher communication object
         """
-        if not topic in self.__published_topics:
+        if topic not in self.__published_topics:
             publisher = self.create_topic_publisher(topic, kwargs)
             self.__published_topics[topic] = publisher
             return publisher

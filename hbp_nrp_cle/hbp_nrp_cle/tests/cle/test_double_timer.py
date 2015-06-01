@@ -24,6 +24,7 @@ class TestDoubleTimer(unittest.TestCase):
         # Wrong initializations
         self.assertRaises(ValueError, DoubleTimer, -1, None, 1, None)
         self.assertRaises(ValueError, DoubleTimer, 1, None, -1, None)
+        self.assertRaises(ValueError, DoubleTimer, 1.5, None, 7, None)
 
         def my_wait(_):
             time.sleep(0.01)

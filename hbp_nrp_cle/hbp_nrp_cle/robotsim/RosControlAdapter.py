@@ -51,7 +51,7 @@ class RosControlAdapter(IRobotControlAdapter):
         if not self.__is_initialized:
             physics = self.__get_physics_properties()
             paused = physics.pause
-            if (not paused):
+            if not paused:
                 self.__pause_client()
             self.__reset()
             self.__time_step = physics.time_step
@@ -74,7 +74,7 @@ class RosControlAdapter(IRobotControlAdapter):
         """
         Sets the physics simulation time step in seconds
 
-        :param dt: The physics simulation time step in seconds
+        :param time_step: The physics simulation time step in seconds
         :return: True, if the physics simulation time step is updated, otherwise False
         """
         physics = self.__get_physics_properties()
@@ -83,7 +83,7 @@ class RosControlAdapter(IRobotControlAdapter):
             physics.max_update_rate,
             physics.gravity,
             physics.ode_config)
-        if (success):
+        if success:
             self.__time_step = time_step
             logger.info("new time step = %f", self.__time_step)
         else:
@@ -146,7 +146,7 @@ class RosControlAdapter(IRobotControlAdapter):
         Unpaused the physics
         """
         logger.info("Unpausing the world simulation")
-        if (self.is_paused):
+        if self.is_paused:
             self.__unpause_client()
 
     def pause(self):
@@ -154,5 +154,5 @@ class RosControlAdapter(IRobotControlAdapter):
         Pause the physics
         """
         logger.info("Pausing the world simulation")
-        if (not self.is_paused):
+        if not self.is_paused:
             self.__pause_client()

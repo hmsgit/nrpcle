@@ -1,6 +1,7 @@
 """
 Helper class for gazebo loading operations
 """
+from hbp_nrp_cle.robotsim import ROS_S_SPAWN_SDF_LIGHT, ROS_S_SPAWN_SDF_MODEL
 
 __author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
 
@@ -83,19 +84,19 @@ def load_light_sdf(light_name, light_sdf, initial_pose=None):
     :param initial_pose: Initial pose of the light. Uses the Gazebo \
         "Pose" type.
     """
+    # We are checking here that light_sdf is indeed an XML string, fromstring() raises
+    # exception if the parameter is not a valid XML.
+    etree.fromstring(light_sdf)
     # set initial pose
     if initial_pose is None:
         initial_pose = Pose()
         initial_pose.position = Point(0, 0, 0)
         initial_pose.orientation = Quaternion(0, 0, 0, 1)
     # spawn light
-    rospy.wait_for_service('/gazebo/spawn_sdf_light', TIMEOUT)
-    spawn_light_proxy = rospy.ServiceProxy('/gazebo/spawn_sdf_light', SpawnModel)
-    spawn_light_proxy(light_name,
-                      light_sdf,
-                      "",
-                      initial_pose,
-                      "")
+    rospy.wait_for_service(ROS_S_SPAWN_SDF_LIGHT, TIMEOUT)
+    spawn_light_proxy = rospy.ServiceProxy(ROS_S_SPAWN_SDF_LIGHT, SpawnModel)
+    # What if the service doesn't like the parameters?
+    spawn_light_proxy(light_name, light_sdf, "", initial_pose, "")
     spawn_light_proxy.close()
 
 
@@ -108,20 +109,19 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
     :param initial_pose: Initial pose of the model. Uses the Gazebo \
         "Pose" type.
     """
+    # We are checking here that light_sdf is indeed an XML string, fromstring() raises
+    # exception if the parameter is not a valid XML.
+    etree.fromstring(model_sdf)
     # set initial pose
     if initial_pose is None:
         initial_pose = Pose()
         initial_pose.position = Point(0, 0, 0)
         initial_pose.orientation = Quaternion(0, 0, 0, 1)
     # spawn model
-    rospy.wait_for_service('/gazebo/spawn_sdf_model', TIMEOUT)
-    spawn_model_prox = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
-    spawn_model_prox(model_name,
-                     model_sdf,
-                     "",
-                     initial_pose,
-                     "")
-    spawn_model_prox.close()
+    rospy.wait_for_service(ROS_S_SPAWN_SDF_MODEL, TIMEOUT)
+    spawn_model_proxy = rospy.ServiceProxy(ROS_S_SPAWN_SDF_MODEL, SpawnModel)
+    spawn_model_proxy(model_name, model_sdf, "", initial_pose, "")
+    spawn_model_proxy.close()
 
 
 def empty_gazebo_world():

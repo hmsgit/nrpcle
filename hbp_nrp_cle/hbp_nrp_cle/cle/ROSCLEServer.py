@@ -15,6 +15,7 @@ from cle_ros_msgs import srv
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, TOPIC_SIM_START_ID, \
     TOPIC_SIM_PAUSE_ID, TOPIC_SIM_STOP_ID, TOPIC_SIM_RESET_ID, TOPIC_SIM_STATE_ID
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
+from hbp_nrp_cle.cle import ros_handler
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
@@ -382,7 +383,6 @@ class ROSCLEServer(threading.Thread):
         self.start()
 
         while not self.__state.is_final_state():
-
             if self.__to_be_executed_within_main_thread is not None:
                 self.__to_be_executed_within_main_thread()
                 self.__to_be_executed_within_main_thread = None
@@ -481,25 +481,22 @@ class ROSCLEServer(threading.Thread):
         self.__current_subtask_index = 0
         self.__current_task = None
 
+    @ros_handler
     def start_simulation(self):
         """
         Handler for the CLE start() call, also used for resuming after pause().
         """
         self.__to_be_executed_within_main_thread = self.__cle.start
-        # Next line is needed as a result for a ROS Service call!
-        # Returning None (i.e. omitting the return statement) would produce an error.
-        return []
 
+    @ros_handler
     def pause_simulation(self):
         """
         Handler for the CLE pause() call. Actually call to CLE stop(), as CLE has no real pause().
         """
         # CLE has no explicit pause command, use stop() instead
         self.__cle.stop()
-        # Next line is needed as a result for a ROS Service call!
-        # Returning None (i.e. omitting the return statement) would produce an error.
-        return []
 
+    @ros_handler
     def stop_simulation(self):
         """
         Handler for the CLE stop() call, includes waiting for the current simulation step to finish.
@@ -507,10 +504,8 @@ class ROSCLEServer(threading.Thread):
         self.stop_timeout()
         self.__double_timer.cancel_all()
         self.__cle.stop()
-        # Next line is needed as a result for a ROS Service call!
-        # Returning None (i.e. omitting the return statement) would produce an error.
-        return []
 
+    @ros_handler
     def reset_simulation(self):
         """
         Handler for the CLE reset() call, additionally triggers a CLE stop().
@@ -519,9 +514,6 @@ class ROSCLEServer(threading.Thread):
         self.stop_timeout()
         self.__to_be_executed_within_main_thread = self.__cle.reset
         self.start_timeout()
-        # Next line is needed as a result for a ROS Service call!
-        # Returning None (i.e. omitting the return statement) would produce an error.
-        return []
 
     def __push_status_on_ros(self, message):
         """
