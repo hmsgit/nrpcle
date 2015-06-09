@@ -20,7 +20,7 @@ This assumes work on Ubuntu (>= 13.10), otherwise use `ROS Hydro <http://wiki.ro
 * Add the Ubuntu package sources and `install ROS <http://wiki.ros.org/indigo/Installation/Ubuntu>`_. In short you have to run:
 
   .. code-block:: bash
-            
+
           sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
           wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O - | sudo apt-key add -
           sudo apt-get update
@@ -86,15 +86,16 @@ Building the patched Gazebo Plugin
     catkin_make
 
 
-Setup the Gazebo Client
------------------------
+Setup the models for Gazebo
+---------------------------
 
-If the Gazebo Client will be used for visualization, link the models to the ~/.gazebo/models folder:
+Link the models to the ~/.gazebo/models folder:
 
 .. code-block:: bash
 
-    mkdir -p ~/.gazebo/models
-    for a in ${GAZEBO_MODELS[@]}; do ln -s $NRP_MODELS_DIRECTORY/$a ~/.gazebo/models/; done
+    cd $HBP/Models
+    ./create-symlinks.sh
+
 
 Install CLE dependencies
 ------------------------
