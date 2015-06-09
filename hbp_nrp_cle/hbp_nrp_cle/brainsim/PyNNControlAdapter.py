@@ -18,20 +18,35 @@ class PyNNControlAdapter(IBrainControlAdapter):
     Represents a controller object for the neuronal simulator
     """
 
-    def __init__(self, network_file='', **populations):
+    def __init__(self):
         """
         Initializes the PyNN control adapter
-
-        :param network_file: The path to the .5h file containing the network
-        :param sensors: list of sensor units IDs
-        :param actors: list of actor units IDs
         """
         self.__is_initialized = False
         self.__is_alive = False
         self.__rank = None
 
-        self.__network_file = network_file
-        self.__populations = populations
+    def load_h5_brain(self, network_file, **populations):
+        """
+        Loads the brain model in the given h5 file
+
+        :param network_file: The path to the .5h file containing the network
+        :param populations: A named list of populations to create
+        """
+        if not self.__is_initialized:
+            self.initialize()
+        BrainLoader.load_h5_network(network_file, populations)
+
+    def load_python_brain(self, network_file, **populations):
+        """
+        Loads the brain model specified in the given Python script
+
+        :param network_file: The Python file containing the network
+        :param populations: A named list of populations to create
+        """
+        if not self.__is_initialized:
+            self.initialize()
+        BrainLoader.load_py_network(network_file, populations)
 
     def initialize(self, **params):
         """
@@ -53,9 +68,6 @@ class PyNNControlAdapter(IBrainControlAdapter):
             self.__rank = sim.setup(timestep=timestep, min_delay=min_delay,
                                     max_delay=max_delay, threads=threads,
                                     rng_seeds=rng_seeds)
-            if not self.__network_file == '':
-                BrainLoader.load_h5_network(self.__network_file,
-                                            self.__populations)
             self.__is_initialized = True
             self.__is_alive = True
             logger.info("neuronal simulator initialized")

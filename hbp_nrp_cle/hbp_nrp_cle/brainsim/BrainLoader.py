@@ -8,14 +8,19 @@ import pyNN.nest as sim
 import hbp_nrp_cle.tf_framework.config as config
 import numpy as np
 import h5py
+import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
+import logging
+
+logger = logging.getLogger("BrainLoader")
+__brainIndex = 0
 
 
 # pylint: disable=R0914
 # the variables are reasonable in this case
 def load_pointneuron_circuit(h5_filename, neuron_ids=None,
                              synapse_model='TsodyksMarkramMechanism'):
-    '''Loads the h5 point-neuron circuit into PyNN. The result dictionary will
+    """Loads the h5 point-neuron circuit into PyNN. The result dictionary will
     contain a set of PyNN neurons that are correctly connected together.
 
     .. WARNING::
@@ -42,9 +47,9 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
         function from bluepy.)
     :type neuron_ids: list of ids
     :param str synapse_model: Specifies the synapse model that will be used.
-    '''
+    """
 
-    print "Opening h5 datafile \"" + h5_filename + "\" ... "
+    logger.info("Opening h5 datafile \"" + h5_filename + "\" ... ")
     h5file = h5py.File(h5_filename, 'r')
     slist = range(1, len(h5file["x"].value) + 1)
     if neuron_ids is not None:
@@ -80,10 +85,8 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
                  "delay": np.float64(r_syns[1][ids_that_are_in]),
                  'U': np.float64(r_syns[3][ids_that_are_in]),
                  'tau_rec': np.float64(r_syns[4][ids_that_are_in]),
-                 'tau_facil': np.float64(r_syns[5][ids_that_are_in])}
-
-            synapse_parameters["target"] = \
-                np.float64(r_syns[0][ids_that_are_in])
+                 'tau_facil': np.float64(r_syns[5][ids_that_are_in]),
+                 "target": np.float64(r_syns[0][ids_that_are_in])}
 
             if len(ids_that_are_in) == 1:
                 pre = i
@@ -194,6 +197,31 @@ def load_h5_network(path, populations):
         brain.__dict__[p] = neurons
 
     config.brain_root = brain
+
+
+# pylint: disable=W0603
+def load_py_network(path, populations):
+    """
+    Load a python network file
+
+    :param path: path to the .py file
+    :param populations: A dictionary of the populations and their ids
+    """
+    logger.info("Loading brain model from python: " + path)
+    brain_module = imp.load_source('__brain_model' + str(__brainIndex), path)
+    global __brainIndex
+    __brainIndex += 1
+    try:
+        circuit = brain_module.circuit
+        logger.info("Found circuit")
+        for p in populations:
+            neurons = sim.PopulationView(circuit, populations[p])
+            brain_module.__dict__[p] = neurons
+    except AttributeError:
+        if len(populations) > 0:
+            raise Exception("Could not initialize populations, no circuit found")
+
+    config.brain_root = brain_module
 
 
 class Brain(object):
