@@ -238,6 +238,8 @@ class ROSCLEServer(threading.Thread):
 
         self.__event_flag = threading.Event()
         self.__event_flag.clear()
+        self.__done_flag = threading.Event()
+        self.__done_flag.clear()
         self.__state = ROSCLEServer.InitialState(self)
 
         self.__service_start = None
@@ -386,6 +388,7 @@ class ROSCLEServer(threading.Thread):
             if self.__to_be_executed_within_main_thread is not None:
                 self.__to_be_executed_within_main_thread()
                 self.__to_be_executed_within_main_thread = None
+                self.__done_flag.set()
             self.__event_flag.wait()  # waits until an event is set
             self.__event_flag.clear()
 
@@ -510,8 +513,13 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for the CLE reset() call, additionally triggers a CLE stop().
         """
-        # CLE reset() already includes stop() and wait_step()
+        # we have to call the stop function here, otherwise the main thread
+        # will not stop executing the simulation loop
+        self.__cle.stop()
         self.stop_timeout()
+        self.__done_flag.wait()
+        self.__done_flag.clear()
+        # CLE reset() already includes stop() and wait_step()
         self.__to_be_executed_within_main_thread = self.__cle.reset
         self.start_timeout()
 
