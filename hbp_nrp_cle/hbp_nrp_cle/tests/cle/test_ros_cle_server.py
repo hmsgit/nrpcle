@@ -48,6 +48,7 @@ class TestROSCLEServer(unittest.TestCase):
         if mock_timeout:
             self.__ros_cle_server.start_timeout = MagicMock()
             self.__ros_cle_server.stop_timeout = MagicMock()
+        self.__ros_cle_server._ROSCLEServer__done_flag = Mock()
 
     def setUp(self):
         unittest.TestCase.setUp(self)

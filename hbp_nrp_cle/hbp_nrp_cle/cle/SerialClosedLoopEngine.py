@@ -235,7 +235,6 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         Reset the orchestrated simulations (stops them before resetting).
         """
         self.stop()
-        self.wait_step()
         self.rca.reset()
         self.bca.reset()
         self.tfm.reset()
