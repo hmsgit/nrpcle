@@ -18,7 +18,7 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes a Fixed spike generator.
 
@@ -89,7 +89,7 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
                 self.__generator[0].tau_m * self.__rate / 1000.))
         return nom / denom
 
-    def connect(self, neurons, **params):
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the

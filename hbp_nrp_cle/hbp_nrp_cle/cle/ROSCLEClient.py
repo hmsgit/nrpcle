@@ -16,6 +16,8 @@ from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 __author__ = "Lorenzo Vannucci, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
 
+# pylint: disable=W0710
+
 
 class ROSCLEClientException(Exception):
     """

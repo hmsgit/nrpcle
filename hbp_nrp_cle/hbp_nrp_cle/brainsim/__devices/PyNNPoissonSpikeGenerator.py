@@ -16,7 +16,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes a Poisson spike generator.
 
@@ -38,7 +38,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
             synaptic plasticity mechanisms to use
         """
         self.__generator = None
-        self.create_device(**params)
+        self.create_device(params)
 
     @property
     def rate(self):
@@ -56,7 +56,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
         """
         self.__generator.set('rate', value)
 
-    def create_device(self, **params):
+    def create_device(self, params):
         """
         Create Poisson spike generator device
 
@@ -70,7 +70,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
                   'rate': params.get('rate', 0.0)}
         self.__generator = sim.Population(1, sim.SpikeSourcePoisson, params)
 
-    def connect(self, neurons, **params):
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the

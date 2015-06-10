@@ -15,7 +15,7 @@ class PyNNDCSource(IDCSource):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes a direct current generator.
 
@@ -25,7 +25,7 @@ class PyNNDCSource(IDCSource):
         :param stop: Stop time of current injection, default: infinity
         """
         self.__generator = None
-        self.create_device(**params)
+        self.create_device(params)
 
     @property
     def amplitude(self):
@@ -43,7 +43,7 @@ class PyNNDCSource(IDCSource):
         """
         self.__generator.amplitude = value
 
-    def create_device(self, **params):
+    def create_device(self, params):
         """
         Create a direct current source
 
@@ -56,7 +56,9 @@ class PyNNDCSource(IDCSource):
                                         start=params.get('start', 0.0),
                                         stop=params.get('stop', None))
 
-    def connect(self, neurons):
+    # No connection parameters necessary for this device
+    # pylint: disable=W0613
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the device.
 

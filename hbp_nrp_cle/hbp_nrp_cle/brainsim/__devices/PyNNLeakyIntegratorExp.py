@@ -17,7 +17,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes the neuron whose membrane potential is to be read out.
         The obligatory threshold voltage 'v_thresh' is set to infinity
@@ -50,7 +50,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         self.__cell = None
         self.__voltage = None
 
-        self.create_device(**params)
+        self.create_device(params)
         self.start_record_voltage()
 
     @property
@@ -60,7 +60,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         """
         return self.__voltage
 
-    def create_device(self, **params):
+    def create_device(self, params):
         """
         Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses
@@ -94,7 +94,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         """
         self.__cell.record_v()
 
-    def connect(self, neurons, **params):
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the

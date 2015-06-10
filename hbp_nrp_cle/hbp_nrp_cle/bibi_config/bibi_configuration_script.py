@@ -163,14 +163,16 @@ def get_default_property(device_type):
     return __device_properties[device_type]
 
 
-def get_neurons(device):
+def print_neurons(neuron_selector):
     """
     Gets a string representing the accessed neuron population
 
-    :param device: The device
+    :param neuron_selector: The neuron selector
     """
-    neurons = device.neurons
-    return neurons.population + '[' + print_neurons(neurons) + ']'
+    index = get_neurons_index(neuron_selector)
+    if index is not None:
+        return "nrp.brain." + neuron_selector.population + "[" + index + "]"
+    return "nrp.brain." + neuron_selector.population
 
 
 def get_neuron_count(neurons):
@@ -181,40 +183,128 @@ def get_neuron_count(neurons):
     """
     if isinstance(neurons, generated_bibi_api.Index):
         return 1
-    if isinstance(neurons, generated_bibi_api.Range):
+    elif isinstance(neurons, generated_bibi_api.Range):
         if neurons.step is None:
             return neurons.to - neurons.from_
         return (neurons.to - neurons.from_) / neurons.step
-    if isinstance(neurons, generated_bibi_api.List):
+    elif isinstance(neurons, generated_bibi_api.List):
         return len(neurons.element)
+    elif isinstance(neurons, generated_bibi_api.Population):
+        return neurons.count
     raise Exception("Neuron Count: Don't know how to process neuron selector "
                     + neurons.extensiontype_)
 
 
-def print_neurons(neurons):
+def get_neurons_index(neurons):
     """
-    Prints the given neurons
+    Gets the indexing operator for the given neuron selector
 
-    :param neurons: The neurons group
-    :return: The neurons group
+    :param neurons: The neuron selector
+    :return: A string with the appropriate index or None
     """
     if isinstance(neurons, generated_bibi_api.Index):
         return str(neurons.index)
-    if isinstance(neurons, generated_bibi_api.Range):
+    elif isinstance(neurons, generated_bibi_api.Range):
         step_string = ""
         if neurons.step is not None:
             step_string = ', ' + str(neurons.step)
         return 'slice(' + str(neurons.from_) + ', ' + str(neurons.to) \
                + step_string + ')'
-    if isinstance(neurons, generated_bibi_api.List):
+    elif isinstance(neurons, generated_bibi_api.List):
         if len(neurons.element) == 0:
             return '[]'
         neuron_list = '[' + str(neurons.element[0])
         for i in range(1, len(neurons.element)):
             neuron_list = neuron_list + ', ' + str(neurons.element[i])
         return neuron_list + ']'
+    elif isinstance(neurons, generated_bibi_api.Population):
+        return None
     raise Exception("Neuron Print: Don't know how to process neuron selector "
                     + neurons.extensiontype_)
+
+
+def get_neuron_template(neurons):
+    """
+    Prints the given neuron selector template
+
+    :param neurons: The neurons selector template
+    :return: The neurons selection
+    """
+    if isinstance(neurons, generated_bibi_api.IndexTemplate):
+        return "[" + str(neurons.index) + "]"
+    if isinstance(neurons, generated_bibi_api.RangeTemplate):
+        step_string = ""
+        if neurons.step is not None:
+            step_string = ', ' + str(neurons.step)
+        return '[slice(' + str(neurons.from_) + ', ' + str(neurons.to) \
+               + step_string + ')]'
+    if isinstance(neurons, generated_bibi_api.ListTemplate):
+        if len(neurons.element) == 0:
+            return '[[]]'
+        neuron_list = '[[' + neurons.element[0]
+        for i in range(1, len(neurons.element)):
+            neuron_list = neuron_list + ', ' + neurons.element[i]
+        return neuron_list + ']]'
+    raise Exception("Neuron Print: Don't know how to process neuron selector "
+                    + neurons.extensiontype_)
+
+
+def get_collection_source(selector):
+    """
+    Gets the collection specifier for the given neuron source
+
+    :param selector: The neuron source
+    :return: A collection specifier as string
+    """
+    if isinstance(selector, generated_bibi_api.Range):
+        step_string = ""
+        if selector.step is not None:
+            step_string = ', ' + str(selector.step)
+        return 'range(' + str(selector.from_) + ', ' + str(selector.to) \
+               + step_string + ')'
+    elif isinstance(selector, generated_bibi_api.List):
+        if len(selector.element) == 0:
+            return '[]'
+        neuron_list = '[' + selector.element[0]
+        for i in range(1, len(selector.element)):
+            neuron_list = neuron_list + ', ' + str(selector.element[i])
+        return neuron_list + ']'
+    elif isinstance(selector, generated_bibi_api.Population):
+        return "range(0, " + str(selector.count) + ")"
+    raise Exception("Neuron Print: Don't know how to process neuron selector "
+                    + selector.extensiontype_)
+
+
+def print_neuron_group(neuron_group):
+    """
+    Prints the given neuron group
+
+    :param neuron_group: The given neuron group
+    :return: The neuron group printed to text
+    """
+    if isinstance(neuron_group, generated_bibi_api.MapSelector):
+        result = "nrp.map_neurons(" + get_collection_source(neuron_group.source) + ", " +\
+                 "lambda i: nrp.brain." + neuron_group.source.population +\
+                 get_neuron_template(neuron_group.pattern) + ")"
+        return result
+    elif isinstance(neuron_group, generated_bibi_api.ChainSelector):
+        result = "nrp.chain_neurons("
+        anything = False
+        for neuron_selector in neuron_group.neurons:
+            if anything:
+                result += ", "
+            else:
+                anything = True
+            result += print_neurons(neuron_selector)
+        for group in neuron_group.connectors:
+            if anything:
+                result += ", "
+            else:
+                anything = True
+            result += print_neuron_group(group)
+        result += ")"
+        return result
+    raise Exception("Don't know how to print group of type " + neuron_group.extensiontype_)
 
 
 def compute_dependencies(config):

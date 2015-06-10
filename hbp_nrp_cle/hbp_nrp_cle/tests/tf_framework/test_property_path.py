@@ -5,7 +5,7 @@ Tests for the PropertyPath module
 __author__ = 'GeorgHinkel'
 
 import unittest
-from hbp_nrp_cle.tf_framework._PropertyPath import PropertyPath
+import hbp_nrp_cle.tf_framework as nrp
 
 
 class Dummy(object):
@@ -29,28 +29,32 @@ class PropertyPathTests(unittest.TestCase):
         self.dummy = Dummy([0, 8, 15])
 
     def test_root(self):
-        root = PropertyPath()
+        root = nrp.brain
 
-        assert root.__repr__() == "(root)"
-        assert root.select(self.dummy) is self.dummy
+        self.assertEqual("(root)", root.__repr__())
+        self.assertIs(self.dummy, root.select(self.dummy))
 
     def test_item(self):
-        root = PropertyPath()
+        root = nrp.brain
         item = root.item
 
-        assert item.__repr__() == "(root).item"
-        assert item.select(self.dummy) is self.dummy.item
+        self.assertEqual("(root).item", item.__repr__())
+        self.assertIs(self.dummy.item, item.select(self.dummy))
 
     def test_index_slice(self):
-        root = PropertyPath()
+        root = nrp.brain
         index = root[0:2]
 
-        assert index.__repr__() == "(root)[slice(0, 2, None)]"
-        assert index.select(self.dummy.item) == self.dummy.item[0:2]
+        self.assertEqual("(root)[slice(0, 2, None)]", index.__repr__())
+        self.assertEqual(self.dummy.item[0:2], index.select(self.dummy.item))
 
     def test_index_int(self):
-        root = PropertyPath()
+        root = nrp.brain
         index = root[0]
 
-        assert index.__repr__() == "(root)[slice(0, 1, None)]"
-        assert index.select(self.dummy.item) == self.dummy.item[0:1]
+        self.assertEqual("(root)[slice(0, 1, None)]", index.__repr__())
+        self.assertEqual(self.dummy.item[0:1], index.select(self.dummy.item))
+
+
+if __name__ == "__main__":
+    unittest.main()

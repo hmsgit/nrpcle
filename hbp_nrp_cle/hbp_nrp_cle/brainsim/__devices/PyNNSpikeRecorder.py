@@ -18,8 +18,10 @@ class PyNNSpikeRecorder(ISpikeRecorder):
     neurons has spiked, otherwise a "0"
     """
 
+    # No connection parameters necessary for this device
+    # pylint: disable=W0613
     # pylint: disable=W0221
-    def __init__(self):
+    def __init__(self, params):
         """
         Represents a device which returns a "1" whenever one of the recorded
         neurons has spiked, otherwise a "0"
@@ -60,7 +62,9 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         nest.SetStatus(self.__neurons.recorders['spikes']._device.device, "to_memory", True)
         nest.SetStatus(self.__neurons.recorders['spikes']._device.device, "to_file", False)
 
-    def connect(self, neurons):
+    # No connection parameters necessary for this device
+    # pylint: disable=W0613
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the
         spike recorder

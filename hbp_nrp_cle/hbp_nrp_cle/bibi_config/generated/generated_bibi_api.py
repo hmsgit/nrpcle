@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Generated Wed Mar 18 13:14:06 2015 by generateDS.py version 2.14a.
+# Generated Tue May 26 10:46:27 2015 by generateDS.py version 2.14a.
 #
 # Command line options:
 #   ('-o', 'generated_bibi_api.py')
@@ -856,14 +856,14 @@ class BIBIConfiguration(GeneratedsSuper):
 class BrainModel(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, file=None, neuronGroup=None):
+    def __init__(self, file=None, populations=None):
         self.original_tagname_ = None
         self.file = file
-        self.validate_H5_Filename(self.file)
-        if neuronGroup is None:
-            self.neuronGroup = []
+        self.validate_Brain_Filename(self.file)
+        if populations is None:
+            self.populations = []
         else:
-            self.neuronGroup = neuronGroup
+            self.populations = populations
     def factory(*args_, **kwargs_):
         if BrainModel.subclass:
             return BrainModel.subclass(*args_, **kwargs_)
@@ -872,22 +872,18 @@ class BrainModel(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_file(self): return self.file
     def set_file(self, file): self.file = file
-    def get_neuronGroup(self): return self.neuronGroup
-    def set_neuronGroup(self, neuronGroup): self.neuronGroup = neuronGroup
-    def add_neuronGroup(self, value): self.neuronGroup.append(value)
-    def insert_neuronGroup_at(self, index, value): self.neuronGroup.insert(index, value)
-    def replace_neuronGroup_at(self, index, value): self.neuronGroup[index] = value
-    def validate_H5_Filename(self, value):
-        # Validate type H5_Filename, a restriction on xs:string.
-        if value is not None and Validate_simpletypes_:
-            if not self.gds_validate_simple_patterns(
-                    self.validate_H5_Filename_patterns_, value):
-                warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_H5_Filename_patterns_, ))
-    validate_H5_Filename_patterns_ = [['^[a-zA-Z0-9\\._/]*\\.h5$']]
+    def get_populations(self): return self.populations
+    def set_populations(self, populations): self.populations = populations
+    def add_populations(self, value): self.populations.append(value)
+    def insert_populations_at(self, index, value): self.populations.insert(index, value)
+    def replace_populations_at(self, index, value): self.populations[index] = value
+    def validate_Brain_Filename(self, value):
+        # Validate type Brain_Filename, a restriction on None.
+        pass
     def hasContent_(self):
         if (
             self.file is not None or
-            self.neuronGroup
+            self.populations
         ):
             return True
         else:
@@ -920,8 +916,8 @@ class BrainModel(GeneratedsSuper):
         if self.file is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfile>%s</%sfile>%s' % (namespace_, self.gds_format_string(quote_xml(self.file).encode(ExternalEncoding), input_name='file'), namespace_, eol_))
-        for neuronGroup_ in self.neuronGroup:
-            neuronGroup_.export(outfile, level, namespace_, name_='neuronGroup', pretty_print=pretty_print)
+        for populations_ in self.populations:
+            populations_.export(outfile, level, namespace_, name_='populations', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='BrainModel'):
         level += 1
         already_processed = set()
@@ -935,12 +931,12 @@ class BrainModel(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('file=%s,\n' % quote_python(self.file).encode(ExternalEncoding))
         showIndent(outfile, level)
-        outfile.write('neuronGroup=[\n')
+        outfile.write('populations=[\n')
         level += 1
-        for neuronGroup_ in self.neuronGroup:
+        for populations_ in self.populations:
             showIndent(outfile, level)
-            outfile.write('model_.NeuronSelector(\n')
-            neuronGroup_.exportLiteral(outfile, level, name_='NeuronSelector')
+            outfile.write('model_.MultiNeuronSelector(\n')
+            populations_.exportLiteral(outfile, level, name_='MultiNeuronSelector')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -960,8 +956,8 @@ class BrainModel(GeneratedsSuper):
             file_ = child_.text
             file_ = self.gds_validate_string(file_, node, 'file')
             self.file = file_
-            self.validate_H5_Filename(self.file)    # validate type H5_Filename
-        elif nodeName_ == 'neuronGroup':
+            self.validate_Brain_Filename(self.file)    # validate type Brain_Filename
+        elif nodeName_ == 'populations':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
             if type_name_ is None:
@@ -977,9 +973,9 @@ class BrainModel(GeneratedsSuper):
                 obj_.build(child_)
             else:
                 raise NotImplementedError(
-                    'Class not implemented for <neuronGroup> element')
-            self.neuronGroup.append(obj_)
-            obj_.original_tagname_ = 'neuronGroup'
+                    'Class not implemented for <populations> element')
+            self.populations.append(obj_)
+            obj_.original_tagname_ = 'populations'
 # end class BrainModel
 
 
@@ -1739,10 +1735,10 @@ class DeviceGroupChannel(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('name="%s",\n' % (self.name,))
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.NeuronSelector is not None:
+        if self.NeuronGroupSelector is not None:
             showIndent(outfile, level)
-            outfile.write('NeuronSelector=model_.NeuronSelector(\n')
-            self.NeuronSelector.exportLiteral(outfile, level)
+            outfile.write('NeuronGroupSelector=model_.NeuronGroupSelector(\n')
+            self.NeuronGroupSelector.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         if self.FlowExpression is not None:
@@ -1808,6 +1804,365 @@ class DeviceGroupChannel(GeneratedsSuper):
             self.body = obj_
             obj_.original_tagname_ = 'body'
 # end class DeviceGroupChannel
+
+
+class NeuronGroupSelector(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, extensiontype_=None):
+        self.original_tagname_ = None
+        self.extensiontype_ = extensiontype_
+    def factory(*args_, **kwargs_):
+        if NeuronGroupSelector.subclass:
+            return NeuronGroupSelector.subclass(*args_, **kwargs_)
+        else:
+            return NeuronGroupSelector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='NeuronGroupSelector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NeuronGroupSelector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='NeuronGroupSelector', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='NeuronGroupSelector'):
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='NeuronGroupSelector', fromsubclass_=False, pretty_print=True):
+        pass
+    def exportLiteral(self, outfile, level, name_='NeuronGroupSelector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class NeuronGroupSelector
+
+
+class ChainSelector(NeuronGroupSelector):
+    subclass = None
+    superclass = NeuronGroupSelector
+    def __init__(self, neurons=None, connectors=None):
+        self.original_tagname_ = None
+        super(ChainSelector, self).__init__()
+        if neurons is None:
+            self.neurons = []
+        else:
+            self.neurons = neurons
+        if connectors is None:
+            self.connectors = []
+        else:
+            self.connectors = connectors
+    def factory(*args_, **kwargs_):
+        if ChainSelector.subclass:
+            return ChainSelector.subclass(*args_, **kwargs_)
+        else:
+            return ChainSelector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_neurons(self): return self.neurons
+    def set_neurons(self, neurons): self.neurons = neurons
+    def add_neurons(self, value): self.neurons.append(value)
+    def insert_neurons_at(self, index, value): self.neurons.insert(index, value)
+    def replace_neurons_at(self, index, value): self.neurons[index] = value
+    def get_connectors(self): return self.connectors
+    def set_connectors(self, connectors): self.connectors = connectors
+    def add_connectors(self, value): self.connectors.append(value)
+    def insert_connectors_at(self, index, value): self.connectors.insert(index, value)
+    def replace_connectors_at(self, index, value): self.connectors[index] = value
+    def hasContent_(self):
+        if (
+            self.neurons or
+            self.connectors or
+            super(ChainSelector, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='ChainSelector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ChainSelector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='ChainSelector', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ChainSelector'):
+        super(ChainSelector, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ChainSelector')
+    def exportChildren(self, outfile, level, namespace_='', name_='ChainSelector', fromsubclass_=False, pretty_print=True):
+        super(ChainSelector, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for neurons_ in self.neurons:
+            neurons_.export(outfile, level, namespace_, name_='neurons', pretty_print=pretty_print)
+        for connectors_ in self.connectors:
+            connectors_.export(outfile, level, namespace_, name_='connectors', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='ChainSelector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(ChainSelector, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(ChainSelector, self).exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('neurons=[\n')
+        level += 1
+        for neurons_ in self.neurons:
+            showIndent(outfile, level)
+            outfile.write('model_.NeuronSelector(\n')
+            neurons_.exportLiteral(outfile, level, name_='NeuronSelector')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('connectors=[\n')
+        level += 1
+        for connectors_ in self.connectors:
+            showIndent(outfile, level)
+            outfile.write('model_.NeuronGroupSelector(\n')
+            connectors_.exportLiteral(outfile, level, name_='NeuronGroupSelector')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        super(ChainSelector, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'neurons':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <neurons> element')
+            self.neurons.append(obj_)
+            obj_.original_tagname_ = 'neurons'
+        elif nodeName_ == 'connectors':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <connectors> element')
+            self.connectors.append(obj_)
+            obj_.original_tagname_ = 'connectors'
+        super(ChainSelector, self).buildChildren(child_, node, nodeName_, True)
+# end class ChainSelector
+
+
+class MapSelector(NeuronGroupSelector):
+    subclass = None
+    superclass = NeuronGroupSelector
+    def __init__(self, source=None, pattern=None):
+        self.original_tagname_ = None
+        super(MapSelector, self).__init__()
+        self.source = source
+        self.pattern = pattern
+    def factory(*args_, **kwargs_):
+        if MapSelector.subclass:
+            return MapSelector.subclass(*args_, **kwargs_)
+        else:
+            return MapSelector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_source(self): return self.source
+    def set_source(self, source): self.source = source
+    def get_pattern(self): return self.pattern
+    def set_pattern(self, pattern): self.pattern = pattern
+    def hasContent_(self):
+        if (
+            self.source is not None or
+            self.pattern is not None or
+            super(MapSelector, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='MapSelector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='MapSelector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='MapSelector', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='MapSelector'):
+        super(MapSelector, self).exportAttributes(outfile, level, already_processed, namespace_, name_='MapSelector')
+    def exportChildren(self, outfile, level, namespace_='', name_='MapSelector', fromsubclass_=False, pretty_print=True):
+        super(MapSelector, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.source is not None:
+            self.source.export(outfile, level, namespace_, name_='source', pretty_print=pretty_print)
+        if self.pattern is not None:
+            self.pattern.export(outfile, level, namespace_, name_='pattern', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='MapSelector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(MapSelector, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(MapSelector, self).exportLiteralChildren(outfile, level, name_)
+        if self.MultiNeuronSelector is not None:
+            showIndent(outfile, level)
+            outfile.write('MultiNeuronSelector=model_.MultiNeuronSelector(\n')
+            self.MultiNeuronSelector.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.NeuronSelectorTemplate is not None:
+            showIndent(outfile, level)
+            outfile.write('NeuronSelectorTemplate=model_.NeuronSelectorTemplate(\n')
+            self.NeuronSelectorTemplate.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        super(MapSelector, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'source':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <source> element')
+            self.source = obj_
+            obj_.original_tagname_ = 'source'
+        elif nodeName_ == 'pattern':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <pattern> element')
+            self.pattern = obj_
+            obj_.original_tagname_ = 'pattern'
+        super(MapSelector, self).buildChildren(child_, node, nodeName_, True)
+# end class MapSelector
 
 
 class NeuronSelector(GeneratedsSuper):
@@ -1981,9 +2336,87 @@ class Index(NeuronSelector):
 # end class Index
 
 
-class Range(NeuronSelector):
+class MultiNeuronSelector(NeuronSelector):
     subclass = None
     superclass = NeuronSelector
+    def __init__(self, population=None, extensiontype_=None):
+        self.original_tagname_ = None
+        super(MultiNeuronSelector, self).__init__(population, extensiontype_, )
+        self.extensiontype_ = extensiontype_
+    def factory(*args_, **kwargs_):
+        if MultiNeuronSelector.subclass:
+            return MultiNeuronSelector.subclass(*args_, **kwargs_)
+        else:
+            return MultiNeuronSelector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+            super(MultiNeuronSelector, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='MultiNeuronSelector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='MultiNeuronSelector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='MultiNeuronSelector', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='MultiNeuronSelector'):
+        super(MultiNeuronSelector, self).exportAttributes(outfile, level, already_processed, namespace_, name_='MultiNeuronSelector')
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+    def exportChildren(self, outfile, level, namespace_='', name_='MultiNeuronSelector', fromsubclass_=False, pretty_print=True):
+        super(MultiNeuronSelector, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='MultiNeuronSelector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(MultiNeuronSelector, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(MultiNeuronSelector, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
+        super(MultiNeuronSelector, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(MultiNeuronSelector, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class MultiNeuronSelector
+
+
+class Range(MultiNeuronSelector):
+    subclass = None
+    superclass = MultiNeuronSelector
     def __init__(self, population=None, to=None, step=None, from_=None):
         self.original_tagname_ = None
         super(Range, self).__init__(population, )
@@ -2105,9 +2538,9 @@ class Range(NeuronSelector):
 # end class Range
 
 
-class List(NeuronSelector):
+class List(MultiNeuronSelector):
     subclass = None
-    superclass = NeuronSelector
+    superclass = MultiNeuronSelector
     def __init__(self, population=None, element=None):
         self.original_tagname_ = None
         super(List, self).__init__(population, )
@@ -2204,6 +2637,476 @@ class List(NeuronSelector):
             self.element.append(ival_)
         super(List, self).buildChildren(child_, node, nodeName_, True)
 # end class List
+
+
+class Population(MultiNeuronSelector):
+    subclass = None
+    superclass = MultiNeuronSelector
+    def __init__(self, population=None, count=None):
+        self.original_tagname_ = None
+        super(Population, self).__init__(population, )
+        self.count = _cast(int, count)
+    def factory(*args_, **kwargs_):
+        if Population.subclass:
+            return Population.subclass(*args_, **kwargs_)
+        else:
+            return Population(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_count(self): return self.count
+    def set_count(self, count): self.count = count
+    def hasContent_(self):
+        if (
+            super(Population, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='Population', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Population')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='Population', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='Population'):
+        super(Population, self).exportAttributes(outfile, level, already_processed, namespace_, name_='Population')
+        if self.count is not None and 'count' not in already_processed:
+            already_processed.add('count')
+            outfile.write(' count="%s"' % self.gds_format_integer(self.count, input_name='count'))
+    def exportChildren(self, outfile, level, namespace_='', name_='Population', fromsubclass_=False, pretty_print=True):
+        super(Population, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='Population'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.count is not None and 'count' not in already_processed:
+            already_processed.add('count')
+            showIndent(outfile, level)
+            outfile.write('count=%d,\n' % (self.count,))
+        super(Population, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(Population, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('count', node)
+        if value is not None and 'count' not in already_processed:
+            already_processed.add('count')
+            try:
+                self.count = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.count < 0:
+                raise_parse_error(node, 'Invalid NonNegativeInteger')
+        super(Population, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(Population, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class Population
+
+
+class NeuronSelectorTemplate(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, extensiontype_=None):
+        self.original_tagname_ = None
+        self.extensiontype_ = extensiontype_
+    def factory(*args_, **kwargs_):
+        if NeuronSelectorTemplate.subclass:
+            return NeuronSelectorTemplate.subclass(*args_, **kwargs_)
+        else:
+            return NeuronSelectorTemplate(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='NeuronSelectorTemplate', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NeuronSelectorTemplate')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='NeuronSelectorTemplate', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='NeuronSelectorTemplate'):
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='NeuronSelectorTemplate', fromsubclass_=False, pretty_print=True):
+        pass
+    def exportLiteral(self, outfile, level, name_='NeuronSelectorTemplate'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class NeuronSelectorTemplate
+
+
+class IndexTemplate(NeuronSelectorTemplate):
+    subclass = None
+    superclass = NeuronSelectorTemplate
+    def __init__(self, index=None):
+        self.original_tagname_ = None
+        super(IndexTemplate, self).__init__()
+        self.index = _cast(None, index)
+    def factory(*args_, **kwargs_):
+        if IndexTemplate.subclass:
+            return IndexTemplate.subclass(*args_, **kwargs_)
+        else:
+            return IndexTemplate(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_index(self): return self.index
+    def set_index(self, index): self.index = index
+    def validate_TemplatePattern(self, value):
+        # Validate type TemplatePattern, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+            if not self.gds_validate_simple_patterns(
+                    self.validate_TemplatePattern_patterns_, value):
+                warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_TemplatePattern_patterns_, ))
+    validate_TemplatePattern_patterns_ = [['^(\\(\\s*)*(i|\\d+)(\\s*(\\+|\\*)\\s*(\\(\\s*)*(i|\\d+)\\s*|\\))*$']]
+    def hasContent_(self):
+        if (
+            super(IndexTemplate, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='IndexTemplate', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='IndexTemplate')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='IndexTemplate', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IndexTemplate'):
+        super(IndexTemplate, self).exportAttributes(outfile, level, already_processed, namespace_, name_='IndexTemplate')
+        if self.index is not None and 'index' not in already_processed:
+            already_processed.add('index')
+            outfile.write(' index=%s' % (quote_attrib(self.index), ))
+    def exportChildren(self, outfile, level, namespace_='', name_='IndexTemplate', fromsubclass_=False, pretty_print=True):
+        super(IndexTemplate, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='IndexTemplate'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.index is not None and 'index' not in already_processed:
+            already_processed.add('index')
+            showIndent(outfile, level)
+            outfile.write('index="%s",\n' % (self.index,))
+        super(IndexTemplate, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(IndexTemplate, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('index', node)
+        if value is not None and 'index' not in already_processed:
+            already_processed.add('index')
+            self.index = value
+            self.validate_TemplatePattern(self.index)    # validate type TemplatePattern
+        super(IndexTemplate, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(IndexTemplate, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class IndexTemplate
+
+
+class RangeTemplate(NeuronSelectorTemplate):
+    subclass = None
+    superclass = NeuronSelectorTemplate
+    def __init__(self, to=None, step=None, from_=None):
+        self.original_tagname_ = None
+        super(RangeTemplate, self).__init__()
+        self.to = _cast(None, to)
+        self.step = _cast(None, step)
+        self.from_ = _cast(None, from_)
+    def factory(*args_, **kwargs_):
+        if RangeTemplate.subclass:
+            return RangeTemplate.subclass(*args_, **kwargs_)
+        else:
+            return RangeTemplate(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_to(self): return self.to
+    def set_to(self, to): self.to = to
+    def get_step(self): return self.step
+    def set_step(self, step): self.step = step
+    def get_from(self): return self.from_
+    def set_from(self, from_): self.from_ = from_
+    def validate_TemplatePattern(self, value):
+        # Validate type TemplatePattern, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+            if not self.gds_validate_simple_patterns(
+                    self.validate_TemplatePattern_patterns_, value):
+                warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_TemplatePattern_patterns_, ))
+    validate_TemplatePattern_patterns_ = [['^(\\(\\s*)*(i|\\d+)(\\s*(\\+|\\*)\\s*(\\(\\s*)*(i|\\d+)\\s*|\\))*$']]
+    def hasContent_(self):
+        if (
+            super(RangeTemplate, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='RangeTemplate', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='RangeTemplate')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='RangeTemplate', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='RangeTemplate'):
+        super(RangeTemplate, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RangeTemplate')
+        if self.to is not None and 'to' not in already_processed:
+            already_processed.add('to')
+            outfile.write(' to=%s' % (quote_attrib(self.to), ))
+        if self.step is not None and 'step' not in already_processed:
+            already_processed.add('step')
+            outfile.write(' step=%s' % (quote_attrib(self.step), ))
+        if self.from_ is not None and 'from_' not in already_processed:
+            already_processed.add('from_')
+            outfile.write(' from=%s' % (quote_attrib(self.from_), ))
+    def exportChildren(self, outfile, level, namespace_='', name_='RangeTemplate', fromsubclass_=False, pretty_print=True):
+        super(RangeTemplate, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='RangeTemplate'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.to is not None and 'to' not in already_processed:
+            already_processed.add('to')
+            showIndent(outfile, level)
+            outfile.write('to="%s",\n' % (self.to,))
+        if self.step is not None and 'step' not in already_processed:
+            already_processed.add('step')
+            showIndent(outfile, level)
+            outfile.write('step="%s",\n' % (self.step,))
+        if self.from_ is not None and 'from_' not in already_processed:
+            already_processed.add('from_')
+            showIndent(outfile, level)
+            outfile.write('from_="%s",\n' % (self.from_,))
+        super(RangeTemplate, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(RangeTemplate, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('to', node)
+        if value is not None and 'to' not in already_processed:
+            already_processed.add('to')
+            self.to = value
+            self.validate_TemplatePattern(self.to)    # validate type TemplatePattern
+        value = find_attr_value_('step', node)
+        if value is not None and 'step' not in already_processed:
+            already_processed.add('step')
+            self.step = value
+            self.validate_TemplatePattern(self.step)    # validate type TemplatePattern
+        value = find_attr_value_('from', node)
+        if value is not None and 'from' not in already_processed:
+            already_processed.add('from')
+            self.from_ = value
+            self.validate_TemplatePattern(self.from_)    # validate type TemplatePattern
+        super(RangeTemplate, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(RangeTemplate, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class RangeTemplate
+
+
+class ListTemplate(NeuronSelectorTemplate):
+    subclass = None
+    superclass = NeuronSelectorTemplate
+    def __init__(self, element=None):
+        self.original_tagname_ = None
+        super(ListTemplate, self).__init__()
+        if element is None:
+            self.element = []
+        else:
+            self.element = element
+    def factory(*args_, **kwargs_):
+        if ListTemplate.subclass:
+            return ListTemplate.subclass(*args_, **kwargs_)
+        else:
+            return ListTemplate(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_element(self): return self.element
+    def set_element(self, element): self.element = element
+    def add_element(self, value): self.element.append(value)
+    def insert_element_at(self, index, value): self.element.insert(index, value)
+    def replace_element_at(self, index, value): self.element[index] = value
+    def validate_TemplatePattern(self, value):
+        # Validate type TemplatePattern, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+            if not self.gds_validate_simple_patterns(
+                    self.validate_TemplatePattern_patterns_, value):
+                warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_TemplatePattern_patterns_, ))
+    validate_TemplatePattern_patterns_ = [['^(\\(\\s*)*(i|\\d+)(\\s*(\\+|\\*)\\s*(\\(\\s*)*(i|\\d+)\\s*|\\))*$']]
+    def hasContent_(self):
+        if (
+            self.element or
+            super(ListTemplate, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='ListTemplate', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='ListTemplate')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='ListTemplate', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='ListTemplate'):
+        super(ListTemplate, self).exportAttributes(outfile, level, already_processed, namespace_, name_='ListTemplate')
+    def exportChildren(self, outfile, level, namespace_='', name_='ListTemplate', fromsubclass_=False, pretty_print=True):
+        super(ListTemplate, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for element_ in self.element:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%selement>%s</%selement>%s' % (namespace_, self.gds_format_string(quote_xml(element_).encode(ExternalEncoding), input_name='element'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='ListTemplate'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(ListTemplate, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(ListTemplate, self).exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('element=[\n')
+        level += 1
+        for element_ in self.element:
+            showIndent(outfile, level)
+            outfile.write('%s,\n' % quote_python(element_).encode(ExternalEncoding))
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        super(ListTemplate, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'element':
+            element_ = child_.text
+            element_ = self.gds_validate_string(element_, node, 'element')
+            self.element.append(element_)
+            self.validate_TemplatePattern(self.element)    # validate type TemplatePattern
+        super(ListTemplate, self).buildChildren(child_, node, nodeName_, True)
+# end class ListTemplate
 
 
 class TopicChannel(GeneratedsSuper):
@@ -3710,14 +4613,17 @@ class ConstantString(FlowExpression):
 
 GDSClassesMapping = {
     'bibi': BIBIConfiguration,
-    'neuronGroup': NeuronSelector,
-    'deviceGroup': DeviceGroupChannel,
     'transferFunction': TransferFunction,
+    'deviceGroup': DeviceGroupChannel,
+    'populations': MultiNeuronSelector,
+    'pattern': NeuronSelectorTemplate,
+    'operand': FlowExpression,
     'body': FlowExpression,
     'argument': Argument,
     'value': FlowExpression,
     'topic': TopicChannel,
-    'operand': FlowExpression,
+    'source': MultiNeuronSelector,
+    'connectors': NeuronGroupSelector,
     'neurons': NeuronSelector,
     'inner': FlowExpression,
     'returnValue': TopicChannel,
@@ -3848,6 +4754,7 @@ __all__ = [
     "BIBIConfiguration",
     "BrainModel",
     "Call",
+    "ChainSelector",
     "Constant",
     "ConstantString",
     "DeviceChannel",
@@ -3855,16 +4762,24 @@ __all__ = [
     "Divide",
     "FlowExpression",
     "Index",
+    "IndexTemplate",
     "List",
+    "ListTemplate",
     "Local",
+    "MapSelector",
     "Max",
     "Min",
+    "MultiNeuronSelector",
     "Multiply",
     "Neuron2Monitor",
     "Neuron2Robot",
+    "NeuronGroupSelector",
     "NeuronSelector",
+    "NeuronSelectorTemplate",
     "Operator",
+    "Population",
     "Range",
+    "RangeTemplate",
     "Robot2Neuron",
     "Scale",
     "SimulationStep",

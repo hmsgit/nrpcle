@@ -14,7 +14,7 @@ from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
 
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
-from . import _TransferFunctionManager, _PropertyPath
+from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
 from ._TransferFunctionInterface import ITransferFunctionManager
 
 __author__ = 'GeorgHinkel'
@@ -32,6 +32,23 @@ spike_recorder = ISpikeRecorder
 
 
 brain = _PropertyPath.PropertyPath()
+
+
+def map_neurons(neuron_range, mapping):
+    """
+    Maps the given range to neurons using the provided mapping
+    :param neuron_range: A range that can be iterated
+    :param mapping: A mapping function or lambda
+    """
+    return _NeuronSelectors.MapNeuronSelector(neuron_range, mapping)
+
+
+def chain_neurons(*neuron_selectors):
+    """
+    Chains the given neuron selectors
+    :param neuron_selectors: The neuron selectors
+    """
+    return _NeuronSelectors.ChainNeuronSelector(neuron_selectors)
 
 
 def initialize(name):  # -> None:

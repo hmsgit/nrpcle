@@ -1,15 +1,14 @@
 '''
-Implementation of PyNNDeviceGroup
-moduleauthor: probst@fzi.de
+Implementation of a mocked DeviceGroup
 '''
 
-from ..BrainInterface import IDeviceGroup
+from hbp_nrp_cle.brainsim.BrainInterface import IDeviceGroup
 import numpy
 
-__author__ = 'DimitriProbst'
+__author__ = 'Georg Hinkel'
 
 
-class PyNNDeviceGroup(IDeviceGroup):
+class MockDeviceGroup(IDeviceGroup):
     """
     Gathers multiple devices of the same type to a group.
     The class receives the property values as slice, tuple, list, numpy array
@@ -26,15 +25,15 @@ class PyNNDeviceGroup(IDeviceGroup):
 
     def __getitem__(self, index):
         if isinstance(index, (slice, numpy.ndarray)):
-            return PyNNDeviceGroup(self.devices[index])
+            return MockDeviceGroup(self.devices[index])
         elif isinstance(index, int):
             return self.devices[index]
         else:
             raise TypeError
 
     def __getattr__(self, attrname):
-        if hasattr(PyNNDeviceGroup, attrname):
-            return super(PyNNDeviceGroup, self).__getattr__(attrname)
+        if hasattr(MockDeviceGroup, attrname):
+            return super(MockDeviceGroup, self).__getattr__(attrname)
         array = numpy.zeros(len(self.devices))
         i = 0
         for device in self.devices:

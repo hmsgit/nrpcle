@@ -6,7 +6,7 @@ Contains a library of transfer functions
 from __future__ import division
 from cv_bridge import CvBridge
 import cv2
-import numpy
+import numpy as np
 
 __author__ = 'GeorgHinkel'
 
@@ -30,8 +30,8 @@ def detect_red(image):
     """
     red_left = red_right = green_blue = 0
     if not isinstance(image, type(None)):
-        lower_red = numpy.array([0, 30, 30])
-        upper_red = numpy.array([0, 255, 255])
+        lower_red = np.array([0, 30, 30])
+        upper_red = np.array([0, 255, 255])
         cv_image = bridge.imgmsg_to_cv2(image, "rgb8")
         # Transform image to HSV (easier to detect colors).
         hsv_image = cv2.cvtColor(cv_image, cv2.COLOR_RGB2HSV)
@@ -52,9 +52,61 @@ def detect_red(image):
         """
         An intermediate helper class for the results of detect_red
         """
+
         def __init__(self, left, right, go_on):
             self.left = left
             self.right = right
             self.go_on = go_on
 
     return __results(red_left, red_right, green_blue)
+
+
+def get_color_values(image):
+    """
+    Gets the color values of an image for use in the Braitenberg demo.
+    An incoming image is resized and then analyzed per pixel. All the red, green and blue values
+    of all pixels are returned as a result
+
+    :param image: The image
+    :returns: An object with the color channels of the image separated in two image halves, each
+
+    The lightest color that is recognized as red is (255,127,127).
+    """
+    # assert isinstance(image, sensor_msgs.msg.Image)
+    # pixel_values = np.zeros((30, 30, 3), np.float64)
+    red_left_rate = np.zeros(600)
+    green_left_rate = np.zeros(600)
+    blue_left_rate = np.zeros(600)
+    red_right_rate = np.zeros(600)
+    green_right_rate = np.zeros(600)
+    blue_right_rate = np.zeros(600)
+    if not isinstance(image, type(None)):  # Problem: starts as NoneType
+        # print eye_sensor.changed
+        # load image in [0,1]
+        cv_image = bridge.imgmsg_to_cv2(image, "rgb8") / 256.
+        # resize, then intensify values but keep in [0,1]
+        cv_image = cv2.resize(cv_image, (40, 30))
+        cv_image = 5000 ** cv_image / 5000
+
+        red_left_rate = cv_image[:, 0:20, 0].flatten()
+        green_left_rate = cv_image[:, 0:20, 1].flatten()
+        blue_left_rate = cv_image[:, 0:20, 2].flatten()
+        red_right_rate = cv_image[:, 20:40, 0].flatten()
+        green_right_rate = cv_image[:, 20:40, 1].flatten()
+        blue_right_rate = cv_image[:, 20:40, 2].flatten()
+
+    class __results(object):
+        """
+        An intermediate helper class for the results of detect_red
+        """
+
+        def __init__(self, left_red, left_green, left_blue, right_red, right_green, right_blue):
+            self.left_red = left_red
+            self.left_green = left_green
+            self.left_blue = left_blue
+            self.right_red = right_red
+            self.right_green = right_green
+            self.right_blue = right_blue
+
+    return __results(red_left_rate, green_left_rate, blue_left_rate, red_right_rate,
+                     green_right_rate, blue_right_rate)

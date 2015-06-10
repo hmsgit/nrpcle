@@ -15,7 +15,7 @@ class PyNNACSource(IACSource):
     """
 
     # pylint: disable=W0221
-    def __init__(self, **params):
+    def __init__(self, params):
         """
         Initializes an alternating current generator.
 
@@ -29,7 +29,7 @@ class PyNNACSource(IACSource):
         """
         self.__generator = None
 
-        self.create_device(**params)
+        self.create_device(params)
 
     @property
     def amplitude(self):
@@ -95,7 +95,7 @@ class PyNNACSource(IACSource):
         """
         self.__generator.phase = value
 
-    def create_device(self, **params):
+    def create_device(self, params):
         """
         Creates an alternating current source
 
@@ -115,7 +115,9 @@ class PyNNACSource(IACSource):
                                         start=params.get('start', 0.0),
                                         stop=params.get('stop', None))
 
-    def connect(self, neurons):
+    # No connection parameters necessary for this device
+    # pylint: disable=W0613
+    def connect(self, neurons, params):
         """
         Connects the neurons specified by "neurons" to the device.
 

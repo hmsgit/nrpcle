@@ -21,6 +21,7 @@ from hbp_nrp_cle.mocks.brainsim.__devices.MockNCSource import MockNCSource
 from hbp_nrp_cle.mocks.brainsim.__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
 from hbp_nrp_cle.mocks.brainsim.__devices.MockPopulationRate import MockPopulationRate
 from hbp_nrp_cle.mocks.brainsim.__devices.MockSpikeRecorder import MockSpikeRecorder
+from hbp_nrp_cle.mocks.brainsim.__devices.MockDeviceGroup import MockDeviceGroup
 
 __author__ = 'MichaelWeber'
 
@@ -102,12 +103,12 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_5 = self.communicator.register_spike_source(
             self.two_neurons_pop_cond, IPoissonSpikeGenerator)
         self.assertEqual(device_5, self.communicator.generator_devices[5])
-        self.assertIsInstance(device_5, MockPoissonSpikeGenerator)
+        self.assertIsInstance(device_5, MockDeviceGroup)
 
         device_6 = self.communicator.register_spike_source(
             self.two_neurons_pop_curr, IPoissonSpikeGenerator)
         self.assertEqual(device_6, self.communicator.generator_devices[6])
-        self.assertIsInstance(device_6, MockPoissonSpikeGenerator)
+        self.assertIsInstance(device_6, MockDeviceGroup)
 
         device_7 = self.communicator.register_spike_source(
             self.neurons_cond, IPoissonSpikeGenerator, target="inhibitory")
@@ -132,12 +133,12 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_11 = self.communicator.register_spike_source(
             self.two_neurons_pop_cond, IFixedSpikeGenerator)
         self.assertEqual(device_11, self.communicator.generator_devices[11])
-        self.assertIsInstance(device_11, MockFixedSpikeGenerator)
+        self.assertIsInstance(device_11, MockDeviceGroup)
 
         device_12 = self.communicator.register_spike_source(
             self.two_neurons_pop_curr, IFixedSpikeGenerator)
         self.assertEqual(device_12, self.communicator.generator_devices[12])
-        self.assertIsInstance(device_12, MockFixedSpikeGenerator)
+        self.assertIsInstance(device_12, MockDeviceGroup)
 
         device_13 = self.communicator.register_spike_source(
             self.neurons_cond, IFixedSpikeGenerator, target="inhibitory")
@@ -175,12 +176,12 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_3 = self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorAlpha)
         self.assertEqual(device_3, self.communicator.detector_devices[3])
-        self.assertIsInstance(device_3, MockLeakyIntegratorAlpha)
+        self.assertIsInstance(device_3, MockDeviceGroup)
 
         device_4 = self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorAlpha)
         self.assertEqual(device_4, self.communicator.detector_devices[4])
-        self.assertIsInstance(device_4, MockLeakyIntegratorAlpha)
+        self.assertIsInstance(device_4, MockDeviceGroup)
 
         device_5 = self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorAlpha, target='inhibitory')
@@ -204,12 +205,12 @@ class MockBrainAdaptersTest(unittest.TestCase):
         device_8 = self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorExp)
         self.assertEqual(device_8, self.communicator.detector_devices[8])
-        self.assertIsInstance(device_8, MockLeakyIntegratorExp)
+        self.assertIsInstance(device_8, MockDeviceGroup)
 
         device_9 = self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorExp)
         self.assertEqual(device_9, self.communicator.detector_devices[9])
-        self.assertIsInstance(device_9, MockLeakyIntegratorExp)
+        self.assertIsInstance(device_9, MockDeviceGroup)
 
         device_10 = self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp, target='inhibitory')
