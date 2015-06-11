@@ -23,12 +23,18 @@ config.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.in
 logger.info('Checking network interfaces.')
 for iface in config.get('network', 'interfaces').split(','):
     logger.info('Trying %s... ', iface)
+    # check if iface is avaiable on the system
     if iface in netifaces.interfaces():
-        logger.info('OK')
-        config.set('network', 'main-interface', iface)
-        break
+        addr = netifaces.ifaddresses(iface)
+        # check if iface is connected
+        if (netifaces.AF_INET in addr):
+            logger.info('OK')
+            config.set('network', 'main-interface', iface)
+            break
+        else:
+            logger.info('NOT CONNECTED')
     else:
-        logger.info('FAIL')
+        logger.info('NOT AVAILABLE')
 
 try:
     config.get('network', 'main-interface')
