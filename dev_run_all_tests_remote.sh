@@ -60,7 +60,7 @@ function set_environment_and_load_modules() {
   
   module load nest/2.2.2
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/compat-openmpi/lib
-  export NRP_MODELS_DIRECTORY=/root/.gazebo/hbp
+  export NRP_MODELS_DIRECTORY=/opt/hbp/gazebo/models
 }
 
 function run_all_tests() {
