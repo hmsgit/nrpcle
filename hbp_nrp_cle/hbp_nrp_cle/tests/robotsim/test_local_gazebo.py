@@ -1,5 +1,5 @@
 from hbp_nrp_cle.robotsim.LocalGazebo import LocalGazeboServerInstance
-
+from hbp_nrp_cle import config
 import unittest
 from mock import patch, MagicMock
 
@@ -14,17 +14,17 @@ class TestLocalGazeboServerInstance(unittest.TestCase):
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
     def test_start(self, mocked_os):
         self.instance.start('')
-        mocked_os.system.assert_any_call('/etc/init.d/gzserver start')
+        mocked_os.system.assert_any_call(config.config.get('gazebo', 'start-cmd'))
 
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
     def test_stop(self, mocked_os):
         self.instance.stop()
-        mocked_os.system.assert_any_call('/etc/init.d/gzserver stop')
+        mocked_os.system.assert_any_call(config.config.get('gazebo', 'stop-cmd'))
 
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
     def test_restart(self, mocked_os):
         self.instance.restart('')
-        mocked_os.system.assert_any_call('/etc/init.d/gzserver restart')
+        mocked_os.system.assert_any_call(config.config.get('gazebo', 'restart-cmd'))
 
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
     def test_gazebo_master_uri(self, mocked_os):
