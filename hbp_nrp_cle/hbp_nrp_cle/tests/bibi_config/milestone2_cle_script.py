@@ -46,6 +46,7 @@ def cle_function_init(world_file):
 
     from hbp_nrp_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
     from hbp_nrp_cle.brainsim.PyNNCommunicationAdapter import PyNNCommunicationAdapter
+    import pyNN.nest as sim
 
     import hbp_nrp_cle.tf_framework as nrp
     import hbp_nrp_cle.tf_framework.monitoring as monitoring
@@ -53,52 +54,7 @@ def cle_function_init(world_file):
     # Needed in order to cleanup global static variables
     nrp.start_new_tf_manager()
 
-    # import dependencies from BIBI configuration
-
-    import geometry_msgs.msg #import Twist
-    import hbp_nrp_cle.tf_framework.tf_lib #import detect_red
-    import sensor_msgs.msg #import Image
-
-    # import transfer functions specified in Python
-
-
-
-    @nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1], nrp.population_rate)
-    @nrp.Neuron2Robot(Topic('/monitor/population_rate', cle_ros_msgs.msg.SpikeRate))
-    def left_wheel_neuron_monitor(t, left_wheel_neuron):
-        return cle_ros_msgs.msg.SpikeRate(t, left_wheel_neuron.rate, "left_wheel_neuron_monitor")
-
-
-
-    @nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
-    @nrp.MapSpikeSink("right_wheel_neuron", nrp.brain.actors[2], nrp.leaky_integrator_alpha)
-    @nrp.Neuron2Robot(Topic('/husky/cmd_vel', geometry_msgs.msg.Twist))
-    def linear_twist(t, left_wheel_neuron, right_wheel_neuron):
-
-
-
-
-
-        return geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=20.0 * min(left_wheel_neuron.voltage, right_wheel_neuron.voltage), y=0.0, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=100.0 * (right_wheel_neuron.voltage - left_wheel_neuron.voltage)))
-
-
-    @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
-    @nrp.MapSpikeSource("red_left_eye", nrp.brain.sensors[slice(0, 3, 2)], nrp.poisson)
-    @nrp.MapSpikeSource("red_right_eye", nrp.brain.sensors[slice(1, 4, 2)], nrp.poisson)
-    @nrp.MapSpikeSource("green_blue_eye", nrp.brain.sensors[4], nrp.poisson)
-    @nrp.Robot2Neuron()
-    def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_blue_eye):
-
-        image_results = hbp_nrp_cle.tf_framework.tf_lib.detect_red(image=camera.value)
-
-        red_left_eye.rate = 1000.0 * image_results.left
-        red_right_eye.rate = 1000.0 * image_results.right
-        green_blue_eye.rate = 1000.0 * image_results.go_on
-
-
-
-
-    # consts
+        # consts
     TIMESTEP = 0.02
 
     # set models path variable
@@ -168,6 +124,51 @@ def cle_function_init(world_file):
     tfmanager.robot_adapter = roscomm
     tfmanager.brain_adapter = braincomm
 
+    # import dependencies from BIBI configuration
+
+    import geometry_msgs.msg #import Twist
+    import hbp_nrp_cle.tf_framework.tf_lib #import detect_red
+    import sensor_msgs.msg #import Image
+
+    # import transfer functions specified in Python
+
+
+
+
+
+    @nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1], nrp.population_rate)
+    @nrp.Neuron2Robot(Topic('/monitor/population_rate', cle_ros_msgs.msg.SpikeRate))
+    def left_wheel_neuron_monitor(t, left_wheel_neuron):
+        return cle_ros_msgs.msg.SpikeRate(t, left_wheel_neuron.rate, "left_wheel_neuron_monitor")
+
+
+
+    @nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
+    @nrp.MapSpikeSink("right_wheel_neuron", nrp.brain.actors[2], nrp.leaky_integrator_alpha)
+    @nrp.Neuron2Robot(Topic('/husky/cmd_vel', geometry_msgs.msg.Twist))
+    def linear_twist(t, left_wheel_neuron, right_wheel_neuron):
+
+
+
+
+
+        return geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=20.0 * min(left_wheel_neuron.voltage, right_wheel_neuron.voltage), y=0.0, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=100.0 * (right_wheel_neuron.voltage - left_wheel_neuron.voltage)))
+
+
+    @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
+    @nrp.MapSpikeSource("red_left_eye", nrp.brain.sensors[slice(0, 3, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("red_right_eye", nrp.brain.sensors[slice(1, 4, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("green_blue_eye", nrp.brain.sensors[4], nrp.poisson)
+    @nrp.Robot2Neuron()
+    def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_blue_eye):
+
+        image_results = hbp_nrp_cle.tf_framework.tf_lib.detect_red(image=camera.value)
+
+        red_left_eye.rate = 1000.0 * image_results.left
+        red_right_eye.rate = 1000.0 * image_results.right
+        green_blue_eye.rate = 1000.0 * image_results.go_on
+
+
 
     # Create CLE
     cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
@@ -180,6 +181,7 @@ def cle_function_init(world_file):
     cle_server.notify_finish_task()
     
     return [cle_server, models_path, gzweb, gzserver]
+
 
 def shutdown(cle_server, models_path, gzweb, gzserver):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world

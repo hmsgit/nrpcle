@@ -19,6 +19,7 @@ from .__devices.PyNNPopulationRate import PyNNPopulationRate
 from .__devices.PyNNSpikeRecorder import PyNNSpikeRecorder
 from .__devices.PyNNDeviceGroup import PyNNDeviceGroup
 import logging
+import numpy
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +154,7 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         new_params = {}
         for key in params:
             value = params[key]
-            if hasattr(value, '__getitem__'):
+            if isinstance(value, list) or isinstance(value, numpy.ndarray):
                 value = value[index]
             new_params[key] = value
         return new_params

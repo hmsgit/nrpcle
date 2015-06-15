@@ -283,8 +283,8 @@ def print_neuron_group(neuron_group):
     :return: The neuron group printed to text
     """
     if isinstance(neuron_group, generated_bibi_api.MapSelector):
-        result = "nrp.map_neurons(" + get_collection_source(neuron_group.source) + ", " +\
-                 "lambda i: nrp.brain." + neuron_group.source.population +\
+        result = "nrp.map_neurons(" + get_collection_source(neuron_group.source) + ", " + \
+                 "lambda i: nrp.brain." + neuron_group.source.population + \
                  get_neuron_template(neuron_group.pattern) + ")"
         return result
     elif isinstance(neuron_group, generated_bibi_api.ChainSelector):
@@ -307,13 +307,69 @@ def print_neuron_group(neuron_group):
     raise Exception("Don't know how to print group of type " + neuron_group.extensiontype_)
 
 
+def print_device_config(dev):
+    """
+    Prints the configuration of the given device or device group
+
+    :param dev: The device or device group
+    :return: The device configuration as string
+    """
+    res = ""
+    if dev.synapseDynamics is not None:
+        res += ", synapse_dynamics=" + print_synapse_dynamics(dev.synapseDynamics)
+    elif dev.synapseDynamicsRef is not None:
+        res += ", synapse_dynamics=" + dev.synapseDynamicsRef.ref
+    if dev.connector is not None:
+        res += ", connector=" + print_connector(dev.connector)
+    elif dev.connectorRef is not None:
+        res += ", connector=" + dev.connectorRef.ref
+    if dev.target is not None:
+        res += ", target='" + dev.target.lower() + "'"
+    return res
+
+
+def print_synapse_dynamics(synapse_dynamics):
+    """
+    Creates a synapse dynamics initialization
+
+    :param synapse_dynamics: The synanapse dynamics element
+    :return: Code that creates the synapse dynamics
+    """
+    if isinstance(synapse_dynamics, generated_bibi_api.TsodyksMarkramMechanism):
+        return "sim.SynapseDynamics(fast=" \
+               "sim.TsodyksMarkramMechanism(U={0}, tau_rec={1}, tau_facil={2}))"\
+            .format(synapse_dynamics.u, synapse_dynamics.tau_rec, synapse_dynamics.tau_facil)
+    raise Exception(
+        "Don't know how to print synapse dynamics of type " + synapse_dynamics.extensiontype_)
+
+
+def print_connector(connector):
+    """
+    Creates a neuron connector
+
+    :param connector: The neuron connector model
+    :return: Code that creates the neuron connector
+    """
+    if isinstance(connector, generated_bibi_api.OneToOneConnector):
+        return "sim.OneToOneConnector(weights={0}, delays={1})".format(connector.weights,
+                                                                       connector.delays)
+    if isinstance(connector, generated_bibi_api.AllToAllConnector):
+        return "sim.AllToAllConnector(weights={0}, delays={1})".format(connector.weights,
+                                                                       connector.delays)
+    if isinstance(connector, generated_bibi_api.FixedNumberPreConnector):
+        return "sim.FixedNumberPreConnector({2}, weights={0}, delays={1})".format(
+            connector.weights, connector.delays, connector.count)
+    raise Exception("Don't know how to print connector of type " + connector.extensiontype_)
+
+
 def compute_dependencies(config):
     """
-        Computed the dependencies of the given configuration
+    Computed the dependencies of the given configuration
 
-        :param config: The BIBI configuration
-        """
+    :param config: The BIBI configuration
+    """
     dependencies = set()
+    assert isinstance(config, generated_bibi_api.BIBIConfiguration)
     for tf in config.transferFunction:
         for local in tf.local:
             __add_dependencies_for_expression(local.body, dependencies)

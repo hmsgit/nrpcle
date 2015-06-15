@@ -181,6 +181,25 @@ class TestScript(unittest.TestCase):
         self.assertEqual(print_neuron_group(map),
                          "nrp.map_neurons(range(0, 42), lambda i: nrp.brain.Foo[i])")
 
+    def test_print_synapse_dynamic(self):
+        syn = api.TsodyksMarkramMechanism(u=1.0, tau_rec=0.0, tau_facil=0.0)
+        self.assertEqual(print_synapse_dynamics(syn),
+                         "sim.SynapseDynamics(fast=sim.TsodyksMarkramMechanism(U=1.0, tau_rec=0.0, tau_facil=0.0))")
+        self.assertRaises(Exception, print_synapse_dynamics, None)
+
+    def test_print_connector(self):
+        con = api.OneToOneConnector(delays=0.8, weights=42.0)
+        self.assertEqual(print_connector(con),
+                         "sim.OneToOneConnector(weights=42.0, delays=0.8)")
+        self.assertRaises(Exception, print_connector, None)
+
+    def test_print_device_config(self):
+        dev = api.DeviceChannel()
+        self.assertEqual(print_device_config(dev), "")
+        dev.synapseDynamicsRef = api.SynapseDynamicsRef(ref="Foo")
+        dev.connectorRef = api.NeuronConnectorRef(ref="Bar")
+        dev.target = 'Inhibitory'
+        self.assertEqual(print_device_config(dev), ", synapse_dynamics=Foo, connector=Bar, target='inhibitory'")
 
 if __name__ == '__main__':
     unittest.main()

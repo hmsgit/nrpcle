@@ -46,6 +46,7 @@ def cle_function_init(world_file):
 
     from hbp_nrp_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
     from hbp_nrp_cle.brainsim.PyNNCommunicationAdapter import PyNNCommunicationAdapter
+    import pyNN.nest as sim
 
     import hbp_nrp_cle.tf_framework as nrp
     import hbp_nrp_cle.tf_framework.monitoring as monitoring
@@ -53,62 +54,7 @@ def cle_function_init(world_file):
     # Needed in order to cleanup global static variables
     nrp.start_new_tf_manager()
 
-    # import dependencies from BIBI configuration
-{% for dep in dependencies %}
-    import {{dep[:dep.rfind('.')]}} #import {{dep.split('.')|last()}}{% endfor %}
-
-    # import transfer functions specified in Python
-{% if len(config.transferFunctionImport) > 0 %}    # pylint: disable=W0401
-{% for imp in config.transferFunctionImport %}
-    import {{remove_extension(imp)}}{% endfor %}{% endif %}
-
-{% for tf in config.transferFunction %}{% if tf.extensiontype_ == 'Neuron2Robot' %}
-{% for topic in tf.topic %}{% if is_not_none(topic.body) %}
-    @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% else %}
-    @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
-    @nrp.MapSpikeSource("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% else %}
-    @nrp.MapSpikeSink("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% endif %}{% endfor %}{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
-    @nrp.MapSpikeSource("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% else %}
-    @nrp.MapSpikeSink("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% endif %}{% endfor %}
-    @nrp.Neuron2Robot({% if is_not_none(tf.returnValue) %}Topic('{{tf.returnValue.topic}}', {{tf.returnValue.type_}}){% endif %})
-    def {{tf.name}}(t{% for t in tf.topic %}, {{t.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}{% for group in tf.deviceGroup %}, {{group.name}}{%endfor%}):
-{% for local in tf.local %}
-        {{local.name}} = {{print_expression(local.body)}}{% endfor %}
-{% for dev in tf.device %}{% if is_not_none(dev.body) %}
-        {{dev.name}}.{{get_default_property(dev.type_)}} = {{print_expression(dev.body)}}{% endif %}{% endfor %}
-{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
-        {{group.name}}.{{get_default_property(group.type_)}} = {{print_expression(group.body)}}{% endif %}{% endfor %}
-{% for top in tf.topic %}{% if is_not_none(top.body) %}
-        {{top.name}}.send_message({{print_expression(top.body)}}){% endif %}{% endfor %}
-{% if is_not_none(tf.returnValue) %}
-        return {{print_expression(tf.returnValue.body)}}{% endif %}
-
-{% elif tf.extensiontype_ == 'Neuron2Monitor' %}
-    @nrp.MapSpikeSink("{{tf.device.name}}", {{print_neurons(tf.device.neurons)}}, nrp.{{get_device_name(tf.device.type_)}})
-    @nrp.Neuron2Robot(Topic('{{get_monitoring_topic(tf)}}', {{get_monitoring_type(tf)}}))
-    def {{tf.name}}(t, {{tf.device.name}}):
-        return {{get_monitoring_impl(tf)}}
-
-{% else %}{% for topic in tf.topic %}{% if is_not_none(topic.body) %}
-    @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% else %}
-    @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
-    @nrp.MapSpikeSource("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% else %}
-    @nrp.MapSpikeSink("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}){% endif %}{% endfor %}{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
-    @nrp.MapSpikeSource("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% else %}
-    @nrp.MapSpikeSink("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}){% endif %}{% endfor %}
-    @nrp.Robot2Neuron()
-    def {{tf.name}}(t{% for topic in tf.topic %}, {{topic.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}{% for group in tf.deviceGroup %}, {{group.name}}{%endfor%}):
-{% for local in tf.local %}
-        {{local.name}} = {{print_expression(local.body)}}{% endfor %}
-{% for dev in tf.device %}{% if is_not_none(dev.body) %}
-        {{dev.name}}.{{get_default_property(dev.type_)}} = {{print_expression(dev.body)}}{% endif %}{% endfor %}
-{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
-        {{group.name}}.{{get_default_property(group.type_)}} = {{print_expression(group.body)}}{% endif %}{% endfor %}
-{% for top in tf.topic %}{% if is_not_none(top.body) %}
-        {{top.name}}.send_message({{print_expression(top.body)}}){% endif %}{% endfor %}{% endif %}{% endfor %}
-
-
-    # consts
+        # consts
     TIMESTEP = 0.02
 
     # set models path variable
@@ -195,6 +141,63 @@ def cle_function_init(world_file):
     tfmanager.robot_adapter = roscomm
     tfmanager.brain_adapter = braincomm
 
+    # import dependencies from BIBI configuration
+{% for dep in dependencies %}
+    import {{dep[:dep.rfind('.')]}} #import {{dep.split('.')|last()}}{% endfor %}
+
+    # import transfer functions specified in Python
+{% if len(config.transferFunctionImport) > 0 %}    # pylint: disable=W0401
+{% for imp in config.transferFunctionImport %}
+    import {{remove_extension(imp)}}{% endfor %}{% endif %}
+{% for syn_dyn in config.synapseDynamics %}
+    {{syn_dyn.name}} = {{print_synapse_dynamics(syn_dyn)}}{% endfor %}
+{% for connector in config.connectors %}
+    {{connector.name}} = {{print_connector(connector)}}{% endfor %}
+
+{% for tf in config.transferFunction %}{% if tf.extensiontype_ == 'Neuron2Robot' %}
+{% for topic in tf.topic %}{% if is_not_none(topic.body) %}
+    @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% else %}
+    @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
+    @nrp.MapSpikeSource("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}{{print_device_config(dev)}}){% else %}
+    @nrp.MapSpikeSink("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}{{print_device_config(dev)}}){% endif %}{% endfor %}{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+    @nrp.MapSpikeSource("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}{{print_device_config(group)}}){% else %}
+    @nrp.MapSpikeSink("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}{{print_device_config(group)}}){% endif %}{% endfor %}
+    @nrp.Neuron2Robot({% if is_not_none(tf.returnValue) %}Topic('{{tf.returnValue.topic}}', {{tf.returnValue.type_}}){% endif %})
+    def {{tf.name}}(t{% for t in tf.topic %}, {{t.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}{% for group in tf.deviceGroup %}, {{group.name}}{%endfor%}):
+{% for local in tf.local %}
+        {{local.name}} = {{print_expression(local.body)}}{% endfor %}
+{% for dev in tf.device %}{% if is_not_none(dev.body) %}
+        {{dev.name}}.{{get_default_property(dev.type_)}} = {{print_expression(dev.body)}}{% endif %}{% endfor %}
+{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+        {{group.name}}.{{get_default_property(group.type_)}} = {{print_expression(group.body)}}{% endif %}{% endfor %}
+{% for top in tf.topic %}{% if is_not_none(top.body) %}
+        {{top.name}}.send_message({{print_expression(top.body)}}){% endif %}{% endfor %}
+{% if is_not_none(tf.returnValue) %}
+        return {{print_expression(tf.returnValue.body)}}{% endif %}
+
+{% elif tf.extensiontype_ == 'Neuron2Monitor' %}
+    @nrp.MapSpikeSink("{{tf.device.name}}", {{print_neurons(tf.device.neurons)}}, nrp.{{get_device_name(tf.device.type_)}})
+    @nrp.Neuron2Robot(Topic('{{get_monitoring_topic(tf)}}', {{get_monitoring_type(tf)}}))
+    def {{tf.name}}(t, {{tf.device.name}}):
+        return {{get_monitoring_impl(tf)}}
+
+{% else %}{% for topic in tf.topic %}{% if is_not_none(topic.body) %}
+    @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% else %}
+    @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type_}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
+    @nrp.MapSpikeSource("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}{{print_device_config(dev)}}){% else %}
+    @nrp.MapSpikeSink("{{dev.name}}", {{print_neurons(dev.neurons)}}, nrp.{{get_device_name(dev.type_)}}{{print_device_config(dev)}}){% endif %}{% endfor %}{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+    @nrp.MapSpikeSource("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}{{print_device_config(group)}}){% else %}
+    @nrp.MapSpikeSink("{{group.name}}", {{print_neuron_group(group.neurons)}}, nrp.{{get_device_name(group.type_)}}{{print_device_config(group)}}){% endif %}{% endfor %}
+    @nrp.Robot2Neuron()
+    def {{tf.name}}(t{% for topic in tf.topic %}, {{topic.name}}{%endfor%}{% for dev in tf.device %}, {{dev.name}}{%endfor%}{% for group in tf.deviceGroup %}, {{group.name}}{%endfor%}):
+{% for local in tf.local %}
+        {{local.name}} = {{print_expression(local.body)}}{% endfor %}
+{% for dev in tf.device %}{% if is_not_none(dev.body) %}
+        {{dev.name}}.{{get_default_property(dev.type_)}} = {{print_expression(dev.body)}}{% endif %}{% endfor %}
+{% for group in tf.deviceGroup %}{% if is_not_none(group.body) %}
+        {{group.name}}.{{get_default_property(group.type_)}} = {{print_expression(group.body)}}{% endif %}{% endfor %}
+{% for top in tf.topic %}{% if is_not_none(top.body) %}
+        {{top.name}}.send_message({{print_expression(top.body)}}){% endif %}{% endfor %}{% endif %}{% endfor %}
 
     # Create CLE
     cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
@@ -207,6 +210,7 @@ def cle_function_init(world_file):
     cle_server.notify_finish_task()
     
     return [cle_server, models_path, gzweb, gzserver]
+
 
 def shutdown(cle_server, models_path, gzweb, gzserver):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world

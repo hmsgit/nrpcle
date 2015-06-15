@@ -46,6 +46,7 @@ def cle_function_init(world_file):
 
     from hbp_nrp_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
     from hbp_nrp_cle.brainsim.PyNNCommunicationAdapter import PyNNCommunicationAdapter
+    import pyNN.nest as sim
 
     import hbp_nrp_cle.tf_framework as nrp
     import hbp_nrp_cle.tf_framework.monitoring as monitoring
@@ -53,38 +54,7 @@ def cle_function_init(world_file):
     # Needed in order to cleanup global static variables
     nrp.start_new_tf_manager()
 
-    # import dependencies from BIBI configuration
-
-    import hbp_nrp_cle.tf_framework.tf_lib #import get_color_values
-    import sensor_msgs.msg #import Image
-
-    # import transfer functions specified in Python
-
-
-
-    @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
-    @nrp.MapSpikeSource("red_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson)
-    @nrp.MapSpikeSource("red_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson)
-    @nrp.MapSpikeSource("green_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson)
-    @nrp.MapSpikeSource("green_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson)
-    @nrp.MapSpikeSource("blue_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson)
-    @nrp.MapSpikeSource("blue_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson)
-    @nrp.Robot2Neuron()
-    def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_left_eye, green_right_eye, blue_left_eye, blue_right_eye):
-
-        image_results = hbp_nrp_cle.tf_framework.tf_lib.get_color_values(image=camera.value)
-
-
-        red_left_eye.rate = 250.0 * image_results.left_red
-        red_right_eye.rate = 250.0 * image_results.right_red
-        green_left_eye.rate = 250.0 * image_results.left_green
-        green_right_eye.rate = 250.0 * image_results.right_green
-        blue_left_eye.rate = 250.0 * image_results.left_blue
-        blue_right_eye.rate = 250.0 * image_results.right_blue
-
-
-
-    # consts
+        # consts
     TIMESTEP = 0.02
 
     # set models path variable
@@ -154,6 +124,40 @@ def cle_function_init(world_file):
     tfmanager.robot_adapter = roscomm
     tfmanager.brain_adapter = braincomm
 
+    # import dependencies from BIBI configuration
+
+    import hbp_nrp_cle.tf_framework.tf_lib #import get_color_values
+    import sensor_msgs.msg #import Image
+
+    # import transfer functions specified in Python
+
+
+    synapseDynamics = sim.SynapseDynamics(fast=sim.TsodyksMarkramMechanism(U=1.0, tau_rec=0.0, tau_facil=0.0))
+
+    connector_e = sim.OneToOneConnector(weights=0.0075, delays=0.1)
+    connector_i = sim.OneToOneConnector(weights=0.00375, delays=0.1)
+
+
+    @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
+    @nrp.MapSpikeSource("red_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_e, target='excitatory')
+    @nrp.MapSpikeSource("red_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_e, target='excitatory')
+    @nrp.MapSpikeSource("green_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
+    @nrp.MapSpikeSource("green_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
+    @nrp.MapSpikeSource("blue_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
+    @nrp.MapSpikeSource("blue_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
+    @nrp.Robot2Neuron()
+    def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_left_eye, green_right_eye, blue_left_eye, blue_right_eye):
+
+        image_results = hbp_nrp_cle.tf_framework.tf_lib.get_color_values(image=camera.value)
+
+
+        red_left_eye.rate = 250.0 * image_results.left_red
+        red_right_eye.rate = 250.0 * image_results.right_red
+        green_left_eye.rate = 250.0 * image_results.left_green
+        green_right_eye.rate = 250.0 * image_results.right_green
+        blue_left_eye.rate = 250.0 * image_results.left_blue
+        blue_right_eye.rate = 250.0 * image_results.right_blue
+
 
     # Create CLE
     cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
@@ -166,6 +170,7 @@ def cle_function_init(world_file):
     cle_server.notify_finish_task()
     
     return [cle_server, models_path, gzweb, gzserver]
+
 
 def shutdown(cle_server, models_path, gzweb, gzserver):
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import empty_gazebo_world

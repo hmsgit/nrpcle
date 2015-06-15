@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Generated Tue May 26 10:46:27 2015 by generateDS.py version 2.14a.
+# Generated Fri Jun 12 08:54:46 2015 by generateDS.py version 2.14a.
 #
 # Command line options:
 #   ('-o', 'generated_bibi_api.py')
@@ -652,13 +652,21 @@ def _cast(typ, value):
 class BIBIConfiguration(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, brainModel=None, bodyModel=None, extRobotController=None, transferFunction=None, transferFunctionImport=None):
+    def __init__(self, brainModel=None, bodyModel=None, extRobotController=None, connectors=None, synapseDynamics=None, transferFunction=None, transferFunctionImport=None):
         self.original_tagname_ = None
         self.brainModel = brainModel
         self.bodyModel = bodyModel
         self.validate_SDF_Filename(self.bodyModel)
         self.extRobotController = extRobotController
         self.validate_Script_Filename(self.extRobotController)
+        if connectors is None:
+            self.connectors = []
+        else:
+            self.connectors = connectors
+        if synapseDynamics is None:
+            self.synapseDynamics = []
+        else:
+            self.synapseDynamics = synapseDynamics
         if transferFunction is None:
             self.transferFunction = []
         else:
@@ -679,6 +687,16 @@ class BIBIConfiguration(GeneratedsSuper):
     def set_bodyModel(self, bodyModel): self.bodyModel = bodyModel
     def get_extRobotController(self): return self.extRobotController
     def set_extRobotController(self, extRobotController): self.extRobotController = extRobotController
+    def get_connectors(self): return self.connectors
+    def set_connectors(self, connectors): self.connectors = connectors
+    def add_connectors(self, value): self.connectors.append(value)
+    def insert_connectors_at(self, index, value): self.connectors.insert(index, value)
+    def replace_connectors_at(self, index, value): self.connectors[index] = value
+    def get_synapseDynamics(self): return self.synapseDynamics
+    def set_synapseDynamics(self, synapseDynamics): self.synapseDynamics = synapseDynamics
+    def add_synapseDynamics(self, value): self.synapseDynamics.append(value)
+    def insert_synapseDynamics_at(self, index, value): self.synapseDynamics.insert(index, value)
+    def replace_synapseDynamics_at(self, index, value): self.synapseDynamics[index] = value
     def get_transferFunction(self): return self.transferFunction
     def set_transferFunction(self, transferFunction): self.transferFunction = transferFunction
     def add_transferFunction(self, value): self.transferFunction.append(value)
@@ -715,6 +733,8 @@ class BIBIConfiguration(GeneratedsSuper):
             self.brainModel is not None or
             self.bodyModel is not None or
             self.extRobotController is not None or
+            self.connectors or
+            self.synapseDynamics or
             self.transferFunction or
             self.transferFunctionImport
         ):
@@ -754,6 +774,10 @@ class BIBIConfiguration(GeneratedsSuper):
         if self.extRobotController is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sextRobotController>%s</%sextRobotController>%s' % (namespace_, self.gds_format_string(quote_xml(self.extRobotController).encode(ExternalEncoding), input_name='extRobotController'), namespace_, eol_))
+        for connectors_ in self.connectors:
+            connectors_.export(outfile, level, namespace_, name_='connectors', pretty_print=pretty_print)
+        for synapseDynamics_ in self.synapseDynamics:
+            synapseDynamics_.export(outfile, level, namespace_, name_='synapseDynamics', pretty_print=pretty_print)
         for transferFunction_ in self.transferFunction:
             transferFunction_.export(outfile, level, namespace_, name_='transferFunction', pretty_print=pretty_print)
         for transferFunctionImport_ in self.transferFunctionImport:
@@ -780,6 +804,30 @@ class BIBIConfiguration(GeneratedsSuper):
         if self.extRobotController is not None:
             showIndent(outfile, level)
             outfile.write('extRobotController=%s,\n' % quote_python(self.extRobotController).encode(ExternalEncoding))
+        showIndent(outfile, level)
+        outfile.write('connectors=[\n')
+        level += 1
+        for connectors_ in self.connectors:
+            showIndent(outfile, level)
+            outfile.write('model_.NeuronConnector(\n')
+            connectors_.exportLiteral(outfile, level, name_='NeuronConnector')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('synapseDynamics=[\n')
+        level += 1
+        for synapseDynamics_ in self.synapseDynamics:
+            showIndent(outfile, level)
+            outfile.write('model_.SynapseDynamics(\n')
+            synapseDynamics_.exportLiteral(outfile, level, name_='SynapseDynamics')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
         showIndent(outfile, level)
         outfile.write('transferFunction=[\n')
         level += 1
@@ -826,6 +874,44 @@ class BIBIConfiguration(GeneratedsSuper):
             extRobotController_ = self.gds_validate_string(extRobotController_, node, 'extRobotController')
             self.extRobotController = extRobotController_
             self.validate_Script_Filename(self.extRobotController)    # validate type Script_Filename
+        elif nodeName_ == 'connectors':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <connectors> element')
+            self.connectors.append(obj_)
+            obj_.original_tagname_ = 'connectors'
+        elif nodeName_ == 'synapseDynamics':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <synapseDynamics> element')
+            self.synapseDynamics.append(obj_)
+            obj_.original_tagname_ = 'synapseDynamics'
         elif nodeName_ == 'transferFunction':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -1480,14 +1566,710 @@ class Neuron2Robot(TransferFunction):
 # end class Neuron2Robot
 
 
+class NeuronConnector(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, delays=None, weights=None, name='default', extensiontype_=None):
+        self.original_tagname_ = None
+        self.delays = _cast(float, delays)
+        self.weights = _cast(float, weights)
+        self.name = _cast(None, name)
+        self.extensiontype_ = extensiontype_
+    def factory(*args_, **kwargs_):
+        if NeuronConnector.subclass:
+            return NeuronConnector.subclass(*args_, **kwargs_)
+        else:
+            return NeuronConnector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_delays(self): return self.delays
+    def set_delays(self, delays): self.delays = delays
+    def get_weights(self): return self.weights
+    def set_weights(self, weights): self.weights = weights
+    def get_name(self): return self.name
+    def set_name(self, name): self.name = name
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='NeuronConnector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NeuronConnector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='NeuronConnector', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='NeuronConnector'):
+        if self.delays is not None and 'delays' not in already_processed:
+            already_processed.add('delays')
+            outfile.write(' delays="%s"' % self.gds_format_double(self.delays, input_name='delays'))
+        if self.weights is not None and 'weights' not in already_processed:
+            already_processed.add('weights')
+            outfile.write(' weights="%s"' % self.gds_format_double(self.weights, input_name='weights'))
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+    def exportChildren(self, outfile, level, namespace_='', name_='NeuronConnector', fromsubclass_=False, pretty_print=True):
+        pass
+    def exportLiteral(self, outfile, level, name_='NeuronConnector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.delays is not None and 'delays' not in already_processed:
+            already_processed.add('delays')
+            showIndent(outfile, level)
+            outfile.write('delays=%e,\n' % (self.delays,))
+        if self.weights is not None and 'weights' not in already_processed:
+            already_processed.add('weights')
+            showIndent(outfile, level)
+            outfile.write('weights=%e,\n' % (self.weights,))
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            showIndent(outfile, level)
+            outfile.write('name="%s",\n' % (self.name,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('delays', node)
+        if value is not None and 'delays' not in already_processed:
+            already_processed.add('delays')
+            try:
+                self.delays = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (delays): %s' % exp)
+        value = find_attr_value_('weights', node)
+        if value is not None and 'weights' not in already_processed:
+            already_processed.add('weights')
+            try:
+                self.weights = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (weights): %s' % exp)
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class NeuronConnector
+
+
+class NeuronConnectorRef(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, ref=None):
+        self.original_tagname_ = None
+        self.ref = _cast(None, ref)
+    def factory(*args_, **kwargs_):
+        if NeuronConnectorRef.subclass:
+            return NeuronConnectorRef.subclass(*args_, **kwargs_)
+        else:
+            return NeuronConnectorRef(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ref(self): return self.ref
+    def set_ref(self, ref): self.ref = ref
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='NeuronConnectorRef', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='NeuronConnectorRef')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='NeuronConnectorRef', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='NeuronConnectorRef'):
+        if self.ref is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            outfile.write(' ref=%s' % (self.gds_format_string(quote_attrib(self.ref).encode(ExternalEncoding), input_name='ref'), ))
+    def exportChildren(self, outfile, level, namespace_='', name_='NeuronConnectorRef', fromsubclass_=False, pretty_print=True):
+        pass
+    def exportLiteral(self, outfile, level, name_='NeuronConnectorRef'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.ref is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            showIndent(outfile, level)
+            outfile.write('ref="%s",\n' % (self.ref,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('ref', node)
+        if value is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            self.ref = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class NeuronConnectorRef
+
+
+class OneToOneConnector(NeuronConnector):
+    subclass = None
+    superclass = NeuronConnector
+    def __init__(self, delays=None, weights=None, name='default'):
+        self.original_tagname_ = None
+        super(OneToOneConnector, self).__init__(delays, weights, name, )
+    def factory(*args_, **kwargs_):
+        if OneToOneConnector.subclass:
+            return OneToOneConnector.subclass(*args_, **kwargs_)
+        else:
+            return OneToOneConnector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def hasContent_(self):
+        if (
+            super(OneToOneConnector, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='OneToOneConnector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='OneToOneConnector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='OneToOneConnector', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='OneToOneConnector'):
+        super(OneToOneConnector, self).exportAttributes(outfile, level, already_processed, namespace_, name_='OneToOneConnector')
+    def exportChildren(self, outfile, level, namespace_='', name_='OneToOneConnector', fromsubclass_=False, pretty_print=True):
+        super(OneToOneConnector, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='OneToOneConnector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(OneToOneConnector, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(OneToOneConnector, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        super(OneToOneConnector, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(OneToOneConnector, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class OneToOneConnector
+
+
+class AllToAllConnector(NeuronConnector):
+    subclass = None
+    superclass = NeuronConnector
+    def __init__(self, delays=None, weights=None, name='default'):
+        self.original_tagname_ = None
+        super(AllToAllConnector, self).__init__(delays, weights, name, )
+    def factory(*args_, **kwargs_):
+        if AllToAllConnector.subclass:
+            return AllToAllConnector.subclass(*args_, **kwargs_)
+        else:
+            return AllToAllConnector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def hasContent_(self):
+        if (
+            super(AllToAllConnector, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='AllToAllConnector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='AllToAllConnector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='AllToAllConnector', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='AllToAllConnector'):
+        super(AllToAllConnector, self).exportAttributes(outfile, level, already_processed, namespace_, name_='AllToAllConnector')
+    def exportChildren(self, outfile, level, namespace_='', name_='AllToAllConnector', fromsubclass_=False, pretty_print=True):
+        super(AllToAllConnector, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='AllToAllConnector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(AllToAllConnector, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(AllToAllConnector, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        super(AllToAllConnector, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(AllToAllConnector, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class AllToAllConnector
+
+
+class FixedNumberPreConnector(NeuronConnector):
+    subclass = None
+    superclass = NeuronConnector
+    def __init__(self, delays=None, weights=None, name='default', count=None):
+        self.original_tagname_ = None
+        super(FixedNumberPreConnector, self).__init__(delays, weights, name, )
+        self.count = _cast(int, count)
+    def factory(*args_, **kwargs_):
+        if FixedNumberPreConnector.subclass:
+            return FixedNumberPreConnector.subclass(*args_, **kwargs_)
+        else:
+            return FixedNumberPreConnector(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_count(self): return self.count
+    def set_count(self, count): self.count = count
+    def hasContent_(self):
+        if (
+            super(FixedNumberPreConnector, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='FixedNumberPreConnector', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FixedNumberPreConnector')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='FixedNumberPreConnector', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FixedNumberPreConnector'):
+        super(FixedNumberPreConnector, self).exportAttributes(outfile, level, already_processed, namespace_, name_='FixedNumberPreConnector')
+        if self.count is not None and 'count' not in already_processed:
+            already_processed.add('count')
+            outfile.write(' count="%s"' % self.gds_format_integer(self.count, input_name='count'))
+    def exportChildren(self, outfile, level, namespace_='', name_='FixedNumberPreConnector', fromsubclass_=False, pretty_print=True):
+        super(FixedNumberPreConnector, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='FixedNumberPreConnector'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.count is not None and 'count' not in already_processed:
+            already_processed.add('count')
+            showIndent(outfile, level)
+            outfile.write('count=%d,\n' % (self.count,))
+        super(FixedNumberPreConnector, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(FixedNumberPreConnector, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('count', node)
+        if value is not None and 'count' not in already_processed:
+            already_processed.add('count')
+            try:
+                self.count = int(value)
+            except ValueError, exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.count <= 0:
+                raise_parse_error(node, 'Invalid PositiveInteger')
+        super(FixedNumberPreConnector, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(FixedNumberPreConnector, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class FixedNumberPreConnector
+
+
+class SynapseDynamics(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, name='default', extensiontype_=None):
+        self.original_tagname_ = None
+        self.name = _cast(None, name)
+        self.extensiontype_ = extensiontype_
+    def factory(*args_, **kwargs_):
+        if SynapseDynamics.subclass:
+            return SynapseDynamics.subclass(*args_, **kwargs_)
+        else:
+            return SynapseDynamics(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_name(self): return self.name
+    def set_name(self, name): self.name = name
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='SynapseDynamics', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='SynapseDynamics')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='SynapseDynamics', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='SynapseDynamics'):
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+    def exportChildren(self, outfile, level, namespace_='', name_='SynapseDynamics', fromsubclass_=False, pretty_print=True):
+        pass
+    def exportLiteral(self, outfile, level, name_='SynapseDynamics'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            showIndent(outfile, level)
+            outfile.write('name="%s",\n' % (self.name,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class SynapseDynamics
+
+
+class SynapseDynamicsRef(GeneratedsSuper):
+    subclass = None
+    superclass = None
+    def __init__(self, ref=None):
+        self.original_tagname_ = None
+        self.ref = _cast(None, ref)
+    def factory(*args_, **kwargs_):
+        if SynapseDynamicsRef.subclass:
+            return SynapseDynamicsRef.subclass(*args_, **kwargs_)
+        else:
+            return SynapseDynamicsRef(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ref(self): return self.ref
+    def set_ref(self, ref): self.ref = ref
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='SynapseDynamicsRef', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='SynapseDynamicsRef')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='SynapseDynamicsRef', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='SynapseDynamicsRef'):
+        if self.ref is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            outfile.write(' ref=%s' % (self.gds_format_string(quote_attrib(self.ref).encode(ExternalEncoding), input_name='ref'), ))
+    def exportChildren(self, outfile, level, namespace_='', name_='SynapseDynamicsRef', fromsubclass_=False, pretty_print=True):
+        pass
+    def exportLiteral(self, outfile, level, name_='SynapseDynamicsRef'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.ref is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            showIndent(outfile, level)
+            outfile.write('ref="%s",\n' % (self.ref,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('ref', node)
+        if value is not None and 'ref' not in already_processed:
+            already_processed.add('ref')
+            self.ref = value
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class SynapseDynamicsRef
+
+
+class TsodyksMarkramMechanism(SynapseDynamics):
+    subclass = None
+    superclass = SynapseDynamics
+    def __init__(self, name='default', tau_facil=None, u=None, tau_rec=None):
+        self.original_tagname_ = None
+        super(TsodyksMarkramMechanism, self).__init__(name, )
+        self.tau_facil = _cast(float, tau_facil)
+        self.u = _cast(float, u)
+        self.tau_rec = _cast(float, tau_rec)
+    def factory(*args_, **kwargs_):
+        if TsodyksMarkramMechanism.subclass:
+            return TsodyksMarkramMechanism.subclass(*args_, **kwargs_)
+        else:
+            return TsodyksMarkramMechanism(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_tau_facil(self): return self.tau_facil
+    def set_tau_facil(self, tau_facil): self.tau_facil = tau_facil
+    def get_u(self): return self.u
+    def set_u(self, u): self.u = u
+    def get_tau_rec(self): return self.tau_rec
+    def set_tau_rec(self, tau_rec): self.tau_rec = tau_rec
+    def hasContent_(self):
+        if (
+            super(TsodyksMarkramMechanism, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='TsodyksMarkramMechanism', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='TsodyksMarkramMechanism')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='TsodyksMarkramMechanism', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='TsodyksMarkramMechanism'):
+        super(TsodyksMarkramMechanism, self).exportAttributes(outfile, level, already_processed, namespace_, name_='TsodyksMarkramMechanism')
+        if self.tau_facil is not None and 'tau_facil' not in already_processed:
+            already_processed.add('tau_facil')
+            outfile.write(' tau_facil="%s"' % self.gds_format_double(self.tau_facil, input_name='tau_facil'))
+        if self.u is not None and 'u' not in already_processed:
+            already_processed.add('u')
+            outfile.write(' u="%s"' % self.gds_format_double(self.u, input_name='u'))
+        if self.tau_rec is not None and 'tau_rec' not in already_processed:
+            already_processed.add('tau_rec')
+            outfile.write(' tau_rec="%s"' % self.gds_format_double(self.tau_rec, input_name='tau_rec'))
+    def exportChildren(self, outfile, level, namespace_='', name_='TsodyksMarkramMechanism', fromsubclass_=False, pretty_print=True):
+        super(TsodyksMarkramMechanism, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='TsodyksMarkramMechanism'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.tau_facil is not None and 'tau_facil' not in already_processed:
+            already_processed.add('tau_facil')
+            showIndent(outfile, level)
+            outfile.write('tau_facil=%e,\n' % (self.tau_facil,))
+        if self.u is not None and 'u' not in already_processed:
+            already_processed.add('u')
+            showIndent(outfile, level)
+            outfile.write('u=%e,\n' % (self.u,))
+        if self.tau_rec is not None and 'tau_rec' not in already_processed:
+            already_processed.add('tau_rec')
+            showIndent(outfile, level)
+            outfile.write('tau_rec=%e,\n' % (self.tau_rec,))
+        super(TsodyksMarkramMechanism, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(TsodyksMarkramMechanism, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('tau_facil', node)
+        if value is not None and 'tau_facil' not in already_processed:
+            already_processed.add('tau_facil')
+            try:
+                self.tau_facil = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (tau_facil): %s' % exp)
+        value = find_attr_value_('u', node)
+        if value is not None and 'u' not in already_processed:
+            already_processed.add('u')
+            try:
+                self.u = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (u): %s' % exp)
+        value = find_attr_value_('tau_rec', node)
+        if value is not None and 'tau_rec' not in already_processed:
+            already_processed.add('tau_rec')
+            try:
+                self.tau_rec = float(value)
+            except ValueError, exp:
+                raise ValueError('Bad float/double attribute (tau_rec): %s' % exp)
+        super(TsodyksMarkramMechanism, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        super(TsodyksMarkramMechanism, self).buildChildren(child_, node, nodeName_, True)
+        pass
+# end class TsodyksMarkramMechanism
+
+
 class DeviceChannel(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, type_=None, name=None, neurons=None, body=None):
+    def __init__(self, type_=None, name=None, neurons=None, connector=None, connectorRef=None, synapseDynamics=None, synapseDynamicsRef=None, target=None, body=None):
         self.original_tagname_ = None
         self.type_ = _cast(None, type_)
         self.name = _cast(None, name)
         self.neurons = neurons
+        self.connector = connector
+        self.connectorRef = connectorRef
+        self.synapseDynamics = synapseDynamics
+        self.synapseDynamicsRef = synapseDynamicsRef
+        self.target = target
+        self.validate_NeuronTarget(self.target)
         self.body = body
     def factory(*args_, **kwargs_):
         if DeviceChannel.subclass:
@@ -1497,12 +2279,33 @@ class DeviceChannel(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_neurons(self): return self.neurons
     def set_neurons(self, neurons): self.neurons = neurons
+    def get_connector(self): return self.connector
+    def set_connector(self, connector): self.connector = connector
+    def get_connectorRef(self): return self.connectorRef
+    def set_connectorRef(self, connectorRef): self.connectorRef = connectorRef
+    def get_synapseDynamics(self): return self.synapseDynamics
+    def set_synapseDynamics(self, synapseDynamics): self.synapseDynamics = synapseDynamics
+    def get_synapseDynamicsRef(self): return self.synapseDynamicsRef
+    def set_synapseDynamicsRef(self, synapseDynamicsRef): self.synapseDynamicsRef = synapseDynamicsRef
+    def get_target(self): return self.target
+    def set_target(self, target): self.target = target
     def get_body(self): return self.body
     def set_body(self, body): self.body = body
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
+    def validate_NeuronTarget(self, value):
+        # Validate type NeuronTarget, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+            enumerations = ['Inhibitory', 'Excitatory']
+            enumeration_respectee = False
+            for enum in enumerations:
+                if value == enum:
+                    enumeration_respectee = True
+                    break
+            if not enumeration_respectee:
+                warnings_.warn('Value "%(value)s" does not match xsd enumeration restriction on NeuronTarget' % {"value" : value.encode("utf-8")} )
     def validate_DeviceType(self, value):
         # Validate type DeviceType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
@@ -1517,6 +2320,11 @@ class DeviceChannel(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.neurons is not None or
+            self.connector is not None or
+            self.connectorRef is not None or
+            self.synapseDynamics is not None or
+            self.synapseDynamicsRef is not None or
+            self.target is not None or
             self.body is not None
         ):
             return True
@@ -1554,6 +2362,17 @@ class DeviceChannel(GeneratedsSuper):
             eol_ = ''
         if self.neurons is not None:
             self.neurons.export(outfile, level, namespace_, name_='neurons', pretty_print=pretty_print)
+        if self.connector is not None:
+            self.connector.export(outfile, level, namespace_, name_='connector', pretty_print=pretty_print)
+        if self.connectorRef is not None:
+            self.connectorRef.export(outfile, level, namespace_, name_='connectorRef', pretty_print=pretty_print)
+        if self.synapseDynamics is not None:
+            self.synapseDynamics.export(outfile, level, namespace_, name_='synapseDynamics', pretty_print=pretty_print)
+        if self.synapseDynamicsRef is not None:
+            self.synapseDynamicsRef.export(outfile, level, namespace_, name_='synapseDynamicsRef', pretty_print=pretty_print)
+        if self.target is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%starget>%s</%starget>%s' % (namespace_, self.gds_format_string(quote_xml(self.target).encode(ExternalEncoding), input_name='target'), namespace_, eol_))
         if self.body is not None:
             self.body.export(outfile, level, namespace_, name_='body', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='DeviceChannel'):
@@ -1578,6 +2397,33 @@ class DeviceChannel(GeneratedsSuper):
             self.NeuronSelector.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+        if self.NeuronConnector is not None:
+            showIndent(outfile, level)
+            outfile.write('NeuronConnector=model_.NeuronConnector(\n')
+            self.NeuronConnector.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.connectorRef is not None:
+            showIndent(outfile, level)
+            outfile.write('connectorRef=model_.NeuronConnectorRef(\n')
+            self.connectorRef.exportLiteral(outfile, level, name_='connectorRef')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.SynapseDynamics is not None:
+            showIndent(outfile, level)
+            outfile.write('SynapseDynamics=model_.SynapseDynamics(\n')
+            self.SynapseDynamics.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.synapseDynamicsRef is not None:
+            showIndent(outfile, level)
+            outfile.write('synapseDynamicsRef=model_.SynapseDynamicsRef(\n')
+            self.synapseDynamicsRef.exportLiteral(outfile, level, name_='synapseDynamicsRef')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.target is not None:
+            showIndent(outfile, level)
+            outfile.write('target=%s,\n' % quote_python(self.target).encode(ExternalEncoding))
         if self.FlowExpression is not None:
             showIndent(outfile, level)
             outfile.write('FlowExpression=model_.FlowExpression(\n')
@@ -1621,6 +2467,59 @@ class DeviceChannel(GeneratedsSuper):
                     'Class not implemented for <neurons> element')
             self.neurons = obj_
             obj_.original_tagname_ = 'neurons'
+        elif nodeName_ == 'connector':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <connector> element')
+            self.connector = obj_
+            obj_.original_tagname_ = 'connector'
+        elif nodeName_ == 'connectorRef':
+            obj_ = NeuronConnectorRef.factory()
+            obj_.build(child_)
+            self.connectorRef = obj_
+            obj_.original_tagname_ = 'connectorRef'
+        elif nodeName_ == 'synapseDynamics':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <synapseDynamics> element')
+            self.synapseDynamics = obj_
+            obj_.original_tagname_ = 'synapseDynamics'
+        elif nodeName_ == 'synapseDynamicsRef':
+            obj_ = SynapseDynamicsRef.factory()
+            obj_.build(child_)
+            self.synapseDynamicsRef = obj_
+            obj_.original_tagname_ = 'synapseDynamicsRef'
+        elif nodeName_ == 'target':
+            target_ = child_.text
+            target_ = self.gds_validate_string(target_, node, 'target')
+            self.target = target_
+            self.validate_NeuronTarget(self.target)    # validate type NeuronTarget
         elif nodeName_ == 'body':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -1646,11 +2545,17 @@ class DeviceChannel(GeneratedsSuper):
 class DeviceGroupChannel(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, type_=None, name=None, neurons=None, body=None):
+    def __init__(self, type_=None, name=None, neurons=None, connector=None, connectorRef=None, synapseDynamics=None, synapseDynamicsRef=None, target=None, body=None):
         self.original_tagname_ = None
         self.type_ = _cast(None, type_)
         self.name = _cast(None, name)
         self.neurons = neurons
+        self.connector = connector
+        self.connectorRef = connectorRef
+        self.synapseDynamics = synapseDynamics
+        self.synapseDynamicsRef = synapseDynamicsRef
+        self.target = target
+        self.validate_NeuronTarget(self.target)
         self.body = body
     def factory(*args_, **kwargs_):
         if DeviceGroupChannel.subclass:
@@ -1660,12 +2565,33 @@ class DeviceGroupChannel(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_neurons(self): return self.neurons
     def set_neurons(self, neurons): self.neurons = neurons
+    def get_connector(self): return self.connector
+    def set_connector(self, connector): self.connector = connector
+    def get_connectorRef(self): return self.connectorRef
+    def set_connectorRef(self, connectorRef): self.connectorRef = connectorRef
+    def get_synapseDynamics(self): return self.synapseDynamics
+    def set_synapseDynamics(self, synapseDynamics): self.synapseDynamics = synapseDynamics
+    def get_synapseDynamicsRef(self): return self.synapseDynamicsRef
+    def set_synapseDynamicsRef(self, synapseDynamicsRef): self.synapseDynamicsRef = synapseDynamicsRef
+    def get_target(self): return self.target
+    def set_target(self, target): self.target = target
     def get_body(self): return self.body
     def set_body(self, body): self.body = body
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
+    def validate_NeuronTarget(self, value):
+        # Validate type NeuronTarget, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+            enumerations = ['Inhibitory', 'Excitatory']
+            enumeration_respectee = False
+            for enum in enumerations:
+                if value == enum:
+                    enumeration_respectee = True
+                    break
+            if not enumeration_respectee:
+                warnings_.warn('Value "%(value)s" does not match xsd enumeration restriction on NeuronTarget' % {"value" : value.encode("utf-8")} )
     def validate_DeviceType(self, value):
         # Validate type DeviceType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
@@ -1680,6 +2606,11 @@ class DeviceGroupChannel(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.neurons is not None or
+            self.connector is not None or
+            self.connectorRef is not None or
+            self.synapseDynamics is not None or
+            self.synapseDynamicsRef is not None or
+            self.target is not None or
             self.body is not None
         ):
             return True
@@ -1717,6 +2648,17 @@ class DeviceGroupChannel(GeneratedsSuper):
             eol_ = ''
         if self.neurons is not None:
             self.neurons.export(outfile, level, namespace_, name_='neurons', pretty_print=pretty_print)
+        if self.connector is not None:
+            self.connector.export(outfile, level, namespace_, name_='connector', pretty_print=pretty_print)
+        if self.connectorRef is not None:
+            self.connectorRef.export(outfile, level, namespace_, name_='connectorRef', pretty_print=pretty_print)
+        if self.synapseDynamics is not None:
+            self.synapseDynamics.export(outfile, level, namespace_, name_='synapseDynamics', pretty_print=pretty_print)
+        if self.synapseDynamicsRef is not None:
+            self.synapseDynamicsRef.export(outfile, level, namespace_, name_='synapseDynamicsRef', pretty_print=pretty_print)
+        if self.target is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%starget>%s</%starget>%s' % (namespace_, self.gds_format_string(quote_xml(self.target).encode(ExternalEncoding), input_name='target'), namespace_, eol_))
         if self.body is not None:
             self.body.export(outfile, level, namespace_, name_='body', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='DeviceGroupChannel'):
@@ -1741,6 +2683,33 @@ class DeviceGroupChannel(GeneratedsSuper):
             self.NeuronGroupSelector.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+        if self.NeuronConnector is not None:
+            showIndent(outfile, level)
+            outfile.write('NeuronConnector=model_.NeuronConnector(\n')
+            self.NeuronConnector.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.connectorRef is not None:
+            showIndent(outfile, level)
+            outfile.write('connectorRef=model_.NeuronConnectorRef(\n')
+            self.connectorRef.exportLiteral(outfile, level, name_='connectorRef')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.SynapseDynamics is not None:
+            showIndent(outfile, level)
+            outfile.write('SynapseDynamics=model_.SynapseDynamics(\n')
+            self.SynapseDynamics.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.synapseDynamicsRef is not None:
+            showIndent(outfile, level)
+            outfile.write('synapseDynamicsRef=model_.SynapseDynamicsRef(\n')
+            self.synapseDynamicsRef.exportLiteral(outfile, level, name_='synapseDynamicsRef')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.target is not None:
+            showIndent(outfile, level)
+            outfile.write('target=%s,\n' % quote_python(self.target).encode(ExternalEncoding))
         if self.FlowExpression is not None:
             showIndent(outfile, level)
             outfile.write('FlowExpression=model_.FlowExpression(\n')
@@ -1784,6 +2753,59 @@ class DeviceGroupChannel(GeneratedsSuper):
                     'Class not implemented for <neurons> element')
             self.neurons = obj_
             obj_.original_tagname_ = 'neurons'
+        elif nodeName_ == 'connector':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <connector> element')
+            self.connector = obj_
+            obj_.original_tagname_ = 'connector'
+        elif nodeName_ == 'connectorRef':
+            obj_ = NeuronConnectorRef.factory()
+            obj_.build(child_)
+            self.connectorRef = obj_
+            obj_.original_tagname_ = 'connectorRef'
+        elif nodeName_ == 'synapseDynamics':
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <synapseDynamics> element')
+            self.synapseDynamics = obj_
+            obj_.original_tagname_ = 'synapseDynamics'
+        elif nodeName_ == 'synapseDynamicsRef':
+            obj_ = SynapseDynamicsRef.factory()
+            obj_.build(child_)
+            self.synapseDynamicsRef = obj_
+            obj_.original_tagname_ = 'synapseDynamicsRef'
+        elif nodeName_ == 'target':
+            target_ = child_.text
+            target_ = self.gds_validate_string(target_, node, 'target')
+            self.target = target_
+            self.validate_NeuronTarget(self.target)    # validate type NeuronTarget
         elif nodeName_ == 'body':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -4612,24 +5634,28 @@ class ConstantString(FlowExpression):
 
 
 GDSClassesMapping = {
-    'bibi': BIBIConfiguration,
-    'transferFunction': TransferFunction,
-    'deviceGroup': DeviceGroupChannel,
-    'populations': MultiNeuronSelector,
-    'pattern': NeuronSelectorTemplate,
-    'operand': FlowExpression,
-    'body': FlowExpression,
+    'connectorRef': NeuronConnectorRef,
+    'synapseDynamics': SynapseDynamics,
     'argument': Argument,
-    'value': FlowExpression,
     'topic': TopicChannel,
-    'source': MultiNeuronSelector,
     'connectors': NeuronGroupSelector,
     'neurons': NeuronSelector,
-    'inner': FlowExpression,
     'returnValue': TopicChannel,
+    'operand': FlowExpression,
+    'transferFunction': TransferFunction,
+    'deviceGroup': DeviceGroupChannel,
+    'pattern': NeuronSelectorTemplate,
+    'connector': NeuronConnector,
+    'source': MultiNeuronSelector,
+    'inner': FlowExpression,
+    'local': Local,
+    'bibi': BIBIConfiguration,
+    'populations': MultiNeuronSelector,
+    'body': FlowExpression,
     'device': DeviceChannel,
     'brainModel': BrainModel,
-    'local': Local,
+    'synapseDynamicsRef': SynapseDynamicsRef,
+    'value': FlowExpression,
 }
 
 
@@ -4749,6 +5775,7 @@ if __name__ == '__main__':
 
 __all__ = [
     "Add",
+    "AllToAllConnector",
     "Argument",
     "ArgumentReference",
     "BIBIConfiguration",
@@ -4760,6 +5787,7 @@ __all__ = [
     "DeviceChannel",
     "DeviceGroupChannel",
     "Divide",
+    "FixedNumberPreConnector",
     "FlowExpression",
     "Index",
     "IndexTemplate",
@@ -4773,9 +5801,12 @@ __all__ = [
     "Multiply",
     "Neuron2Monitor",
     "Neuron2Robot",
+    "NeuronConnector",
+    "NeuronConnectorRef",
     "NeuronGroupSelector",
     "NeuronSelector",
     "NeuronSelectorTemplate",
+    "OneToOneConnector",
     "Operator",
     "Population",
     "Range",
@@ -4784,6 +5815,9 @@ __all__ = [
     "Scale",
     "SimulationStep",
     "Subtract",
+    "SynapseDynamics",
+    "SynapseDynamicsRef",
     "TopicChannel",
-    "TransferFunction"
+    "TransferFunction",
+    "TsodyksMarkramMechanism"
 ]
