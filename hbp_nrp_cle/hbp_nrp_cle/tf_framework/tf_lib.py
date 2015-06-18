@@ -61,7 +61,7 @@ def detect_red(image):
     return __results(red_left, red_right, green_blue)
 
 
-def get_color_values(image):
+def get_color_values(image, width=40, height=30):
     """
     Gets the color values of an image for use in the Braitenberg demo.
     An incoming image is resized and then analyzed per pixel. All the red, green and blue values
@@ -74,26 +74,28 @@ def get_color_values(image):
     """
     # assert isinstance(image, sensor_msgs.msg.Image)
     # pixel_values = np.zeros((30, 30, 3), np.float64)
-    red_left_rate = np.zeros(600)
-    green_left_rate = np.zeros(600)
-    blue_left_rate = np.zeros(600)
-    red_right_rate = np.zeros(600)
-    green_right_rate = np.zeros(600)
-    blue_right_rate = np.zeros(600)
+    half_width = width / 2
+    n = half_width * height
+    red_left_rate = np.zeros(n)
+    green_left_rate = np.zeros(n)
+    blue_left_rate = np.zeros(n)
+    red_right_rate = np.zeros(n)
+    green_right_rate = np.zeros(n)
+    blue_right_rate = np.zeros(n)
     if not isinstance(image, type(None)):  # Problem: starts as NoneType
         # print eye_sensor.changed
         # load image in [0,1]
         cv_image = bridge.imgmsg_to_cv2(image, "rgb8") / 256.
         # resize, then intensify values but keep in [0,1]
-        cv_image = cv2.resize(cv_image, (40, 30))
+        cv_image = cv2.resize(cv_image, (width, height))
         cv_image = 5000 ** cv_image / 5000
 
-        red_left_rate = cv_image[:, 0:20, 0].flatten()
-        green_left_rate = cv_image[:, 0:20, 1].flatten()
-        blue_left_rate = cv_image[:, 0:20, 2].flatten()
-        red_right_rate = cv_image[:, 20:40, 0].flatten()
-        green_right_rate = cv_image[:, 20:40, 1].flatten()
-        blue_right_rate = cv_image[:, 20:40, 2].flatten()
+        red_left_rate = cv_image[:, 0:half_width, 0].flatten()
+        green_left_rate = cv_image[:, 0:half_width, 1].flatten()
+        blue_left_rate = cv_image[:, 0:half_width, 2].flatten()
+        red_right_rate = cv_image[:, half_width:width, 0].flatten()
+        green_right_rate = cv_image[:, half_width:width, 1].flatten()
+        blue_right_rate = cv_image[:, half_width:width, 2].flatten()
 
     class __results(object):
         """

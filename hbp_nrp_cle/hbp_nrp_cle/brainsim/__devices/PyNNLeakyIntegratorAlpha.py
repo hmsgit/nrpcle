@@ -153,11 +153,13 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         if connector is None:
             warnings.warn("Default weights and delays are used.",
                           UserWarning)
-            if target == 'excitatory':
-                weights = sim.RandomDistribution('uniform', [0.01, 0.01])
-            else:
-                weights = sim.RandomDistribution('uniform', [-0.01, -0.01])
-            delays = sim.RandomDistribution('uniform', [.1, .1])
+            weights = params.get('weights')
+            if weights is None:
+                if target == 'excitatory':
+                    weights = sim.RandomDistribution('uniform', [0.01, 0.01])
+                else:
+                    weights = sim.RandomDistribution('uniform', [-0.01, -0.01])
+            delays = params.get('delays', sim.RandomDistribution('uniform', [.1, .1]))
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
         proj = sim.Projection(presynaptic_population=neurons,

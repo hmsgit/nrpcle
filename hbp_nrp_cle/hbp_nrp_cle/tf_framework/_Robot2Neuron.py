@@ -106,13 +106,17 @@ class Robot2Neuron(TransferFunction):
         :param func: The function implementing the transfer function
         :return: The transfer function object
         """
-        self.__func = func
-        r2n_funcs = config.active_node.r2n
-        r2n_funcs.append(self)
-        args = inspect.getargspec(func).args
-        if args[0] != "t":
-            raise Exception("The first parameter of a transfer function must be the time!")
-        self._params = list(args)
+        if self.__func is None:
+            self.__func = func
+            r2n_funcs = config.active_node.r2n
+            r2n_funcs.append(self)
+            args = inspect.getargspec(func).args
+            if args[0] != "t":
+                raise Exception("The first parameter of a transfer function must be the time!")
+            self._params = list(args)
+        else:
+            raise Exception("It is not allowed to change the underlying function of a Transfer "
+                            "Function after it has been initially set.")
         return self
 
     def __repr__(self):  # pragma: no cover

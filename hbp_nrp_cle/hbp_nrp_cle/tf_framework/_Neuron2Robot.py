@@ -174,13 +174,17 @@ class Neuron2Robot(TransferFunction):
         :param func: The function body for this transfer function
         :return The transfer function object
         """
-        self.__func = func
-        n2r_funcs = config.active_node.n2r
-        n2r_funcs.append(self)
-        args = inspect.getargspec(func).args
-        if args[0] != "t":
-            raise Exception("The first parameter of a transfer function must be the time!")
-        self._params = list(args)
+        if self.__func is None:
+            self.__func = func
+            n2r_funcs = config.active_node.n2r
+            n2r_funcs.append(self)
+            args = inspect.getargspec(func).args
+            if args[0] != "t":
+                raise Exception("The first parameter of a transfer function must be the time!")
+            self._params = list(args)
+        else:
+            raise Exception("It is not allowed to change the underlying function of a Transfer "
+                            "Function after it has been initially set.")
         return self
 
     def replace_params(self):  # -> None:
@@ -197,7 +201,7 @@ class Neuron2Robot(TransferFunction):
                 elif param_name.startswith("n"):
                     gid = int(param_name[1:])
                 self._params[i] = MapSpikeSink(self._params[i], [gid],
-                                                     ILeakyIntegratorAlpha)
+                                               ILeakyIntegratorAlpha)
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} using {2}" \
