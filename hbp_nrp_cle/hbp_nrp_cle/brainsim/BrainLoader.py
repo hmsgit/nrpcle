@@ -7,7 +7,6 @@ __author__ = "Lorenzo Vannucci"
 import pyNN.nest as sim
 import hbp_nrp_cle.tf_framework.config as config
 import numpy as np
-import h5py
 import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
 import logging
@@ -48,6 +47,7 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
     :type neuron_ids: list of ids
     :param str synapse_model: Specifies the synapse model that will be used.
     """
+    import h5py
 
     logger.info("Opening h5 datafile \"" + h5_filename + "\" ... ")
     h5file = h5py.File(h5_filename, 'r')
@@ -208,8 +208,8 @@ def load_py_network(path, populations):
     :param populations: A dictionary of the populations and their ids
     """
     logger.info("Loading brain model from python: " + path)
-    brain_module = imp.load_source('__brain_model' + str(__brainIndex), path)
     global __brainIndex
+    brain_module = imp.load_source('__brain_model' + str(__brainIndex), path)
     __brainIndex += 1
     try:
         circuit = brain_module.circuit

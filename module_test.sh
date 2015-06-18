@@ -5,19 +5,20 @@
 
 # Check out NRP platform
 git clone ssh://bbpcode.epfl.ch/neurorobotics/CLE
+git clone ssh://bbpcode.epfl.ch/neurorobotics/GazeboRosPackages
 git clone ssh://bbpcode.epfl.ch/neurorobotics/Models
 
-export PYTHONPATH=$PYTHONPATH:$PWD/CLE/GazeboRosPackage/devel/lib/python2.7/site-packages
+export PYTHONPATH=$PYTHONPATH:$PWD/GazeboRosPackages/devel/lib/python2.7/site-packages
 export PYTHONPATH=$PYTHONPATH:$PWD/CLE/hbp_nrp_cle
 export NRP_MODELS_DIRECTORY=$PWD/Models
 
 # Installing the ros package to control gazebo
-cd CLE/GazeboRosPackage/src/
+cd GazeboRosPackages/src/
 catkin_init_workspace
 cd ..
 catkin_make
 source devel/setup.bash
-cd ../..
+cd ..
 
 # start roscore and gzserver
 echo "Starting roscore"
@@ -34,6 +35,7 @@ python CLE/hbp_nrp_cle/hbp_nrp_cle/tests/module/module_test.py
 
 # Cleanup after ourselves
 rm -rf CLE
+rm -rf GazeboRosPackages
 rm -rf Models
 pgrep -f ros | xargs kill -9
 killall gzserver

@@ -20,12 +20,11 @@ import sys
 failed = False
 monitor_called = False
 
-log_format = '%(asctime)s [%(threadName)-12.12s] [%(name)-12.12s] [%(levelname)s]  %(message)s'
+log_format = '%(asctime)s [CLIENT:%(threadName)-12.12s] [%(name)-12.12s] [%(levelname)s]  %(message)s'
 logger = logging.getLogger(__name__)
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(logging.Formatter(log_format))
 logger.setLevel(logging.DEBUG)
-logger.addHandler(console_handler)
 
 
 def unhandled_exception(type, value, traceback):
@@ -67,25 +66,32 @@ def run_integration_test():
         # First, start simulation factory
         sim_factory = subprocess.Popen([sys.executable, run_masked_simulation])
 
-        rospy.init_node('integration_test_monitor')
+        rospy.init_node('module_test_monitor')
         # rospy overrides logging!
         logging.root.addHandler(console_handler)
         rospy.Subscriber("/monitor/population_rate", SpikeRate, monitor_callback)
-        rospy.Subscriber("/integration_test/exceptions", std_msgs.msg.String, exception_callback)
+        rospy.Subscriber("/module_test/exceptions", std_msgs.msg.String, exception_callback)
         monitor_thread = Thread(target=rospy.spin)
 
         monitor_thread.start()
 
-        generate_cle(os.path.join(current_dir, 'milestone2.xml'), generated_bibi_path, 50)
+        logging.info("Generating CLE")
+        generate_cle(os.path.join(current_dir, 'milestone2.xml'),
+                     generated_bibi_path, 50, 'local', 0)
 
+        logging.info("Creating CLE Server")
         client = ROSCLESimulationFactoryClient()
-        client.start_new_simulation('virtual_room/virtual_room.sdf', generated_bibi_path, 'local')
+        client.start_new_simulation('virtual_room/virtual_room.sdf', generated_bibi_path)
 
-        cle = ROSCLEClient()
+        logging.info("Creating CLE Client")
+        cle = ROSCLEClient(0)
 
+        logging.info("Starting CLE Server")
         cle.start()
         time.sleep(10)
+        logging.info("Stopping CLE Server")
         cle.stop()
+        logging.info("Module Test completed, running assertions")
 
     except Exception, e:
         global failed
@@ -95,7 +101,7 @@ def run_integration_test():
     finally:
         if sim_factory is not None:
             sim_factory.kill()
-        rospy.signal_shutdown("Integration test is done")
+        rospy.signal_shutdown("Module test is done")
 
         if os.path.isfile(generated_bibi_path):
             os.remove(generated_bibi_path)
