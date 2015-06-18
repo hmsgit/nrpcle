@@ -30,6 +30,16 @@ by using the **imp** module.
 The **imp** module represents the internals of the *import* statement of python. Therefore, the same machinery is used as for usual Python code. That means for a typical environment running CPython
 that C code will be generated for the user defined transfer functions which is then run at every timestep. We use this machinery to minimize the cost of transfer functions for the overall simulations.
 
+An example of the BIBI generator script can be seen below.
+
+.. literalinclude:: ../../hbp_nrp_cle/bibi_config/cle_template.pyt
+    :language: python
+    :lines: 65-84
+
+The **{% for local in tf.local %}** directives specify that the template parts until the corresponding **{% endfor %}** should be generated for each element of the **tf.local** collection. Within this template,
+the contents of *local* can be printed through double braces as for example **{{print_expression(local.body)}}** that would call the *print_expression* function with the *body* property of *local*.
+Jinja2 knows the *print_expression* function as all globally defined functions of the *bibi_configuration_script* are automatically forwarded to the Jinja2 templating engine.
+
 .. _bibi-security:
 
 Security
