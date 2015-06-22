@@ -37,6 +37,8 @@ class MapNeuronSelector(NeuronSelector):
         :param mapping: The mapping function
         """
         super(MapNeuronSelector, self).__init__()
+        if isinstance(neuron_range, int):
+            neuron_range = range(0, neuron_range)
         self.__neuron_range = neuron_range
         self.__mapping = mapping
 
