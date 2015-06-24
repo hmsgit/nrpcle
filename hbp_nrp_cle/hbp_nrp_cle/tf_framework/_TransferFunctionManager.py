@@ -86,7 +86,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         # Wire transfer functions from neuronal simulation to world simulation
         for _n2r in self.__n2r:
             assert isinstance(_n2r, Neuron2Robot)
-            print("Initialize transfer function ", repr(_n2r))
+            logger.info("Initialize transfer function " + repr(_n2r))
             _n2r.replace_params()
 
             if _n2r.topic is not None:
@@ -100,7 +100,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         # Wire transfer functions from world simulation to neuronal simulation
         for _r2n in self.__r2n:
             assert isinstance(_r2n, Robot2Neuron)
-            print("Initialize transfer function ", repr(_r2n))
+            logger.info("Initialize transfer function " + repr(_r2n))
             _r2n.check_params()
 
             for i in range(1, len(_r2n.params)):
@@ -119,7 +119,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         for _n2r in self.__n2r:
             if _n2r.topic is not None:
-                logger.info("unregister topic" + repr(_n2r))
+                logger.info("Unregister topic " + repr(_n2r))
                 _n2r.topic.unregister()
 
     @staticmethod
