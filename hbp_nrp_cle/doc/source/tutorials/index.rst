@@ -12,3 +12,4 @@ Tutorials
    python_only_tfs
    deviceGroups
    custom_devices
+   state_machines
