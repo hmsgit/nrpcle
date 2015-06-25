@@ -16,3 +16,4 @@ build/
 .pydevproject
 .settings
 ContinuousIntegration/
+.idea/
