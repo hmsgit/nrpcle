@@ -9,7 +9,7 @@ Two implementation of the CLE interface are given:
 
 a.  ClosedLoopEngine is a fully parallel implementation in which the physics
     simulation, the neural simulation and the transfer functions run in
-    separate threads. Currenty, a bug in NEST makes it impossible to use
+    separate threads. Currently, a bug in NEST makes it impossible to use
     this implementation as running the neural simulation in a separate thread
     causes a segmentation fault.
 
@@ -18,7 +18,7 @@ b.  SerialClosedLoopEngine is an implementation that overcomes the NEST bug
     thread, obviously reducing the performances.
 
 The ROSCLEServer module provides utility classes to run the Closed Loop
-Engine in a separate process, while comunicating with it through ROS services.
+Engine in a separate process, while communicating with it through ROS services.
 """
 from hbp_nrp_cle import config
 

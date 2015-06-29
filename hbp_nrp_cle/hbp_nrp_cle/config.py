@@ -23,7 +23,7 @@ config.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.in
 logger.info('Checking network interfaces.')
 for iface in config.get('network', 'interfaces').split(','):
     logger.info('Trying %s... ', iface)
-    # check if iface is avaiable on the system
+    # check if iface is available on the system
     if iface in netifaces.interfaces():
         addr = netifaces.ifaddresses(iface)
         # check if iface is connected

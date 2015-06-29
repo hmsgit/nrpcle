@@ -12,12 +12,11 @@ from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion
 from lxml import etree
 import logging
-from hbp_nrp_cle.cle import ROSCLEClient
 from hbp_nrp_cle.bibi_config.notificator import Notificator
 
 logger = logging.getLogger(__name__)
 
-TIMEOUT = ROSCLEClient.ROSCLEClient.ROS_SERVICE_TIMEOUT
+TIMEOUT = 180  # duplicated ROSCLEClient.ROSCLEClient.ROS_SERVICE_TIMEOUT
 
 
 def load_gazebo_world_file(world_file):
