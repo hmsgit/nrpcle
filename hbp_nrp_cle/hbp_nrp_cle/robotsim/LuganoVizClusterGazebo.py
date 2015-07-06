@@ -112,7 +112,6 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     ALLOCATION_COMMAND = ("salloc --immediate=25 --time=10:00:00 -p interactive"
                           " -c 4 --account=proj16 --gres=gpu:1")
     DEALLOCATION_COMMAND = 'scancel %s'
-    KINIT_COMMAND = 'kinit bbpsoatest@INTRANET.EPFL.CH -k -t /etc/krb5.keytab.d/bbpsoatest.keytab'
     NODE_DOMAIN = '.cscs.ch'
     # Timeout used for pexpect ssh connection calls.
     TIMEOUT = 20
@@ -141,7 +140,6 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         ssh_SLURM_frontend_process = pexpect.spawn('bash',
                                                    logfile=logger)
-        ssh_SLURM_frontend_process.sendline(self.KINIT_COMMAND)
         ssh_SLURM_frontend_process.sendline(self.CLUSTER_SLURM_FRONTEND)
         result = ssh_SLURM_frontend_process.expect(['[bbpsoatest@bbpviz1 ~]$',
                                                     'password',
@@ -219,9 +217,9 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
 
         vglconnect_process = pexpect.spawn('bash',
-                                           env={"DISPLAY": ":1"},
+                                           env={"DISPLAY": ":1",
+                                                "HOME": "/home/bbpsoatest"},
                                            logfile=logger)
-        vglconnect_process.sendline(self.KINIT_COMMAND)
         vglconnect_process.sendline(('vglconnect bbpsoatest@' +
                                      self.__node +
                                      self.NODE_DOMAIN))
