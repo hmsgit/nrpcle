@@ -29,13 +29,16 @@ source $ROS_SETUP_FILE
 # Create a python venv in order to get the bases ROS install tools
 virtualenv build_venv
 . build_venv/bin/activate
-pip install catkin_pkg
-pip install empy
-pip install PyYAML
-pip install rospkg
-pip install netifaces
-pip install rosinstall
-pip install rosinstall_generator
+
+USE_DEV_PI="-i http://bbpgb019.epfl.ch:9090/simple"
+
+pip install $USE_DEV_PI catkin_pkg
+pip install $USE_DEV_PI empy
+pip install $USE_DEV_PI PyYAML
+pip install $USE_DEV_PI rospkg
+pip install $USE_DEV_PI netifaces
+pip install $USE_DEV_PI rosinstall
+pip install $USE_DEV_PI rosinstall_generator
 
 #pip install rosdep 
 #sudo pip install --upgrade setuptools # Was necessary in the virtual machine
