@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Installing the ros package to control gazebo
-cd GazeboRosPackage/src/
-catkin_init_workspace
-cd ..
-catkin_make
-source devel/setup.bash
-# catkin_make install
-cd ..
-
 # start roscore to enable tests using ROS
 echo "Starting roscore"
 roscore &

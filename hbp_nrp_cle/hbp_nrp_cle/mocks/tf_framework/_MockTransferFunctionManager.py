@@ -76,6 +76,14 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         """
         return self.__n2rTimes
 
+    def transfer_functions(self):
+        """
+        Gets the list of Transfer Functions managed by this mock
+
+        :return: An empty list
+        """
+        return []
+
     @property
     def sleep_time(self):
         """

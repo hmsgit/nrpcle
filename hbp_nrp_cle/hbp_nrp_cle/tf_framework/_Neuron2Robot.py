@@ -204,7 +204,7 @@ class Neuron2Robot(TransferFunction):
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} using {2}" \
-            .format(self._func, self.__main_topic, self._params)
+            .format(self.name, self.__main_topic, self._params)
 
     def run(self, t):  # -> None:
         """

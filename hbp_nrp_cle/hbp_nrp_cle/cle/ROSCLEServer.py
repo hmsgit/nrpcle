@@ -380,7 +380,10 @@ class ROSCLEServer(threading.Thread):
             'state': str(self.__state),
             'timeout': self.__get_remaining(),
             'simulationTime': int(self.__cle.simulation_time),
-            'realTime': int(self.__cle.real_time)
+            'realTime': int(self.__cle.real_time),
+            'transferFunctionsElapsedTime': self.__cle.tf_elapsed_time(),
+            'brainsimElapsedTime': self.__cle.brainsim_elapsed_time(),
+            'robotsimElapsedTime': self.__cle.robotsim_elapsed_time()
         }
         logger.info(json.dumps(message))
         self.__push_status_on_ros(json.dumps(message))

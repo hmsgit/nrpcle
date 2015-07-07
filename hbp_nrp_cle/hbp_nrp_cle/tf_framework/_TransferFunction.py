@@ -19,6 +19,16 @@ class TransferFunction(object):
     def __init__(self):
         self._params = []
         self._func = None
+        self.__elapsed_time = 0.0
+
+    @property
+    def name(self):
+        """
+        Gets the name of the Transfer Function
+
+        :return: The name of the Transfer Function as string
+        """
+        return self._func.__name__
 
     @property
     def params(self):
@@ -29,6 +39,22 @@ class TransferFunction(object):
         :return: A list of adapters
         """
         return self._params
+
+    @property
+    def elapsed_time(self):
+        """
+        Gets the elapsed time for this Transfer Function
+
+        :return: The elapsed time for this TF in seconds
+        """
+        return self.__elapsed_time
+
+    @elapsed_time.setter
+    def elapsed_time(self, value):
+        """
+        Sets the elapsed time for this Transfer Function
+        """
+        self.__elapsed_time = value
 
     def get_source(self):
         """
@@ -41,7 +67,7 @@ class TransferFunction(object):
         (See python inspect module documentation)
         """
         source = "# Transfer function not loaded properly."
-        if (self._func):
+        if self._func:
             try:
                 source = inspect.getsource(self._func)
             except IOError as e:

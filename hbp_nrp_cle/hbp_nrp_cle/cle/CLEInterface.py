@@ -72,6 +72,24 @@ class IClosedLoopControl(object):  # pragma: no cover
         """
         raise NotImplementedError("Method not implemented")
 
+    def tf_elapsed_time(self):
+        """
+        Gets the time share of the Transfer Functions
+        """
+        raise NotImplementedError("Method not implemented")
+
+    def brainsim_elapsed_time(self):
+        """
+        Gets the time share of the brain simulation
+        """
+        raise NotImplementedError("Method not implemented")
+
+    def robotsim_elapsed_time(self):
+        """
+        Gets the time share of the robot simulation
+        """
+        raise NotImplementedError("Method not implemented")
+
     def wait_step(self):  # -> None
         """
         Wait for the currently running simulation step to end.
