@@ -97,7 +97,6 @@ class Robot2Neuron(TransferFunction):
         Creates a new transfer function from robots to neurons
         """
         super(Robot2Neuron, self).__init__()
-        self.__func = None
 
     def __call__(self, func):  # -> Robot2Neuron:
         """
@@ -106,8 +105,8 @@ class Robot2Neuron(TransferFunction):
         :param func: The function implementing the transfer function
         :return: The transfer function object
         """
-        if self.__func is None:
-            self.__func = func
+        if self._func is None:
+            self._func = func
             r2n_funcs = config.active_node.r2n
             r2n_funcs.append(self)
             args = inspect.getargspec(func).args
@@ -120,7 +119,7 @@ class Robot2Neuron(TransferFunction):
         return self
 
     def __repr__(self):  # pragma: no cover
-        return "{0} transfers to neurons {1}".format(self.__func, self._params)
+        return "{0} transfers to neurons {1}".format(self._func, self._params)
 
     def check_params(self):  # -> None:
         """
@@ -139,4 +138,4 @@ class Robot2Neuron(TransferFunction):
         :param t: The simulation time
         """
         self._params[0] = t
-        self.__func(*self._params)
+        self._func(*self._params)
