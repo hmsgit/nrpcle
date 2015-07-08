@@ -13,7 +13,47 @@ import unittest
 __author__ = 'GeorgHinkel'
 
 
-class Test1(unittest.TestCase):
+class TestTransferFunction(unittest.TestCase):
+    def test_tf_get_source(self):
+        nrp.start_new_tf_manager()
+
+        brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
+
+        @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
+                                v_rest=1.0, updates=[(1.0, 0.3)])
+        @nrp.Neuron2Robot(Husky.RightArm.pose)
+        def right_arm(t, neuron0):
+            return neuron0.voltage * 1.345
+
+        @nrp.Robot2Neuron()
+        def transform_camera(t, camera, camera_device):
+            if camera.changed:
+                camera_device.inner.amplitude = 42.0
+
+        expected_source_n2r = """@nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
+                        v_rest=1.0, updates=[(1.0, 0.3)])
+@nrp.Neuron2Robot(Husky.RightArm.pose)
+def right_arm(t, neuron0):
+    return neuron0.voltage * 1.345
+"""
+        expected_source_r2n = """@nrp.Robot2Neuron()
+def transform_camera(t, camera, camera_device):
+    if camera.changed:
+        camera_device.inner.amplitude = 42.0
+"""
+
+        loaded_source_n2r = config.active_node.n2r[0].get_source()
+        self.assertEqual(loaded_source_n2r, expected_source_n2r)
+
+        loaded_source_r2n = config.active_node.r2n[0].get_source()
+        self.assertEqual(loaded_source_r2n, expected_source_r2n)
+
+        loaded_source_n2r_and_r2n = [tf.get_source() for tf in nrp.get_transfer_functions()]
+        self.assertIn(expected_source_n2r, loaded_source_n2r_and_r2n)
+        self.assertIn(expected_source_r2n, loaded_source_n2r_and_r2n)
+        self.assertEqual(2, len(loaded_source_n2r_and_r2n))
+
     def test_all_right(self):
 
         nrp.start_new_tf_manager()

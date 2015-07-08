@@ -148,7 +148,6 @@ class Neuron2Robot(TransferFunction):
         if robot_topic is not None:
             assert isinstance(robot_topic, Topic)
         self.__main_topic = robot_topic
-        self.__func = None
 
     @property
     def topic(self):  # -> Topic:
@@ -174,8 +173,8 @@ class Neuron2Robot(TransferFunction):
         :param func: The function body for this transfer function
         :return The transfer function object
         """
-        if self.__func is None:
-            self.__func = func
+        if self._func is None:
+            self._func = func
             n2r_funcs = config.active_node.n2r
             n2r_funcs.append(self)
             args = inspect.getargspec(func).args
@@ -205,7 +204,7 @@ class Neuron2Robot(TransferFunction):
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} using {2}" \
-            .format(self.__func, self.__main_topic, self._params)
+            .format(self._func, self.__main_topic, self._params)
 
     def run(self, t):  # -> None:
         """
@@ -214,7 +213,7 @@ class Neuron2Robot(TransferFunction):
         :param t: The simulation time
         """
         self._params[0] = t
-        return_value = self.__func(*self._params)
+        return_value = self._func(*self._params)
         if return_value is not None:
             topic_publisher = self.__main_topic
             if topic_publisher is not None:
