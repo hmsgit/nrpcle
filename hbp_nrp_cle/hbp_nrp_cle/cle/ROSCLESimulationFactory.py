@@ -13,7 +13,7 @@ import hbp_nrp_cle
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_START_NEW_SIMULATION, TOPIC_VERSION
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_START_NEW_SIMULATION, SERVICE_VERSION
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
@@ -43,9 +43,9 @@ class ROSCLESimulationFactory(object):
         """
         rospy.init_node(ROS_CLE_NODE_NAME)
         rospy.Service(
-            TOPIC_START_NEW_SIMULATION, srv.StartNewSimulation, self.start_new_simulation
+            SERVICE_START_NEW_SIMULATION, srv.StartNewSimulation, self.start_new_simulation
         )
-        rospy.Service(TOPIC_VERSION, srv.GetVersion, self.get_version)
+        rospy.Service(SERVICE_VERSION, srv.GetVersion, self.get_version)
 
     @staticmethod
     def run():

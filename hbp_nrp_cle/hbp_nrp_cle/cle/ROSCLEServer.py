@@ -12,8 +12,8 @@ from threading import Thread, Event
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, TOPIC_SIM_START_ID, \
-    TOPIC_SIM_PAUSE_ID, TOPIC_SIM_STOP_ID, TOPIC_SIM_RESET_ID, TOPIC_SIM_STATE_ID
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, SERVICE_SIM_START_ID, \
+    SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 from hbp_nrp_cle.cle import ros_handler
 
@@ -294,27 +294,27 @@ class ROSCLEServer(threading.Thread):
 
         # pylint: disable=unnecessary-lambda
         self.__service_start = rospy.Service(
-            TOPIC_SIM_START_ID(self.__simulation_id), Empty,
+            SERVICE_SIM_START_ID(self.__simulation_id), Empty,
             lambda x: self.__state.start_simulation()
         )
 
         self.__service_pause = rospy.Service(
-            TOPIC_SIM_PAUSE_ID(self.__simulation_id), Empty,
+            SERVICE_SIM_PAUSE_ID(self.__simulation_id), Empty,
             lambda x: self.__state.pause_simulation()
         )
 
         self.__service_stop = rospy.Service(
-            TOPIC_SIM_STOP_ID(self.__simulation_id), Empty,
+            SERVICE_SIM_STOP_ID(self.__simulation_id), Empty,
             lambda x: self.__state.stop_simulation()
         )
 
         self.__service_reset = rospy.Service(
-            TOPIC_SIM_RESET_ID(self.__simulation_id), Empty,
+            SERVICE_SIM_RESET_ID(self.__simulation_id), Empty,
             lambda x: self.__state.reset_simulation()
         )
 
         self.__service_state = rospy.Service(
-            TOPIC_SIM_STATE_ID(self.__simulation_id), srv.GetSimulationState,
+            SERVICE_SIM_STATE_ID(self.__simulation_id), srv.GetSimulationState,
             lambda x: str(self.__state)
         )
 
