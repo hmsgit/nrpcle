@@ -6,6 +6,7 @@ import logging
 import threading
 import rospy
 import math
+import numpy
 from std_msgs.msg import String
 from std_srvs.srv import Empty
 from threading import Thread, Event
@@ -13,9 +14,11 @@ from threading import Thread, Event
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, SERVICE_SIM_START_ID, \
-    SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID
+    SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID, \
+    SERVICE_GET_TRANSFER_FUNCTIONS
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 from hbp_nrp_cle.cle import ros_handler
+import hbp_nrp_cle.tf_framework as tf_framework
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
@@ -247,6 +250,7 @@ class ROSCLEServer(threading.Thread):
         self.__service_stop = None
         self.__service_reset = None
         self.__service_state = None
+        self.__service_get_transfer_functions = None
         self.__cle = None
 
         self.__to_be_executed_within_main_thread = None
@@ -318,6 +322,11 @@ class ROSCLEServer(threading.Thread):
             lambda x: str(self.__state)
         )
 
+        self.__service_get_transfer_functions = rospy.Service(
+            SERVICE_GET_TRANSFER_FUNCTIONS(self.__simulation_id), srv.GetTransferFunctions,
+            lambda x: self.__get_transfer_function_sources()
+        )
+
         self.__timeout = timeout
         self.__double_timer = DoubleTimer(
             self.STATUS_UPDATE_INTERVAL,
@@ -333,6 +342,13 @@ class ROSCLEServer(threading.Thread):
         Get the remaining time of the simulation
         """
         return self.__double_timer.get_remaining_time()
+
+    @staticmethod
+    def __get_transfer_function_sources():
+        """
+        Return the source code of the transfer functions
+        """
+        return numpy.asarray([tf.get_source() for tf in tf_framework.get_transfer_functions()])
 
     def start_timeout(self):
         """
@@ -416,6 +432,8 @@ class ROSCLEServer(threading.Thread):
         self.__service_reset.shutdown()
         logger.info("Shutting down state service")
         self.__service_state.shutdown()
+        logger.info("Shutting down get_transfer_functions service")
+        self.__service_get_transfer_functions.shutdown()
         if self.__current_task is not None:
             self.notify_finish_task()
         logger.info("Unregister status topic")

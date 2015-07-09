@@ -118,10 +118,10 @@ class TestROSCLEServer(unittest.TestCase):
     def test_prepare_initialization(self):
         self.__mocked_cle.is_initialized = False
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
-        self.assertEqual(5, self.__mocked_rospy.Service.call_count)
+        self.assertEqual(6, self.__mocked_rospy.Service.call_count)
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
         self.assertEqual(1, self.__ros_cle_server.start_timeout.call_count)
-    
+
     def test_reset_timeout(self):
         self.__mocked_cle.is_initialized = False
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
@@ -142,13 +142,14 @@ class TestROSCLEServer(unittest.TestCase):
         stop_handler = self.__mocked_rospy.Service.call_args_list[2][0][2]
         reset_handler = self.__mocked_rospy.Service.call_args_list[3][0][2]
         state_handler = self.__mocked_rospy.Service.call_args_list[4][0][2]
+        get_transfer_functions_handler = self.__mocked_rospy.Service.call_args_list[5][0][2]
 
-        return start_handler, pause_handler, stop_handler, reset_handler, state_handler
+        return start_handler, pause_handler, stop_handler, reset_handler, state_handler, get_transfer_functions_handler
 
     @timeout(10, "Main loop did not terminate")
     def test_main_termination(self):
         self.craft_ros_cle_server(True)
-        (start_handler, _, stop_handler, _, state_handler) = self.__get_handlers_for_testing_main()
+        (start_handler, _, stop_handler, _, state_handler, _) = self.__get_handlers_for_testing_main()
         start_handler(_)
         # start a timer which calls the registered stop handler after 5 seconds
         timer = threading.Timer(5, stop_handler, ['irrelevant_argument'])
@@ -158,6 +159,19 @@ class TestROSCLEServer(unittest.TestCase):
         self.__ros_cle_server.main()
         self.assertEqual(str(state_handler(_)), ROSCLEState.STOPPED)
         self.__mocked_cle.stop.assert_called_once_with()
+
+    @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
+    def test_get_transfer_functions(self, mocked_tf_framework):
+        self.craft_ros_cle_server(True)
+        tf = [MagicMock(), MagicMock()]
+        tf[0].get_source = MagicMock(return_value="tf_0 python code")
+        tf[1].get_source = MagicMock(return_value="tf_1 python code")
+        mocked_tf_framework.get_transfer_functions = MagicMock(return_value=tf)
+        (_, _, _, _, _, get_transfer_functions_handler) = self.__get_handlers_for_testing_main()
+        transfer_functions_from_service = get_transfer_functions_handler(_)
+        self.assertEqual(2, len(transfer_functions_from_service))
+        self.assertEqual("tf_0 python code", transfer_functions_from_service[0])
+        self.assertEqual("tf_1 python code", transfer_functions_from_service[1])
 
     def test_run(self):
         self.craft_ros_cle_server(True)
@@ -282,6 +296,7 @@ class TestROSCLEServer(unittest.TestCase):
         g = self.__ros_cle_server._ROSCLEServer__current_task = None
         h = self.__ros_cle_server._ROSCLEServer__ros_status_pub = MagicMock()
         i = self.__ros_cle_server._ROSCLEServer__cle = MagicMock()
+        j = self.__ros_cle_server._ROSCLEServer__service_get_transfer_functions = MagicMock()
 
         self.__ros_cle_server.shutdown()
         for x in [b, c, d, e, f, i]:
