@@ -5,6 +5,7 @@ moduleauthor: probst@fzi.de
 
 from ..BrainInterface import INCSource
 import pyNN.nest as sim
+import nest
 
 __author__ = 'DimitriProbst'
 
@@ -49,6 +50,9 @@ class PyNNNCSource(INCSource):
         :param value: float
         """
         self.__generator.mean = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'mean': 1000.0 * value})
 
     @property
     def stdev(self):
@@ -65,6 +69,9 @@ class PyNNNCSource(INCSource):
         :param value: float
         """
         self.__generator.stdev = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'std': 1000.0 * value})
 
     def create_device(self, params):
         """
