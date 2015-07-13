@@ -4,6 +4,7 @@ Python API
 
 .. toctree::
 
+    hbp_nrp_cle.bibi_config
     hbp_nrp_cle.brainsim
     hbp_nrp_cle.cle
     hbp_nrp_cle.mocks
