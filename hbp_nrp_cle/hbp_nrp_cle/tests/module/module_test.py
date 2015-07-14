@@ -6,9 +6,9 @@ __author__ = 'GeorgHinkel'
 
 import rospy
 import std_msgs.msg
+from std_srvs.srv import Empty
 from cle_ros_msgs.msg import SpikeRate
-from hbp_nrp_cle.cle.ROSCLESimulationFactoryClient import ROSCLESimulationFactoryClient
-from hbp_nrp_cle.cle.ROSCLEClient import ROSCLEClient
+from cle_ros_msgs.srv import StartNewSimulation
 from hbp_nrp_cle.bibi_config.bibi_configuration_script import generate_cle
 from threading import Thread
 import os
@@ -80,17 +80,24 @@ def run_integration_test():
                      generated_bibi_path, 50, 'local', 0)
 
         logging.info("Creating CLE Server")
-        client = ROSCLESimulationFactoryClient()
-        client.start_new_simulation('virtual_room/virtual_room.sdf', generated_bibi_path)
+
+        start_new_simulation_service = rospy.ServiceProxy(
+            '/ros_cle_simulation/start_new_simulation', StartNewSimulation
+        )
+        start_new_simulation_service('virtual_room/virtual_room.sdf', generated_bibi_path)
 
         logging.info("Creating CLE Client")
-        cle = ROSCLEClient(0)
+
+        cle_start = rospy.ServiceProxy('/ros_cle_simulation/0/start', Empty)
+        cle_start.wait_for_service(timeout=180)
+        cle_stop = rospy.ServiceProxy('ros_cle_simulation/0/stop', Empty)
+        cle_stop.wait_for_service(timeout=180)
 
         logging.info("Starting CLE Server")
-        cle.start()
+        cle_start()
         time.sleep(10)
         logging.info("Stopping CLE Server")
-        cle.stop()
+        cle_stop()
         logging.info("Module Test completed, running assertions")
 
     except Exception, e:
