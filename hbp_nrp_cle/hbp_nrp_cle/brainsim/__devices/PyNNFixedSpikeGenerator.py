@@ -5,6 +5,7 @@ moduleauthor: probst@fzi.de
 
 from ..BrainInterface import IFixedSpikeGenerator
 import pyNN.nest as sim
+import nest
 import numpy as np
 import warnings
 
@@ -56,7 +57,11 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
 
         :param value: float
         """
-        self.__currentsource.amplitude = self.set_current(value)
+        amplitude = self.set_current(value)
+        self.__currentsource.amplitude = amplitude
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__currentsource._device, {'amplitude': 1000.0 * amplitude})
 
     def create_device(self):
         """
@@ -80,13 +85,20 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
 
         :param rate: Frequency in Hz
         """
-        self.__rate = rate
-        gL = self.__generator[0].cm / self.__generator[0].tau_m
-        nom = gL * (self.__generator[0].v_thresh - self.__generator[0].v_rest)
+        tau_m = 1000.0
+        tau_refrac = sim.state.dt
+        cm = 1.0
+        v_thresh = -50.0
+        v_rest = -100.0
+        nom = (cm / tau_m) * (v_thresh - v_rest)
         denom = 1.0
         if rate != 0.0:
-            denom = 1.0 - np.exp(-1.0 / (
-                self.__generator[0].tau_m * self.__rate / 1000.))
+            inter_time = 1000.0 / rate
+            if inter_time < 10 * tau_refrac:
+                rate = 100.0 / tau_refrac
+                inter_time = 10 * tau_refrac
+            denom = 1.0 - np.exp((tau_refrac - inter_time) / tau_m)
+        self.__rate = rate
         return nom / denom
 
     def connect(self, neurons, params):

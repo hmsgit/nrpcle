@@ -5,6 +5,7 @@ moduleauthor: probst@fzi.de
 
 from ..BrainInterface import IDCSource
 import pyNN.nest as sim
+import nest
 
 __author__ = 'DimitriProbst'
 
@@ -42,6 +43,9 @@ class PyNNDCSource(IDCSource):
         :param value: float
         """
         self.__generator.amplitude = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'amplitude': 1000.0 * value})
 
     def create_device(self, params):
         """

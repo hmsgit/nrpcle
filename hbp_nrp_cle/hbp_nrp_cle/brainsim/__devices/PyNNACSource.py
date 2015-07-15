@@ -5,6 +5,7 @@ moduleauthor: probst@fzi.de
 
 from ..BrainInterface import IACSource
 import pyNN.nest as sim
+import nest
 
 __author__ = 'DimitriProbst'
 
@@ -46,6 +47,9 @@ class PyNNACSource(IACSource):
         :param value: float
         """
         self.__generator.amplitude = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'amplitude': 1000.0 * value})
 
     @property
     def offset(self):
@@ -62,6 +66,9 @@ class PyNNACSource(IACSource):
         :param value: float
         """
         self.__generator.offset = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'offset': 1000.0 * value})
 
     @property
     def frequency(self):
@@ -78,6 +85,9 @@ class PyNNACSource(IACSource):
         :param value: float
         """
         self.__generator.frequency = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'frequency': float(value)})
 
     @property
     def phase(self):
@@ -94,6 +104,9 @@ class PyNNACSource(IACSource):
         :param value: float
         """
         self.__generator.phase = value
+        # PyNN<0.8 does not support changing current source reconfiguration
+        # pylint: disable=W0212
+        nest.SetStatus(self.__generator._device, {'phase': float(value)})
 
     def create_device(self, params):
         """
