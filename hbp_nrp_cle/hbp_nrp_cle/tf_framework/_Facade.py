@@ -93,6 +93,6 @@ def get_transfer_functions():
     """
     Get all the transfer functions
 
-    :return All the transfer functions (R2N and N2R).
+    :return All the transfer functions
     """
-    return config.active_node.n2r + config.active_node.r2n
+    return config.active_node.transfer_functions()

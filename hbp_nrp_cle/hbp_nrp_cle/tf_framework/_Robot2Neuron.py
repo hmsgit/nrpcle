@@ -119,7 +119,7 @@ class Robot2Neuron(TransferFunction):
         return self
 
     def __repr__(self):  # pragma: no cover
-        return "{0} transfers to neurons {1}".format(self._func, self._params)
+        return "{0} transfers to neurons {1}".format(self.name, self._params)
 
     def check_params(self):  # -> None:
         """

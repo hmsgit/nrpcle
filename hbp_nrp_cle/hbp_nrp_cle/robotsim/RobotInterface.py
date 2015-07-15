@@ -87,6 +87,13 @@ class IRobotPublishedTopic(object):  # pragma: no cover
         """
         return self
 
+    def unregister(self):
+        """
+        Unregister the Topic. After this call, nobody can publish
+        anymore.
+        """
+        pass
+
 
 class IRobotSubscribedTopic(object):  # pragma: no cover
     """
@@ -208,6 +215,12 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         Refreshes the subscribed topic buffers for the given simulation time
 
         :param t: The simulation time
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def shutdown(self):
+        """
+        Closes any connections created by the adapter
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

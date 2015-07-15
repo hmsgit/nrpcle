@@ -91,6 +91,12 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
         """
         pass
 
+    def shutdown(self):
+        """
+        Closes any connections created by the adapter
+        """
+        pass
+
 
 class MockPublishedTopic(IRobotPublishedTopic):
     """
@@ -116,6 +122,12 @@ class MockPublishedTopic(IRobotPublishedTopic):
         Gets a list of the messages sent to the mocked publisher
         """
         return self.__sent
+
+    def unregister(self):
+        """
+        Unregister the Topic. Meaningless for mocks
+        """
+        pass
 
 
 class MockSubscribedTopic(IRobotSubscribedTopic):

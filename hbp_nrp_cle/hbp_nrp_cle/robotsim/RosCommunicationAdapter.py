@@ -73,6 +73,13 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         for key in self.subscribed_topics:
             self.subscribed_topics[key].reset_changed()
 
+    def shutdown(self):
+        """
+        Closes any connections created by the adapter
+        """
+        for topic in self.published_topics:
+            topic.unregister()
+
 
 class RosPublishedTopic(IRobotPublishedTopic):
     """

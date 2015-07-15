@@ -39,3 +39,11 @@ class ITransferFunctionManager(object):  # pragma: no cover
         Resets the transfer functions
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def transfer_functions(self):
+        """
+        Gets a list of transfer functions managed by this instance
+
+        :return: A list of transfer functions
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

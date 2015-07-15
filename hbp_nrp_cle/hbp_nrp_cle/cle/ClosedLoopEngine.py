@@ -10,6 +10,7 @@ from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
 from hbp_nrp_cle.tf_framework import ITransferFunctionManager
+from hbp_nrp_cle.cle.__helper import get_tf_elapsed_times
 import logging
 
 logger = logging.getLogger(__name__)
@@ -195,6 +196,9 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.start_time = 0.0
         self.elapsed_time = 0.0
 
+        self.__rca_elapsed_time = 0.0
+        self.__bca_elapsed_time = 0.0
+
     def initialize(self):
         """
         Initializes the closed loop engine.
@@ -229,13 +233,19 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.rct_flag.clear()
         if not self.rca.is_alive:
             return -1
+
+        start = time.time()
         self.rct.run_step(timestep)
+        self.__rca_elapsed_time += time.time() - start
 
         # brain simulation
         self.bct_flag.clear()
         if not self.bca.is_alive():
             return -1
+
+        start = time.time()
         self.bct.run_step(timestep * 1000.0)
+        self.__bca_elapsed_time += time.time() - start
 
         # transfer functions
         self.tft_flag.clear()
@@ -305,6 +315,9 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.running = False
+
+        self.__rca_elapsed_time = 0.0
+        self.__bca_elapsed_time = 0.0
         logger.info("CLE reset")
 
     @property
@@ -322,6 +335,24 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         if self.running:
             return self.elapsed_time + time.time() - self.start_time
         return self.elapsed_time
+
+    def tf_elapsed_time(self):
+        """
+        Gets the time share of the Transfer Functions
+        """
+        return get_tf_elapsed_times(self.tfm)
+
+    def brainsim_elapsed_time(self):
+        """
+        Gets the time share of the brain simulation
+        """
+        return self.__bca_elapsed_time
+
+    def robotsim_elapsed_time(self):
+        """
+        Gets the time share of the robot simulation
+        """
+        return self.__rca_elapsed_time
 
     def wait_step(self):
         """

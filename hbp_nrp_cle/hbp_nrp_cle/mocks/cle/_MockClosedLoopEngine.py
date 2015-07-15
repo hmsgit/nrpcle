@@ -131,6 +131,24 @@ class MockClosedLoopEngine(IClosedLoopControl,
             return self.elapsed_time + time.time() - self.start_time
         return self.elapsed_time
 
+    def tf_elapsed_time(self):
+        """
+        Gets the time share of the Transfer Functions
+        """
+        return {}
+
+    def brainsim_elapsed_time(self):
+        """
+        Gets the time share of the brain simulation
+        """
+        return 0.0
+
+    def robotsim_elapsed_time(self):
+        """
+        Gets the time share of the robot simulation
+        """
+        return 0.0
+
     def wait_step(self):
         """
         Wait for the currently running simulation step to end.

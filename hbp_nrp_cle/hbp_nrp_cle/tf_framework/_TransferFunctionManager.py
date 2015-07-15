@@ -12,6 +12,7 @@ from ._TransferFunctionInterface import ITransferFunctionManager
 from ._PropertyPath import PropertyPath
 from . import config
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,9 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         for _n2r in self.__n2r:
             assert isinstance(_n2r, Neuron2Robot)
+            start = time.time()
             _n2r.run(t)
+            _n2r.elapsed_time += time.time() - start
 
     def run_robot_to_neuron(self, t):  # -> None:
         """
@@ -65,7 +68,9 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         for _r2n in self.__r2n:
             assert isinstance(_r2n, Robot2Neuron)
+            start = time.time()
             _r2n.run(t)
+            _r2n.elapsed_time += time.time() - start
 
     def initialize(self, name):
         """
@@ -88,6 +93,7 @@ class TransferFunctionManager(ITransferFunctionManager):
             assert isinstance(_n2r, Neuron2Robot)
             logger.info("Initialize transfer function " + repr(_n2r))
             _n2r.replace_params()
+            _n2r.elapsed_time = 0.0
 
             if _n2r.topic is not None:
                 _n2r.topic = self.__robotAdapter.register_publish_topic(_n2r.topic)
@@ -102,6 +108,7 @@ class TransferFunctionManager(ITransferFunctionManager):
             assert isinstance(_r2n, Robot2Neuron)
             logger.info("Initialize transfer function " + repr(_r2n))
             _r2n.check_params()
+            _r2n.elapsed_time = 0.0
 
             for i in range(1, len(_r2n.params)):
                 param = _r2n.params[i]
@@ -111,16 +118,6 @@ class TransferFunctionManager(ITransferFunctionManager):
         # Initialize dependencies
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)
-
-    def shutdown(self):
-        """
-        Shutdown the manager and clean up registered topics.
-        After this call, the manager is not usable anymore.
-        """
-        for _n2r in self.__n2r:
-            if _n2r.topic is not None:
-                logger.info("Unregister topic " + repr(_n2r))
-                _n2r.topic.unregister()
 
     @staticmethod
     def __select_neurons(neurons):
@@ -176,11 +173,20 @@ class TransferFunctionManager(ITransferFunctionManager):
             assert isinstance(nest_adapter, IBrainCommunicationAdapter)
             self.__nestAdapter = nest_adapter
 
+    def transfer_functions(self):
+        """
+        Gets a list of transfer functions managed by this instance
+
+        :return: A list of transfer functions
+        """
+        return self.__n2r + self.__r2n
+
     def __reset_neuron2robot(self, _n2r):
         """
         Resets the given neuron2robot transfer function
         """
         assert isinstance(_n2r, Neuron2Robot)
+        _n2r.elapsed_time = 0.0
         _n2r.replace_params()
         if _n2r.topic is not None:
             _n2r.topic = _n2r.topic.reset(self)
@@ -199,6 +205,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         assert isinstance(_r2n, Robot2Neuron)
         _r2n.check_params()
+        _r2n.elapsed_time = 0.0
         for i in range(1, len(_r2n.params)):
             param = _r2n.params[i]
             reset_value = param.reset(self)
