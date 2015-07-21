@@ -27,7 +27,6 @@ class Notificator(object):
         """
         Forwards a notification to the currently registered notification function.
         :param message: Title of the first subtask. Could be empty (example: loading Virtual Room).
-        :param update_progress: Boolean indicating if the index of the current subtask
-                should be updated (usually yes).
+        :param update_progress: Boolean. Index of current subtask should be updated? (usually yes).
         """
         Notificator.__notification_function(message, update_progress)
