@@ -118,7 +118,7 @@ class TestROSCLEServer(unittest.TestCase):
     def test_prepare_initialization(self):
         self.__mocked_cle.is_initialized = False
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
-        self.assertEqual(6, self.__mocked_rospy.Service.call_count)
+        self.assertEqual(7, self.__mocked_rospy.Service.call_count)
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
         self.assertEqual(1, self.__ros_cle_server.start_timeout.call_count)
 
@@ -137,19 +137,22 @@ class TestROSCLEServer(unittest.TestCase):
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
 
         # Get the ROS Service handlers; this will always be the third argument.
-        start_handler = self.__mocked_rospy.Service.call_args_list[0][0][2]
-        pause_handler = self.__mocked_rospy.Service.call_args_list[1][0][2]
-        stop_handler = self.__mocked_rospy.Service.call_args_list[2][0][2]
-        reset_handler = self.__mocked_rospy.Service.call_args_list[3][0][2]
-        state_handler = self.__mocked_rospy.Service.call_args_list[4][0][2]
-        get_transfer_functions_handler = self.__mocked_rospy.Service.call_args_list[5][0][2]
+        arguments = self.__mocked_rospy.Service.call_args_list
+        start_handler = arguments[0][0][2]
+        pause_handler = arguments[1][0][2]
+        stop_handler = arguments[2][0][2]
+        reset_handler = arguments[3][0][2]
+        state_handler = arguments[4][0][2]
+        get_transfer_functions_handler = arguments[5][0][2]
+        set_transfer_function_handler = arguments[6][0][2]
 
-        return start_handler, pause_handler, stop_handler, reset_handler, state_handler, get_transfer_functions_handler
+        return start_handler, pause_handler, stop_handler, reset_handler, state_handler,\
+               get_transfer_functions_handler, set_transfer_function_handler
 
     @timeout(10, "Main loop did not terminate")
     def test_main_termination(self):
         self.craft_ros_cle_server(True)
-        (start_handler, _, stop_handler, _, state_handler, _) = self.__get_handlers_for_testing_main()
+        (start_handler, _, stop_handler, _, state_handler, _, _) = self.__get_handlers_for_testing_main()
         start_handler(_)
         # start a timer which calls the registered stop handler after 5 seconds
         timer = threading.Timer(5, stop_handler, ['irrelevant_argument'])
@@ -167,11 +170,19 @@ class TestROSCLEServer(unittest.TestCase):
         tf[0].get_source = MagicMock(return_value="tf_0 python code")
         tf[1].get_source = MagicMock(return_value="tf_1 python code")
         mocked_tf_framework.get_transfer_functions = MagicMock(return_value=tf)
-        (_, _, _, _, _, get_transfer_functions_handler) = self.__get_handlers_for_testing_main()
-        transfer_functions_from_service = get_transfer_functions_handler(_)
+        (_, _, _, _, _, get_transfer_functions_handler, _) = self.__get_handlers_for_testing_main()
+        transfer_functions_from_service = get_transfer_functions_handler()
         self.assertEqual(2, len(transfer_functions_from_service))
         self.assertEqual("tf_0 python code", transfer_functions_from_service[0])
         self.assertEqual("tf_1 python code", transfer_functions_from_service[1])
+
+    @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
+    def test_set_transfer_function(self, mocked_tf_framework):
+        self.craft_ros_cle_server(True)
+        mocked_tf_framework.set_transfer_function = MagicMock(return_value=True)
+        (_, _, _, _, _, _, set_transfer_function_handler) = self.__get_handlers_for_testing_main()
+        result = set_transfer_function_handler('tf0', 'def tf_0() some other python code')
+        self.assertEqual(True, result)
 
     def test_run(self):
         self.craft_ros_cle_server(True)

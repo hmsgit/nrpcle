@@ -19,6 +19,7 @@ class TransferFunction(object):
     def __init__(self):
         self._params = []
         self._func = None
+        self._source = None
         self.__elapsed_time = 0.0
 
     @property
@@ -66,14 +67,24 @@ class TransferFunction(object):
         If someone patches the transfer function, the patched code will not be returned.
         (See python inspect module documentation)
         """
-        source = "# Transfer function not loaded properly."
-        if self._func:
-            try:
-                source = inspect.getsource(self._func)
-            except IOError as e:
-                error_msg = "The transfer function source code cannot be retrieved."
-                logger.error(error_msg)
-                logger.error(e)
-                source = "# " + error_msg
 
-        return textwrap.dedent(source)
+        if (self._source is None):
+            self._source = "# Transfer function not loaded properly."
+            if (self._func):
+                try:
+                    self._source = inspect.getsource(self._func)
+                except IOError as e:
+                    error_msg = "The transfer function source code cannot be retrieved."
+                    logger.error(error_msg)
+                    logger.error(e)
+                    self._source = "# " + error_msg
+
+        return textwrap.dedent(self._source)
+
+    def set_source(self, source):
+        """
+        Sets the source code of this transfer function.
+
+        :param source: String containing transfer function's source code
+        """
+        self._source = source

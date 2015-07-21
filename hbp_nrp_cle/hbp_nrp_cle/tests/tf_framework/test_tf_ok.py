@@ -54,6 +54,44 @@ def transform_camera(t, camera, camera_device):
         self.assertIn(expected_source_r2n, loaded_source_n2r_and_r2n)
         self.assertEqual(2, len(loaded_source_n2r_and_r2n))
 
+    def test_tf_set(self):
+        nrp.start_new_tf_manager()
+
+        brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
+
+        @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
+                                v_rest=1.0, updates=[(1.0, 0.3)])
+        @nrp.Neuron2Robot(Husky.RightArm.pose)
+        def right_arm(t, neuron0):
+            return neuron0.voltage * 1.345
+
+        @nrp.Robot2Neuron()
+        def transform_camera(t, camera, camera_device):
+            if camera.changed:
+                camera_device.inner.amplitude = 42.0
+
+        tf_n2r = """@nrp.MapSpikeSink("neuron1", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
+                        v_rest=1.0, updates=[(3.0, 0.1)])
+@nrp.Neuron2Robot()
+def left_arm(t, neuron1):
+    return neuron1.voltage * 2.345
+"""
+        tf_r2n = """@nrp.Robot2Neuron()
+def rotate_camera(t, camera, camera_device):
+    if camera.changed:
+        camera_device.inner.amplitude = 24.0
+"""
+
+        nrp.set_transfer_function('right_arm', tf_n2r)
+        nrp.set_transfer_function('transform_camera', tf_r2n)
+
+        loaded_source_n2r_and_r2n = [tf.get_source() for tf in nrp.get_transfer_functions()]
+        self.assertIn(tf_n2r, loaded_source_n2r_and_r2n)
+        self.assertIn(tf_r2n, loaded_source_n2r_and_r2n)
+        self.assertEqual(2, len(loaded_source_n2r_and_r2n))
+
+
     def test_all_right(self):
 
         nrp.start_new_tf_manager()

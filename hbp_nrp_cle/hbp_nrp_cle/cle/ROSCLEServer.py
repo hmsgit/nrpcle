@@ -15,7 +15,7 @@ from threading import Thread, Event
 from cle_ros_msgs import srv
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, SERVICE_SIM_START_ID, \
     SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID, \
-    SERVICE_GET_TRANSFER_FUNCTIONS
+    SERVICE_GET_TRANSFER_FUNCTIONS, SERVICE_SET_TRANSFER_FUNCTION
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 from hbp_nrp_cle.cle import ros_handler
 import hbp_nrp_cle.tf_framework as tf_framework
@@ -251,6 +251,7 @@ class ROSCLEServer(threading.Thread):
         self.__service_reset = None
         self.__service_state = None
         self.__service_get_transfer_functions = None
+        self.__service_set_transfer_function = None
         self.__cle = None
 
         self.__to_be_executed_within_main_thread = None
@@ -324,7 +325,12 @@ class ROSCLEServer(threading.Thread):
 
         self.__service_get_transfer_functions = rospy.Service(
             SERVICE_GET_TRANSFER_FUNCTIONS(self.__simulation_id), srv.GetTransferFunctions,
-            lambda x: self.__get_transfer_function_sources()
+            self.__get_transfer_function_sources
+        )
+
+        self.__service_set_transfer_function = rospy.Service(
+            SERVICE_SET_TRANSFER_FUNCTION(self.__simulation_id), srv.SetTransferFunction,
+            self.__set_transfer_function
         )
 
         self.__timeout = timeout
@@ -349,6 +355,16 @@ class ROSCLEServer(threading.Thread):
         Return the source code of the transfer functions
         """
         return numpy.asarray([tf.get_source() for tf in tf_framework.get_transfer_functions()])
+
+    @staticmethod
+    def __set_transfer_function(original_name, source_code):
+        """
+        Patch a transfer function
+
+        :param original_name: The original transfer function name received by the client
+        :param source_code: The new source code of the transfer function
+        """
+        return tf_framework.set_transfer_function(original_name, source_code)
 
     def start_timeout(self):
         """
