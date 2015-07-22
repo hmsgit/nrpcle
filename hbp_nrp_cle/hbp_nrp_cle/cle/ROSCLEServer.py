@@ -453,6 +453,8 @@ class ROSCLEServer(threading.Thread):
         self.__service_state.shutdown()
         logger.info("Shutting down get_transfer_functions service")
         self.__service_get_transfer_functions.shutdown()
+        logger.info("Shutting down set_transfer_function service")
+        self.__service_set_transfer_function.shutdown()
         if self.__current_task is not None:
             self.notify_finish_task()
         logger.info("Unregister status topic")

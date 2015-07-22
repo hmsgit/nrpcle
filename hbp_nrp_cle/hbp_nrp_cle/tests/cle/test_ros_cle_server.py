@@ -308,6 +308,7 @@ class TestROSCLEServer(unittest.TestCase):
         h = self.__ros_cle_server._ROSCLEServer__ros_status_pub = MagicMock()
         i = self.__ros_cle_server._ROSCLEServer__cle = MagicMock()
         j = self.__ros_cle_server._ROSCLEServer__service_get_transfer_functions = MagicMock()
+        k = self.__ros_cle_server._ROSCLEServer__service_set_transfer_function = MagicMock()
 
         self.__ros_cle_server.shutdown()
         for x in [b, c, d, e, f, i]:
