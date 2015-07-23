@@ -349,22 +349,27 @@ class ROSCLEServer(threading.Thread):
         """
         return self.__double_timer.get_remaining_time()
 
+    # pylint: disable=unused-argument
     @staticmethod
-    def __get_transfer_function_sources():
+    def __get_transfer_function_sources(request):
         """
         Return the source code of the transfer functions
+
+        :param request: The mandatory rospy request parameter
         """
         return numpy.asarray([tf.get_source() for tf in tf_framework.get_transfer_functions()])
 
     @staticmethod
-    def __set_transfer_function(original_name, source_code):
+    def __set_transfer_function(request):
         """
         Patch a transfer function
 
-        :param original_name: The original transfer function name received by the client
-        :param source_code: The new source code of the transfer function
+        :param request: The mandatory rospy request parameter
         """
-        return tf_framework.set_transfer_function(original_name, source_code)
+        return tf_framework.set_transfer_function(
+               request.transfer_function_name,
+               request.transfer_function_source
+        )
 
     def start_timeout(self):
         """

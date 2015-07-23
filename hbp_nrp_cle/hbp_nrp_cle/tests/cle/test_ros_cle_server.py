@@ -171,7 +171,7 @@ class TestROSCLEServer(unittest.TestCase):
         tf[1].get_source = MagicMock(return_value="tf_1 python code")
         mocked_tf_framework.get_transfer_functions = MagicMock(return_value=tf)
         (_, _, _, _, _, get_transfer_functions_handler, _) = self.__get_handlers_for_testing_main()
-        transfer_functions_from_service = get_transfer_functions_handler()
+        transfer_functions_from_service = get_transfer_functions_handler(_)
         self.assertEqual(2, len(transfer_functions_from_service))
         self.assertEqual("tf_0 python code", transfer_functions_from_service[0])
         self.assertEqual("tf_1 python code", transfer_functions_from_service[1])
@@ -179,10 +179,15 @@ class TestROSCLEServer(unittest.TestCase):
     @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
     def test_set_transfer_function(self, mocked_tf_framework):
         self.craft_ros_cle_server(True)
-        mocked_tf_framework.set_transfer_function = MagicMock(return_value=True)
+        mocked_response = MagicMock()
+        mocked_response.success = True
+        mocked_tf_framework.set_transfer_function = MagicMock(return_value=mocked_response)
         (_, _, _, _, _, _, set_transfer_function_handler) = self.__get_handlers_for_testing_main()
-        result = set_transfer_function_handler('tf0', 'def tf_0() some other python code')
-        self.assertEqual(True, result)
+        request = MagicMock()
+        request.transfer_function_name = "tf_0"
+        request.transfer_function_source = "def tf0(): \n return 0"
+        response = set_transfer_function_handler(request)
+        self.assertEqual(True, response.success)
 
     def test_run(self):
         self.craft_ros_cle_server(True)
