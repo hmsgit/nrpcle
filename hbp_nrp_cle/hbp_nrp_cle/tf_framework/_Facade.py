@@ -6,19 +6,14 @@ transfer functions
 
 from . import config
 
+
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
 
-# pylint: disable=unused-import
-
-from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
-from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
-from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
-from ._TransferFunctionInterface import ITransferFunctionManager
 import textwrap
-import logging
 
+import logging
 logger = logging.getLogger(__name__)
 
 # alias _Facade module needed by set_transfer_function
@@ -26,6 +21,19 @@ import sys
 nrp = sys.modules[__name__]
 
 import re
+
+# The following modules are needed for transfer function code's execution
+# pylint: disable=unused-import
+from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
+from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
+from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
+from ._TransferFunctionInterface import ITransferFunctionManager
+from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
+import cle_ros_msgs.msg
+import geometry_msgs.msg
+import sensor_msgs.msg
+from geometry_msgs.msg import Point, Pose, Quaternion
+from std_msgs.msg import Float32, Int32, String
 
 __author__ = 'GeorgHinkel'
 
