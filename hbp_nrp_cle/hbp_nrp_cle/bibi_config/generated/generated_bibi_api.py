@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Generated Fri Jun 12 08:54:46 2015 by generateDS.py version 2.14a.
+# Generated Thu Jul 23 13:25:35 2015 by generateDS.py version 2.16a.
 #
 # Command line options:
 #   ('-o', 'generated_bibi_api.py')
@@ -11,7 +11,7 @@
 #   bibi_configuration.xsd
 #
 # Command line:
-#   /home/GeorgHinkel/generateDS-2.14a/generateDS.py -o "generated_bibi_api.py" bibi_configuration.xsd
+#   /home/eckstebd/Programme/generateDS-2.16a0/generateDS.py -o "generated_bibi_api.py" bibi_configuration.xsd
 #
 # Current working directory (os.getcwd()):
 #   BIBI
@@ -22,64 +22,18 @@ import re as re_
 import base64
 import datetime as datetime_
 import warnings as warnings_
+from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
 
 
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
-try:
-    # lxml
-    from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
-except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
-
-
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        parser = etree_.ETCompatXMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -91,7 +45,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -415,6 +369,7 @@ ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
 
 #
 # Support/utility functions.
@@ -428,11 +383,26 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
     s1 = (isinstance(inStr, basestring) and inStr or
           '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
@@ -500,11 +470,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -652,7 +618,7 @@ def _cast(typ, value):
 class BIBIConfiguration(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, brainModel=None, bodyModel=None, extRobotController=None, connectors=None, synapseDynamics=None, transferFunction=None, transferFunctionImport=None):
+    def __init__(self, brainModel=None, bodyModel=None, extRobotController=None, connectors=None, synapseDynamics=None, transferFunction=None, transferFunctionImport=None, transferFunctionInline=None):
         self.original_tagname_ = None
         self.brainModel = brainModel
         self.bodyModel = bodyModel
@@ -675,6 +641,10 @@ class BIBIConfiguration(GeneratedsSuper):
             self.transferFunctionImport = []
         else:
             self.transferFunctionImport = transferFunctionImport
+        if transferFunctionInline is None:
+            self.transferFunctionInline = []
+        else:
+            self.transferFunctionInline = transferFunctionInline
     def factory(*args_, **kwargs_):
         if BIBIConfiguration.subclass:
             return BIBIConfiguration.subclass(*args_, **kwargs_)
@@ -707,6 +677,11 @@ class BIBIConfiguration(GeneratedsSuper):
     def add_transferFunctionImport(self, value): self.transferFunctionImport.append(value)
     def insert_transferFunctionImport_at(self, index, value): self.transferFunctionImport.insert(index, value)
     def replace_transferFunctionImport_at(self, index, value): self.transferFunctionImport[index] = value
+    def get_transferFunctionInline(self): return self.transferFunctionInline
+    def set_transferFunctionInline(self, transferFunctionInline): self.transferFunctionInline = transferFunctionInline
+    def add_transferFunctionInline(self, value): self.transferFunctionInline.append(value)
+    def insert_transferFunctionInline_at(self, index, value): self.transferFunctionInline.insert(index, value)
+    def replace_transferFunctionInline_at(self, index, value): self.transferFunctionInline[index] = value
     def validate_SDF_Filename(self, value):
         # Validate type SDF_Filename, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
@@ -736,7 +711,8 @@ class BIBIConfiguration(GeneratedsSuper):
             self.connectors or
             self.synapseDynamics or
             self.transferFunction or
-            self.transferFunctionImport
+            self.transferFunctionImport or
+            self.transferFunctionInline
         ):
             return True
         else:
@@ -783,6 +759,9 @@ class BIBIConfiguration(GeneratedsSuper):
         for transferFunctionImport_ in self.transferFunctionImport:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%stransferFunctionImport>%s</%stransferFunctionImport>%s' % (namespace_, self.gds_format_string(quote_xml(transferFunctionImport_).encode(ExternalEncoding), input_name='transferFunctionImport'), namespace_, eol_))
+        for transferFunctionInline_ in self.transferFunctionInline:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stransferFunctionInline>%s</%stransferFunctionInline>%s' % (namespace_, self.gds_format_string(quote_xml(transferFunctionInline_).encode(ExternalEncoding), input_name='transferFunctionInline'), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='BIBIConfiguration'):
         level += 1
         already_processed = set()
@@ -849,6 +828,15 @@ class BIBIConfiguration(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('transferFunctionInline=[\n')
+        level += 1
+        for transferFunctionInline_ in self.transferFunctionInline:
+            showIndent(outfile, level)
+            outfile.write('%s,\n' % quote_python(transferFunctionInline_).encode(ExternalEncoding))
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -868,12 +856,14 @@ class BIBIConfiguration(GeneratedsSuper):
             bodyModel_ = child_.text
             bodyModel_ = self.gds_validate_string(bodyModel_, node, 'bodyModel')
             self.bodyModel = bodyModel_
-            self.validate_SDF_Filename(self.bodyModel)    # validate type SDF_Filename
+            # validate type SDF_Filename
+            self.validate_SDF_Filename(self.bodyModel)
         elif nodeName_ == 'extRobotController':
             extRobotController_ = child_.text
             extRobotController_ = self.gds_validate_string(extRobotController_, node, 'extRobotController')
             self.extRobotController = extRobotController_
-            self.validate_Script_Filename(self.extRobotController)    # validate type Script_Filename
+            # validate type Script_Filename
+            self.validate_Script_Filename(self.extRobotController)
         elif nodeName_ == 'connectors':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -935,7 +925,12 @@ class BIBIConfiguration(GeneratedsSuper):
             transferFunctionImport_ = child_.text
             transferFunctionImport_ = self.gds_validate_string(transferFunctionImport_, node, 'transferFunctionImport')
             self.transferFunctionImport.append(transferFunctionImport_)
-            self.validate_Python_Filename(self.transferFunctionImport)    # validate type Python_Filename
+            # validate type Python_Filename
+            self.validate_Python_Filename(self.transferFunctionImport[-1])
+        elif nodeName_ == 'transferFunctionInline':
+            transferFunctionInline_ = child_.text
+            transferFunctionInline_ = self.gds_validate_string(transferFunctionInline_, node, 'transferFunctionInline')
+            self.transferFunctionInline.append(transferFunctionInline_)
 # end class BIBIConfiguration
 
 
@@ -1042,7 +1037,8 @@ class BrainModel(GeneratedsSuper):
             file_ = child_.text
             file_ = self.gds_validate_string(file_, node, 'file')
             self.file = file_
-            self.validate_Brain_Filename(self.file)    # validate type Brain_Filename
+            # validate type Brain_Filename
+            self.validate_Brain_Filename(self.file)
         elif nodeName_ == 'populations':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -1620,7 +1616,7 @@ class NeuronConnector(GeneratedsSuper):
         if self.weights is not None and 'weights' not in already_processed:
             already_processed.add('weights')
             outfile.write(' weights="%s"' % self.gds_format_double(self.weights, input_name='weights'))
-        if self.name is not None and 'name' not in already_processed:
+        if self.name != "default" and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
@@ -1663,14 +1659,14 @@ class NeuronConnector(GeneratedsSuper):
             already_processed.add('delays')
             try:
                 self.delays = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (delays): %s' % exp)
         value = find_attr_value_('weights', node)
         if value is not None and 'weights' not in already_processed:
             already_processed.add('weights')
             try:
                 self.weights = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (weights): %s' % exp)
         value = find_attr_value_('name', node)
         if value is not None and 'name' not in already_processed:
@@ -1968,7 +1964,7 @@ class FixedNumberPreConnector(NeuronConnector):
             already_processed.add('count')
             try:
                 self.count = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.count <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -2021,7 +2017,7 @@ class SynapseDynamics(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='SynapseDynamics'):
-        if self.name is not None and 'name' not in already_processed:
+        if self.name != "default" and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
@@ -2233,21 +2229,21 @@ class TsodyksMarkramMechanism(SynapseDynamics):
             already_processed.add('tau_facil')
             try:
                 self.tau_facil = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (tau_facil): %s' % exp)
         value = find_attr_value_('u', node)
         if value is not None and 'u' not in already_processed:
             already_processed.add('u')
             try:
                 self.u = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (u): %s' % exp)
         value = find_attr_value_('tau_rec', node)
         if value is not None and 'tau_rec' not in already_processed:
             already_processed.add('tau_rec')
             try:
                 self.tau_rec = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (tau_rec): %s' % exp)
         super(TsodyksMarkramMechanism, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2298,6 +2294,7 @@ class DeviceChannel(GeneratedsSuper):
     def validate_NeuronTarget(self, value):
         # Validate type NeuronTarget, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
+            value = str(value)
             enumerations = ['Inhibitory', 'Excitatory']
             enumeration_respectee = False
             for enum in enumerations:
@@ -2309,6 +2306,7 @@ class DeviceChannel(GeneratedsSuper):
     def validate_DeviceType(self, value):
         # Validate type DeviceType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
+            value = str(value)
             enumerations = ['ACSource', 'DCSource', 'FixedFrequency', 'LeakyIntegratorAlpha', 'LeakyIntegratorExp', 'NCSource', 'Poisson', 'SpikeRecorder', 'PopulationRate']
             enumeration_respectee = False
             for enum in enumerations:
@@ -2519,7 +2517,8 @@ class DeviceChannel(GeneratedsSuper):
             target_ = child_.text
             target_ = self.gds_validate_string(target_, node, 'target')
             self.target = target_
-            self.validate_NeuronTarget(self.target)    # validate type NeuronTarget
+            # validate type NeuronTarget
+            self.validate_NeuronTarget(self.target)
         elif nodeName_ == 'body':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -2584,6 +2583,7 @@ class DeviceGroupChannel(GeneratedsSuper):
     def validate_NeuronTarget(self, value):
         # Validate type NeuronTarget, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
+            value = str(value)
             enumerations = ['Inhibitory', 'Excitatory']
             enumeration_respectee = False
             for enum in enumerations:
@@ -2595,6 +2595,7 @@ class DeviceGroupChannel(GeneratedsSuper):
     def validate_DeviceType(self, value):
         # Validate type DeviceType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
+            value = str(value)
             enumerations = ['ACSource', 'DCSource', 'FixedFrequency', 'LeakyIntegratorAlpha', 'LeakyIntegratorExp', 'NCSource', 'Poisson', 'SpikeRecorder', 'PopulationRate']
             enumeration_respectee = False
             for enum in enumerations:
@@ -2805,7 +2806,8 @@ class DeviceGroupChannel(GeneratedsSuper):
             target_ = child_.text
             target_ = self.gds_validate_string(target_, node, 'target')
             self.target = target_
-            self.validate_NeuronTarget(self.target)    # validate type NeuronTarget
+            # validate type NeuronTarget
+            self.validate_NeuronTarget(self.target)
         elif nodeName_ == 'body':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -3347,7 +3349,7 @@ class Index(NeuronSelector):
             already_processed.add('index')
             try:
                 self.index = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.index < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -3531,7 +3533,7 @@ class Range(MultiNeuronSelector):
             already_processed.add('to')
             try:
                 self.to = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.to < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -3540,7 +3542,7 @@ class Range(MultiNeuronSelector):
             already_processed.add('step')
             try:
                 self.step = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.step < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -3549,7 +3551,7 @@ class Range(MultiNeuronSelector):
             already_processed.add('from')
             try:
                 self.from_ = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.from_ < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -3651,7 +3653,7 @@ class List(MultiNeuronSelector):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ < 0:
                 raise_parse_error(child_, 'requires nonNegativeInteger')
@@ -3736,7 +3738,7 @@ class Population(MultiNeuronSelector):
             already_processed.add('count')
             try:
                 self.count = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.count < 0:
                 raise_parse_error(node, 'Invalid NonNegativeInteger')
@@ -4126,7 +4128,8 @@ class ListTemplate(NeuronSelectorTemplate):
             element_ = child_.text
             element_ = self.gds_validate_string(element_, node, 'element')
             self.element.append(element_)
-            self.validate_TemplatePattern(self.element)    # validate type TemplatePattern
+            # validate type TemplatePattern
+            self.validate_TemplatePattern(self.element[-1])
         super(ListTemplate, self).buildChildren(child_, node, nodeName_, True)
 # end class ListTemplate
 
@@ -4436,7 +4439,7 @@ class Scale(FlowExpression):
             already_processed.add('factor')
             try:
                 self.factor = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (factor): %s' % exp)
         super(Scale, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -5543,7 +5546,7 @@ class Constant(FlowExpression):
             already_processed.add('value')
             try:
                 self.value = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (value): %s' % exp)
         super(Constant, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -5665,7 +5668,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -5678,7 +5681,8 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5698,7 +5702,8 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5722,7 +5727,8 @@ def parseEtree(inFileName, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    parser = None
+    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5741,7 +5747,8 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
