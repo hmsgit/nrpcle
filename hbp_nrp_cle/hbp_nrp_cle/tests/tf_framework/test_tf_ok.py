@@ -9,6 +9,7 @@ from hbp_nrp_cle.mocks.brainsim._MockBrainCommunicationAdapter import MockBrainC
 from hbp_nrp_cle.tests.tf_framework.MockBrain import MockPopulation
 
 import unittest
+from mock import MagicMock
 
 __author__ = 'GeorgHinkel'
 
@@ -16,9 +17,9 @@ __author__ = 'GeorgHinkel'
 class TestTransferFunction(unittest.TestCase):
     def test_tf_get_source(self):
         nrp.start_new_tf_manager()
-
         brain = MockBrainCommunicationAdapter()
         robot = MockRobotCommunicationAdapter()
+
 
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)])
@@ -30,6 +31,8 @@ class TestTransferFunction(unittest.TestCase):
         def transform_camera(t, camera, camera_device):
             if camera.changed:
                 camera_device.inner.amplitude = 42.0
+
+
 
         expected_source_n2r = """@nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                         v_rest=1.0, updates=[(1.0, 0.3)])
@@ -56,12 +59,13 @@ def transform_camera(t, camera, camera_device):
 
     def test_tf_set(self):
         nrp.start_new_tf_manager()
-
         brain = MockBrainCommunicationAdapter()
         robot = MockRobotCommunicationAdapter()
-
+        config.active_node.initialize_n2r_tf = MagicMock(return_value=None)
+        config.active_node.initialize_r2n_tf = MagicMock(return_value=None)
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
-                                v_rest=1.0, updates=[(1.0, 0.3)])
+                                v_rest=1.0, updates=[(1.0, 0.3)]
+        )
         @nrp.Neuron2Robot(Husky.RightArm.pose)
         def right_arm(t, neuron0):
             return neuron0.voltage * 1.345
@@ -85,8 +89,11 @@ def rotate_camera(t, camera, camera_device):
 
         nrp.set_transfer_function('right_arm', tf_n2r)
         nrp.set_transfer_function('transform_camera', tf_r2n)
+        self.assertEqual(config.active_node.initialize_n2r_tf.call_count, 1)
+        self.assertEqual(config.active_node.initialize_r2n_tf.call_count, 1)
 
         loaded_source_n2r_and_r2n = [tf.get_source() for tf in nrp.get_transfer_functions()]
+        print(loaded_source_n2r_and_r2n)
         self.assertIn(tf_n2r, loaded_source_n2r_and_r2n)
         self.assertIn(tf_r2n, loaded_source_n2r_and_r2n)
         self.assertEqual(2, len(loaded_source_n2r_and_r2n))

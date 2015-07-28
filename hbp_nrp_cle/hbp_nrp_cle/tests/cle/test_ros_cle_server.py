@@ -179,15 +179,13 @@ class TestROSCLEServer(unittest.TestCase):
     @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
     def test_set_transfer_function(self, mocked_tf_framework):
         self.craft_ros_cle_server(True)
-        mocked_response = MagicMock()
-        mocked_response.success = True
-        mocked_tf_framework.set_transfer_function = MagicMock(return_value=mocked_response)
+        mocked_tf_framework.set_transfer_function = MagicMock(return_value=True)
         (_, _, _, _, _, _, set_transfer_function_handler) = self.__get_handlers_for_testing_main()
         request = MagicMock()
         request.transfer_function_name = "tf_0"
         request.transfer_function_source = "def tf0(): \n return 0"
         response = set_transfer_function_handler(request)
-        self.assertEqual(True, response.success)
+        self.assertEqual(True, response)
 
     def test_run(self):
         self.craft_ros_cle_server(True)

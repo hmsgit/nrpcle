@@ -254,7 +254,7 @@ class ROSCLEServer(threading.Thread):
         self.__service_set_transfer_function = None
         self.__cle = None
 
-        self.__to_be_executed_within_main_thread = None
+        self.__to_be_executed_within_main_thread = []
 
         self.__simulation_id = sim_id
         self.__ros_status_pub = rospy.Publisher(TOPIC_STATUS, String)
@@ -359,17 +359,18 @@ class ROSCLEServer(threading.Thread):
         """
         return numpy.asarray([tf.get_source() for tf in tf_framework.get_transfer_functions()])
 
-    @staticmethod
-    def __set_transfer_function(request):
+    def __set_transfer_function(self, request):
         """
         Patch a transfer function
 
         :param request: The mandatory rospy request parameter
         """
-        return tf_framework.set_transfer_function(
-               request.transfer_function_name,
-               request.transfer_function_source
+        self.__to_be_executed_within_main_thread.insert(
+            0,
+            lambda n=request.transfer_function_name, s=request.transfer_function_source:
+            tf_framework.set_transfer_function(n, s)
         )
+        return True
 
     def start_timeout(self):
         """
@@ -425,9 +426,10 @@ class ROSCLEServer(threading.Thread):
         self.start()
 
         while not self.__state.is_final_state():
-            if self.__to_be_executed_within_main_thread is not None:
-                self.__to_be_executed_within_main_thread()
-                self.__to_be_executed_within_main_thread = None
+            if self.__to_be_executed_within_main_thread:
+                for function in self.__to_be_executed_within_main_thread:
+                    function()
+                self.__to_be_executed_within_main_thread = []
                 self.__done_flag.set()
             self.__event_flag.wait()  # waits until an event is set
             self.__event_flag.clear()
@@ -533,7 +535,7 @@ class ROSCLEServer(threading.Thread):
         """
         Handler for the CLE start() call, also used for resuming after pause().
         """
-        self.__to_be_executed_within_main_thread = self.__cle.start
+        self.__to_be_executed_within_main_thread.append(self.__cle.start)
 
     @ros_handler
     def pause_simulation(self):
@@ -564,7 +566,7 @@ class ROSCLEServer(threading.Thread):
         self.__done_flag.wait()
         self.__done_flag.clear()
         # CLE reset() already includes stop() and wait_step()
-        self.__to_be_executed_within_main_thread = self.__cle.reset
+        self.__to_be_executed_within_main_thread.append(self.__cle.reset)
         self.start_timeout()
 
     def __push_status_on_ros(self, message):

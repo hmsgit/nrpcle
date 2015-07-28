@@ -6,7 +6,7 @@ __author__ = 'GeorgHinkel'
 
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
-from ._Neuron2Robot import Neuron2Robot
+from ._Neuron2Robot import Neuron2Robot, MapSpikeSink
 from ._Robot2Neuron import Robot2Neuron
 from ._TransferFunctionInterface import ITransferFunctionManager
 from ._PropertyPath import PropertyPath
@@ -72,6 +72,46 @@ class TransferFunctionManager(ITransferFunctionManager):
             _r2n.run(t)
             _r2n.elapsed_time += time.time() - start
 
+    def initialize_n2r_tf(self, tf):
+        """
+        Initializes the given neuron-to-robot transfer function
+
+        :param name: The transfer function
+        """
+        # Wire transfer function from neuronal simulation to world simulation
+        assert isinstance(tf, Neuron2Robot)
+        logger.info("Initialize transfer function " + repr(tf))
+        tf.replace_params()
+        tf.elapsed_time = 0.0
+
+        if tf.topic is not None:
+            tf.topic = self.__robotAdapter.register_publish_topic(tf.topic)
+
+        for i in range(1, len(tf.params)):
+            param = tf.params[i]
+            assert isinstance(param, MapSpikeSink)
+            # TODO: removes former adapters (pyNN neuron Populations)
+            # if the transfer function code is updated
+            tf.params[i] = tf.params[i].create_adapter(self)
+            tf.__dict__[param.name] = tf.params[i]
+
+    def initialize_r2n_tf(self, tf):
+        """
+        Initializes the given robot-to-neuron transfer function
+
+        :param name: The transfer function
+        """
+        # Wire transfer function from world simulation to neuronal simulation
+        assert isinstance(tf, Robot2Neuron)
+        logger.info("Initialize transfer function " + repr(tf))
+        tf.check_params()
+        tf.elapsed_time = 0.0
+
+        for i in range(1, len(tf.params)):
+            param = tf.params[i]
+            tf.params[i] = tf.params[i].create_adapter(self)
+            tf.__dict__[param.name] = tf.params[i]
+
     def initialize(self, name):
         """
         Initializes the transfer Function node with the given name
@@ -90,30 +130,11 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         # Wire transfer functions from neuronal simulation to world simulation
         for _n2r in self.__n2r:
-            assert isinstance(_n2r, Neuron2Robot)
-            logger.info("Initialize transfer function " + repr(_n2r))
-            _n2r.replace_params()
-            _n2r.elapsed_time = 0.0
-
-            if _n2r.topic is not None:
-                _n2r.topic = self.__robotAdapter.register_publish_topic(_n2r.topic)
-
-            for i in range(1, len(_n2r.params)):
-                param = _n2r.params[i]
-                _n2r.params[i] = _n2r.params[i].create_adapter(self)
-                _n2r.__dict__[param.name] = _n2r.params[i]
+            self.initialize_n2r_tf(_n2r)
 
         # Wire transfer functions from world simulation to neuronal simulation
         for _r2n in self.__r2n:
-            assert isinstance(_r2n, Robot2Neuron)
-            logger.info("Initialize transfer function " + repr(_r2n))
-            _r2n.check_params()
-            _r2n.elapsed_time = 0.0
-
-            for i in range(1, len(_r2n.params)):
-                param = _r2n.params[i]
-                _r2n.params[i] = _r2n.params[i].create_adapter(self)
-                _r2n.__dict__[param.name] = _r2n.params[i]
+            self.initialize_r2n_tf(_r2n)
 
         # Initialize dependencies
         self.__nestAdapter.initialize()

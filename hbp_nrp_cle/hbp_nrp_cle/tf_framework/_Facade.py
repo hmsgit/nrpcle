@@ -137,8 +137,10 @@ def set_transfer_function(original_name, new_transfer_function_source):
     # Update transfer function's source code
     source = textwrap.dedent(new_transfer_function_source)
     tf = get_transfer_function(original_name)
+    tf_is_n2r = False
     if tf in config.active_node.n2r:
         config.active_node.n2r.remove(tf)
+        tf_is_n2r = True
     else:
         config.active_node.r2n.remove(tf)
 
@@ -156,9 +158,16 @@ def set_transfer_function(original_name, new_transfer_function_source):
         # pylint: disable=exec-used
         exec source
         tf = get_transfer_function(new_name)
-        tf.set_source(source)
+        if tf_is_n2r:
+            config.active_node.initialize_n2r_tf(tf)
+        else:
+            config.active_node.initialize_r2n_tf(tf)
     except Exception as e:
         logger.error("Error while loading new transfer function")
         logger.error(e)
         result = False
+    # we set the new source in an attribute because inspect.getsource won't work after exec
+    # indeed inspect.getsource is based on a source file object
+    # see findsource in http://www.opensource.apple.com/source/python/python-3/python/Lib/inspect.py
+    tf.set_source(source)
     return result
