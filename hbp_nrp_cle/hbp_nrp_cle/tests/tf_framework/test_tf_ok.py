@@ -87,8 +87,8 @@ def rotate_camera(t, camera, camera_device):
         camera_device.inner.amplitude = 24.0
 """
 
-        nrp.set_transfer_function('right_arm', tf_n2r)
-        nrp.set_transfer_function('transform_camera', tf_r2n)
+        nrp.set_transfer_function(tf_n2r, 'right_arm')
+        nrp.set_transfer_function(tf_r2n, 'transform_camera')
         self.assertEqual(config.active_node.initialize_n2r_tf.call_count, 1)
         self.assertEqual(config.active_node.initialize_r2n_tf.call_count, 1)
 
@@ -98,6 +98,46 @@ def rotate_camera(t, camera, camera_device):
         self.assertIn(tf_r2n, loaded_source_n2r_and_r2n)
         self.assertEqual(2, len(loaded_source_n2r_and_r2n))
 
+    def test_tf_delete(self):
+
+        nrp.start_new_tf_manager()
+
+        brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
+
+        @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
+                                v_rest=1.0, updates=[(1.0, 0.3)])
+        @nrp.Neuron2Robot(Husky.RightArm.pose)
+        def right_arm(t, neuron0):
+            return neuron0.voltage * 1.345
+
+        @nrp.MapSpikeSink("neuron1", nrp.brain.actors[slice(2, 4, 1)], nrp.leaky_integrator_alpha,
+                                updates=[(1.0, 0.4)], v_rest=1.0)
+        @nrp.MapSpikeSink("neuron2", nrp.brain.actors[slice(4, 6, 1)], nrp.leaky_integrator_alpha,
+                                updates=[(1.0, 0.4)], v_rest=1.0)
+        @nrp.Neuron2Robot(Husky.LeftArm.twist)
+        def left_arm_tw(t, neuron1, neuron2):
+            if neuron1.voltage < 0.678:
+                if neuron2.voltage > 0.345:
+                    return 0.756
+                else:
+                    return 1.123
+            else:
+                if neuron2.voltage < 0.789:
+                    return 0.632
+                else:
+                    return 0.256
+
+        # Delete an existing transfer function
+        self.assertEqual(2, len(nrp.get_transfer_functions()))
+        self.assertEqual(True, nrp.delete_transfer_function("left_arm_tw"))
+        self.assertEqual(1, len(nrp.get_transfer_functions()))
+        # Try to delete it again
+        self.assertEqual(False, nrp.delete_transfer_function("left_arm_tw"))
+        self.assertEqual(1, len(nrp.get_transfer_functions()))
+        # Delete another existing transfer function
+        self.assertEqual(True, nrp.delete_transfer_function("right_arm"))
+        self.assertEqual(0, len(nrp.get_transfer_functions()))
 
     def test_all_right(self):
 

@@ -15,7 +15,7 @@ from threading import Thread, Event
 from cle_ros_msgs import srv
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, SERVICE_SIM_START_ID, \
     SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID, \
-    SERVICE_GET_TRANSFER_FUNCTIONS, SERVICE_SET_TRANSFER_FUNCTION
+    SERVICE_GET_TRANSFER_FUNCTIONS, SERVICE_SET_TRANSFER_FUNCTION, SERVICE_DELETE_TRANSFER_FUNCTION
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 from hbp_nrp_cle.cle import ros_handler
 import hbp_nrp_cle.tf_framework as tf_framework
@@ -116,7 +116,6 @@ class DoubleTimer(Thread):
 # pylint: disable=R0902
 # the attributes are reasonable in this case
 class ROSCLEServer(threading.Thread):
-
     """
     A ROS server wrapper around the Closed Loop Engine.
     """
@@ -252,6 +251,7 @@ class ROSCLEServer(threading.Thread):
         self.__service_state = None
         self.__service_get_transfer_functions = None
         self.__service_set_transfer_function = None
+        self.__service_delete_transfer_function = None
         self.__cle = None
 
         self.__to_be_executed_within_main_thread = []
@@ -333,6 +333,11 @@ class ROSCLEServer(threading.Thread):
             self.__set_transfer_function
         )
 
+        self.__service_delete_transfer_function = rospy.Service(
+            SERVICE_DELETE_TRANSFER_FUNCTION(self.__simulation_id), srv.DeleteTransferFunction,
+            self.__delete_transfer_function
+        )
+
         self.__timeout = timeout
         self.__double_timer = DoubleTimer(
             self.STATUS_UPDATE_INTERVAL,
@@ -364,12 +369,31 @@ class ROSCLEServer(threading.Thread):
         Patch a transfer function
 
         :param request: The mandatory rospy request parameter
+        :return: always True as this command is executed asynchronously.
+                 ROS forces us to return a boolean.
         """
         self.__to_be_executed_within_main_thread.insert(
-            0,
+            0,  # Make sure that the function is in the first position of the list
             lambda n=request.transfer_function_name, s=request.transfer_function_source:
-            tf_framework.set_transfer_function(n, s)
+            tf_framework.set_transfer_function(s, n)
         )
+        self.__event_flag.set()
+        return True
+
+    def __delete_transfer_function(self, request):
+        """
+        Delete an existing transfer function
+
+        :param request: The mandatory rospy request parameter
+        :return: always True as this command is executed asynchronously.
+                 ROS forces us to return a boolean.
+        """
+        self.__to_be_executed_within_main_thread.insert(
+            0,  # Make sure that the function is in the first position of the list
+            lambda n=request.transfer_function_name:
+            tf_framework.delete_transfer_function(n)
+        )
+        self.__event_flag.set()
         return True
 
     def start_timeout(self):

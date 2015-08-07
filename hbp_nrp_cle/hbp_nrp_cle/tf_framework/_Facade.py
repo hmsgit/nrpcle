@@ -120,29 +120,46 @@ def get_transfer_function(name):
     """
     Get the transfer function with the given name
 
-    :return The transfer function with the given name
     :param name: The name of the transfer function
+    :return The transfer function with the given name
     """
 
     return next((tf for tf in get_transfer_functions() if tf.name == name), None)
 
 
-def set_transfer_function(original_name, new_transfer_function_source):
+def delete_transfer_function(name):
+    """
+    Delete a transfer function. If the transfer function does not exist,
+    nothing will happen.
+
+    :param name: The name of the transfer function
+    :return True if the transfer function is correctly deleted. False if the transfer function
+            does not exist.
+    """
+    result = True
+    tf = get_transfer_function(name)
+    if tf in config.active_node.n2r:
+        config.active_node.n2r.remove(tf)
+    elif tf in config.active_node.r2n:
+        config.active_node.r2n.remove(tf)
+    else:
+        result = False
+    return result
+
+
+def set_transfer_function(new_transfer_function_source, original_name=None):
     """
     Apply transfer function changes made by a client
 
+    :param original_name: Name of the transfer function to replace (or none for a new tf)
+    :param new_transfer_function_source: Sources of the transfer function
     :return: True if the new source code is successfully applied, False otherwise
     """
+    if (original_name):
+        delete_transfer_function(original_name)
 
     # Update transfer function's source code
     source = textwrap.dedent(new_transfer_function_source)
-    tf = get_transfer_function(original_name)
-    tf_is_n2r = False
-    if tf in config.active_node.n2r:
-        config.active_node.n2r.remove(tf)
-        tf_is_n2r = True
-    else:
-        config.active_node.r2n.remove(tf)
 
     # Execute transfer function's new code
     logger.debug("About to set transfer function with the following python code: \n" + repr(source))
@@ -158,10 +175,13 @@ def set_transfer_function(original_name, new_transfer_function_source):
         # pylint: disable=exec-used
         exec source
         tf = get_transfer_function(new_name)
-        if tf_is_n2r:
+        if isinstance(tf, Neuron2Robot):
             config.active_node.initialize_n2r_tf(tf)
-        else:
+        elif isinstance(tf, Robot2Neuron):
             config.active_node.initialize_r2n_tf(tf)
+        else:
+            logger.error("Transfer function has no decorator r2n or n2r")
+            result = False
     except Exception as e:
         logger.error("Error while loading new transfer function")
         logger.error(e)
