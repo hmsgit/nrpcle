@@ -372,12 +372,11 @@ class ROSCLEServer(threading.Thread):
         :return: always True as this command is executed asynchronously.
                  ROS forces us to return a boolean.
         """
-        self.__to_be_executed_within_main_thread.insert(
-            0,  # Make sure that the function is in the first position of the list
+        # Make sure that the CLE is stopped. In case it's already stop, these calls will do nothing.
+        self.__execute_high_priority_function_within_main_thread_with_cle_stopped(
             lambda n=request.transfer_function_name, s=request.transfer_function_source:
             tf_framework.set_transfer_function(s, n)
         )
-        self.__event_flag.set()
         return True
 
     def __delete_transfer_function(self, request):
@@ -388,13 +387,29 @@ class ROSCLEServer(threading.Thread):
         :return: always True as this command is executed asynchronously.
                  ROS forces us to return a boolean.
         """
-        self.__to_be_executed_within_main_thread.insert(
-            0,  # Make sure that the function is in the first position of the list
+        self.__execute_high_priority_function_within_main_thread_with_cle_stopped(
             lambda n=request.transfer_function_name:
             tf_framework.delete_transfer_function(n)
         )
-        self.__event_flag.set()
         return True
+
+    def __execute_high_priority_function_within_main_thread_with_cle_stopped(self, function):
+        """
+        Execute a function within main thread. The function will be placed at the highest priority
+        in the list of functions to be executed. The CLE will be stopped prior of executing the
+        function (in case it was in a started state).
+        :param function: Function to be executed
+        """
+
+        self.__cle.stop()
+        self.__done_flag.wait()
+        self.__done_flag.clear()
+
+        self.__to_be_executed_within_main_thread.insert(
+            0,  # Make sure that the function is in the first position of the list
+            function
+        )
+        self.__event_flag.set()
 
     def start_timeout(self):
         """
