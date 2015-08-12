@@ -64,8 +64,8 @@ class TransferFunction(object):
         :return: A string containing the transfer function source code correctly indented.
 
         .. WARNING:: The source code is read from the generated file based on the template.
-        If someone patches the transfer function, the patched code will not be returned.
-        (See python inspect module documentation)
+                     If someone patches the transfer function, the patched code will not be
+                     returned (see python inspect module documentation).
         """
 
         if (self._source is None):

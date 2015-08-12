@@ -38,6 +38,14 @@ cle - The implementations of the CLE drivers
     :undoc-members:
     :show-inheritance:
 
+:mod:`ROSCLEState` Module
+-------------------------
+
+.. automodule:: hbp_nrp_cle.cle.ROSCLEState
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`SerialClosedLoopEngine` Module
 ------------------------------------
 

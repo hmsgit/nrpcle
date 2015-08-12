@@ -31,7 +31,7 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
 
     .. WARNING::
         If the input file has been collapsed using
-        :func:`convert_h5_to_collapsed_h5`, collapsed
+        'convert_h5_to_collapsed_h5', collapsed
         need to be set to True. The synapse model will then be forced to
         'quantal_stp_synapse'.
 
