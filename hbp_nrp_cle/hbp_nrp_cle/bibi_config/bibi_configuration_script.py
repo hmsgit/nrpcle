@@ -1,7 +1,7 @@
 """
 Script to run CLE from BIBI Configuration File
 """
-from hbp_nrp_cle.bibi_config.generated import generated_bibi_api
+from hbp_nrp_cle.bibi_config.generated import bibi_api_gen
 
 __author__ = 'GeorgHinkel'
 
@@ -29,12 +29,12 @@ __device_properties = {'ACSource': 'amplitude', 'DCSource': 'amplitude',
                        'Poisson': 'rate',
                        'PopulationRate': 'rate',
                        'SpikeRecorder': 'times'}
-__operator_symbols = {generated_bibi_api.Subtract: '({0} - {1})',
-                      generated_bibi_api.Add: '({0} + {1})',
-                      generated_bibi_api.Multiply: '{0} * {1}',
-                      generated_bibi_api.Divide: '{0} / {1}',
-                      generated_bibi_api.Min: 'min({0}, {1})',
-                      generated_bibi_api.Max: 'max({0}, {1})'}
+__operator_symbols = {bibi_api_gen.Subtract: '({0} - {1})',
+                      bibi_api_gen.Add: '({0} + {1})',
+                      bibi_api_gen.Multiply: '{0} * {1}',
+                      bibi_api_gen.Divide: '{0} / {1}',
+                      bibi_api_gen.Min: 'min({0}, {1})',
+                      bibi_api_gen.Max: 'max({0}, {1})'}
 
 __monitoring_types = {'PopulationRate': 'cle_ros_msgs.msg.SpikeRate',
                       'LeakyIntegratorAlpha': 'cle_ros_msgs.msg.SpikeRate',
@@ -76,30 +76,31 @@ def print_expression(expression):
 
     :param expression: The expression to be printed
     """
+
     # Pylint demands less *if* statements but each *if* is very simple so that should be ok
     # pylint: disable=R0911
-    if isinstance(expression, generated_bibi_api.Scale):
+    if isinstance(expression, bibi_api_gen.Scale):
         return str(expression.factor) + ' * ' + print_expression(expression.inner)
-    if isinstance(expression, generated_bibi_api.Call):
-        temp = expression.type_ + '('
+    if isinstance(expression, bibi_api_gen.Call):
+        temp = expression.type + '('
         i = 1
         for argument in expression.argument:
-            temp += argument.name + '=' + print_expression(argument.value)
+            temp += argument.name + '=' + print_expression(argument.value_)
             if i < len(expression.argument):
                 temp += ', '
             i += 1
         return temp + ')'
-    if isinstance(expression, generated_bibi_api.Operator):
+    if isinstance(expression, bibi_api_gen.Operator):
         return print_operator(expression)
-    if isinstance(expression, generated_bibi_api.ArgumentReference):
-        if expression.property is None:
+    if isinstance(expression, bibi_api_gen.ArgumentReference):
+        if expression.property_ is None:
             return expression.name
         else:
-            return expression.name + '.' + expression.property
-    if isinstance(expression, generated_bibi_api.Constant):
-        return str(expression.value)
+            return expression.name + '.' + expression.property_
+    if isinstance(expression, bibi_api_gen.Constant):
+        return str(expression.value_)
 
-    if isinstance(expression, generated_bibi_api.SimulationStep):
+    if isinstance(expression, bibi_api_gen.SimulationStep):
         return "t"
 
     raise Exception('No idea how to print expression of type ' + repr(type(expression)))
@@ -112,7 +113,7 @@ def get_monitoring_topic(monitor):
     :param monitor: The neuron monitor
     :return: The topic address as string
     """
-    devtype = monitor.device.type_
+    devtype = monitor.device[0].type
     return __monitoring_topics.get(devtype)
 
 
@@ -123,7 +124,7 @@ def get_monitoring_type(monitor):
     :param monitor: The neuron monitor
     :return: The topic of the monitoring
     """
-    devtype = monitor.device.type_
+    devtype = monitor.device[0].type
     return __monitoring_types.get(devtype)
 
 
@@ -134,10 +135,10 @@ def get_monitoring_impl(monitor):
     :param monitor: The given monitor
     :return: The implementation, i.e. the value to send to the monitoring topic as code
     """
-    dev = monitor.device
-    function = __monitoring_factory.get(monitor.device.type_)
+    dev = monitor.device[0]
+    function = __monitoring_factory.get(monitor.device[0].type)
     return function.format(get_monitoring_type(monitor), "t",
-                           dev.name + "." + get_default_property(dev.type_),
+                           dev.name + "." + get_default_property(dev.type),
                            monitor.name, get_neuron_count(dev.neurons))
 
 
@@ -178,21 +179,22 @@ def print_neurons(neuron_selector):
 def get_neuron_count(neurons):
     """
     Gets the amount of neurons connected
+
     :param neurons: The neuron selector
     :return: The amount of neurons as int
     """
-    if isinstance(neurons, generated_bibi_api.Index):
+    if isinstance(neurons, bibi_api_gen.Index):
         return 1
-    elif isinstance(neurons, generated_bibi_api.Range):
+    elif isinstance(neurons, bibi_api_gen.Range):
         if neurons.step is None:
             return neurons.to - neurons.from_
         return (neurons.to - neurons.from_) / neurons.step
-    elif isinstance(neurons, generated_bibi_api.List):
+    elif isinstance(neurons, bibi_api_gen.List):
         return len(neurons.element)
-    elif isinstance(neurons, generated_bibi_api.Population):
+    elif isinstance(neurons, bibi_api_gen.Population):
         return neurons.count
     raise Exception("Neuron Count: Don't know how to process neuron selector "
-                    + neurons.extensiontype_)
+                    + str(type(neurons)))
 
 
 def get_neurons_index(neurons):
@@ -202,25 +204,26 @@ def get_neurons_index(neurons):
     :param neurons: The neuron selector
     :return: A string with the appropriate index or None
     """
-    if isinstance(neurons, generated_bibi_api.Index):
+
+    if isinstance(neurons, bibi_api_gen.Index):
         return str(neurons.index)
-    elif isinstance(neurons, generated_bibi_api.Range):
+    elif isinstance(neurons, bibi_api_gen.Range):
         step_string = ""
         if neurons.step is not None:
             step_string = ', ' + str(neurons.step)
         return 'slice(' + str(neurons.from_) + ', ' + str(neurons.to) \
                + step_string + ')'
-    elif isinstance(neurons, generated_bibi_api.List):
+    elif isinstance(neurons, bibi_api_gen.List):
         if len(neurons.element) == 0:
             return '[]'
         neuron_list = '[' + str(neurons.element[0])
         for i in range(1, len(neurons.element)):
             neuron_list = neuron_list + ', ' + str(neurons.element[i])
         return neuron_list + ']'
-    elif isinstance(neurons, generated_bibi_api.Population):
+    elif isinstance(neurons, bibi_api_gen.Population):
         return None
     raise Exception("Neuron Print: Don't know how to process neuron selector "
-                    + neurons.extensiontype_)
+                    + str(neurons))
 
 
 def get_neuron_template(neurons):
@@ -230,15 +233,15 @@ def get_neuron_template(neurons):
     :param neurons: The neurons selector template
     :return: The neurons selection
     """
-    if isinstance(neurons, generated_bibi_api.IndexTemplate):
+    if isinstance(neurons, bibi_api_gen.IndexTemplate):
         return "[" + str(neurons.index) + "]"
-    if isinstance(neurons, generated_bibi_api.RangeTemplate):
+    if isinstance(neurons, bibi_api_gen.RangeTemplate):
         step_string = ""
         if neurons.step is not None:
             step_string = ', ' + str(neurons.step)
         return '[slice(' + str(neurons.from_) + ', ' + str(neurons.to) \
                + step_string + ')]'
-    if isinstance(neurons, generated_bibi_api.ListTemplate):
+    if isinstance(neurons, bibi_api_gen.ListTemplate):
         if len(neurons.element) == 0:
             return '[[]]'
         neuron_list = '[[' + neurons.element[0]
@@ -246,7 +249,7 @@ def get_neuron_template(neurons):
             neuron_list = neuron_list + ', ' + neurons.element[i]
         return neuron_list + ']]'
     raise Exception("Neuron Print: Don't know how to process neuron selector "
-                    + neurons.extensiontype_)
+                    + str(type(neurons)))
 
 
 def get_collection_source(selector):
@@ -256,23 +259,23 @@ def get_collection_source(selector):
     :param selector: The neuron source
     :return: A collection specifier as string
     """
-    if isinstance(selector, generated_bibi_api.Range):
+    if isinstance(selector, bibi_api_gen.Range):
         step_string = ""
         if selector.step is not None:
             step_string = ', ' + str(selector.step)
         return 'range(' + str(selector.from_) + ', ' + str(selector.to) \
                + step_string + ')'
-    elif isinstance(selector, generated_bibi_api.List):
+    elif isinstance(selector, bibi_api_gen.List):
         if len(selector.element) == 0:
             return '[]'
-        neuron_list = '[' + selector.element[0]
+        neuron_list = '[' + str(selector.element[0])
         for i in range(1, len(selector.element)):
             neuron_list = neuron_list + ', ' + str(selector.element[i])
         return neuron_list + ']'
-    elif isinstance(selector, generated_bibi_api.Population):
+    elif isinstance(selector, bibi_api_gen.Population):
         return "range(0, " + str(selector.count) + ")"
     raise Exception("Neuron Print: Don't know how to process neuron selector "
-                    + selector.extensiontype_)
+                    + str(type(selector)))
 
 
 def print_neuron_group(neuron_group):
@@ -282,12 +285,12 @@ def print_neuron_group(neuron_group):
     :param neuron_group: The given neuron group
     :return: The neuron group printed to text
     """
-    if isinstance(neuron_group, generated_bibi_api.MapSelector):
+    if isinstance(neuron_group, bibi_api_gen.MapSelector):
         result = "nrp.map_neurons(" + get_collection_source(neuron_group.source) + ", " + \
                  "lambda i: nrp.brain." + neuron_group.source.population + \
                  get_neuron_template(neuron_group.pattern) + ")"
         return result
-    elif isinstance(neuron_group, generated_bibi_api.ChainSelector):
+    elif isinstance(neuron_group, bibi_api_gen.ChainSelector):
         result = "nrp.chain_neurons("
         anything = False
         for neuron_selector in neuron_group.neurons:
@@ -304,7 +307,7 @@ def print_neuron_group(neuron_group):
             result += print_neuron_group(group)
         result += ")"
         return result
-    raise Exception("Don't know how to print group of type " + neuron_group.extensiontype_)
+    raise Exception("Don't know how to print group of type " + str(type(neuron_group)))
 
 
 def print_device_config(dev):
@@ -335,12 +338,12 @@ def print_synapse_dynamics(synapse_dynamics):
     :param synapse_dynamics: The synanapse dynamics element
     :return: Code that creates the synapse dynamics
     """
-    if isinstance(synapse_dynamics, generated_bibi_api.TsodyksMarkramMechanism):
+    if isinstance(synapse_dynamics, bibi_api_gen.TsodyksMarkramMechanism):
         return "sim.SynapseDynamics(fast=" \
                "sim.TsodyksMarkramMechanism(U={0}, tau_rec={1}, tau_facil={2}))"\
             .format(synapse_dynamics.u, synapse_dynamics.tau_rec, synapse_dynamics.tau_facil)
     raise Exception(
-        "Don't know how to print synapse dynamics of type " + synapse_dynamics.extensiontype_)
+        "Don't know how to print synapse dynamics of type " + str(type(synapse_dynamics)))
 
 
 def print_connector(connector):
@@ -350,16 +353,16 @@ def print_connector(connector):
     :param connector: The neuron connector model
     :return: Code that creates the neuron connector
     """
-    if isinstance(connector, generated_bibi_api.OneToOneConnector):
+    if isinstance(connector, bibi_api_gen.OneToOneConnector):
         return "sim.OneToOneConnector(weights={0}, delays={1})".format(connector.weights,
                                                                        connector.delays)
-    if isinstance(connector, generated_bibi_api.AllToAllConnector):
+    if isinstance(connector, bibi_api_gen.AllToAllConnector):
         return "sim.AllToAllConnector(weights={0}, delays={1})".format(connector.weights,
                                                                        connector.delays)
-    if isinstance(connector, generated_bibi_api.FixedNumberPreConnector):
+    if isinstance(connector, bibi_api_gen.FixedNumberPreConnector):
         return "sim.FixedNumberPreConnector({2}, weights={0}, delays={1})".format(
             connector.weights, connector.delays, connector.count)
-    raise Exception("Don't know how to print connector of type " + connector.extensiontype_)
+    raise Exception("Don't know how to print connector of type " + str(type(connector)))
 
 
 def compute_dependencies(config):
@@ -369,15 +372,15 @@ def compute_dependencies(config):
     :param config: The BIBI configuration
     """
     dependencies = set()
-    assert isinstance(config, generated_bibi_api.BIBIConfiguration)
+    assert isinstance(config, bibi_api_gen.BIBIConfiguration)
     for tf in config.transferFunction:
         for local in tf.local:
             __add_dependencies_for_expression(local.body, dependencies)
-        if isinstance(tf, generated_bibi_api.Neuron2Robot):
+        if isinstance(tf, bibi_api_gen.Neuron2Robot):
             if tf.returnValue is not None:
-                dependencies.add(tf.returnValue.type_)
+                dependencies.add(tf.returnValue.type)
         for topic in tf.topic:
-            dependencies.add(topic.type_)
+            dependencies.add(topic.type)
     return dependencies
 
 
@@ -388,13 +391,13 @@ def __add_dependencies_for_expression(expression, dependencies):
     :param expression: The expression that may cause dependencies
     :param dependencies: The dependencies detected so far
     """
-    if isinstance(expression, generated_bibi_api.Scale):
+    if isinstance(expression, bibi_api_gen.Scale):
         __add_dependencies_for_expression(expression.inner, dependencies)
-    if isinstance(expression, generated_bibi_api.Call):
-        dependencies.add(expression.type_)
+    if isinstance(expression, bibi_api_gen.Call):
+        dependencies.add(expression.type)
         for argument in expression.argument:
-            __add_dependencies_for_expression(argument.value, dependencies)
-    if isinstance(expression, generated_bibi_api.Operator):
+            __add_dependencies_for_expression(argument.value_, dependencies)
+    if isinstance(expression, bibi_api_gen.Operator):
         for operand in expression.operand:
             __add_dependencies_for_expression(operand, dependencies)
 
@@ -427,7 +430,8 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id):
     template = jinja2.Template(templateFile.read())
     templateFile.close()
     logger.debug("Loading BIBI Configuration")
-    config = generated_bibi_api.parse(bibi_conf, silence=True)
+    with open(bibi_conf) as bibi_xml:
+        config = bibi_api_gen.CreateFromDocument(bibi_xml.read())
     names = dict(globals())
     names['config'] = config
     names['dependencies'] = compute_dependencies(config)
