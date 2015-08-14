@@ -26,11 +26,12 @@ either leaky integrate-and-fire neurons without threshold potential
 (-> leaky integrators) or (temporary for reasons of testing) spike detectors
 
 * PyNNIFCurrExp: implementation of a leaky integrate-and-fire (IF) neuron with
-current-based synapses and decaying-exponential post-synaptic currents
+                 current-based synapses and decaying-exponential post-synaptic currents
 * PyNNIFCurrAlpha: implementation of a leaky integrate-and-fire (IF) neuron with
-current-based synapses and alpha-shaped (= difference of exponentials) post-synaptic currents
+                   current-based synapses and alpha-shaped (= difference of
+                   exponentials) post-synaptic currents
 * PyNNSpikeDetector: detects whether one of the connected neurons has spiked in the last time
-step and in that case returns a "1", otherwise "0"
+                     step and in that case returns a "1", otherwise "0"
 * PyNNPopulationRate: measured the firing rate of the connected neuronal population
 
 The devices can be configured in the same way as NEST devices, any additional configuration

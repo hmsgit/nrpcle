@@ -22,6 +22,14 @@ tf_framework - The implementation of the TF framework
     :undoc-members:
     :show-inheritance:
 
+:mod:`_NeuronSelectors` Module
+------------------------------
+
+.. automodule:: hbp_nrp_cle.tf_framework._NeuronSelectors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`_PropertyPath` Module
 ---------------------------
 
@@ -66,6 +74,14 @@ tf_framework - The implementation of the TF framework
 --------------------
 
 .. automodule:: hbp_nrp_cle.tf_framework.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`monitoring` Module
+------------------------
+
+.. automodule:: hbp_nrp_cle.tf_framework.monitoring
     :members:
     :undoc-members:
     :show-inheritance:

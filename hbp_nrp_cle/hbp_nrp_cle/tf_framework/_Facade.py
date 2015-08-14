@@ -122,7 +122,7 @@ def get_transfer_function(name):
     Get the transfer function with the given name
 
     :param name: The name of the transfer function
-    :return The transfer function with the given name
+    :return: The transfer function with the given name
     """
 
     return next((tf for tf in get_transfer_functions() if tf.name == name), None)
@@ -134,8 +134,8 @@ def delete_transfer_function(name):
     nothing will happen.
 
     :param name: The name of the transfer function
-    :return True if the transfer function is correctly deleted. False if the transfer function
-            does not exist.
+    :return: True if the transfer function is correctly deleted. False if the transfer function
+             does not exist.
     """
     result = True
     tf = get_transfer_function(name)

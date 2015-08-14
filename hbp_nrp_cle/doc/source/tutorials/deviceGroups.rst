@@ -72,7 +72,7 @@ The lambda expression may either return a single neuron specification or a list.
 can be used to specify patterns.
 
 In the BIBI Configuration, there is an element *DeviceGroupChannel* to represent device group accesses. This channel can be connected to neurons using *NeuronGroupSelector*
-much like the normal devices are connected by *NeuronSelector*s. Currently, we support chains and maps such as described above.
+much like the normal devices are connected by *NeuronSelector*\s. Currently, we support chains and maps such as described above.
 
 As a result, the following specification of two device channels
 
