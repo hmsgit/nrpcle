@@ -58,6 +58,10 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         # PyNN is built in such a way that for the spikes in NEST, only the file storage
         # is available. This should be investigated.
         # Meanwhile, we are interacting with NEST directly.
+
+        # Fortunately for us, record implementation in PyNN will call "_reset" that will
+        # remove the NEST recording device from the simulation (see src/common/populations.py
+        # and src/nest/recording.py in PyNN source code)
         self.__neurons.record(to_file=False)
         nest.SetStatus(self.__neurons.recorders['spikes']._device.device, "to_memory", True)
         nest.SetStatus(self.__neurons.recorders['spikes']._device.device, "to_file", False)

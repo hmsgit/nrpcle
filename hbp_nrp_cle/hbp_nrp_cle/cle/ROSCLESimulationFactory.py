@@ -178,17 +178,17 @@ if __name__ == '__main__':
     parser.add_argument('--logfile', dest='logfile', help='specify the CLE logfile')
     parser.add_argument("-v", "--verbose", help="increase output verbosity",
                         action="store_true")
-    parser.add_argument('-d', '--debug',
-                        dest='debug',
+    parser.add_argument('-p', '--pycharm',
+                        dest='pycharm',
                         help='debug with pyCharm. IP adress and port are needed.',
                         nargs='+')
     args = parser.parse_args()
 
-    if (args.debug):
+    if (args.pycharm):
         # pylint: disable=import-error
         import pydevd
-        pydevd.settrace(args.debug[0],
-                        port=int(args.debug[1]),
+        pydevd.settrace(args.pycharm[0],
+                        port=int(args.pycharm[1]),
                         stdoutToServer=True,
                         stderrToServer=True)
 

@@ -21,6 +21,8 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         self.__is_initialized = False
         self.__is_alive = False
         self.__rank = None
+        self.detector_devices = []
+        self.generator_devices = []
 
     def initialize(self, **params):
         """

@@ -60,7 +60,7 @@ def transform_camera(t, camera, camera_device):
     def test_tf_set(self):
         nrp.start_new_tf_manager()
         brain = MockBrainCommunicationAdapter()
-        robot = MockRobotCommunicationAdapter()
+        config.active_node.brain_adapter = brain
         config.active_node.initialize_n2r_tf = MagicMock(return_value=None)
         config.active_node.initialize_r2n_tf = MagicMock(return_value=None)
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
@@ -103,7 +103,7 @@ def rotate_camera(t, camera, camera_device):
         nrp.start_new_tf_manager()
 
         brain = MockBrainCommunicationAdapter()
-        robot = MockRobotCommunicationAdapter()
+        config.active_node.brain_adapter = brain
 
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)])
@@ -138,6 +138,7 @@ def rotate_camera(t, camera, camera_device):
         # Delete another existing transfer function
         self.assertEqual(True, nrp.delete_transfer_function("right_arm"))
         self.assertEqual(0, len(nrp.get_transfer_functions()))
+        self.assertEqual(0, len(config.active_node.brain_adapter.detector_devices))
 
     def test_all_right(self):
 

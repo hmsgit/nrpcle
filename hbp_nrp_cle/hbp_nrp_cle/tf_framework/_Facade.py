@@ -140,9 +140,15 @@ def delete_transfer_function(name):
     result = True
     tf = get_transfer_function(name)
     if tf in config.active_node.n2r:
+        for i in range(1, len(tf.params)):
+            if (tf.params[i] in config.active_node.brain_adapter.detector_devices):
+                config.active_node.brain_adapter.detector_devices.remove(tf.params[i])
         config.active_node.n2r.remove(tf)
     elif tf in config.active_node.r2n:
         config.active_node.r2n.remove(tf)
+        for i in range(1, len(tf.params)):
+            if (tf.params[i] in config.active_node.brain_adapter.generator_devices):
+                config.active_node.brain_adapter.generator_devices.remove(tf.params[i])
     else:
         result = False
     return result
