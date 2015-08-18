@@ -178,7 +178,20 @@ if __name__ == '__main__':
     parser.add_argument('--logfile', dest='logfile', help='specify the CLE logfile')
     parser.add_argument("-v", "--verbose", help="increase output verbosity",
                         action="store_true")
+    parser.add_argument('-d', '--debug',
+                        dest='debug',
+                        help='debug with pyCharm. IP adress and port are needed.',
+                        nargs='+')
     args = parser.parse_args()
+
+    if (args.debug):
+        # pylint: disable=import-error
+        import pydevd
+        pydevd.settrace(args.debug[0],
+                        port=int(args.debug[1]),
+                        stdoutToServer=True,
+                        stderrToServer=True)
+
     server = ROSCLESimulationFactory()
     server.initialize()
     set_up_logger(args.logfile, args.verbose)

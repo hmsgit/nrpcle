@@ -11,6 +11,9 @@ from ._TransferFunction import TransferFunction
 
 import inspect
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class MapRobotPublisher(object):
     """
@@ -138,4 +141,9 @@ class Robot2Neuron(TransferFunction):
         :param t: The simulation time
         """
         self._params[0] = t
-        self._func(*self._params)
+        # pylint: disable=broad-except
+        try:
+            self._func(*self._params)
+        except Exception as e:
+            logger.error("Error while executing transfer function")
+            logger.error(e)

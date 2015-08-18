@@ -15,6 +15,9 @@ from ._TransferFunction import TransferFunction
 
 import inspect
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class MapSpikeSink(object):
     """
@@ -212,9 +215,17 @@ class Neuron2Robot(TransferFunction):
 
         :param t: The simulation time
         """
-        self._params[0] = t
-        return_value = self._func(*self._params)
-        if return_value is not None:
+        should_continue = True
+        # pylint: disable=broad-except
+        try:
+            self._params[0] = t
+            return_value = self._func(*self._params)
+        except Exception as e:
+            logger.error("Error while executing transfer function")
+            logger.error(e)
+            should_continue = False
+
+        if should_continue and return_value is not None:
             topic_publisher = self.__main_topic
             if topic_publisher is not None:
                 topic_publisher.send_message(return_value)

@@ -187,8 +187,11 @@ def set_transfer_function(new_transfer_function_source, original_name=None):
         logger.error("Error while loading new transfer function")
         logger.error(e)
         result = False
+
     # we set the new source in an attribute because inspect.getsource won't work after exec
     # indeed inspect.getsource is based on a source file object
     # see findsource in http://www.opensource.apple.com/source/python/python-3/python/Lib/inspect.py
-    tf.set_source(source)
+    if result:
+        tf.set_source(source)
+
     return result
