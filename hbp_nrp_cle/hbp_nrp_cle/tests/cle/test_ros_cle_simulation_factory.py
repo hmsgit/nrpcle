@@ -3,7 +3,8 @@ ROSCLESimulationFactory unit test
 """
 
 import hbp_nrp_cle
-from hbp_nrp_cle.cle import ROSCLESimulationFactory, ROS_CLE_NODE_NAME, SERVICE_VERSION, SERVICE_START_NEW_SIMULATION
+from hbp_nrp_cle.cle import ROSCLESimulationFactory, ROS_CLE_NODE_NAME, SERVICE_VERSION, SERVICE_START_NEW_SIMULATION, \
+    SERVICE_HEALTH
 import logging
 from mock import patch, MagicMock, Mock
 from testfixtures import log_capture
@@ -76,7 +77,12 @@ class TestROSCLESimulationFactory(unittest.TestCase):
             srv.GetVersion,
             self.__ros_cle_simulation_factory.get_version
         )
-        self.assertEqual(self.__mocked_rospy.Service.call_count, 2)
+        self.__mocked_rospy.Service.assert_any_call(
+            SERVICE_HEALTH,
+            srv.Health,
+            self.__ros_cle_simulation_factory.health
+        )
+        self.assertEqual(self.__mocked_rospy.Service.call_count, 3)
         self.__mocked_rospy.spin.assert_called_once_with()
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
@@ -157,6 +163,18 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     def test_get_version(self):
         cle_version = str(self.__ros_cle_simulation_factory.get_version(None))
         self.assertEqual(cle_version, hbp_nrp_cle.__version__)
+
+    def test_health(self):
+        health = self.__ros_cle_simulation_factory.health(None)
+        self.assertEqual(health, ['OK', '0 error(s) in 0 simulations'])
+        self.__ros_cle_simulation_factory._ROSCLESimulationFactory__failed_simulation_count = 1
+        self.__ros_cle_simulation_factory._ROSCLESimulationFactory__simulation_count = 3
+        health = self.__ros_cle_simulation_factory.health(None)
+        self.assertEqual(health, ['WARNING', '1 error(s) in 3 simulations'])
+        self.__ros_cle_simulation_factory._ROSCLESimulationFactory__failed_simulation_count = 3
+        self.__ros_cle_simulation_factory._ROSCLESimulationFactory__simulation_count = 3
+        health = self.__ros_cle_simulation_factory.health(None)
+        self.assertEqual(health, ['CRITICAL', '3 error(s) in 3 simulations'])
 
 if __name__ == '__main__':
     unittest.main()

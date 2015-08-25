@@ -13,7 +13,8 @@ import hbp_nrp_cle
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_START_NEW_SIMULATION, SERVICE_VERSION
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_START_NEW_SIMULATION, \
+    SERVICE_VERSION, SERVICE_HEALTH
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
@@ -36,6 +37,8 @@ class ROSCLESimulationFactory(object):
         self.running_simulation_thread = None
         self.simulation_initialized_event = threading.Event()
         self.simulation_exception_during_init = None
+        self.__simulation_count = 0
+        self.__failed_simulation_count = 0
 
     def initialize(self):
         """
@@ -46,6 +49,7 @@ class ROSCLESimulationFactory(object):
             SERVICE_START_NEW_SIMULATION, srv.StartNewSimulation, self.start_new_simulation
         )
         rospy.Service(SERVICE_VERSION, srv.GetVersion, self.get_version)
+        rospy.Service(SERVICE_HEALTH, srv.Health, self.health)
 
     @staticmethod
     def run():
@@ -66,6 +70,29 @@ class ROSCLESimulationFactory(object):
         """
         return str(hbp_nrp_cle.__version__)
 
+    # service_request is an unused but mandatory argument
+    # pylint: disable=unused-argument
+    def health(self, service_request):
+        """
+        Handler for the ROS service that returns the health of the whole program.
+        This health is made of two part:
+        - A status string containing OK, WARNING or CRITICAL
+        - A explanation about why the status has been set to a particular value
+
+        :param service_request: ROS service message (defined in hbp ROS packages)
+        :return: an array containing the status and the explanation
+        """
+        status = ''
+        if (self.__failed_simulation_count == 0):
+            status = 'OK'
+        elif (self.__failed_simulation_count <= self.__simulation_count / 2):
+            status = 'WARNING'
+        else:
+            status = 'CRITICAL'
+        info = "%d error(s) in %d simulations" % \
+               (self.__failed_simulation_count, self.__simulation_count)
+        return [status, info]
+
     def start_new_simulation(self, service_request):
         """
         Handler for the ROS service. Spawn a new simulation.
@@ -80,6 +107,8 @@ class ROSCLESimulationFactory(object):
         if (self.running_simulation_thread is None) or\
                 (not self.running_simulation_thread.is_alive()):
             logger.info("No simulation running, starting a new simulation.")
+
+            self.__simulation_count += 1
 
             # In the future, it would be great to move the CLE script generation logic here.
             # For the time beeing, we rely on the calling process to send us this thing.
@@ -97,6 +126,7 @@ class ROSCLESimulationFactory(object):
             if self.simulation_exception_during_init:
                 # Known pylint bug: goo.gl/WNg0TJ
                 # pylint: disable=raising-bad-type
+                self.__failed_simulation_count += 1
                 raise self.simulation_exception_during_init
         else:
             error_message = "Trying to initialize a new simulation even though the " \
