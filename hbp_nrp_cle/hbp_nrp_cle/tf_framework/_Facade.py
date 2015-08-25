@@ -6,12 +6,24 @@ transfer functions
 
 from . import config
 
+import textwrap
+import re
+import collections
+TFCompileOutput = collections.namedtuple(
+    'TFCompileOutput',
+    ['compile_error', 'new_source', 'new_code', 'new_name']
+)
+
+from RestrictedPython import compile_restricted
+from RestrictedPython.PrintCollector import PrintCollector
+from operator import getitem
+_getattr_ = getattr
+_getitem_ = getitem
+_print_ = PrintCollector
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
-
-import textwrap
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,8 +31,6 @@ logger = logging.getLogger(__name__)
 # alias _Facade module needed by set_transfer_function
 import sys
 nrp = sys.modules[__name__]
-
-import re
 
 # The following modules are needed for transfer function code's execution
 # pylint: disable=unused-import
@@ -154,33 +164,62 @@ def delete_transfer_function(name):
     return result
 
 
-def set_transfer_function(new_transfer_function_source, original_name=None):
+def compile_transfer_function(new_transfer_function_source):
+    """
+    Compile synchronously transfer function's source in restricted mode
+
+    :param new_transfer_function_source: Sources of the transfer function
+    :param original_name: Name of the transfer function to replace (None for a new tf)
+    :return: TFCompileOutput("", new_source, new_code, new_name)
+             if the compilation is successfull,
+             TFCompileOutput(compile_error, new_source, None, new_name)
+             if the compilation fails but the new function has a well-defined definition name
+             TFCompileOutput(compile_error, new_source, None, None)
+             if the new function has no well-defined definition name
+    """
+
+    # Update transfer function's source code
+    new_source = textwrap.dedent(new_transfer_function_source)
+
+    # Compile transfer function's new code in restricted mode
+    logger.debug(
+        "About to compile transfer function with the following python code: \n"
+        + repr(new_source)
+    )
+    m = re.findall(r"def\s+(\w+)\s*\(", new_source)
+    compile_error = ""
+    if (len(m) != 1):
+        compile_error = \
+            "Transfer function contains either no or multiple definition names. \
+            Compilation aborted."
+        return TFCompileOutput(compile_error, new_source, None, None)
+
+    new_name = m[0]
+    new_code = None
+    try:
+        new_code = compile_restricted(new_source, '<string>', 'exec')
+    except SyntaxError as e:
+        logger.error("Syntax Error while compiling new transfer function in restricted mode")
+        logger.error(e)
+        compile_error = e
+    return TFCompileOutput(compile_error, new_source, new_code, new_name)
+
+
+def set_transfer_function(new_source, new_code, new_name):
     """
     Apply transfer function changes made by a client
 
-    :param original_name: Name of the transfer function to replace (or none for a new tf)
-    :param new_transfer_function_source: Sources of the transfer function
-    :return: True if the new source code is successfully applied, False otherwise
+    :param new_source: Transfer function's updated source
+    :param new_code: Compiled code of the updated source
+    :param new_name: Transfer function's updated name
+    :return: True if the new source code is successfully loaded, False otherwise
     """
-    if (original_name):
-        delete_transfer_function(original_name)
 
-    # Update transfer function's source code
-    source = textwrap.dedent(new_transfer_function_source)
-
-    # Execute transfer function's new code
-    logger.debug("About to set transfer function with the following python code: \n" + repr(source))
-    result = True
-
-    m = re.findall(r"def\s+(\w+)\s*\(", source)
-    if (len(m) != 1):
-        return False
-
-    new_name = m[0]
     # pylint: disable=broad-except
+    result = True
     try:
         # pylint: disable=exec-used
-        exec source
+        exec(new_code)
         tf = get_transfer_function(new_name)
         if isinstance(tf, Neuron2Robot):
             config.active_node.initialize_n2r_tf(tf)
@@ -198,6 +237,6 @@ def set_transfer_function(new_transfer_function_source, original_name=None):
     # indeed inspect.getsource is based on a source file object
     # see findsource in http://www.opensource.apple.com/source/python/python-3/python/Lib/inspect.py
     if result:
-        tf.set_source(source)
+        tf.set_source(new_source)
 
     return result

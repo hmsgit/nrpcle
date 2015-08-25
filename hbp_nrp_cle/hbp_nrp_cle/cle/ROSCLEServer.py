@@ -7,9 +7,11 @@ import threading
 import rospy
 import math
 import numpy
+
 from std_msgs.msg import String
 from std_srvs.srv import Empty
 from threading import Thread, Event
+
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
@@ -369,15 +371,31 @@ class ROSCLEServer(threading.Thread):
         Patch a transfer function
 
         :param request: The mandatory rospy request parameter
-        :return: always True as this command is executed asynchronously.
-                 ROS forces us to return a boolean.
+        :return: empty string if compilation in restricted mode (executed synchronously) succeeds,
+                 an error message otherwise.
         """
-        # Make sure that the CLE is stopped. In case it's already stop, these calls will do nothing.
+
+        original_name = request.transfer_function_name
+        # Delete synchronously the original if needed
+        if (original_name):
+            tf_framework.delete_transfer_function(original_name)
+
+        new_transfer_function_source = request.transfer_function_source
+        # Compile synchronously
+        compile_output = \
+            tf_framework.compile_transfer_function(new_transfer_function_source)
+        # Report compile error synchronously if needed
+        if (compile_output.compile_error):
+            return str(compile_output.compile_error)
+
+        # Make sure CLE is stopped. If already stopped, these calls are harmless.
+        # (Execution of updated code is asynchronous)
         self.__execute_high_priority_function_within_main_thread_with_cle_stopped(
-            lambda n=request.transfer_function_name, s=request.transfer_function_source:
-            tf_framework.set_transfer_function(s, n)
+            lambda s=compile_output.new_source,
+                c=compile_output.new_code,
+                n=compile_output.new_name: tf_framework.set_transfer_function(s, c, n)
         )
-        return True
+        return ""
 
     def __delete_transfer_function(self, request):
         """
@@ -385,7 +403,7 @@ class ROSCLEServer(threading.Thread):
 
         :param request: The mandatory rospy request parameter
         :return: always True as this command is executed asynchronously.
-                 ROS forces us to return a boolean.
+                 ROS forces us to return a value.
         """
         self.__execute_high_priority_function_within_main_thread_with_cle_stopped(
             lambda n=request.transfer_function_name:

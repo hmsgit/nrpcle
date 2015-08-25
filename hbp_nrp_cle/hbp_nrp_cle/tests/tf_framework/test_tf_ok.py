@@ -20,7 +20,6 @@ class TestTransferFunction(unittest.TestCase):
         brain = MockBrainCommunicationAdapter()
         robot = MockRobotCommunicationAdapter()
 
-
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)])
         @nrp.Neuron2Robot(Husky.RightArm.pose)
@@ -31,8 +30,6 @@ class TestTransferFunction(unittest.TestCase):
         def transform_camera(t, camera, camera_device):
             if camera.changed:
                 camera_device.inner.amplitude = 42.0
-
-
 
         expected_source_n2r = """@nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                         v_rest=1.0, updates=[(1.0, 0.3)])
@@ -63,6 +60,7 @@ def transform_camera(t, camera, camera_device):
         config.active_node.brain_adapter = brain
         config.active_node.initialize_n2r_tf = MagicMock(return_value=None)
         config.active_node.initialize_r2n_tf = MagicMock(return_value=None)
+
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)]
         )
@@ -86,9 +84,10 @@ def rotate_camera(t, camera, camera_device):
     if camera.changed:
         camera_device.inner.amplitude = 24.0
 """
-
-        nrp.set_transfer_function(tf_n2r, 'right_arm')
-        nrp.set_transfer_function(tf_r2n, 'transform_camera')
+        nrp.delete_transfer_function('right_arm')
+        nrp.delete_transfer_function('transform_camera')
+        nrp.set_transfer_function(tf_n2r, tf_n2r, 'left_arm')
+        nrp.set_transfer_function(tf_r2n, tf_r2n, 'rotate_camera')
         self.assertEqual(config.active_node.initialize_n2r_tf.call_count, 1)
         self.assertEqual(config.active_node.initialize_r2n_tf.call_count, 1)
 
@@ -97,6 +96,36 @@ def rotate_camera(t, camera, camera_device):
         self.assertIn(tf_n2r, loaded_source_n2r_and_r2n)
         self.assertIn(tf_r2n, loaded_source_n2r_and_r2n)
         self.assertEqual(2, len(loaded_source_n2r_and_r2n))
+
+    def test_tf_compile(self):
+        tf_n2r = """@nrp.MapSpikeSink("neuron1", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
+                        v_rest=1.0, updates=[(3.0, 0.1)])
+@nrp.Neuron2Robot()
+def left_arm(t, neuron1):
+    return neuron1.voltage * 2.345
+"""
+        tf_r2n = """@nrp.Robot2Neuron()
+def rotate_camera(t, camera, camera_device):
+    if camera.changed:
+        camera_device.inner.amplitude = 24.0
+"""
+        result = nrp.compile_transfer_function(tf_n2r)
+        self.assertEqual("", result.compile_error)
+        self.assertEqual(tf_n2r, result.new_source)
+        self.assertEqual("left_arm", result.new_name)
+
+        result = nrp.compile_transfer_function(tf_r2n)
+        self.assertEqual("", result.compile_error)
+        self.assertEqual(tf_r2n, result.new_source)
+        self.assertEqual("rotate_camera", result.new_name)
+    
+        tf_n2r = "def (): return True"
+        result = nrp.compile_transfer_function(tf_n2r)
+        self.assertIn("no or multiple definition names", result.compile_error)
+
+        tf_n2r = "def tf_0():\n return True undefined"
+        result = nrp.compile_transfer_function(tf_n2r)
+        self.assertIn("invalid syntax", result.compile_error)
 
     def test_tf_delete(self):
 
