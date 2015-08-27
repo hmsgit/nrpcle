@@ -41,8 +41,8 @@ In this example, we have specified that the brain model from *brain_model/braite
 relative to the **NRP_MODELS_DIRECTORY** environment variable.
 
 .. note::
-    When using the CLE through the NRP platform, the **NRP_MODELS_DIRECTORY** will be your user directory.
-    When using the CLE separately as e.g. for development machines, this environment variable should be set to a Models repository clone.
+    The **NRP_MODELS_DIRECTORY** should be set to a Models repository clone. This is the case on the
+    deployed NRP platform.
 
 We further specify two neuron groups, the sensors ranging from 0 to 5 (exclusive) and the actors from 6 to and excluding 8. Note that these neuron groups exactly match the
 neuron groups (colors) from :doc:`setup page<setup>`. We will use these neuron groups in the TFs for reference.
