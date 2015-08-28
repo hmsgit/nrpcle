@@ -60,9 +60,6 @@ roslocate info rosauth | wstool merge -
 # ROS image_common (needed by gazebo_ros_control)
 roslocate info image_common | wstool merge -
 
-#ROS package for NAO controllers
-roslocate info nao_virtual | wstool merge -
-
 wstool update
 cd ..
 rm -rf src/ros_control/rqt_controller_manager
