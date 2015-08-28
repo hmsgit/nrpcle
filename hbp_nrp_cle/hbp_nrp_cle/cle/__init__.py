@@ -25,9 +25,10 @@ from hbp_nrp_cle import config
 __author__ = 'LorenzoVannucci'
 
 ROS_CLE_NODE_NAME = config.config.get('ros', 'ros-cle-node-name')
-SERVICE_VERSION = '/%s/version' % (ROS_CLE_NODE_NAME, )
-TOPIC_STATUS = '/%s/status' % (ROS_CLE_NODE_NAME, )
-SERVICE_START_NEW_SIMULATION = '/%s/start_new_simulation' % (ROS_CLE_NODE_NAME, )
+SERVICE_VERSION = '/%s/version' % (ROS_CLE_NODE_NAME)
+SERVICE_HEALTH = '/%s/health' % (ROS_CLE_NODE_NAME)
+TOPIC_STATUS = '/%s/status' % (ROS_CLE_NODE_NAME)
+SERVICE_START_NEW_SIMULATION = '/%s/start_new_simulation' % (ROS_CLE_NODE_NAME)
 SERVICE_SIM_START_ID = lambda sim_id: '/%s/%d/start' % (ROS_CLE_NODE_NAME, sim_id)
 SERVICE_SIM_STOP_ID = lambda sim_id: '/%s/%d/stop' % (ROS_CLE_NODE_NAME, sim_id)
 SERVICE_SIM_PAUSE_ID = lambda sim_id: '/%s/%d/pause' % (ROS_CLE_NODE_NAME, sim_id)
