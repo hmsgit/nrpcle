@@ -56,7 +56,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     expect() is used to match strings with the shell output in order to understand its status.
     """
 
-    CLUSTER_SLURM_FRONTEND = 'ssh -K bbpsoatest@bbpviz1.cscs.ch'
+    CLUSTER_SLURM_FRONTEND = 'ssh -K bbpnrsoa@bbpviz1.cscs.ch'
     # SLURM salloc calls allocates a node on the cluster. From salloc man page:
     #
     # salloc - Obtain a SLURM job allocation (a set of nodes), execute a command,and then release
@@ -141,7 +141,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         ssh_SLURM_frontend_process = pexpect.spawn('bash',
                                                    logfile=logger)
         ssh_SLURM_frontend_process.sendline(self.CLUSTER_SLURM_FRONTEND)
-        result = ssh_SLURM_frontend_process.expect(['[bbpsoatest@bbpviz1 ~]$',
+        result = ssh_SLURM_frontend_process.expect(['[bbpnrsoa@bbpviz1 ~]$',
                                                     'password',
                                                     pexpect.TIMEOUT], self.TIMEOUT)
         if result == 1:
@@ -218,13 +218,13 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
 
         vglconnect_process = pexpect.spawn('bash',
                                            env={"DISPLAY": ":1",
-                                                "HOME": "/home/bbpsoatest"},
+                                                "HOME": "/home/bbpnrsoa"},
                                            logfile=logger)
-        vglconnect_process.sendline(('vglconnect bbpsoatest@' +
+        vglconnect_process.sendline(('vglconnect bbpnrsoa@' +
                                      self.__node +
                                      self.NODE_DOMAIN))
         # We do expect a prompt here
-        result = vglconnect_process.expect([r'\[bbpsoatest@' + self.__node + r'\ ~\]\$',
+        result = vglconnect_process.expect([r'\[bbpnrsoa@' + self.__node + r'\ ~\]\$',
                                             'password',
                                             pexpect.TIMEOUT])
         if result == 1:
@@ -282,7 +282,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         if self.__remote_working_directory is None:
             raise(Exception("Syncing the models cannot work without a remote working directory"))
         os.system(
-            "scp -r $HOME/.gazebo/models bbpsoatest@" +
+            "scp -r $HOME/.gazebo/models bbpnrsoa@" +
             self.__node + self.NODE_DOMAIN +
             ":" +
             self.__remote_working_directory)
