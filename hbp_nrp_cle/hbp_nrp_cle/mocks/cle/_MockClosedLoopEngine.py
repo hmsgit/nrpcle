@@ -44,6 +44,7 @@ class MockClosedLoopEngine(IClosedLoopControl,
     def initialize(self):
         """
         Initializes the closed loop engine.
+
         """
         self.clock = 0.0
         self.initialized = True

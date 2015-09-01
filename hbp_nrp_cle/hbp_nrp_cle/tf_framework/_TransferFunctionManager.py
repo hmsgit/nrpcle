@@ -33,6 +33,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.__robotAdapter = None
         self.__nestAdapter = None
         self.__initialized = False
+        self.__publish_error_callback = None
 
     @property
     def n2r(self):  # -> list:
@@ -47,6 +48,28 @@ class TransferFunctionManager(ITransferFunctionManager):
         Gets a list of transfer functions from the world simulator to the neuronal simulation
         """
         return self.__r2n
+
+    @property
+    def publish_error_callback(self):
+        """
+        Gets the error publisher of the transfer function manager.
+
+        :return: A function that can publish a ROS msg of type CLEError \
+                 on the /cle_error/transfer_function topic
+        """
+
+        return self.__publish_error_callback
+
+    @publish_error_callback.setter
+    def publish_error_callback(self, callback):
+        """
+        Sets the callback forwarding errors raised by transfer function update
+        at run time.
+
+        :param callback: Callback publishing the error on a ROS topic
+        """
+
+        self.__publish_error_callback = callback
 
     def run_neuron_to_robot(self, t):  # -> None:
         """
@@ -259,3 +282,14 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         # Initialize dependencies
         self.__nestAdapter.initialize()
+
+    def publish_error(self, tf_run_exception):
+        """
+        Publishes an error raised when running a transfer function updated
+        by a user
+
+        :param tf_run_exception: Exception raised when a transfer function updated by a user
+                                 fails to be run
+
+        """
+        self.__publish_error_callback(tf_run_exception)

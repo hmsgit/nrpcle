@@ -21,6 +21,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         self.__r2nTimes = []
         self.__n2rTimes = []
         self.__sleepTime = 1
+        self.__publish_error_callback = None
 
     def initialize(self, name):
         """

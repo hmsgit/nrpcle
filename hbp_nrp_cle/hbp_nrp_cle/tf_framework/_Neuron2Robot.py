@@ -221,8 +221,7 @@ class Neuron2Robot(TransferFunction):
             self._params[0] = t
             return_value = self._func(*self._params)
         except Exception as e:
-            logger.error("Error while executing transfer function")
-            logger.error(e)
+            self.publish_error(e)
             should_continue = False
 
         if should_continue and return_value is not None:

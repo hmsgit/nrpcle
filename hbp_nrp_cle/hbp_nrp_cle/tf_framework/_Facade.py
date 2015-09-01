@@ -4,22 +4,8 @@ framework that allows the neuroscience user to conveniently specify the
 transfer functions
 """
 
+from hbp_nrp_cle import UserCodeException
 from . import config
-
-import textwrap
-import re
-import collections
-TFCompileOutput = collections.namedtuple(
-    'TFCompileOutput',
-    ['compile_error', 'new_source', 'new_code', 'new_name']
-)
-
-from RestrictedPython import compile_restricted
-from RestrictedPython.PrintCollector import PrintCollector
-from operator import getitem
-_getattr_ = getattr
-_getitem_ = getitem
-_print_ = PrintCollector
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
@@ -32,6 +18,29 @@ logger = logging.getLogger(__name__)
 import sys
 nrp = sys.modules[__name__]
 
+
+# CLE restricted python environment
+# TODO(Luc): create a module for it
+from RestrictedPython.PrintCollector import PrintCollector
+from operator import getitem
+_getattr_ = getattr
+_getitem_ = getitem
+_print_ = PrintCollector
+
+
+def _cle_write_guard():
+    """
+    Defines the write guard for execution of user code in restricted mode.
+    """
+    def guard(ob):
+        """
+        No guard at all
+        """
+        return ob
+    return guard
+cle_write_guard = _cle_write_guard()
+_write_ = cle_write_guard
+
 # The following modules are needed for transfer function code's execution
 # pylint: disable=unused-import
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
@@ -43,6 +52,7 @@ import cle_ros_msgs.msg
 import geometry_msgs.msg
 import sensor_msgs.msg
 from hbp_nrp_cle.tf_framework import monitoring
+import hbp_nrp_cle.tf_framework.tf_lib
 from geometry_msgs.msg import Point, Pose, Quaternion
 from std_msgs.msg import Float32, Int32, String
 
@@ -61,6 +71,36 @@ spike_recorder = ISpikeRecorder
 
 
 brain = _PropertyPath.PropertyPath()
+
+
+class TFException(UserCodeException):
+    """
+    Exception class used to return a meaningful message
+    to ExD front-end in case the update of TF's user code
+    fails.
+
+    :param tf_name: name of the TF updated by the user.
+    :param message: message that needs to be forwarded to the front-end.
+    """
+    def __init__(self, tf_name, message, error_type):
+        super(TFException, self).__init__(message, error_type)
+        self.tf_name = tf_name
+
+    def __str__(self):
+        return "{0}: {1} ({2})".format(self.tf_name, repr(self.message), self.error_type)
+
+
+class TFLoadingException(TFException):
+    """
+    Exception class used to return a meaningful message
+    to ExD front-end in case the loading of a TF with updated user code
+    fails.
+
+    :param tf_name: name of the TF updated by the user.
+    :param message: message that needs to be forwarded to the front-end.
+    """
+    def __init__(self, tf_name, message):
+        super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
 
 
 def map_neurons(neuron_range, mapping):
@@ -164,47 +204,6 @@ def delete_transfer_function(name):
     return result
 
 
-def compile_transfer_function(new_transfer_function_source):
-    """
-    Compile synchronously transfer function's source in restricted mode
-
-    :param new_transfer_function_source: Sources of the transfer function
-    :param original_name: Name of the transfer function to replace (None for a new tf)
-    :return: TFCompileOutput("", new_source, new_code, new_name)
-             if the compilation is successfull,
-             TFCompileOutput(compile_error, new_source, None, new_name)
-             if the compilation fails but the new function has a well-defined definition name
-             TFCompileOutput(compile_error, new_source, None, None)
-             if the new function has no well-defined definition name
-    """
-
-    # Update transfer function's source code
-    new_source = textwrap.dedent(new_transfer_function_source)
-
-    # Compile transfer function's new code in restricted mode
-    logger.debug(
-        "About to compile transfer function with the following python code: \n"
-        + repr(new_source)
-    )
-    m = re.findall(r"def\s+(\w+)\s*\(", new_source)
-    compile_error = ""
-    if (len(m) != 1):
-        compile_error = \
-            "Transfer function contains either no or multiple definition names. \
-            Compilation aborted."
-        return TFCompileOutput(compile_error, new_source, None, None)
-
-    new_name = m[0]
-    new_code = None
-    try:
-        new_code = compile_restricted(new_source, '<string>', 'exec')
-    except SyntaxError as e:
-        logger.error("Syntax Error while compiling new transfer function in restricted mode")
-        logger.error(e)
-        compile_error = e
-    return TFCompileOutput(compile_error, new_source, new_code, new_name)
-
-
 def set_transfer_function(new_source, new_code, new_name):
     """
     Apply transfer function changes made by a client
@@ -212,11 +211,9 @@ def set_transfer_function(new_source, new_code, new_name):
     :param new_source: Transfer function's updated source
     :param new_code: Compiled code of the updated source
     :param new_name: Transfer function's updated name
-    :return: True if the new source code is successfully loaded, False otherwise
     """
 
     # pylint: disable=broad-except
-    result = True
     try:
         # pylint: disable=exec-used
         exec(new_code)
@@ -227,16 +224,13 @@ def set_transfer_function(new_source, new_code, new_name):
             config.active_node.initialize_r2n_tf(tf)
         else:
             logger.error("Transfer function has no decorator r2n or n2r")
-            result = False
+            raise TFLoadingException(new_name, "Transfer function has no decorator r2n or n2r")
     except Exception as e:
         logger.error("Error while loading new transfer function")
         logger.error(e)
-        result = False
+        raise TFLoadingException(new_name, str(e))
 
     # we set the new source in an attribute because inspect.getsource won't work after exec
     # indeed inspect.getsource is based on a source file object
     # see findsource in http://www.opensource.apple.com/source/python/python-3/python/Lib/inspect.py
-    if result:
-        tf.set_source(new_source)
-
-    return result
+    tf.source = new_source

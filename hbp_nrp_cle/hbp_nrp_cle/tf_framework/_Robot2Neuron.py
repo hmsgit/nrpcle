@@ -145,5 +145,4 @@ class Robot2Neuron(TransferFunction):
         try:
             self._func(*self._params)
         except Exception as e:
-            logger.error("Error while executing transfer function")
-            logger.error(e)
+            self.publish_error(e)

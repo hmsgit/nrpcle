@@ -4,7 +4,6 @@ ROSCLEServer unit test
 
 from hbp_nrp_cle.cle import ROSCLEServer
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
-from hbp_nrp_cle.tf_framework._Facade import TFCompileOutput
 import logging
 from mock import patch, MagicMock, Mock
 from testfixtures import log_capture
@@ -71,8 +70,14 @@ class TestROSCLEServer(unittest.TestCase):
         self.craft_ros_cle_server(True)
         self.__mocked_rospy.init_node.assert_called_with('ros_cle_simulation')
 
-        # Be sure we create a publisher exactly once.
-        self.assertEqual(1, self.__mocked_rospy.Publisher.call_count)
+        # Be sure we create as many publishers as required.
+        from hbp_nrp_cle.cle import *
+        number_of_publishers = 0
+        for var_name in vars().keys():
+            if (var_name.startswith("TOPIC_")):
+                number_of_publishers += 1
+
+        self.assertEqual(number_of_publishers, self.__mocked_rospy.Publisher.call_count)
 
         # Assure that also the publish method of the rospy.Publisher is
         # injected as a mock here so that we can use it later in our single
@@ -170,8 +175,8 @@ class TestROSCLEServer(unittest.TestCase):
     def test_get_transfer_functions(self, mocked_tf_framework):
         self.craft_ros_cle_server(True)
         tf = [MagicMock(), MagicMock()]
-        tf[0].get_source = MagicMock(return_value="tf_0 python code")
-        tf[1].get_source = MagicMock(return_value="tf_1 python code")
+        tf[0].source = "tf_0 python code"
+        tf[1].source = "tf_1 python code"
         mocked_tf_framework.get_transfer_functions = MagicMock(return_value=tf)
         (_, _, _, _, _, get_transfer_functions_handler, _, _) = self.__get_handlers_for_testing_main()
         transfer_functions_from_service = get_transfer_functions_handler(_)
@@ -182,9 +187,7 @@ class TestROSCLEServer(unittest.TestCase):
     @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
     def test_set_transfer_function(self, mocked_tf_framework):
         self.craft_ros_cle_server(True)
-        mocked_tf_framework.compile_transfer_function = MagicMock(return_value= \
-            TFCompileOutput("", None, None, None))
-        mocked_tf_framework.set_transfer_function = MagicMock(return_value=True)
+        mocked_tf_framework.set_transfer_function = MagicMock(return_value=None)
         mocked_tf_framework.delete_transfer_function = MagicMock()
         (_, _, _, _, _, _, set_transfer_function_handler, _) = self.__get_handlers_for_testing_main()
         request = MagicMock()
@@ -201,20 +204,21 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertEqual(0, mocked_tf_framework.delete_transfer_function.call_count)
         self.assertEqual("", response)
 
-        mocked_tf_framework.compile_transfer_function = MagicMock(return_value= \
-            TFCompileOutput("no or multiple definition names", None, None, None))
         request.transfer_function_name = "tf_1"
         request.transfer_function_source = "def (): \n return -1"
         response = set_transfer_function_handler(request)
-        self.assertIn("no or multiple definition names", response)
+        self.assertIn("no definition name", response)
 
-        mocked_tf_framework.compile_transfer_function = MagicMock(return_value= \
-            TFCompileOutput("invalid syntax (line 2)", None, None, None))
         request.transfer_function_name = "tf_2"
         request.transfer_function_source = "def tf_2(): \n return -1 undefined"
         response = set_transfer_function_handler(request)
         self.assertIn("invalid syntax", response)
         self.assertIn("line 2", response)
+
+        request.transfer_function_name = "tf_3"
+        request.transfer_function_source = "def tf_3_a(): \n\treturn -1\ndef tf_3_b(): \n\treturn -2"
+        response = set_transfer_function_handler(request)
+        self.assertIn("multiple definition names", response)
 
     @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
     def test_delete_transfer_function(self, mocked_tf_framework):

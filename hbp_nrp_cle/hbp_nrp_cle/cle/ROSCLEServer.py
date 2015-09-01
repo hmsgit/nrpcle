@@ -12,15 +12,23 @@ from std_msgs.msg import String
 from std_srvs.srv import Empty
 from threading import Thread, Event
 
+import textwrap
+import re
+
+from RestrictedPython import compile_restricted
+
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, TOPIC_STATUS, SERVICE_SIM_START_ID, \
+from hbp_nrp_cle import SimulationFactoryCLEError
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_SIM_START_ID, \
+    TOPIC_STATUS, TOPIC_TRANSFER_FUNCTION_ERROR, \
     SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID, \
     SERVICE_GET_TRANSFER_FUNCTIONS, SERVICE_SET_TRANSFER_FUNCTION, SERVICE_DELETE_TRANSFER_FUNCTION
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 from hbp_nrp_cle.cle import ros_handler
 import hbp_nrp_cle.tf_framework as tf_framework
+from hbp_nrp_cle.tf_framework import TFLoadingException
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
@@ -260,6 +268,10 @@ class ROSCLEServer(threading.Thread):
 
         self.__simulation_id = sim_id
         self.__ros_status_pub = rospy.Publisher(TOPIC_STATUS, String)
+        self.__ros_tf_error_pub = rospy.Publisher(
+            TOPIC_TRANSFER_FUNCTION_ERROR,
+            SimulationFactoryCLEError
+        )
 
         self.__current_task = None
         self.__current_subtask_count = 0
@@ -289,6 +301,8 @@ class ROSCLEServer(threading.Thread):
         self.__cle = cle
         if not self.__cle.is_initialized:
             self.__cle.initialize()
+
+        self.__cle.tfm.publish_error_callback = self.__push_tf_error_on_ros
 
         logger.info("Registering ROS Service handlers")
 
@@ -364,14 +378,15 @@ class ROSCLEServer(threading.Thread):
 
         :param request: The mandatory rospy request parameter
         """
-        return numpy.asarray([tf.get_source() for tf in tf_framework.get_transfer_functions()])
+        return numpy.asarray([tf.source for tf in tf_framework.get_transfer_functions()])
 
     def __set_transfer_function(self, request):
         """
         Patch a transfer function
 
         :param request: The mandatory rospy request parameter
-        :return: empty string if compilation in restricted mode (executed synchronously) succeeds,
+        :return: empty string for a successful compilation in restricted mode
+                (executed synchronously),
                  an error message otherwise.
         """
 
@@ -380,20 +395,61 @@ class ROSCLEServer(threading.Thread):
         if (original_name):
             tf_framework.delete_transfer_function(original_name)
 
-        new_transfer_function_source = request.transfer_function_source
-        # Compile synchronously
-        compile_output = \
-            tf_framework.compile_transfer_function(new_transfer_function_source)
-        # Report compile error synchronously if needed
-        if (compile_output.compile_error):
-            return str(compile_output.compile_error)
+        # Update transfer function's source code
+        new_source = textwrap.dedent(request.transfer_function_source)
+
+        # Check whether the function has a single definition name
+        logger.debug(
+            "About to compile transfer function originally named "
+            + original_name + "\n"
+            + "with the following python code: \n"
+            + repr(new_source)
+        )
+        m = re.findall(r"def\s+(\w+)\s*\(", new_source)
+        if (len(m) != 1):
+            error_msg = original_name
+            if (len(m) == 0):
+                error_msg += " has no definition name."
+            else:
+                error_msg += " has multiple definition names."
+            error_msg += " Compilation aborted"
+            msg = SimulationFactoryCLEError(
+                "Transfer Function",
+                "NoOrMultipleNames",
+                error_msg,
+                original_name)
+            self.__push_tf_error_on_ros(msg)
+            return msg.message
+
+        # Compile (synchronously) transfer function's new code in restricted mode
+        new_name = m[0]
+        new_code = None
+        try:
+            new_code = compile_restricted(new_source, '<string>', 'exec')
+        except SyntaxError as e:
+            message = "Syntax Error while compiling the updated" \
+                + " transfer function named " + new_name \
+                + " in restricted mode.\n" \
+                + str(e)
+            logger.error(message)
+            msg = SimulationFactoryCLEError(
+                "Transfer Function",
+                "Compile",
+                str(e),
+                new_name,
+                e.lineno,
+                e.offset,
+                e.text,
+                e.filename
+            )
+            self.__push_tf_error_on_ros(msg)
+            return message
 
         # Make sure CLE is stopped. If already stopped, these calls are harmless.
         # (Execution of updated code is asynchronous)
         self.__execute_high_priority_function_within_main_thread_with_cle_stopped(
-            lambda s=compile_output.new_source,
-                c=compile_output.new_code,
-                n=compile_output.new_name: tf_framework.set_transfer_function(s, c, n)
+            lambda s=new_source, c=new_code, n=new_name:
+            tf_framework.set_transfer_function(s, c, n)
         )
         return ""
 
@@ -485,7 +541,17 @@ class ROSCLEServer(threading.Thread):
         while not self.__state.is_final_state():
             if self.__to_be_executed_within_main_thread:
                 for function in self.__to_be_executed_within_main_thread:
-                    function()
+                    try:
+                        function()
+                    except TFLoadingException as e:
+                        tf_error = SimulationFactoryCLEError(
+                            "Transfer Function",
+                            "Loading",
+                            str(e),
+                            function.__name__
+                        )
+                        self.__push_tf_error_on_ros(tf_error)
+
                 self.__to_be_executed_within_main_thread = []
                 self.__done_flag.set()
             self.__event_flag.wait()  # waits until an event is set
@@ -523,6 +589,8 @@ class ROSCLEServer(threading.Thread):
             self.notify_finish_task()
         logger.info("Unregister status topic")
         self.__ros_status_pub.unregister()
+        logger.info("Unregister error/transfer_function topic")
+        self.__ros_tf_error_pub.unregister()
         self.__cle.shutdown()
 
     def notify_start_task(self, task_name, subtask_name, number_of_subtasks, block_ui):
@@ -633,3 +701,11 @@ class ROSCLEServer(threading.Thread):
         :param: message: The message to publish
         """
         self.__ros_status_pub.publish(message)
+
+    def __push_tf_error_on_ros(self, tf_error):
+        """
+        Push the given error message message to ROS
+
+        :param: message: The message to publish
+        """
+        self.__ros_tf_error_pub.publish(tf_error)
