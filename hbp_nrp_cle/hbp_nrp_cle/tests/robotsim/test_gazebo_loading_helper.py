@@ -28,7 +28,8 @@ class TestGazeboLoadingHelper(unittest.TestCase):
             test_pose = Pose()
             test_pose.position = Point(1, 2, 3)
             test_pose.orientation = Quaternion(4, 5, 6, 7)
-            load_gazebo_model_file("toto", "../tests/robotsim/sample_model.sdf", test_pose)
+            wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_model.sdf")
+            load_gazebo_model_file("toto", wpath, test_pose)
 
             self.assertEqual(mocked_load_gazebo_sdf.call_args_list[0][0][0], "toto")
 
@@ -58,13 +59,15 @@ class TestGazeboLoadingHelper(unittest.TestCase):
             self.assertEqual(mocked_load_gazebo_sdf.call_count, 1)
             self.assertEqual(mocked_load_gazebo_sdf.call_args_list[0][0][2], test_pose)
             logcapture.check(('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              '../tests/robotsim/sample_model.sdf successfully loaded in Gazebo'))
+                              '%s successfully loaded in Gazebo' % wpath))
+
 
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_light_sdf')
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_gazebo_sdf')
     def test_load_gazebo_world_file(self, mocked_load_gazebo_sdf, mocked_load_light_sdf):
         with LogCapture('hbp_nrp_cle.robotsim.GazeboLoadingHelper') as logcapture:
-            load_gazebo_world_file("../tests/robotsim/sample_world.sdf")
+            wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_world.sdf")
+            load_gazebo_world_file(wpath)
             expected_load_gazebo_calls_args = [["ground_plane","""<?xml version=\"1.0\" ?>\n<sdf version="1.5"><model name="ground_plane">
             <static>1</static>
             <link name="link">
@@ -155,7 +158,7 @@ class TestGazeboLoadingHelper(unittest.TestCase):
                              ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
                               'Loading model "ground_plane" in Gazebo'),
                              ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              '../tests/robotsim/sample_world.sdf successfully loaded in Gazebo'))
+                              '%s successfully loaded in Gazebo' % wpath))
 
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.rospy.wait_for_service')
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.rospy.ServiceProxy')

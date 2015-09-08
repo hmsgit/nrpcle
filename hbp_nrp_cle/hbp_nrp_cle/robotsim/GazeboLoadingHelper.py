@@ -21,13 +21,11 @@ TIMEOUT = 180  # duplicated ROSCLEClient.ROSCLEClient.ROS_SERVICE_TIMEOUT
 
 def load_gazebo_world_file(world_file):
     """
-    Load a sdf world file into the ROS connected gazebo running instance.
+    Load a SDF world file into the ROS connected gazebo running instance.
 
-    :param world_file: The name of the world inside the NRP_MODELS_DIRECTORY \
-        folder. If the NRP_MODELS_DIRECTORY environment variable is not set, \
-        this script will search the model in its own folder.
+    :param world_file: The absolute path of the SDF world file.
     """
-    world_file_sdf = etree.parse(os.path.join(_get_basepath(__file__), world_file))
+    world_file_sdf = etree.parse(world_file)
 
     # Load lights
     for light in world_file_sdf.xpath("/sdf/world/light"):
@@ -66,7 +64,7 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
     :param initial_pose: Initial pose of the model. Uses the Gazebo \
         "Pose" type.
     """
-    model_file_sdf = open(os.path.join(_get_basepath(__file__), model_file), 'r')
+    model_file_sdf = open(os.path.join(os.environ.get('NRP_MODELS_DIRECTORY'), model_file), 'r')
     model_sdf = model_file_sdf.read()
     model_file_sdf.close()
     # spawn model
@@ -147,21 +145,3 @@ def empty_gazebo_world():
     delete_lights_proxy = rospy.ServiceProxy('gazebo/delete_lights', Empty)
     delete_lights_proxy()
     delete_lights_proxy.close()
-
-
-def _get_basepath(adjacent_file=None):
-    """
-    :return the basepath for retrieving Models / \
-
-    There are three possible cases. They
-    are evaluated in the following order: \
-    1. The NRP_MODELS_DIRECTORY variable is set, then return the \
-       content of this variable.
-    2. The adjacent_file argument is set, then return the \
-       basepath of this file.
-    3. Return None.
-    """
-    path = os.environ.get('NRP_MODELS_DIRECTORY')
-    if (path is None) and (adjacent_file is not None):
-        path = os.path.dirname(adjacent_file)
-    return path
