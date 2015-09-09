@@ -20,7 +20,7 @@ from RestrictedPython import compile_restricted
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle import SimulationFactoryCLEError
+from hbp_nrp_cle.common import SimulationFactoryCLEError
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_SIM_START_ID, \
     TOPIC_STATUS, TOPIC_TRANSFER_FUNCTION_ERROR, \
     SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID, \

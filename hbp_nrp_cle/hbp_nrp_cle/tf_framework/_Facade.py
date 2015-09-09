@@ -4,7 +4,7 @@ framework that allows the neuroscience user to conveniently specify the
 transfer functions
 """
 
-from hbp_nrp_cle import UserCodeException
+from hbp_nrp_cle.common import UserCodeException
 from . import config
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \

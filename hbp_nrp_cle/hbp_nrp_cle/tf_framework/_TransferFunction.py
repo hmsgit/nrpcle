@@ -6,7 +6,7 @@ import inspect
 import textwrap
 import logging
 from . import config
-from hbp_nrp_cle import SimulationFactoryCLEError
+from hbp_nrp_cle.common import SimulationFactoryCLEError
 
 
 logger = logging.getLogger(__name__)
