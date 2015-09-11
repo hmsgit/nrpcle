@@ -14,10 +14,11 @@ class TestBibiConfigurationScript(unittest.TestCase):
 
     def test_script(self):
         directory = os.path.split(__file__)[0]
-        milestone2 = os.path.join(directory, 'neuronalRedDetection.xml')
-        generated_script = os.path.join(directory, 'generated_cle_device_groups_script.py')
-        milestone2_script = os.path.join(directory, 'deviceGroups_cle_script.py')
-        generate_cle(milestone2, generated_script, 300.0, 'local', 0, '')
+        milestone2 = os.path.join(directory, 'milestone2_python_tfs.xml')
+        generated_script = os.path.join(directory, 'generated_cle_script.py')
+        milestone2_script = os.path.join(directory, 'milestone2_python_tfs_cle_script.py')
+        generate_cle(milestone2, generated_script, 300.0, 'local', 0,
+                     os.path.dirname(os.path.realpath(__file__)))
 
         file1 = open(generated_script, 'r')
         file2 = open(milestone2_script, 'r')

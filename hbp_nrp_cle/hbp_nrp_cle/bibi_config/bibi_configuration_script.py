@@ -340,7 +340,7 @@ def print_synapse_dynamics(synapse_dynamics):
     """
     if isinstance(synapse_dynamics, bibi_api_gen.TsodyksMarkramMechanism):
         return "sim.SynapseDynamics(fast=" \
-               "sim.TsodyksMarkramMechanism(U={0}, tau_rec={1}, tau_facil={2}))"\
+               "sim.TsodyksMarkramMechanism(U={0}, tau_rec={1}, tau_facil={2}))" \
             .format(synapse_dynamics.u, synapse_dynamics.tau_rec, synapse_dynamics.tau_facil)
     raise Exception(
         "Don't know how to print synapse dynamics of type " + str(type(synapse_dynamics)))
@@ -374,13 +374,15 @@ def compute_dependencies(config):
     dependencies = set()
     assert isinstance(config, bibi_api_gen.BIBIConfiguration)
     for tf in config.transferFunction:
-        for local in tf.local:
-            __add_dependencies_for_expression(local.body, dependencies)
+        if hasattr(tf, "local"):
+            for local in tf.local:
+                __add_dependencies_for_expression(local.body, dependencies)
         if isinstance(tf, bibi_api_gen.Neuron2Robot):
             if tf.returnValue is not None:
                 dependencies.add(tf.returnValue.type)
-        for topic in tf.topic:
-            dependencies.add(topic.type)
+        if hasattr(tf, "topic"):
+            for topic in tf.topic:
+                dependencies.add(topic.type)
     return dependencies
 
 
@@ -412,7 +414,60 @@ def is_not_none(item):
     return item is not None
 
 
-def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id):
+FOUR_SPACES = " " * 4
+
+
+def correct_indentation(text, first_line_indent_level, indent_string=FOUR_SPACES):
+    """
+    Adapts the indentation of the given code in order to paste it into the generated script. The
+    indentation of the given text is determined based on the first content line (first line which
+    consists not only of white spaces). The indentation must either use four spaces or a tab
+    character.
+
+    :param text: the original input to adapt
+    :param first_line_indent_level: the target indentation level of the entire block
+    :param indent_string: (Optional): the pattern for one level of indentation
+    :return: the adapted text
+    """
+
+    logger.debug(text)
+    text.replace("\t", indent_string)
+    lines = text.split("\n")
+    result = []
+
+    first_line_indent = None
+    for line in lines:
+        if line.lstrip():
+            if first_line_indent is None and line:
+                first_line_stripped = line.lstrip()
+                first_line_indent = line[:len(line) - len(first_line_stripped)]
+
+            result.append(indent_string * first_line_indent_level + line[len(first_line_indent):])
+        else:
+            result.append("\n")
+
+    return "\n".join(result)
+
+
+def import_referenced_python_tfs(bibi_conf_inst, models_path):
+    """
+    Parses the BIBI configuration, resolves references to external python transfer functions and
+    embeds them into the BIBI configuration instance
+
+    :param bibi_conf_inst: A completely parsed 'bibi_api_gen.BIBIconfiguration' instance
+    """
+
+    for tf in bibi_conf_inst.transferFunction:
+        if hasattr(tf, "src") and tf.src:
+            # If the "src" tag is specified, no embedded code is allowed. To make sure
+            # clean content beforehand
+            assert isinstance(tf, bibi_api_gen.PythonTransferFunction)
+            del tf.orderedContent()[:]
+            with open(os.path.join(models_path, tf.src)) as f:
+                tf.append(f.read())
+
+
+def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, models_path):
     """
     Generates Code to run the CLE based on the given configuration file
 
@@ -432,6 +487,10 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id):
     logger.debug("Loading BIBI Configuration")
     with open(bibi_conf) as bibi_xml:
         config = bibi_api_gen.CreateFromDocument(bibi_xml.read())
+
+    logger.debug("Resolving python code references")
+    import_referenced_python_tfs(config, models_path)
+
     names = dict(globals())
     names['config'] = config
     names['dependencies'] = compute_dependencies(config)
@@ -442,5 +501,6 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id):
     names['sim_id'] = sim_id
     logger.debug("Instantiate CLE Template")
     outputFile = open(script_file_name, 'w')
+
     outputFile.write(template.render(names))
     outputFile.close()

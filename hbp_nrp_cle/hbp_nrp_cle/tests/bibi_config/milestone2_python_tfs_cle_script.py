@@ -126,35 +126,104 @@ def cle_function_init(world_file):
 
     # import dependencies from BIBI configuration
 
-    import hbp_nrp_cle.tf_framework.tf_lib #import get_color_values
-    import sensor_msgs.msg #import Image
 
 
-    synapseDynamics = sim.SynapseDynamics(fast=sim.TsodyksMarkramMechanism(U=1.0, tau_rec=0.0, tau_facil=0.0))
-
-    connector_e = sim.OneToOneConnector(weights=0.0075, delays=0.1)
-    connector_i = sim.OneToOneConnector(weights=0.00375, delays=0.1)
 
 
+
+    # Imported Python Transfer Function
+    import hbp_nrp_cle.tf_framework as nrp
+    from hbp_nrp_cle.robotsim.RobotInterface import Topic
+    import geometry_msgs.msg
+
+
+
+
+    @nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
+    @nrp.MapSpikeSink("right_wheel_neuron", nrp.brain.actors[2], nrp.leaky_integrator_alpha)
+    @nrp.Neuron2Robot(Topic('/husky/cmd_vel', geometry_msgs.msg.Twist))
+    def linear_twist(t, left_wheel_neuron, right_wheel_neuron):
+        return geometry_msgs.msg.Twist(
+            linear=geometry_msgs.msg.Vector3(x=20.0 * min(left_wheel_neuron.voltage, right_wheel_neuron.voltage), y=0.0,
+                                             z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=100.0 * (
+                right_wheel_neuron.voltage - left_wheel_neuron.voltage)))
+
+
+    # Imported Python Transfer Function
+
+
+
+
+    import sensor_msgs.msg
     @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
-    @nrp.MapSpikeSource("red_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_e, target='excitatory')
-    @nrp.MapSpikeSource("red_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_e, target='excitatory')
-    @nrp.MapSpikeSource("green_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
-    @nrp.MapSpikeSource("green_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
-    @nrp.MapSpikeSource("blue_left_eye", nrp.map_neurons(range(0, 600), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
-    @nrp.MapSpikeSource("blue_right_eye", nrp.map_neurons(range(600, 1200), lambda i: nrp.brain.sensors[i]), nrp.poisson, synapse_dynamics=synapseDynamics, connector=connector_i, target='inhibitory')
+    @nrp.MapSpikeSource("red_left_eye", nrp.brain.sensors[slice(0, 3, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("red_right_eye", nrp.brain.sensors[slice(1, 4, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("green_blue_eye", nrp.brain.sensors[4], nrp.poisson)
     @nrp.Robot2Neuron()
-    def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_left_eye, green_right_eye, blue_left_eye, blue_right_eye):
+    def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_blue_eye):
+        image_results = hbp_nrp_cle.tf_framework.tf_lib.detect_red(image=camera.value)
 
-        image_results = hbp_nrp_cle.tf_framework.tf_lib.get_color_values(image=camera.value)
+
+        red_left_eye.rate = 1000.0 * image_results.left
+        red_right_eye.rate = 1000.0 * image_results.right
+        green_blue_eye.rate = 1000.0 * image_results.go_on
 
 
-        red_left_eye.rate = 250.0 * image_results.left_red
-        red_right_eye.rate = 250.0 * image_results.right_red
-        green_left_eye.rate = 250.0 * image_results.left_green
-        green_right_eye.rate = 250.0 * image_results.right_green
-        blue_left_eye.rate = 250.0 * image_results.left_blue
-        blue_right_eye.rate = 250.0 * image_results.right_blue
+
+
+
+
+    # Imported Python Transfer Function
+
+
+
+
+    import sensor_msgs.msg
+    @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
+    @nrp.MapSpikeSource("red_left_eye", nrp.brain.sensors[slice(0, 3, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("red_right_eye", nrp.brain.sensors[slice(1, 4, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("green_blue_eye", nrp.brain.sensors[4], nrp.poisson)
+    @nrp.Robot2Neuron()
+    def eye_sensor_transmit2(t, camera, red_left_eye, red_right_eye, green_blue_eye):
+        image_results = hbp_nrp_cle.tf_framework.tf_lib.detect_red(image=camera.value)
+
+
+        red_left_eye.rate = 1000.0 * image_results.left
+        red_right_eye.rate = 1000.0 * image_results.right
+        green_blue_eye.rate = 1000.0 * image_results.go_on
+
+
+
+
+
+
+    # Imported Python Transfer Function
+
+
+
+
+
+
+
+
+    import sensor_msgs.msg
+    @nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
+    @nrp.MapSpikeSource("red_left_eye", nrp.brain.sensors[slice(0, 3, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("red_right_eye", nrp.brain.sensors[slice(1, 4, 2)], nrp.poisson)
+    @nrp.MapSpikeSource("green_blue_eye", nrp.brain.sensors[4], nrp.poisson)
+    @nrp.Robot2Neuron()
+    def eye_sensor_transmit2(t, camera, red_left_eye, red_right_eye, green_blue_eye):
+        image_results = hbp_nrp_cle.tf_framework.tf_lib.detect_red(image=camera.value)
+
+
+        red_left_eye.rate = 1000.0 * image_results.left
+        red_right_eye.rate = 1000.0 * image_results.right
+        green_blue_eye.rate = 1000.0 * image_results.go_on
+
+
+
+
+
 
 
     # Create CLE

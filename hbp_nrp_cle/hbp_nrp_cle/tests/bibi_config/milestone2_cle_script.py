@@ -130,8 +130,6 @@ def cle_function_init(world_file):
     import hbp_nrp_cle.tf_framework.tf_lib #import detect_red
     import sensor_msgs.msg #import Image
 
-    # import transfer functions specified in Python
-
 
 
 

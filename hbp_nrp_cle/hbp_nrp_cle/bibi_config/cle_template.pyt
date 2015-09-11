@@ -145,16 +145,16 @@ def cle_function_init(world_file):
 {% for dep in dependencies %}
     import {{dep[:dep.rfind('.')]}} #import {{dep.split('.')|last()}}{% endfor %}
 
-    # import transfer functions specified in Python
-{% if len(config.transferFunctionImport) > 0 %}    # pylint: disable=W0401
-{% for imp in config.transferFunctionImport %}
-    import {{remove_extension(imp)}}{% endfor %}{% endif %}
 {% for syn_dyn in config.synapseDynamics %}
     {{syn_dyn.name}} = {{print_synapse_dynamics(syn_dyn)}}{% endfor %}
 {% for connector in config.connectors %}
     {{connector.name}} = {{print_connector(connector)}}{% endfor %}
 
-{% for tf in config.transferFunction %}{% if __builtins__.type(tf) == bibi_api_gen.Neuron2Robot %}
+{% for tf in config.transferFunction %}{% if __builtins__.type(tf) == bibi_api_gen.PythonTransferFunction %}
+    # Imported Python Transfer Function
+{% for cont in tf.orderedContent() %}{{correct_indentation(cont.value, 1)}}{% endfor %}
+
+{% elif __builtins__.type(tf) == bibi_api_gen.Neuron2Robot %}
 {% for topic in tf.topic %}{% if is_not_none(topic.body) %}
     @nrp.MapRobotPublisher("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type}})){% else %}
     @nrp.MapRobotSubscriber("{{topic.name}}", Topic('{{topic.topic}}', {{topic.type}})){% endif %}{% endfor %}{% for dev in tf.device %}{% if is_not_none(dev.body) %}
