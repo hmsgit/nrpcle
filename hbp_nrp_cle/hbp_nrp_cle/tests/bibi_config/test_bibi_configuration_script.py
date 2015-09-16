@@ -26,6 +26,18 @@ class TestBibiConfigurationScript(unittest.TestCase):
         self.maxDiff = None
         self.assertMultiLineEqual(delta, "")
 
+    def test_script_2(self):
+        directory = os.path.split(__file__)[0]
+        milestone2 = os.path.join(directory, 'milestone2.xml')
+        generated_script = os.path.join(directory, 'generated_cle_script.py')
+        milestone2_script = generate_cle(milestone2, None, 300.0, 'local', 0, '')
+
+        file1 = open(generated_script, 'r')
+        diff = difflib.context_diff(file1.read(), milestone2_script)
+        delta = ''.join(diff)
+        self.maxDiff = None
+        self.assertMultiLineEqual(delta, "")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,7 @@ __author__ = 'GeorgHinkel'
 import jinja2
 import os
 import logging
+import cStringIO
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -472,11 +473,14 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, mo
     Generates Code to run the CLE based on the given configuration file
 
     :param bibi_conf: The BIBI configuration
-    :param script_file_name: The file name of the script to be generated
+    :param script_file_name: The file name of the script to be generated. \
+        If None, the generated file will be returned as string
     :param timeout: The timeout found in the ExDConfig
-    :param gzserver_host: The host where the gzserver will run, local for local machine
+    :param gzserver_host: The host where the gzserver will run, local for local machine \
         lugano for remote Lugano viz cluster.
     :param sim_id: The simulation id
+    :return string: Content of the generated file (only if script_file_name is None) else, \
+        nothing is returned
     """
     logger.info("Generating CLE launch script")
     logger.debug("Loading template")
@@ -500,7 +504,17 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, mo
     names['gzserver_host'] = gzserver_host
     names['sim_id'] = sim_id
     logger.debug("Instantiate CLE Template")
-    outputFile = open(script_file_name, 'w')
 
-    outputFile.write(template.render(names))
-    outputFile.close()
+    if script_file_name is None:
+        # Generate into string and return it
+        outputFile = cStringIO.StringIO()
+        outputFile.write(template.render(names))
+        content = outputFile.getvalue()
+        outputFile.close()
+        return content
+
+    else:
+        # Generate into file and save to disk
+        outputFile = open(script_file_name, 'w')
+        outputFile.write(template.render(names))
+        outputFile.close()
