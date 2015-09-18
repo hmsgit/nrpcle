@@ -25,6 +25,7 @@ from RestrictedPython.PrintCollector import PrintCollector
 from operator import getitem
 _getattr_ = getattr
 _getitem_ = getitem
+_getiter_ = iter
 _print_ = PrintCollector
 
 
@@ -48,6 +49,7 @@ from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
 from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
 from ._TransferFunctionInterface import ITransferFunctionManager
 from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
+import std_msgs.msg
 import cle_ros_msgs.msg
 import geometry_msgs.msg
 import sensor_msgs.msg
