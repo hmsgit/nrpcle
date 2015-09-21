@@ -506,6 +506,7 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf
     :param gzserver_host: The host where the gzserver will run, local for local machine \
         lugano for remote Lugano viz cluster.
     :param sim_id: The simulation id
+    :param tf_path: A folder where the system may look for transfer function source code
     :return string: Content of the generated file (only if script_file_name is None) else, \
         nothing is returned
     """

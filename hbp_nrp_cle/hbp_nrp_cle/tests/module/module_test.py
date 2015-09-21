@@ -49,6 +49,7 @@ def monitor_callback(spike_rate):
             global failed
             failed = True
 
+
 def exception_callback(exc):
     global failed
     failed = True
@@ -77,7 +78,7 @@ def run_integration_test():
 
         logging.info("Generating CLE")
         generate_cle(os.path.join(current_dir, 'milestone2.xml'),
-                     generated_bibi_path, 50, 'local', 0)
+                     generated_bibi_path, 50, 'local', 0, current_dir)
 
         logging.info("Creating CLE Server")
 
@@ -112,7 +113,6 @@ def run_integration_test():
 
         if os.path.isfile(generated_bibi_path):
             os.remove(generated_bibi_path)
-
 
     if failed or not monitor_called:
         if failed:
