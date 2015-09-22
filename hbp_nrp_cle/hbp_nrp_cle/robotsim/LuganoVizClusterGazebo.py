@@ -110,7 +110,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     # Charge resources used by this job to specified account.The account is an arbitrary string.
     # The account name maybe changed after job submission using the scontrolcommand.
     ALLOCATION_COMMAND = ("salloc --immediate=25 --time=10:00:00 -p interactive"
-                          " -c 4 --account=proj16 --gres=gpu:1")
+                          " -c 4 --account=proj30 --gres=gpu:1")
     DEALLOCATION_COMMAND = 'scancel %s'
     NODE_DOMAIN = '.cscs.ch'
     # Timeout used for pexpect ssh connection calls.
