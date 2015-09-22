@@ -152,11 +152,11 @@ class TestGazeboLoadingHelper(unittest.TestCase):
             self.assertEqual(len(mocked_load_gazebo_sdf.call_args_list), 1)
             self.assertEqual(len(mocked_load_light_sdf.call_args_list), 2)
             logcapture.check(('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              'Loading light "sun1" in Gazebo'),
+                              'Loading light "sun1" in Gazebo.'),
                              ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              'Loading light "sun2" in Gazebo'),
+                              'Loading light "sun2" in Gazebo.'),
                              ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              'Loading model "ground_plane" in Gazebo'),
+                              'Loading model "ground_plane" in Gazebo.'),
                              ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
                               '%s successfully loaded in Gazebo' % wpath))
 

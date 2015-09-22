@@ -27,6 +27,8 @@ def load_gazebo_world_file(world_file):
     """
     world_file_sdf = etree.parse(world_file)
 
+    sdf_wrapper = "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>%s</sdf>"
+
     # Load lights
     for light in world_file_sdf.xpath("/sdf/world/light"):
         # This call will produce errors on the console in this form:
@@ -35,20 +37,25 @@ def load_gazebo_world_file(world_file):
         # This is because ROS is based on an old and deprecated version of SDF.
         # Anyway, regardless of the warning, the lights are loaded with their correct
         # positions.
-        logger.info("Loading light \"%s\" in Gazebo", light.xpath("@name")[0])
-        Notificator.notify("Loading light " + light.xpath("@name")[0], False)
-        load_light_sdf(light.xpath("@name")[0],
-                       "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
-                       etree.tostring(light) +
-                       "</sdf>")
+        light_name = light.xpath("@name")[0]
+        logger.info("Loading light \"%s\" in Gazebo.", light_name)
+        Notificator.notify("Loading light %s." % (light_name, ), False)
+        load_light_sdf(light_name, sdf_wrapper % (etree.tostring(light), ))
+
+    models_state = world_file_sdf.xpath("/sdf/world/state/model")
+
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
-        logger.info("Loading model \"%s\" in Gazebo", model.xpath("@name")[0])
-        Notificator.notify("Loading model " + model.xpath("@name")[0], False)
-        load_gazebo_sdf(model.xpath("@name")[0],
-                        "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>" +
-                        etree.tostring(model) +
-                        "</sdf>")
+        model_name = model.xpath("@name")[0]
+        logger.info("Loading model \"%s\" in Gazebo.", model_name)
+        Notificator.notify("Loading model %s." % (model_name, ), False)
+        # Checking whether some extra state is defined in the SDF
+        state = [x for x in models_state if x.xpath("@name")[0] == model_name]
+        if len(state) != 0:
+            model.remove(model.find("pose"))
+            model.append(state[0].find("pose"))
+        load_gazebo_sdf(model_name, sdf_wrapper % (etree.tostring(model), ))
+
     logger.info("%s successfully loaded in Gazebo", world_file)
 
 
