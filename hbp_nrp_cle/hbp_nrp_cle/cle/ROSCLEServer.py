@@ -547,8 +547,8 @@ class ROSCLEServer(threading.Thread):
                         tf_error = SimulationFactoryCLEError(
                             "Transfer Function",
                             "Loading",
-                            str(e),
-                            function.__name__
+                            e.message,
+                            e.tf_name
                         )
                         self.__push_tf_error_on_ros(tf_error)
 
