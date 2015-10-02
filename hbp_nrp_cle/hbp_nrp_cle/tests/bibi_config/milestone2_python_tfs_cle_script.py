@@ -148,7 +148,6 @@ def cle_function_init(world_file):
                                              z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=100.0 * (
                 right_wheel_neuron.voltage - left_wheel_neuron.voltage)))
 
-
     # Imported Python Transfer Function
 
 
@@ -172,7 +171,6 @@ def cle_function_init(world_file):
 
 
 
-
     # Imported Python Transfer Function
 
 
@@ -196,7 +194,6 @@ def cle_function_init(world_file):
 
 
 
-
     # Imported Python Transfer Function
 
 
@@ -219,7 +216,6 @@ def cle_function_init(world_file):
         red_left_eye.rate = 1000.0 * image_results.left
         red_right_eye.rate = 1000.0 * image_results.right
         green_blue_eye.rate = 1000.0 * image_results.go_on
-
 
 
 
