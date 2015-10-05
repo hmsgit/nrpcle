@@ -8,7 +8,6 @@ __author__ = 'GeorgHinkel'
 import jinja2
 import os
 import logging
-import cStringIO
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -51,6 +50,22 @@ __monitoring_topics = {'PopulationRate': '/monitor/population_rate',
                        'LeakyIntegratorAlpha': '/monitor/leaky_integrator_alpha',
                        'LeakyIntegratorExp': '/monitor/leaky_integrator_exp',
                        'SpikeRecorder': '/monitor/spike_recorder'}
+
+
+def __load_template(path):
+    """
+    Loads the template given by the specified relative path
+
+    :param path: Template path relative to bibi configuration script (this file)
+    :return: The template as Jinja2 template
+    """
+    template_path = os.path.join(os.path.split(__file__)[0], path)
+    with open(template_path, 'r') as template_file:
+        return jinja2.Template(template_file.read())
+
+
+cle_template = __load_template('cle_template.pyt')
+tf_template = __load_template('tf_template.pyt')
 
 
 def remove_extension(fname):
@@ -468,7 +483,19 @@ def import_referenced_python_tfs(bibi_conf_inst, models_path):
                 tf.append(f.read())
 
 
-def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, models_path):
+def generate_tf(tf):
+    """
+    Generates the code for the given transfer function
+
+    :param tf: The transfer function to generate code for
+    :return: A unicode string with the generated code
+    """
+    names = dict(globals())
+    names["tf"] = tf
+    return tf_template.render(names)
+
+
+def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf_path):
     """
     Generates Code to run the CLE based on the given configuration file
 
@@ -483,17 +510,12 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, mo
         nothing is returned
     """
     logger.info("Generating CLE launch script")
-    logger.debug("Loading template")
-    templatePath = os.path.join(os.path.split(__file__)[0], 'cle_template.pyt')
-    templateFile = open(templatePath, 'r')
-    template = jinja2.Template(templateFile.read())
-    templateFile.close()
     logger.debug("Loading BIBI Configuration")
     with open(bibi_conf) as bibi_xml:
         config = bibi_api_gen.CreateFromDocument(bibi_xml.read())
 
     logger.debug("Resolving python code references")
-    import_referenced_python_tfs(config, models_path)
+    import_referenced_python_tfs(config, tf_path)
 
     names = dict(globals())
     names['config'] = config
@@ -507,14 +529,9 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, mo
 
     if script_file_name is None:
         # Generate into string and return it
-        outputFile = cStringIO.StringIO()
-        outputFile.write(template.render(names))
-        content = outputFile.getvalue()
-        outputFile.close()
-        return content
+        return cle_template.render(names)
 
     else:
         # Generate into file and save to disk
-        outputFile = open(script_file_name, 'w')
-        outputFile.write(template.render(names))
-        outputFile.close()
+        with open(script_file_name, 'w') as output_file:
+            output_file.write(cle_template.render(names))
