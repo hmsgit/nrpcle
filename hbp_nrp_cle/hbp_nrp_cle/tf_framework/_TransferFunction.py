@@ -7,6 +7,7 @@ import textwrap
 import logging
 from . import config
 from hbp_nrp_cle.common import SimulationFactoryCLEError
+from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class TransferFunction(object):
     def __init__(self):
         self._params = []
         self._func = None
+        self.__local_data = {}
         self.__source = None
         self.__elapsed_time = 0.0
         self.__updated_since_last_error = True
@@ -118,6 +120,59 @@ class TransferFunction(object):
         """
         self.__source = source
         self.__updated_since_last_error = True
+
+    @abstractmethod
+    def __call__(self, func):
+        """
+        Applies the transfer functions object to the given function
+
+        :param func: The function body for this transfer function
+        :return The transfer function object
+        """
+        raise Exception("Must be implemented by concrete realization of transfer function.")
+
+    def _init_function(self, func, funcs_list):
+        """
+        Initializes the transfer function object and adds it to the specified collection of
+        functions.
+
+        :param func: The function body for this transfer function
+        :param funcs_list: The collection of functions the transfer function should be appended to
+        """
+        if self._func is None:
+            self._func = func
+
+            funcs_list.append(self)
+            args = inspect.getargspec(func).args
+            if args[0] != "t":
+                raise Exception("The first parameter of a transfer function must be the time!")
+            self._params = list(args)
+        else:
+            raise Exception("It is not allowed to change the underlying function of a Transfer "
+                            "Function after it has been initially set.")
+
+    def check_params(self):  # -> None:
+        """
+        Checks whether all parameters have been mapped properly
+
+        :exception: Exception if a parameter was not mapped
+        """
+        for param in self._params:
+            if param != "t" and type(param) == str:
+                raise Exception("Parameter %s was not mapped properly" % param)
+
+    def run(self, t):  # -> None:
+        """
+        Runs this transfer function at the given simulation time
+
+        :param t: The simulation time
+        """
+        # pylint: disable=broad-except
+        try:
+            self._params[0] = t
+            return self._func(*self._params)
+        except Exception as e:
+            self.publish_error(e)
 
     def publish_error(self, tf_run_exception):
         """

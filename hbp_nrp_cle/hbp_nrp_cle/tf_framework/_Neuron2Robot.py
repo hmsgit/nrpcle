@@ -13,8 +13,6 @@ from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
 from . import config
 from ._TransferFunction import TransferFunction
 
-import inspect
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -176,34 +174,9 @@ class Neuron2Robot(TransferFunction):
         :param func: The function body for this transfer function
         :return The transfer function object
         """
-        if self._func is None:
-            self._func = func
-            n2r_funcs = config.active_node.n2r
-            n2r_funcs.append(self)
-            args = inspect.getargspec(func).args
-            if args[0] != "t":
-                raise Exception("The first parameter of a transfer function must be the time!")
-            self._params = list(args)
-        else:
-            raise Exception("It is not allowed to change the underlying function of a Transfer "
-                            "Function after it has been initially set.")
-        return self
 
-    def replace_params(self):  # -> None:
-        """
-        Replaces strings to neuron references
-        if the parameters are not mapped to neurons, voltmeters are generated
-        """
-        for i in range(1, len(self._params)):
-            if type(self._params[i]) == str:
-                param_name = self._params[i].lower()
-                gid = None
-                if param_name.startswith("neuron"):
-                    gid = int(param_name[6:])
-                elif param_name.startswith("n"):
-                    gid = int(param_name[1:])
-                self._params[i] = MapSpikeSink(self._params[i], [gid],
-                                               ILeakyIntegratorAlpha)
+        self._init_function(func, config.active_node.n2r)
+        return self
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to robot {1} using {2}" \
@@ -215,16 +188,10 @@ class Neuron2Robot(TransferFunction):
 
         :param t: The simulation time
         """
-        should_continue = True
-        # pylint: disable=broad-except
-        try:
-            self._params[0] = t
-            return_value = self._func(*self._params)
-        except Exception as e:
-            self.publish_error(e)
-            should_continue = False
 
-        if should_continue and return_value is not None:
+        return_value = super(Neuron2Robot, self).run(t)
+
+        if return_value is not None:
             topic_publisher = self.__main_topic
             if topic_publisher is not None:
                 topic_publisher.send_message(return_value)

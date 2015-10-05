@@ -23,6 +23,7 @@ nrp = sys.modules[__name__]
 # TODO(Luc): create a module for it
 from RestrictedPython.PrintCollector import PrintCollector
 from operator import getitem
+
 _getattr_ = getattr
 _getitem_ = getitem
 _getiter_ = iter
@@ -33,12 +34,16 @@ def _cle_write_guard():
     """
     Defines the write guard for execution of user code in restricted mode.
     """
+
     def guard(ob):
         """
         No guard at all
         """
         return ob
+
     return guard
+
+
 cle_write_guard = _cle_write_guard()
 _write_ = cle_write_guard
 
@@ -46,6 +51,7 @@ _write_ = cle_write_guard
 # pylint: disable=unused-import
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
+from ._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
 from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
 from ._TransferFunctionInterface import ITransferFunctionManager
 from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
@@ -53,6 +59,7 @@ import std_msgs.msg
 import cle_ros_msgs.msg
 import geometry_msgs.msg
 import sensor_msgs.msg
+import gazebo_msgs.msg
 from hbp_nrp_cle.tf_framework import monitoring
 import hbp_nrp_cle.tf_framework.tf_lib
 from geometry_msgs.msg import Point, Pose, Quaternion
@@ -71,7 +78,6 @@ nc_source = INCSource
 population_rate = IPopulationRate
 spike_recorder = ISpikeRecorder
 
-
 brain = _PropertyPath.PropertyPath()
 
 
@@ -84,6 +90,7 @@ class TFException(UserCodeException):
     :param tf_name: name of the TF updated by the user.
     :param message: message that needs to be forwarded to the front-end.
     """
+
     def __init__(self, tf_name, message, error_type):
         super(TFException, self).__init__(message, error_type)
         self.tf_name = tf_name
@@ -101,6 +108,7 @@ class TFLoadingException(TFException):
     :param tf_name: name of the TF updated by the user.
     :param message: message that needs to be forwarded to the front-end.
     """
+
     def __init__(self, tf_name, message):
         super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
 
@@ -164,7 +172,7 @@ def get_transfer_functions():
     """
     Get all the transfer functions
 
-    :return: All the transfer functions (R2N and N2R).
+    :return: All the transfer functions (R2N, N2R).
     """
     return config.active_node.n2r + config.active_node.r2n
 
@@ -218,15 +226,17 @@ def set_transfer_function(new_source, new_code, new_name):
     # pylint: disable=broad-except
     try:
         # pylint: disable=exec-used
-        exec(new_code)
+        exec (new_code)
         tf = get_transfer_function(new_name)
+
         if isinstance(tf, Neuron2Robot):
             config.active_node.initialize_n2r_tf(tf)
         elif isinstance(tf, Robot2Neuron):
             config.active_node.initialize_r2n_tf(tf)
         else:
-            logger.error("Transfer function has no decorator r2n or n2r")
-            raise TFLoadingException(new_name, "Transfer function has no decorator r2n or n2r")
+            logger.error("Transfer function has no decorator specifying its type")
+            raise TFLoadingException(new_name,
+                                     "Transfer function has no decorator specifying its type")
     except Exception as e:
         logger.error("Error while loading new transfer function")
         logger.error(e)

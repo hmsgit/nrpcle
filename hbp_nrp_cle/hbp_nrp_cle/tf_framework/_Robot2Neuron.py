@@ -9,8 +9,6 @@ from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapte
 from . import config
 from ._TransferFunction import TransferFunction
 
-import inspect
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -95,12 +93,6 @@ class Robot2Neuron(TransferFunction):
     Represents a transfer function from robot topics to neurons
     """
 
-    def __init__(self):
-        """
-        Creates a new transfer function from robots to neurons
-        """
-        super(Robot2Neuron, self).__init__()
-
     def __call__(self, func):  # -> Robot2Neuron:
         """
         Attaches the given function to the current transfer function object
@@ -108,41 +100,8 @@ class Robot2Neuron(TransferFunction):
         :param func: The function implementing the transfer function
         :return: The transfer function object
         """
-        if self._func is None:
-            self._func = func
-            r2n_funcs = config.active_node.r2n
-            r2n_funcs.append(self)
-            args = inspect.getargspec(func).args
-            if args[0] != "t":
-                raise Exception("The first parameter of a transfer function must be the time!")
-            self._params = list(args)
-        else:
-            raise Exception("It is not allowed to change the underlying function of a Transfer "
-                            "Function after it has been initially set.")
+        self._init_function(func, config.active_node.r2n)
         return self
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to neurons {1}".format(self.name, self._params)
-
-    def check_params(self):  # -> None:
-        """
-        Checks whether all parameters have been mapped to a robot topic
-
-        :exception: Exception if a parameter was not mapped to a robot topic
-        """
-        for topic in self._params:
-            if topic != "t" and type(topic) == str:
-                raise Exception("Parameter ", topic, " was not mapped to a robot topic")
-
-    def run(self, t):  # -> None:
-        """
-        Runs this transfer function at the given simulated time
-
-        :param t: The simulation time
-        """
-        self._params[0] = t
-        # pylint: disable=broad-except
-        try:
-            self._func(*self._params)
-        except Exception as e:
-            self.publish_error(e)
