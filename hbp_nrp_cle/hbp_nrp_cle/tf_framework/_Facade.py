@@ -230,7 +230,7 @@ def set_transfer_function(new_source, new_code, new_name):
     except Exception as e:
         logger.error("Error while loading new transfer function")
         logger.error(e)
-        delete_transfer_function(new_name) # prevents run time error
+        delete_transfer_function(new_name) # prevents runtime error
         raise TFLoadingException(new_name, str(e))
 
     # we set the new source in an attribute because inspect.getsource won't work after exec

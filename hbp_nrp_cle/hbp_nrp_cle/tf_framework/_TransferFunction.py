@@ -136,7 +136,7 @@ class TransferFunction(object):
             error_publisher(
                 SimulationFactoryCLEError(
                     "Transfer Function",
-                    "RunTime",
+                    "Runtime",
                      str(tf_run_exception),
                     self.name,
                 )
