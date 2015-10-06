@@ -33,7 +33,7 @@ config = {
                  'hbp_nrp_cle.mocks.robotsim', 'hbp_nrp_cle.tf_framework',
                  'hbp_nrp_cle.tf_framework.spike_generators', 'hbp_nrp_cle.robotsim'],
     'package_data': {
-        'hbp_nrp_cle.bibi_config': ['cle_template.pyt'],
+        'hbp_nrp_cle.bibi_config': ['cle_template.pyt', 'tf_template.pyt'],
         'hbp_nrp_cle': ['config.ini']
     },
     'scripts': [],
