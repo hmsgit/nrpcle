@@ -4,7 +4,7 @@ Test to run the bibi configuration script
 
 __author__ = 'GeorgHinkel'
 
-from hbp_nrp_cle.bibi_config.bibi_configuration_script import generate_cle
+from hbp_nrp_cle.bibi_config.bibi_configuration_script import generate_cle, get_all_tfs
 import unittest
 import difflib
 import os
@@ -37,6 +37,15 @@ class TestBibiConfigurationScript(unittest.TestCase):
         delta = ''.join(diff)
         self.maxDiff = None
         self.assertMultiLineEqual(delta, "")
+
+    def test_get_all_tfs(self):
+        directory = os.path.split(__file__)[0]
+        milestone2 = os.path.join(directory, 'milestone2.xml')
+        tfs = get_all_tfs(milestone2, '')
+
+        for tf in tfs:
+            self.assertTrue("def " + tf + "(" in tfs[tf])
+            self.assertTrue('@nrp.' in tfs[tf])
 
 
 if __name__ == '__main__':

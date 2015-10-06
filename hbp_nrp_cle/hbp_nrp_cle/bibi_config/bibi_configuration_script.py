@@ -442,6 +442,7 @@ def correct_indentation(text, first_line_indent_level, indent_string=FOUR_SPACES
 
     :param text: the original input to adapt
     :param first_line_indent_level: the target indentation level of the entire block
+    :type first_line_indent_level: int
     :param indent_string: (Optional): the pattern for one level of indentation
     :return: the adapted text
     """
@@ -493,6 +494,30 @@ def generate_tf(tf):
     names = dict(globals())
     names["tf"] = tf
     return tf_template.render(names)
+
+
+def get_all_tfs(bibi_conf, tf_path):
+    """
+    Generates all transfer functions and returns a dictionary with {"tf_name": "tf_code"}
+
+    :param bibi_conf: The BIBI configuration
+    :param tf_path: A folder where the system may look for transfer function source code
+    :return dict(): key: name of tf, value: python source code of tf
+    """
+
+    with open(bibi_conf) as bibi_xml:
+        config = bibi_api_gen.CreateFromDocument(bibi_xml.read())
+
+    import_referenced_python_tfs(config, tf_path)
+
+    tfs = dict()
+    for tf in config.transferFunction:
+        tf_code = generate_tf(tf)
+        tf_code = correct_indentation(tf_code, 0)
+        tf_code = tf_code.strip() + "\n"
+        tfs[tf.name] = tf_code
+
+    return tfs
 
 
 def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf_path):
