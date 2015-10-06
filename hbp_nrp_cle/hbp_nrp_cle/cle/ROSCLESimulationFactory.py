@@ -19,6 +19,8 @@ from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_START_NEW_SIMULATION, \
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
 logger = logging.getLogger('hbp_nrp_cle')
+
+
 # Warning: We do not use __name__  here, since it translates to __main__
 # when this file is run directly (such as python ROSCLESimulationFactory.py)
 
@@ -104,7 +106,7 @@ class ROSCLESimulationFactory(object):
         error_message = ""
         result = True
 
-        if (self.running_simulation_thread is None) or\
+        if (self.running_simulation_thread is None) or \
                 (not self.running_simulation_thread.is_alive()):
             logger.info("No simulation running, starting a new simulation.")
 
@@ -127,7 +129,8 @@ class ROSCLESimulationFactory(object):
                 # Known pylint bug: goo.gl/WNg0TJ
                 # pylint: disable=raising-bad-type
                 self.__failed_simulation_count += 1
-                raise self.simulation_exception_during_init
+                raise self.simulation_exception_during_init[1], None, \
+                    self.simulation_exception_during_init[2]
         else:
             error_message = "Trying to initialize a new simulation even though the " \
                             "previous one has not been terminated."
@@ -159,13 +162,14 @@ class ROSCLESimulationFactory(object):
         logger.info("Executing script: " + generated_cle_script_file)
         # We want any exception raised during initialization in this tread
         # to be pass to the main thread so that it can be handled properly.
+        # noinspection PyBroadException
         try:
-            [cle_server, models_path, gzweb, gzserver] = experiment_generated_script.\
+            [cle_server, models_path, gzweb, gzserver] = experiment_generated_script. \
                 cle_function_init(environment_file)
         # pylint: disable=broad-except
-        except Exception as e:
+        except Exception:
             logger.exception("Initialization failed")
-            self.simulation_exception_during_init = e
+            self.simulation_exception_during_init = sys.exc_info()
             self.simulation_initialized_event.set()
             return
 
@@ -200,6 +204,7 @@ def set_up_logger(logfile_name, verbose=False):
                     "logging to stdout now!")
     logging.root.setLevel(logging.DEBUG if verbose else logging.INFO)
 
+
 if __name__ == '__main__':
     if os.environ["ROS_MASTER_URI"] == "":
         raise Exception("You should run ROS first.")
@@ -217,6 +222,7 @@ if __name__ == '__main__':
     if (args.pycharm):
         # pylint: disable=import-error
         import pydevd
+
         pydevd.settrace(args.pycharm[0],
                         port=int(args.pycharm[1]),
                         stdoutToServer=True,
