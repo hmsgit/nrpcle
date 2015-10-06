@@ -10,7 +10,7 @@ from std_srvs.srv import Empty
 from cle_ros_msgs.msg import SpikeRate
 from cle_ros_msgs.srv import StartNewSimulation
 from hbp_nrp_cle.bibi_config.bibi_configuration_script import generate_cle
-from threading import Thread
+from threading import Thread, Event
 import os
 import time
 import logging
@@ -56,6 +56,14 @@ def exception_callback(exc):
     logger.exception(exc)
 
 
+sim_factory_ready = Event()
+
+
+def sim_factor_callback(msg):
+    logger.info(msg)
+    sim_factory_ready.set()
+
+
 def run_integration_test():
     sim_factory = None
 
@@ -72,9 +80,14 @@ def run_integration_test():
         logging.root.addHandler(console_handler)
         rospy.Subscriber("/monitor/population_rate", SpikeRate, monitor_callback)
         rospy.Subscriber("/module_test/exceptions", std_msgs.msg.String, exception_callback)
-        monitor_thread = Thread(target=rospy.spin)
+        rospy.Subscriber("/module_test/sim_factory_ready", std_msgs.msg.String, sim_factor_callback)
 
-        monitor_thread.start()
+        spin_thread = Thread(target=rospy.spin)
+
+        spin_thread.start()
+
+        logging.info("Waiting for simulation factory")
+        sim_factory_ready.wait(10)
 
         logging.info("Generating CLE")
         generate_cle(os.path.join(current_dir, 'milestone2.xml'),
@@ -85,7 +98,8 @@ def run_integration_test():
         start_new_simulation_service = rospy.ServiceProxy(
             '/ros_cle_simulation/start_new_simulation', StartNewSimulation
         )
-        start_new_simulation_service('virtual_room/virtual_room.sdf', generated_bibi_path)
+        env_path = os.path.join(os.environ.get("NRP_MODELS_DIRECTORY"), 'virtual_room/virtual_room.sdf')
+        start_new_simulation_service(env_path, generated_bibi_path)
 
         logging.info("Creating CLE Client")
 
