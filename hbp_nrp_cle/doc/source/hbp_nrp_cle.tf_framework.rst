@@ -46,6 +46,14 @@ tf_framework - The implementation of the TF framework
     :undoc-members:
     :show-inheritance:
 
+:mod:`_GlobalData` Module
+---------------------------
+
+.. automodule:: hbp_nrp_cle.tf_framework._GlobalData
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`_TransferFunction` Module
 -------------------------------
 

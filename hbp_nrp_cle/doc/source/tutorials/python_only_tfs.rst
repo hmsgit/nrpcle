@@ -1,4 +1,4 @@
-Using TFs specified directly in Python
+Tutorial: Using TFs specified directly in Python
 ======================================
 
 .. warning:: This integration is subject to change due to security issues. In the future, users may

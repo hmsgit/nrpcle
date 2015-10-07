@@ -10,5 +10,6 @@ Tutorials
    robot2neuron
    monitoring
    python_only_tfs
+   variables
    deviceGroups
    custom_devices
