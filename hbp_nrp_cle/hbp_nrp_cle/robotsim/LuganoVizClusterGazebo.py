@@ -329,6 +329,11 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__gazebo_remote_process.sendline(
             'export GAZEBO_MODEL_PATH=' + self.__remote_working_directory + '/models')
 
+        # When a dae is used for collision, Gazebo 4 (it may be solved in Gazebo 6) looks at the
+        # models in $HOME/.gazebo/models
+        self.__gazebo_remote_process.sendline(
+            'ln -s $GAZEBO_MODEL_PATH $HOME/.gazebo/models')
+
         # loading the environment modules configuration files
         self.__gazebo_remote_process.sendline(
             'export MODULEPATH=$MODULEPATH:/nfs4/bbp.epfl.ch/sw/neurorobotics/modulefiles')
