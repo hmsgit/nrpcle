@@ -169,7 +169,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         if result == 2:
             raise(Exception("Kerberos authentication missing"))
         elif result == 3:
-            raise(Exception("Job allocation failed: " + self.__allocation_process.after))
+            raise(Exception("Job allocation failed: " + str(self.__allocation_process.after)))
 
         # Find out which node has been allocated
         self.__job_ID = self.__allocation_process.match.groups()[0]
@@ -368,7 +368,8 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
                                                       pexpect.TIMEOUT])
 
         if result == 1:
-            raise(Exception("Error while starting gazebo" + self.__gazebo_remote_process.after))
+            raise(Exception("Error while starting gazebo: " +
+                            str(self.__gazebo_remote_process.after)))
 
     def start(self, ros_master_uri):
         """
