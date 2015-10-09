@@ -258,7 +258,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     def __start_xvnc(self):
         """
         Start a remote Xvnc server. This is the only (known to us) way to have Gazebo using
-        the graphic card.
+        the graphic card. If the Xvnc server is already running, we re-use it !
         """
         if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
@@ -267,8 +267,9 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__remote_display_port = randint(10, 100)
         self.__remote_xvnc_process.sendline('Xvnc :' + str(self.__remote_display_port))
         result = self.__remote_xvnc_process.expect(['created VNC server for screen 0',
+                                                    'Server is already active for display',
                                                     pexpect.TIMEOUT], self.TIMEOUT)
-        if result == 1:
+        if result == 2:
             self.__remote_display_port = -1
             raise(Exception("Cannot start Xvnc"))
 
