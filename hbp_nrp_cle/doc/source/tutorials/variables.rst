@@ -15,7 +15,7 @@ use transfer functions as means of aggregating metrics.
     framework. An extension of the BIBI model is planned for the near future.
 
 Transfer function variables are mapped to parameters of the transfer function similar to the
-mappings of robot devices (e.g. `@MapRobotSubscriber`) or brain devices (e.g. `@MapSpikeSink`).
+mappings of robot devices (e.g. `@nrp.MapRobotSubscriber`) or brain devices (e.g. `@nrp.MapSpikeSink`).
 The following code snipped demonstrates declaring a transfer function local variable `last_t` to
 which the current value of `t` (the simulation time) is stored to:
 
@@ -64,4 +64,4 @@ the second one. If no global key is specified the parameter name is used as iden
 
 Although the examples showed only single variable mappings it is nevertheless possible to map
 multiple variable to a transfer function or to combine variable mappings with other parameters (
-e.g. `@MapRobotSubscriber`)
+e.g. `@nrp.MapRobotSubscriber`)

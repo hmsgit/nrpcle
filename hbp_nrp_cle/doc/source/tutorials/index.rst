@@ -12,4 +12,6 @@ Tutorials
    python_only_tfs
    variables
    deviceGroups
+   metrics
+   virtual_sensors
    custom_devices
