@@ -34,6 +34,17 @@ class ITransferFunctionManager(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def initialize_tf(self, tf):
+        """
+        Initializes the given transfer function
+
+        This method is used if a transfer function is replaced after initialization of the tf
+        manager
+
+        :param name: The transfer function
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
     def reset(self):  # -> None:
         """
         Resets the transfer functions

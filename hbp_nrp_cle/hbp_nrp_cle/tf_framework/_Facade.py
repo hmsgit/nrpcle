@@ -51,6 +51,7 @@ _write_ = cle_write_guard
 # pylint: disable=unused-import
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
+from ._TransferFunction import TransferFunction
 from ._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
 from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
 from ._TransferFunctionInterface import ITransferFunctionManager
@@ -226,17 +227,12 @@ def set_transfer_function(new_source, new_code, new_name):
     # pylint: disable=broad-except
     try:
         # pylint: disable=exec-used
-        exec (new_code)
+        exec new_code
         tf = get_transfer_function(new_name)
-
-        if isinstance(tf, Neuron2Robot):
-            config.active_node.initialize_n2r_tf(tf)
-        elif isinstance(tf, Robot2Neuron):
-            config.active_node.initialize_r2n_tf(tf)
-        else:
+        if not isinstance(tf, TransferFunction):
             logger.error("Transfer function has no decorator specifying its type")
-            raise TFLoadingException(new_name,
-                                     "Transfer function has no decorator specifying its type")
+            raise Exception("Transfer function has no decorator specifying its type")
+        config.active_node.initialize_tf(tf)
     except Exception as e:
         logger.error("Error while loading new transfer function")
         logger.error(e)

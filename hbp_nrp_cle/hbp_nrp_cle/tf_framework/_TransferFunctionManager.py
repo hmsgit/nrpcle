@@ -172,13 +172,15 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         return self.__n2r + self.__r2n
 
-    def __initialize_tf(self, tf):
+    def initialize_tf(self, tf):
         """
         Initializes the given transfer function
 
+        This method is used if a transfer function is replaced after initialization of the tf
+        manager
+
         :param name: The transfer function
         """
-
         logger.info("Initialize transfer function " + repr(tf))
         tf.check_params()
         tf.elapsed_time = 0.0
@@ -209,7 +211,7 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         # Wire transfer functions
         for tf in itertools.chain(self.__r2n, self.__n2r):
-            self.__initialize_tf(tf)
+            self.initialize_tf(tf)
 
         # Initialize dependencies
         self.__nestAdapter.initialize()

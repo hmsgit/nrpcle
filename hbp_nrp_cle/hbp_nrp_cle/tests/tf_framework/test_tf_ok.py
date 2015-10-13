@@ -62,8 +62,7 @@ def transform_camera(t, camera, camera_device):
         nrp.start_new_tf_manager()
         brain = MockBrainCommunicationAdapter()
         config.active_node.brain_adapter = brain
-        config.active_node.initialize_n2r_tf = MagicMock(return_value=None)
-        config.active_node.initialize_r2n_tf = MagicMock(return_value=None)
+        config.active_node.initialize_tf = MagicMock(return_value=None)
 
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)]
@@ -83,17 +82,17 @@ def transform_camera(t, camera, camera_device):
 def right_arm(t, neuron1):
     return neuron1.voltage * 2.345
 """
-        tf_r2n = """@nrp.Robot2Neuron()
-def transform_camera(t, camera, camera_device):
+        tf_r2n = """@nrp.MapRobotSubscriber("camera", Topic('/husky/camera', sensor_msgs.msg.Image))
+@nrp.Robot2Neuron()
+def transform_camera(t, camera):
     if camera.changed:
-        camera_device.inner.amplitude = 24.0
+        pass
 """
         nrp.delete_transfer_function('right_arm')
         nrp.delete_transfer_function('transform_camera')
         nrp.set_transfer_function(tf_n2r, tf_n2r, 'right_arm')
         nrp.set_transfer_function(tf_r2n, tf_r2n, 'transform_camera')
-        self.assertEqual(config.active_node.initialize_n2r_tf.call_count, 1)
-        self.assertEqual(config.active_node.initialize_r2n_tf.call_count, 1)
+        self.assertEqual(config.active_node.initialize_tf.call_count, 2)
 
         loaded_source_n2r_and_r2n = [tf.source for tf in nrp.get_transfer_functions()]
         self.assertIn(tf_n2r, loaded_source_n2r_and_r2n)
