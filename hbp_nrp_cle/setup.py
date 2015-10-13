@@ -19,9 +19,9 @@ reqs = [str(ir.req) for ir in install_reqs]
 
 config = {
     'description': 'Python Implementation of Closed Loop Engine',
-    'author': 'hinkel',
-    'url': 'https://bbpteam.epfl.ch/project/spaces/display/HSP10/Neurorobotics+Platform+Home',
-    'author_email': 'bbp-dev-neuroroboticsplatform@groupes.epfl.ch',
+    'author': 'HBP Neurorobotics',
+    'url': 'http://neurorobotics.net',
+    'author_email': 'neurorobotics@humanbrainproject.eu',
     'version': hbp_nrp_cle.__version__,
     'install_requires': reqs,
     'packages': ['hbp_nrp_cle',
