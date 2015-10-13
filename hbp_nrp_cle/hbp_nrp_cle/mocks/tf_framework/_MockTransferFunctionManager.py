@@ -31,6 +31,17 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         """
         self.__name = name
 
+    def initialize_tf(self, tf):
+        """
+        Initializes the given transfer function
+
+        This method is used if a transfer function is replaced after initialization of the tf
+        manager
+
+        :param name: The transfer function
+        """
+        pass
+
     def run_neuron_to_robot(self, t):
         """
         Runs the transfer function mocks for neuron to robot direction
