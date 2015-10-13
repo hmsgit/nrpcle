@@ -117,6 +117,7 @@ class TFLoadingException(TFException):
 def map_neurons(neuron_range, mapping):
     """
     Maps the given range to neurons using the provided mapping
+
     :param neuron_range: A range that can be iterated
     :param mapping: A mapping function or lambda
     """
@@ -126,6 +127,7 @@ def map_neurons(neuron_range, mapping):
 def chain_neurons(*neuron_selectors):
     """
     Chains the given neuron selectors
+
     :param neuron_selectors: The neuron selectors
     """
     return _NeuronSelectors.ChainNeuronSelector(neuron_selectors)
@@ -202,13 +204,13 @@ def delete_transfer_function(name):
     tf = get_transfer_function(name)
     if tf in config.active_node.n2r:
         for i in range(1, len(tf.params)):
-            if (tf.params[i] in config.active_node.brain_adapter.detector_devices):
+            if tf.params[i] in config.active_node.brain_adapter.detector_devices:
                 config.active_node.brain_adapter.detector_devices.remove(tf.params[i])
         config.active_node.n2r.remove(tf)
     elif tf in config.active_node.r2n:
         config.active_node.r2n.remove(tf)
         for i in range(1, len(tf.params)):
-            if (tf.params[i] in config.active_node.brain_adapter.generator_devices):
+            if tf.params[i] in config.active_node.brain_adapter.generator_devices:
                 config.active_node.brain_adapter.generator_devices.remove(tf.params[i])
     else:
         result = False
@@ -230,7 +232,6 @@ def set_transfer_function(new_source, new_code, new_name):
         exec new_code
         tf = get_transfer_function(new_name)
         if not isinstance(tf, TransferFunction):
-            logger.error("Transfer function has no decorator specifying its type")
             raise Exception("Transfer function has no decorator specifying its type")
         config.active_node.initialize_tf(tf)
     except Exception as e:

@@ -9,7 +9,6 @@ from . import config
 from hbp_nrp_cle.common import SimulationFactoryCLEError
 from abc import abstractmethod
 
-
 logger = logging.getLogger(__name__)
 
 __author__ = 'GeorgHinkel'
@@ -98,18 +97,18 @@ class TransferFunction(object):
                      returned (see python inspect module documentation).
         """
 
-        if (self.__source is None):
+        if self.__source is None:
             self.__source = "# Transfer function not loaded properly."
-            if (self._func):
+            if self._func:
                 try:
-                    self.__source = inspect.getsource(self._func)
+                    self.__source = textwrap.dedent(inspect.getsource(self._func))
                 except IOError as e:
                     error_msg = "The transfer function source code cannot be retrieved."
                     logger.error(error_msg)
                     logger.error(e)
                     self.__source = "# " + error_msg
 
-        return textwrap.dedent(self.__source)
+        return self.__source
 
     @source.setter
     def source(self, source):
@@ -182,17 +181,17 @@ class TransferFunction(object):
         :param tf_run_exception: exception raised due to run time failure
         """
         error_publisher = config.active_node.publish_error_callback
-        if (error_publisher and self.updated):  # avoid duplicate error messages
+        if error_publisher and self.updated:  # avoid duplicate error messages
             self.updated = False
             logger.error(
-              "Error while running transfer function " + self.name + ":\n"
-              + str(tf_run_exception)
+                "Error while running transfer function " + self.name + ":\n"
+                + str(tf_run_exception)
             )
             error_publisher(
                 SimulationFactoryCLEError(
                     "Transfer Function",
                     "Runtime",
-                     str(tf_run_exception),
+                    str(tf_run_exception),
                     self.name,
                 )
             )
