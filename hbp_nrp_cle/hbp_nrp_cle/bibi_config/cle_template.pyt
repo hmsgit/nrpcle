@@ -94,8 +94,23 @@ def cle_function_init(world_file):
     cle_server.notify_current_task("Loading neuRobot",
                                 True,  # update_progress
                                 True)  # block_ui
+
+
+{% if robot_initial_pose is not none %}
+    rpose = Pose()
+    rpose.position.x = {{robot_initial_pose.x}}
+    rpose.position.y = {{robot_initial_pose.y}}
+    rpose.position.z = {{robot_initial_pose.z}}
+    rpose.orientation.x = {{robot_initial_pose.ux}}
+    rpose.orientation.y = {{robot_initial_pose.uy}}
+    rpose.orientation.z = {{robot_initial_pose.uz}}
+    rpose.orientation.w = {{robot_initial_pose.theta}}
+{% else %}
+    rpose = None
+{% endif %}
+
     # spawn robot model
-    load_gazebo_model_file('robot', '{{config.bodyModel}}')
+    load_gazebo_model_file('robot', '{{config.bodyModel}}', rpose)
 
     # control adapter
     roscontrol = RosControlAdapter()

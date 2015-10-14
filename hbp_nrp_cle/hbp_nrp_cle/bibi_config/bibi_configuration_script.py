@@ -520,7 +520,8 @@ def get_all_tfs(bibi_conf, tf_path):
     return tfs
 
 
-def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf_path):
+def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf_path,
+                 robot_initial_pose=None):
     """
     Generates Code to run the CLE based on the given configuration file
 
@@ -532,6 +533,7 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf
         lugano for remote Lugano viz cluster.
     :param sim_id: The simulation id
     :param tf_path: A folder where the system may look for transfer function source code
+    :param robot_initial_pose (optional): The XML tag object referring to the robot initial pose
     :return string: Content of the generated file (only if script_file_name is None) else, \
         nothing is returned
     """
@@ -551,6 +553,7 @@ def generate_cle(bibi_conf, script_file_name, timeout, gzserver_host, sim_id, tf
     names['timeout'] = timeout
     names['gzserver_host'] = gzserver_host
     names['sim_id'] = sim_id
+    names['robot_initial_pose'] = robot_initial_pose
     logger.debug("Instantiate CLE Template")
 
     if script_file_name is None:

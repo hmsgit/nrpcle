@@ -90,8 +90,14 @@ def cle_function_init(world_file):
     cle_server.notify_current_task("Loading neuRobot",
                                 True,  # update_progress
                                 True)  # block_ui
+
+
+
+    rpose = None
+
+
     # spawn robot model
-    load_gazebo_model_file('robot', 'husky_model/model.sdf')
+    load_gazebo_model_file('robot', 'husky_model/model.sdf', rpose)
 
     # control adapter
     roscontrol = RosControlAdapter()
