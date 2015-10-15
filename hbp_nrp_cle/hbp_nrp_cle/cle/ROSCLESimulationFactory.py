@@ -37,7 +37,9 @@ class ROSCLESimulationFactory(object):
         """
         logger.debug("Creating new CLE server.")
         self.running_simulation_thread = None
+        self.__is_running_simulation_terminating = False
         self.simulation_initialized_event = threading.Event()
+        self.simulation_terminate_event = threading.Event()
         self.simulation_exception_during_init = None
         self.__simulation_count = 0
         self.__failed_simulation_count = 0
@@ -135,6 +137,10 @@ class ROSCLESimulationFactory(object):
         error_message = ""
         result = True
 
+        if self.__is_running_simulation_terminating:
+            logger.info("Waiting for previous simulation to terminate")
+            self.simulation_terminate_event.wait()
+
         if (self.running_simulation_thread is None) or \
                 (not self.running_simulation_thread.is_alive()):
             logger.info("No simulation running, starting a new simulation.")
@@ -177,6 +183,8 @@ class ROSCLESimulationFactory(object):
                                   the environment (without the robot)
         :param: generated_cle_script_file: Generated CLE python script (main loop)
         """
+        self.__is_running_simulation_terminating = False
+        self.simulation_terminate_event.clear()
         logger.info(
             "Preparing new simulation with environment file: %s "
             "and generated script file %s.",
@@ -205,7 +213,14 @@ class ROSCLESimulationFactory(object):
         self.simulation_initialized_event.set()
 
         cle_server.main()
-        experiment_generated_script.shutdown(cle_server, models_path, gzweb, gzserver)
+        self.__is_running_simulation_terminating = True
+        try:
+            logger.info("Shutdown simulation")
+            experiment_generated_script.shutdown(cle_server, models_path, gzweb, gzserver)
+        finally:
+            self.running_simulation_thread = None
+            self.__is_running_simulation_terminating = False
+            self.simulation_terminate_event.set()
 
 
 def set_up_logger(logfile_name, verbose=False):

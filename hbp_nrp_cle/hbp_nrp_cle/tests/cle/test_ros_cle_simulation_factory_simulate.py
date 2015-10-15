@@ -30,6 +30,7 @@ class SimulationTestCase(unittest.TestCase):
         factory.start_new_simulation(MockedServiceRequest())
 
         self.assertTrue(val.experiment_cle_init_called)
+        factory.simulation_terminate_event.wait()
         self.assertTrue(val.experiment_shutdown_called)
         self.assertEqual(factory.simulation_count, 1)
         self.assertEqual(factory.failed_simulation_count, 0)

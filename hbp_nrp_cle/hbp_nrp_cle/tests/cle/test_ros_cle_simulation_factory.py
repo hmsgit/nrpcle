@@ -56,6 +56,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
             self.simulation_event.wait()
 
         # Make sure we do not really start a simulation
+        self.original_simulation = ROSCLESimulationFactory.ROSCLESimulationFactory._ROSCLESimulationFactory__simulation
         ROSCLESimulationFactory.ROSCLESimulationFactory._ROSCLESimulationFactory__simulation = mocked_simulation
         self.simulation_event.clear()
 
@@ -72,6 +73,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     def tearDown(self):
         # remove all handlers after each test!
         logging.getLogger(self.LOGGER_NAME).handlers = []
+        ROSCLESimulationFactory.ROSCLESimulationFactory._ROSCLESimulationFactory__simulation = self.original_simulation
 
     def test_run(self):
         self.__ros_cle_simulation_factory.initialize()

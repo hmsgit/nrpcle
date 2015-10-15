@@ -65,6 +65,11 @@ class TestROSCLEServer(unittest.TestCase):
         self.addCleanup(rospy_patcher.stop)
 
         self.__mocked_cle = cle_patcher.start()
+        self.__mocked_cle.simulation_time = 0
+        self.__mocked_cle.real_time = 0
+        self.__mocked_cle.tf_elapsed_time = Mock(return_value=0)
+        self.__mocked_cle.brainsim_elapsed_time = Mock(return_value=0)
+        self.__mocked_cle.robotsim_elapsed_time = Mock(return_value=0)
         self.__mocked_rospy = rospy_patcher.start()
 
         self.craft_ros_cle_server(True)
