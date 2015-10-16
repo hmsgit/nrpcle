@@ -13,6 +13,7 @@ import json
 import threading
 from cle_ros_msgs import srv
 import os
+import time
 
 __author__ = 'HBP NRP software team'
 
@@ -49,6 +50,15 @@ class TestROSCLESimulationFactory(unittest.TestCase):
 
         self.mocked_service_request = self.MockedServiceRequest()
 
+        self.simulation_event = threading.Event()
+        def mocked_simulation(mocked_self, environment_file, generated_cle_script_file):
+            self.__ros_cle_simulation_factory.simulation_initialized_event.set()
+            self.simulation_event.wait()
+
+        # Make sure we do not really start a simulation
+        ROSCLESimulationFactory.ROSCLESimulationFactory._ROSCLESimulationFactory__simulation = mocked_simulation
+        self.simulation_event.clear()
+
     def mockThreading(self):
         threading_patcher = patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.threading')
         self.addCleanup(threading_patcher.stop)
@@ -82,8 +92,31 @@ class TestROSCLESimulationFactory(unittest.TestCase):
             srv.Health,
             self.__ros_cle_simulation_factory.health
         )
-        self.assertEqual(self.__mocked_rospy.Service.call_count, 3)
+        self.assertEqual(self.__mocked_rospy.Service.call_count, 4)
         self.__mocked_rospy.spin.assert_called_once_with()
+
+    def test_is_simulation_running(self):
+        self.assertFalse(
+            self.__ros_cle_simulation_factory.is_simulation_running(self.mocked_service_request)
+        )
+
+        self.simulation_event.clear()
+
+        background_simulation = threading.Thread(
+            target=self.__ros_cle_simulation_factory.start_new_simulation,
+            args=[self.mocked_service_request]
+        )
+        background_simulation.start()
+        self.__ros_cle_simulation_factory.simulation_initialized_event.wait()
+        self.assertTrue(
+            self.__ros_cle_simulation_factory.is_simulation_running(self.mocked_service_request)
+        )
+        self.simulation_event.set()
+        time.sleep(1)
+        self.assertFalse(
+            self.__ros_cle_simulation_factory.is_simulation_running(self.mocked_service_request)
+        )
+
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.os')
