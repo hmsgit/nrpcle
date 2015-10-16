@@ -208,6 +208,8 @@ class SerialClosedLoopEngine(IClosedLoopControl):
         """
         self.stop_flag.set()
         self.stopped_flag.wait(5)
+        self.rcm.shutdown()
+        self.bcm.shutdown()
         self.rca.shutdown()
         self.bca.shutdown()
 

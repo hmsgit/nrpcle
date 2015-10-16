@@ -184,3 +184,9 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         Gets a list of simulation times at which the mock has been refreshed
         """
         return self.__refreshed_at
+
+    def shutdown(self):
+        """
+        Shuts down the brain communication adapter
+        """
+        pass

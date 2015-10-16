@@ -175,3 +175,9 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         Gets a value indicating whether initialize has been called
         """
         return self.__is_initialized
+
+    def shutdown(self):
+        """
+        Shuts down the brain communication adapter
+        """
+        pass

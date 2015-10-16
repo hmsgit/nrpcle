@@ -79,6 +79,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         for topic in self.published_topics:
             topic.unregister()
+        for topic in self.subscribed_topics:
+            topic.unregister()
 
 
 class RosPublishedTopic(IRobotPublishedTopic):
@@ -203,6 +205,13 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         """
         self.reset_changed()
         return self
+
+    def unregister(self):
+        """
+        Detaches the subscribed topic from ROS
+        """
+        self.__subscriber.unregister()
+        self.__subscriber = None
 
 
 class RosSubscribedPreprocessedTopic(RosSubscribedTopic):

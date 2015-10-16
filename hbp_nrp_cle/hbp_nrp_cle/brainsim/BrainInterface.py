@@ -301,6 +301,12 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def shutdown(self):
+        """
+        Shuts down the brain communication adapter
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class IBrainControlAdapter(object):  # pragma: no cover
     """

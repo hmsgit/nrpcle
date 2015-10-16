@@ -145,6 +145,8 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         # set up the robot control adapter thread
         assert isinstance(robot_control_adapter, IRobotControlAdapter)
         self.rca = robot_control_adapter
+        assert isinstance(robot_comm_adapter, IRobotCommunicationAdapter)
+        self.rcm = robot_comm_adapter
         self.rct_flag = threading.Event()
         self.rct = ControlThread(self.rca, self.rct_flag)
         self.rct.start()
@@ -153,6 +155,8 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         # set up the brain control adapter thread
         assert isinstance(brain_control_adapter, IBrainControlAdapter)
         self.bca = brain_control_adapter
+        assert isinstance(brain_comm_adapter, IBrainCommunicationAdapter)
+        self.bcm = brain_comm_adapter
         self.bct_flag = threading.Event()
         self.bct = ControlThread(self.bca, self.bct_flag)
         self.bct.start()
@@ -266,6 +270,8 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         """
         Shuts down both simulations.
         """
+        self.rcm.shutdown()
+        self.bcm.shutdown()
         self.rca.shutdown()
         self.bca.shutdown()
         logger.info("simulations shutdown")
