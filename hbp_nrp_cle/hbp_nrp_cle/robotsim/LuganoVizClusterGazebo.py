@@ -165,10 +165,14 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         result = self.__allocation_process.expect(['Granted job allocation ([0-9]+)',
                                                    'Submitted batch job [0-9]+',
                                                    'error: spank-auks: cred forwarding failed',
+                                                   'error: Unable to allocate resources',
                                                    'error: .+'])
         if result == 2:
             raise(Exception("Kerberos authentication missing"))
         elif result == 3:
+            raise(Exception("Unfortunately, the cluster is fully occupied. "
+                            "Please test again later."))
+        elif result == 4:
             raise(Exception("Job allocation failed: " + str(self.__allocation_process.after)))
 
         # Find out which node has been allocated
@@ -288,27 +292,6 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             ":" +
             self.__remote_working_directory)
 
-    # TODO check outputs !
-    def __install_ros_dependencies(self):
-        """
-        Install all the needed ROS dependencies on the allocated viz cluster node
-        (in the remote working directory).
-        """
-        if self.__node is None or self.__allocation_process is None:
-            raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
-        if self.__remote_working_directory is None:
-            raise(Exception("Installing ROS dependencies cannot work without" +
-                            " a remote working directory"))
-        install_ros_dependencies_process = self.__spawn_vglconnect()
-        install_ros_dependencies_process.sendline('cd ' + self.__remote_working_directory)
-        install_ros_dependencies_process.sendline('source /opt/rh/python27/enable')
-        install_ros_dependencies_process.sendline('virtualenv ros')
-        install_ros_dependencies_process.sendline('source ros/bin/activate')
-        install_ros_dependencies_process.sendline('pip install rospkg')
-        install_ros_dependencies_process.sendline('pip install catkin_pkg')
-        install_ros_dependencies_process.sendline('pip install netifaces')
-        install_ros_dependencies_process.sendline('pip install PIL')
-
     def __start_gazebo(self, ros_master_uri):
         """
         Start gazebo on the remote server
@@ -326,48 +309,48 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__gazebo_remote_process.sendline('export DISPLAY=:' + str(self.__remote_display_port))
         self.__gazebo_remote_process.sendline('export ROS_MASTER_URI=' + ros_master_uri)
         self.__gazebo_remote_process.sendline(
-            'source /nfs4/bbp.epfl.ch/sw/neurorobotics/ros_gazebo_venv/bbpviz.cscs.ch/bin/activate')
-        self.__gazebo_remote_process.sendline(
             'export GAZEBO_MODEL_PATH=' + self.__remote_working_directory + '/models')
 
         # When a dae is used for collision, Gazebo 4 (it may be solved in Gazebo 6) looks at the
         # models in $HOME/.gazebo/models
         self.__gazebo_remote_process.sendline(
-            'ln -s $GAZEBO_MODEL_PATH $HOME/.gazebo/models')
+            'ln -sf $GAZEBO_MODEL_PATH $HOME/.gazebo/models')
 
         # loading the environment modules configuration files
         self.__gazebo_remote_process.sendline(
-            'export MODULEPATH=$MODULEPATH:/nfs4/bbp.epfl.ch/sw/neurorobotics/modulefiles')
-        self.__gazebo_remote_process.sendline(
-            'export MODULEPATH=$MODULEPATH:/nfs4/bbp.epfl.ch/sw/module/modulefiles')
+            'export MODULEPATH=$MODULEPATH:/gpfs/bbp.cscs.ch/apps/viz/neurorobotics/modulefiles')
 
         # source environment modules init file
         self.__gazebo_remote_process.sendline('source /usr/share/Modules/init/bash 2> /dev/null')
 
         # load the modules
-        self.__gazebo_remote_process.sendline('module load ros/hydro-rhel6-x86_64-gcc4.4')
-        self.__gazebo_remote_process.sendline('module load gazebo/4.0-rhel6-x86_64-gcc4.8.2')
-        self.__gazebo_remote_process.sendline('module load sdf/2.0-rhel6-x86_64-gcc4.4')
-        self.__gazebo_remote_process.sendline('module load ogre/1.8.1-rhel6-x86_64-gcc4.8.2')
+        self.__gazebo_remote_process.sendline('module load ros/indigo-rhel6-x86_64-gcc4.8.2')
+        self.__gazebo_remote_process.sendline('module load gazebo/last-build')
+        self.__gazebo_remote_process.sendline('module load sdf/last-build')
+        self.__gazebo_remote_process.sendline('module load ogre/1.9.0-rhel6-x86_64-gcc-4.8.2')
         self.__gazebo_remote_process.sendline('module load boost/1.55zlib-rhel6-x86_64-gcc4.4')
-        self.__gazebo_remote_process.sendline('module load opencv/2.4.9-rhel6-x86_64-gcc4.8.2')
+        self.__gazebo_remote_process.sendline('module load opencv/2.4.9-rhel6-x86_64-gcc-4.4.7')
         self.__gazebo_remote_process.sendline('module load tbb/4.0.5-rhel6-x86_64-gcc4.4')
         self.__gazebo_remote_process.sendline(
-            'module load ros-hbp-packages/hydro-rhel6-x86_64-gcc4.4')
+            'module load console_bridge/0.2.7-rhel6-x86_64-gcc-4.8.2')
         self.__gazebo_remote_process.sendline(
-            'module load ros-thirdparty/hydro-rhel6-x86_64-gcc4.4')
+            'module load urdf/0.3.0-rhel6-x86_64-gcc-4.8.2')
+        self.__gazebo_remote_process.sendline(
+            'module load collada-dom/2.3.0-rhel6-x86_64-gcc-4.8.2')
+        self.__gazebo_remote_process.sendline('module load ros-hbp-packages/last-build')
+        self.__gazebo_remote_process.sendline(
+            'module load ros-thirdparty/indigo-rhel6-x86_64-gcc4.8.2')
 
         # source ROS, Gazebo and our plugins
+        self.__gazebo_remote_process.sendline('source $ROS_PYTHON_VENV/bin/activate')
         self.__gazebo_remote_process.sendline('source $ROS_SETUP_FILE')
         self.__gazebo_remote_process.sendline('source $GAZEBO_RESOURCE_PATH/setup.sh')
         self.__gazebo_remote_process.sendline('source $ROS_THIRDPARTY_PACKAGES_SETUP_FILE')
         self.__gazebo_remote_process.sendline('source $ROS_HBP_PACKAGES_SETUP_FILE')
-        ros_plugins_folder = ("/nfs4/bbp.epfl.ch/sw/neurorobotics/ros-hbp-packages/hydro/"
-                              "rhel-6.5-x86_64/gcc-4.4.7/x86_64/lib/")
         self.__gazebo_remote_process.sendline(
             'vglrun $GAZEBO_BIN_DIR/gzserver ' +
-            '-s ' + ros_plugins_folder + 'libgazebo_ros_api_plugin.so ' +
-            '-s ' + ros_plugins_folder + 'libgazebo_ros_paths_plugin.so ' +
+            '-s $ROS_HBP_PACKAGES_LIB_DIR/libgazebo_ros_api_plugin.so ' +
+            '-s $ROS_HBP_PACKAGES_LIB_DIR/libgazebo_ros_paths_plugin.so ' +
             '--verbose')
 
         result = self.__gazebo_remote_process.expect(['Gazebo multi-robot simulator',
@@ -394,8 +377,6 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__create_remote_working_directory()
         self.__sync_models()
         logger.info('Install ROS python dependencies')
-        Notificator.notify('Install ROS python dependencies', False)
-        self.__install_ros_dependencies()
         logger.info('Start Xvnc on the remote node')
         Notificator.notify('Start Xvnc on the remote node', False)
         self.__start_xvnc()

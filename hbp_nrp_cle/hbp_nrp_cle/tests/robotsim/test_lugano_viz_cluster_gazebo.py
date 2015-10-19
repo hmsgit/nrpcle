@@ -220,37 +220,6 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
 
         self.instance = LuganoVizClusterGazebo()
 
-    @patch('pexpect.spawn')
-    def test_install_ros_dependencies(self, mock_spawn):
-        self.instance._LuganoVizClusterGazebo__spawn_vglconnect = mock_spawn
-        mock_spawn().sendline = Mock()
-
-        # failure: __node is None
-        self.instance = LuganoVizClusterGazebo()
-        self.instance._LuganoVizClusterGazebo__node = None
-        self.assertRaises(Exception, self.instance._LuganoVizClusterGazebo__install_ros_dependencies)
-
-        # failure: __allocation_process is None
-        self.instance = LuganoVizClusterGazebo()
-        self.instance._LuganoVizClusterGazebo__allocation_process = None
-        self.assertRaises(Exception, self.instance._LuganoVizClusterGazebo__install_ros_dependencies)
-
-        # failure: __remote_working_directory is None
-        self.instance = LuganoVizClusterGazebo()
-        self.instance._LuganoVizClusterGazebo__remote_working_directory = None
-        self.assertRaises(Exception, self.instance._LuganoVizClusterGazebo__install_ros_dependencies)
-
-        # successful call
-        self.instance = LuganoVizClusterGazebo()
-        self.instance._LuganoVizClusterGazebo__node = 'not none'
-        self.instance._LuganoVizClusterGazebo__allocation_process = 'this neither'
-        self.instance._LuganoVizClusterGazebo__remote_working_directory = 'None is not here'
-        mock_spawn.call_count = 0
-        self.instance._LuganoVizClusterGazebo__install_ros_dependencies()
-        self.assertEqual(mock_spawn.call_count, 1)
-        self.assertNotEqual(mock_spawn().sendline.call_count, 0)
-
-        self.instance = LuganoVizClusterGazebo()
 
     @patch('pexpect.spawn')
     def test_start_gazebo(self, mock_spawn):
@@ -301,7 +270,6 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
         self.instance._LuganoVizClusterGazebo__start_fake_X = Mock()
         self.instance._LuganoVizClusterGazebo__create_remote_working_directory = Mock()
         self.instance._LuganoVizClusterGazebo__sync_models = Mock()
-        self.instance._LuganoVizClusterGazebo__install_ros_dependencies = Mock()
         self.instance._LuganoVizClusterGazebo__start_xvnc = Mock()
         self.instance._LuganoVizClusterGazebo__start_gazebo = Mock()
 
@@ -310,7 +278,6 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
         self.assertEqual(self.instance._LuganoVizClusterGazebo__start_fake_X.call_count, 1)
         self.assertEqual(self.instance._LuganoVizClusterGazebo__create_remote_working_directory.call_count, 1)
         self.assertEqual(self.instance._LuganoVizClusterGazebo__sync_models.call_count, 1)
-        self.assertEqual(self.instance._LuganoVizClusterGazebo__install_ros_dependencies.call_count, 1)
         self.assertEqual(self.instance._LuganoVizClusterGazebo__start_xvnc.call_count, 1)
         self.assertEqual(self.instance._LuganoVizClusterGazebo__start_gazebo.call_count, 1)
         self.instance = LuganoVizClusterGazebo()
