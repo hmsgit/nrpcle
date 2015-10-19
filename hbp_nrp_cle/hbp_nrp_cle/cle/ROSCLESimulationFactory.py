@@ -42,6 +42,20 @@ class ROSCLESimulationFactory(object):
         self.__simulation_count = 0
         self.__failed_simulation_count = 0
 
+    @property
+    def simulation_count(self):
+        """
+        Gets the total number of simulations ran on this server yet
+        """
+        return self.__simulation_count
+
+    @property
+    def failed_simulation_count(self):
+        """
+        Gets the number of failed simulations on this server so far
+        """
+        return self.__failed_simulation_count
+
     def initialize(self):
         """
         Initializes the Simulation factory
@@ -85,9 +99,9 @@ class ROSCLESimulationFactory(object):
         :return: an array containing the status and the explanation
         """
         status = ''
-        if (self.__failed_simulation_count == 0):
+        if self.__failed_simulation_count == 0:
             status = 'OK'
-        elif (self.__failed_simulation_count <= self.__simulation_count / 2):
+        elif self.__failed_simulation_count <= self.__simulation_count / 2:
             status = 'WARNING'
         else:
             status = 'CRITICAL'
@@ -205,7 +219,7 @@ def set_up_logger(logfile_name, verbose=False):
     logging.root.setLevel(logging.DEBUG if verbose else logging.INFO)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     if os.environ["ROS_MASTER_URI"] == "":
         raise Exception("You should run ROS first.")
 
