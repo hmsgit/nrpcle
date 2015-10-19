@@ -131,8 +131,8 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
     """
 
     def __init__(self):  # -> None:
-        self.__published_topics = {}
-        self.__subscribed_topics = {}
+        self.__published_topics = []
+        self.__subscribed_topics = []
 
     @property
     def published_topics(self):  # -> list:
@@ -160,12 +160,10 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         :param kwargs: Additional configuration parameters
         :return: A subscription object that holds the current data
         """
-        if topic not in self.__subscribed_topics:
-            subscriber = self.create_topic_subscriber(topic, kwargs)
-            self.__subscribed_topics[topic] = subscriber
-            return subscriber
-        else:
-            return self.__subscribed_topics[topic]
+
+        subscriber = self.create_topic_subscriber(topic, kwargs)
+        self.__subscribed_topics.append(subscriber)
+        return subscriber
 
     def register_publish_topic(self, topic, **kwargs):  # -> IRobotPublishedTopic:
         """
@@ -175,12 +173,9 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         :param kwargs: Additional configuration parameters
         :return: A publisher communication object
         """
-        if topic not in self.__published_topics:
-            publisher = self.create_topic_publisher(topic, kwargs)
-            self.__published_topics[topic] = publisher
-            return publisher
-        else:
-            return self.__published_topics[topic]
+        publisher = self.create_topic_publisher(topic, kwargs)
+        self.__published_topics.append(publisher)
+        return publisher
 
     def create_topic_subscriber(self, topic, config):  # -> IRobotSubscribedTopic:
         """

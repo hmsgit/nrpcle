@@ -70,17 +70,17 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
 
         :param t: The world simulation time in milliseconds
         """
-        for key in self.subscribed_topics:
-            self.subscribed_topics[key].reset_changed()
+        for subscriber in self.subscribed_topics:
+            subscriber.reset_changed()
 
     def shutdown(self):
         """
         Closes any connections created by the adapter
         """
-        for topic in self.published_topics:
-            topic.unregister()
-        for topic in self.subscribed_topics:
-            topic.unregister()
+        for publisher in self.published_topics:
+            publisher.unregister()
+        for subscriber in self.subscribed_topics:
+            subscriber.unregister()
 
 
 class RosPublishedTopic(IRobotPublishedTopic):

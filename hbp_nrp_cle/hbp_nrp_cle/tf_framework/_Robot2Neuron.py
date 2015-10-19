@@ -72,7 +72,7 @@ class MapRobotPublisher(object):
         """
         adapter = transfer_function_manager.robot_adapter
         assert isinstance(adapter, IRobotCommunicationAdapter)
-        return adapter.create_topic_publisher(self.topic, self.config)
+        return adapter.register_publish_topic(self.topic, **self.config)
 
 
 class MapRobotSubscriber(MapRobotPublisher):
@@ -85,7 +85,7 @@ class MapRobotSubscriber(MapRobotPublisher):
         """
         adapter = transfer_function_manager.robot_adapter
         assert isinstance(adapter, IRobotCommunicationAdapter)
-        return adapter.create_topic_subscriber(self.topic, self.config)
+        return adapter.register_subscribe_topic(self.topic, **self.config)
 
 
 class Robot2Neuron(TransferFunction):
