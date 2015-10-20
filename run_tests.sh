@@ -2,6 +2,7 @@
 
 # start roscore to enable tests using ROS
 echo "Starting roscore"
+export ROS_MASTER_URI=http://localhost:11311
 roscore &
 echo "Waiting until roscore is started"
 until rostopic list ; do sleep 1; done

@@ -14,7 +14,7 @@ import hbp_nrp_cle
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_START_NEW_SIMULATION, \
-    SERVICE_VERSION, SERVICE_HEALTH
+    SERVICE_VERSION, SERVICE_HEALTH, SERVICE_IS_SIMULATION_RUNNING
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 
@@ -49,6 +49,9 @@ class ROSCLESimulationFactory(object):
         rospy.init_node(ROS_CLE_NODE_NAME)
         rospy.Service(
             SERVICE_START_NEW_SIMULATION, srv.StartNewSimulation, self.start_new_simulation
+        )
+        rospy.Service(
+            SERVICE_IS_SIMULATION_RUNNING, srv.IsSimulationRunning, self.is_simulation_running
         )
         rospy.Service(SERVICE_VERSION, srv.GetVersion, self.get_version)
         rospy.Service(SERVICE_HEALTH, srv.Health, self.health)
@@ -85,15 +88,27 @@ class ROSCLESimulationFactory(object):
         :return: an array containing the status and the explanation
         """
         status = ''
-        if (self.__failed_simulation_count == 0):
+        if self.__failed_simulation_count == 0:
             status = 'OK'
-        elif (self.__failed_simulation_count <= self.__simulation_count / 2):
+        elif self.__failed_simulation_count <= self.__simulation_count / 2:
             status = 'WARNING'
         else:
             status = 'CRITICAL'
         info = "%d error(s) in %d simulations" % \
                (self.__failed_simulation_count, self.__simulation_count)
         return [status, info]
+
+    # service_request is an unused but mandatory argument
+    # pylint: disable=unused-argument
+    def is_simulation_running(self, request):
+        """
+        Handler for the ROS service to retrieve information whether there is a simulation running
+
+        :param request: The ROS Service message
+        :return: True, if a simulation is running, otherwise False
+        """
+        return self.running_simulation_thread is not None and \
+            self.running_simulation_thread.is_alive()
 
     def start_new_simulation(self, service_request):
         """
@@ -140,7 +155,6 @@ class ROSCLESimulationFactory(object):
         logger.debug("Start_new_simulation return with status: " + str(result))
         return [result, error_message]
 
-    # pylint: disable=no-self-use
     def __simulation(self, environment_file, generated_cle_script_file):
         """
         Main simulation method. Start the simulation from the given script file.
