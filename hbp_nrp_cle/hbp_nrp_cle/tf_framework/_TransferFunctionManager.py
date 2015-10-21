@@ -59,15 +59,6 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         return self.__publish_error_callback
 
-    @property
-    def global_data(self):
-        """
-        Gets the global variable storage dictionary for the transfer functions
-
-        :return: the dictionary mapping variable name to value
-        """
-        return self.__global_data
-
     @publish_error_callback.setter
     def publish_error_callback(self, callback):
         """
@@ -79,8 +70,17 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         self.__publish_error_callback = callback
 
+    @property
+    def global_data(self):
+        """
+        Gets the global variable storage dictionary for the transfer functions
+
+        :return: the dictionary mapping variable name to value
+        """
+        return self.__global_data
+
     @staticmethod
-    def _run_tf(tf, t): # -> None:
+    def _run_tf(tf, t):  # -> None:
         """
         Runs the transfer functions for the given point in simulation time
 
@@ -145,6 +145,15 @@ class TransferFunctionManager(ITransferFunctionManager):
             self.__robotAdapter = robot_adapter
 
     @property
+    def initialized(self):
+        """
+        Determines whether the current tf manager has already been initialized
+
+        :return: True, if the TF manager has been initialized, otherwise False
+        """
+        return self.__initialized
+
+    @property
     def brain_adapter(self):  # -> IBrainCommunicationAdapter:
         """
         Gets or sets the adapter to the brain simulation
@@ -199,6 +208,9 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         :param name: The name for this transfer function node
         """
+        if self.__initialized:
+            pass
+
         logger.info("Initialize transfer functions node " + name)
         if self.__nestAdapter is None:
             raise Exception("No brain simulation adapter has been specified")
@@ -206,8 +218,10 @@ class TransferFunctionManager(ITransferFunctionManager):
         if self.__robotAdapter is None:
             raise Exception("No robot simulation adapter has been specified")
 
-        assert isinstance(self.__nestAdapter, IBrainCommunicationAdapter)
-        assert isinstance(self.__robotAdapter, IRobotCommunicationAdapter)
+        if not isinstance(self.__nestAdapter, IBrainCommunicationAdapter):
+            raise Exception("The brain adapter is configured incorrectly")
+        if not isinstance(self.__robotAdapter, IRobotCommunicationAdapter):
+            raise Exception("The robot adapter is configured incorrectly")
 
         # Wire transfer functions
         for tf in itertools.chain(self.__r2n, self.__n2r):
@@ -216,10 +230,11 @@ class TransferFunctionManager(ITransferFunctionManager):
         # Initialize dependencies
         self.__nestAdapter.initialize()
         self.__robotAdapter.initialize(name)
+        self.__initialized = True
 
     def __reset_tf(self, tf):
         """
-        Resets the given neuron2robot transfer function
+        Resets the given transfer function
         """
         tf.elapsed_time = 0.0
         tf.check_params()
