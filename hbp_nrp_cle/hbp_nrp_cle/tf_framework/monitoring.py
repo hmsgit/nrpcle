@@ -18,7 +18,7 @@ def create_spike_recorder_message(t, neuron_count, spikes, monitor_name):
     :return:
     """
     if spikes is None or spikes.shape[1] == 0:
-        return None
+        return SpikeEvent(t, 0, [], monitor_name) # return a SpikeEvent message with zero spikes
 
     msgs = []
     for spike in spikes:

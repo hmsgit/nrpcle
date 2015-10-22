@@ -89,12 +89,14 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         :param time: The current simulation time
         """
         # Get the spikes directly from NEST (It let use use memory instead of files)
-        self.__spikes = np.array([
-            nest.GetStatus(
-                self.__neurons.recorders['spikes']._device.device, 'events')
-                [0]['senders'][self.__previous_spike_count:],
-            nest.GetStatus(
-                self.__neurons.recorders['spikes']._device.device, 'events')
-                [0]['times'][self.__previous_spike_count:]]).T
+        nest_info = nest.GetStatus(self.__neurons.recorders['spikes']._device.device, 'events')[0]
+        times_nest = nest_info['times'][self.__previous_spike_count:]
+        spikes_nest = nest_info['senders'][self.__previous_spike_count:]
+        self.__spikes = np.array([spikes_nest, times_nest]).T
         self.__previous_spike_count = nest.GetStatus(
             self.__neurons.recorders['spikes']._device.device, 'n_events')[0] - 1
+
+        # Check the time of the last spike event and reset if too old (0.1 s timeout)
+        if len(nest_info['times']) > 0 and abs(nest_info['times'][- 1] * 0.001 - time) > 0.1:
+            self.__spikes = np.array([[], []])
+            self.__previous_spike_count = 0
