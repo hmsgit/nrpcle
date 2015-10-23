@@ -1,6 +1,5 @@
 '''
 Implementation of PyNNSpikeDetector
-moduleauthor: probst@fzi.de
 '''
 
 from ..BrainInterface import ISpikeRecorder
@@ -8,7 +7,7 @@ import numpy as np
 import nest
 import logging
 
-__author__ = 'DimitriProbst'
+__author__ = 'GeorgHinkel, Igor Peric, Alina Roitberg'
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +26,6 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         neurons has spiked, otherwise a "0"
         """
         self.__spikes = np.array([[], []])
-        self.__previous_spike_count = 0
         self.__neurons = None
         self.__refresh_count = 0
 
@@ -89,14 +87,9 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         :param time: The current simulation time
         """
         # Get the spikes directly from NEST (It let use use memory instead of files)
-        nest_info = nest.GetStatus(self.__neurons.recorders['spikes']._device.device, 'events')[0]
-        times_nest = nest_info['times'][self.__previous_spike_count:]
-        spikes_nest = nest_info['senders'][self.__previous_spike_count:]
+        nest_device = self.__neurons.recorders['spikes']._device.device
+        nest_info = nest.GetStatus(nest_device, 'events')[0]
+        times_nest = nest_info['times']
+        spikes_nest = nest_info['senders']
+        nest.SetStatus(nest_device, 'n_events', 0)
         self.__spikes = np.array([spikes_nest, times_nest]).T
-        self.__previous_spike_count = nest.GetStatus(
-            self.__neurons.recorders['spikes']._device.device, 'n_events')[0] - 1
-
-        # Check the time of the last spike event and reset if too old (0.1 s timeout)
-        if len(nest_info['times']) > 0 and abs(nest_info['times'][- 1] * 0.001 - time) > 0.1:
-            self.__spikes = np.array([[], []])
-            self.__previous_spike_count = 0
