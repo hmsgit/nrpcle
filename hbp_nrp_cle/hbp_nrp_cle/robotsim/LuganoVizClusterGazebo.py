@@ -249,15 +249,17 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         create_temporary_folder_process.expect(r'\/tmp\/[a-zA-Z0-9\.]+')
         self.__remote_working_directory = create_temporary_folder_process.after
 
-    def __clean_remote_working_directory(self):
+    def __clean_remote_files(self):
         """
         Remove the temporary remote working directory
         """
         if (self.__node is not None and
                 self.__allocation_process is not None and
                 self.__remote_working_directory is not None):
-            sync_models_process = self.__spawn_vglconnect()
-            sync_models_process.sendline('rm -rf ' + self.__remote_working_directory)
+            clean_process = self.__spawn_vglconnect()
+            clean_process.sendline('rm -rf ' + self.__remote_working_directory)
+            # Clean all old Xvnc lock files.
+            clean_process.sendline('rm -rf /tmp/.X*')
 
     def __start_xvnc(self):
         """
@@ -270,12 +272,22 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__remote_xvnc_process = self.__spawn_vglconnect()
         self.__remote_display_port = randint(10, 100)
         self.__remote_xvnc_process.sendline('Xvnc :' + str(self.__remote_display_port))
-        result = self.__remote_xvnc_process.expect(['created VNC server for screen 0',
-                                                    'Server is already active for display',
-                                                    pexpect.TIMEOUT], self.TIMEOUT)
-        if result == 2:
+        start_result = self.__remote_xvnc_process.expect(['created VNC server for screen 0',
+                                                          'Server is already active for display',
+                                                          'server already running',
+                                                          pexpect.TIMEOUT], self.TIMEOUT)
+        if start_result in [1, 2]:
+            #Xvnc is already running on the machine. Get its display port
+            self.__remote_xvnc_process.sendline('ps -Af | grep [X]vnc | cut -d ' ' -f 13')
+            ps_result = self.__remote_xvnc_process.expect([':([0-9]+)',
+                                                          pexpect.TIMEOUT], self.TIMEOUT)
+            if ps_result == 0:
+                self.__remote_display_port = self.__remote_xvnc_process.match.groups()[0]
+            else:
+                raise(Exception("Cannot start Xvnc, can't get running instance display port."))
+        elif start_result == 3:
             self.__remote_display_port = -1
-            raise(Exception("Cannot start Xvnc"))
+            raise(Exception("Cannot start Xvnc, unknown error."))
 
     def __sync_models(self):
         """
@@ -401,7 +413,10 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
 
     def stop(self):
         Notificator.notify("Stopping gzserver", False)
-        self.__clean_remote_working_directory()
+        self.__clean_remote_files()
+        self.__remote_xvnc_process.terminate()
+        self.__gazebo_remote_process.terminate()
+        self.__x_server_process.terminate()
         self.__deallocate_job()
 
     def restart(self, ros_master_uri):
