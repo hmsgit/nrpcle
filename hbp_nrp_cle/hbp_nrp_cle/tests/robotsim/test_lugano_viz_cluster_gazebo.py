@@ -144,7 +144,7 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
         self.instance = LuganoVizClusterGazebo()
 
     @patch('pexpect.spawn')
-    def test_clean_remote_working_directory(self, mock_spawn):
+    def test_clean_remote_files(self, mock_spawn):
         self.instance._LuganoVizClusterGazebo__spawn_vglconnect = mock_spawn
         mock_spawn().sendline = Mock()
 
@@ -154,7 +154,7 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
         self.instance._LuganoVizClusterGazebo__remote_working_directory = 'some directory'
 
         mock_spawn.call_count = 0
-        self.instance._LuganoVizClusterGazebo__clean_remote_working_directory()
+        self.instance._LuganoVizClusterGazebo__clean_remote_files()
         self.assertEqual(mock_spawn.call_count, 1)
         self.assertNotEqual(mock_spawn().sendline.call_count, 0)
 
@@ -283,10 +283,15 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
         self.instance = LuganoVizClusterGazebo()
 
     def test_stop(self):
-        self.instance._LuganoVizClusterGazebo__clean_remote_working_directory = Mock()
+        self.instance._LuganoVizClusterGazebo__clean_remote_files = Mock()
         self.instance._LuganoVizClusterGazebo__deallocate_job = Mock()
+
+        self.instance._LuganoVizClusterGazebo__remote_xvnc_process = Mock()
+        self.instance._LuganoVizClusterGazebo__gazebo_remote_process = Mock()
+        self.instance._LuganoVizClusterGazebo__x_server_process = Mock()
+
         self.instance.stop()
-        self.assertEqual(self.instance._LuganoVizClusterGazebo__clean_remote_working_directory.call_count, 1)
+        self.assertEqual(self.instance._LuganoVizClusterGazebo__clean_remote_files.call_count, 1)
         self.assertEqual(self.instance._LuganoVizClusterGazebo__deallocate_job.call_count, 1)
 
         self.instance = LuganoVizClusterGazebo()
