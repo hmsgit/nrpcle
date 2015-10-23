@@ -267,10 +267,15 @@ class ROSCLEServer(threading.Thread):
         self.__to_be_executed_within_main_thread = []
 
         self.__simulation_id = sim_id
-        self.__ros_status_pub = rospy.Publisher(TOPIC_STATUS, String)
+        self.__ros_status_pub = rospy.Publisher(
+            TOPIC_STATUS,
+            String,
+            queue_size=10  # Not expecting more that 10hz
+        )
         self.__ros_tf_error_pub = rospy.Publisher(
             TOPIC_TRANSFER_FUNCTION_ERROR,
-            SimulationFactoryCLEError
+            SimulationFactoryCLEError,
+            queue_size=10  # Not expecting more that 10hz
         )
 
         self.__current_task = None
