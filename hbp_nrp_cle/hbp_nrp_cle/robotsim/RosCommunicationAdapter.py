@@ -204,6 +204,7 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
          topic is contained
         """
         self.reset_changed()
+        self.__value = None
         return self
 
     def unregister(self):
