@@ -590,13 +590,12 @@ class ROSCLEServer(threading.Thread):
         self.__service_get_transfer_functions.shutdown()
         logger.info("Shutting down set_transfer_function service")
         self.__service_set_transfer_function.shutdown()
-        if self.__current_task is not None:
-            self.notify_finish_task()
-        logger.info("Unregister status topic")
-        self.__ros_status_pub.unregister()
         logger.info("Unregister error/transfer_function topic")
         self.__ros_tf_error_pub.unregister()
         self.__cle.shutdown()
+        self.notify_finish_task()
+        logger.info("Unregister status topic")
+        self.__ros_status_pub.unregister()
 
     def notify_start_task(self, task_name, subtask_name, number_of_subtasks, block_ui):
         """
