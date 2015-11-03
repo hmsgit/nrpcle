@@ -317,9 +317,14 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
 
         self.__gazebo_remote_process = self.__spawn_vglconnect()
 
+        # Prevently kill all gzservers.
+        self.__gazebo_remote_process.sendline('killall -9 gzserver')
         self.__gazebo_remote_process.sendline('source /opt/rh/python27/enable')
         self.__gazebo_remote_process.sendline('export DISPLAY=:' + str(self.__remote_display_port))
         self.__gazebo_remote_process.sendline('export ROS_MASTER_URI=' + ros_master_uri)
+        # Looks like it is better to set this variable. The awk part takes the first IP (we
+        # have several of them on Lugano servers).
+        self.__gazebo_remote_process.sendline('export ROS_IP=`hostname -I | awk \'{print $1}\'`')
         self.__gazebo_remote_process.sendline(
             'export GAZEBO_MODEL_PATH=' + self.__remote_working_directory + '/models')
 
