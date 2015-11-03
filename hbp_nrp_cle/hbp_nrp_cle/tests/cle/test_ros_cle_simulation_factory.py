@@ -7,13 +7,15 @@ from hbp_nrp_cle.cle import ROSCLESimulationFactory, ROS_CLE_NODE_NAME, SERVICE_
     SERVICE_HEALTH
 import logging
 from mock import patch, MagicMock, Mock
-from testfixtures import log_capture
+from testfixtures import log_capture, LogCapture
 import unittest
 import json
 import threading
 from cle_ros_msgs import srv
 import os
 import time
+from testfixtures import log_capture
+import sys
 
 __author__ = 'HBP NRP software team'
 
@@ -198,6 +200,21 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     def test_get_version(self):
         cle_version = str(self.__ros_cle_simulation_factory.get_version(None))
         self.assertEqual(cle_version, hbp_nrp_cle.__version__)
+
+    @patch('traceback.extract_stack')
+    @patch('sys._current_frames')
+    def test_print_full_stack_trace(self, current_frames, extract_stack):
+        with LogCapture() as logcapture:
+            current_frames.return_value = {'1234': 'dummystack'}
+            extract_stack.return_value = [['dummy_file', 42, 'dummy_name', 'dummy_line']]
+            ROSCLESimulationFactory.print_full_stack_trace(None, None)
+            logcapture.check(
+                            ('hbp_nrp_cle', 'WARNING', '*** STACKTRACE - START ***'),
+                            ('hbp_nrp_cle', 'WARNING', '# ThreadID: 1234'),
+                            ('hbp_nrp_cle',
+                             'WARNING', 'File: "dummy_file", line 42, in dummy_name'),
+                            ('hbp_nrp_cle', 'WARNING', '  dummy_line'),
+                            ('hbp_nrp_cle', 'WARNING', '*** STACKTRACE - END ***'))
 
     def test_health(self):
         health = self.__ros_cle_simulation_factory.health(None)

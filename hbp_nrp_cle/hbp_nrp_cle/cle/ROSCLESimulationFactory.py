@@ -10,6 +10,8 @@ import os
 import argparse
 import sys
 import hbp_nrp_cle
+import traceback
+import signal
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
@@ -223,6 +225,28 @@ class ROSCLESimulationFactory(object):
             self.simulation_terminate_event.set()
 
 
+# pylint: disable=unused-argument
+def print_full_stack_trace(sig, frame):
+    """
+    Log the stack trace of all the threads
+    :param sig: The received signal
+    :param frame: The current stack frame
+    """
+    logger.warn("*** STACKTRACE - START ***")
+    code = []
+    # pylint: disable=protected-access
+    for threadId, stack in sys._current_frames().items():
+        code.append("# ThreadID: %s" % threadId)
+        for filename, lineno, name, line in traceback.extract_stack(stack):
+            code.append('File: "%s", line %d, in %s' % (filename,
+                                                        lineno, name))
+            if line:
+                code.append("  %s" % (line.strip()))
+    for line in code:
+        logger.warn(line)
+    logger.warn("*** STACKTRACE - END ***")
+
+
 def set_up_logger(logfile_name, verbose=False):
     """
     Configure the root logger of the CLE application
@@ -252,6 +276,7 @@ if __name__ == '__main__':  # pragma: no cover
     if os.environ["ROS_MASTER_URI"] == "":
         raise Exception("You should run ROS first.")
 
+    signal.signal(signal.SIGUSR1, print_full_stack_trace)
     parser = argparse.ArgumentParser()
     parser.add_argument('--logfile', dest='logfile', help='specify the CLE logfile')
     parser.add_argument("-v", "--verbose", help="increase output verbosity",
