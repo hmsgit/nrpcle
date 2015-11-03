@@ -15,6 +15,7 @@ import pyNN.nest as sim
 import unittest
 import numpy as np
 from testfixtures import log_capture, LogCapture
+from mock import patch
 
 __author__ = 'DimitriProbst'
 
@@ -40,7 +41,6 @@ class PyNNAdaptersTest(unittest.TestCase):
                                     min_delay=0.1,
                                     max_delay=4.0,
                                     num_threads=1)
-            self.assertEqual(self.control.is_alive(), True)
             self.communicator = PyNNCommunicationAdapter()
             self.neurons_cond = sim.Population(10, sim.IF_cond_exp)
             self.neurons_curr = sim.Population(10, sim.IF_curr_exp)
@@ -439,6 +439,18 @@ requested (device)'))
         time = 0.2
         self.control.run_step(0.1)
         self.communicator.refresh_buffers(time)
+
+    def test_load_brain(self):
+        with patch("hbp_nrp_cle.brainsim.PyNNControlAdapter.BrainLoader") as loader:
+            self.control.load_brain("foo.py", {})
+            self.assertTrue(loader.load_py_network.called)
+            self.assertFalse(loader.load_h5_network.called)
+            loader.load_py_network.reset_mock()
+            self.control.load_brain("foo.h5", {})
+            self.assertTrue(loader.load_h5_network.called)
+            self.assertFalse(loader.load_py_network.called)
+            loader.load_h5_network.reset_mock()
+            self.assertRaises(Exception, self.control.load_brain, "foo.not_supported", {})
 
     def tearDown(self):
         """

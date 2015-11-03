@@ -10,6 +10,7 @@ from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, \
     ICustomDevice, IBrainCommunicationAdapter, ISpikeRecorder
+from ._MappingSpecification import ParameterMappingSpecification
 from . import config
 from ._TransferFunction import TransferFunction
 
@@ -17,7 +18,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MapSpikeSink(object):
+class MapSpikeSink(ParameterMappingSpecification):
     """
     Class to map parameters to spike sinks such as leaky integrators
     """
@@ -34,28 +35,13 @@ class MapSpikeSink(object):
         :param kwargs: Additional configuration
         :param device_type: The type of device that should be created at the referenced neurons
         """
+        super(MapSpikeSink, self).__init__(key)
         self.__value = value
-        self.__key = key
         if not isinstance(device_type, ICustomDevice):
             if not self.is_supported(device_type):
                 raise Exception("Device type is not supported")
         self.__device_type = device_type
         self.__config = kwargs
-
-    def __call__(self, transfer_function):  # -> object:
-        """
-        Applies the parameter mapping to the given transfer function
-        """
-        if isinstance(transfer_function, TransferFunction):
-            neurons = transfer_function.params
-            for i in range(0, len(neurons)):
-                if neurons[i] == self.__key:
-                    neurons[i] = self
-                    return transfer_function
-        else:
-            raise Exception("Can only map parameters for transfer functions")
-        raise Exception(
-            "Could not map parameter as no parameter with the name " + self.__key + " exists")
 
     def is_supported(self, device_type):  # pylint: disable=R0201
         """
@@ -87,11 +73,13 @@ class MapSpikeSink(object):
         return self.__config
 
     @property
-    def name(self):
+    def is_brain_connection(self):
         """
-        Gets the name of the mapped parameter
+        Returns whether the the parameter is connected to the neuronal network
+
+        :return: True, if the parameter is mapped to the neuronal network, otherwise False
         """
-        return self.__key
+        return True
 
     def create_adapter(self, transfer_function_manager):
         """

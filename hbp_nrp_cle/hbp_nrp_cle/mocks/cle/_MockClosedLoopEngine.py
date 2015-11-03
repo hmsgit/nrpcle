@@ -155,3 +155,11 @@ class MockClosedLoopEngine(IClosedLoopControl,
         Wait for the currently running simulation step to end.
         """
         self.running_flag.wait()
+
+    @property
+    def network_file(self):
+        return None
+
+    @property
+    def network_configuration(self):
+        return None

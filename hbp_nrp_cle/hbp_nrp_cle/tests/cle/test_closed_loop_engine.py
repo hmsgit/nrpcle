@@ -10,6 +10,7 @@ from hbp_nrp_cle.mocks.tf_framework import MockTransferFunctionManager
 import unittest
 import time
 from testfixtures import log_capture, LogCapture
+from mock import Mock
 
 __author__ = 'Nino Cauli'
 
@@ -28,10 +29,10 @@ class TestClosedLoopEngine(unittest.TestCase):
         with LogCapture('hbp_nrp_cle.cle.ClosedLoopEngine') as l:
             rca = MockRobotControlAdapter()
             rcm = MockRobotCommunicationAdapter()
-            bca = MockBrainControlAdapter()
+            self.bca = MockBrainControlAdapter()
             bcm = MockBrainCommunicationAdapter()
-            tfm = MockTransferFunctionManager()
-            self._cle = ClosedLoopEngine(rca, rcm, bca, bcm, tfm, 0.01)
+            self.tfm = MockTransferFunctionManager()
+            self._cle = ClosedLoopEngine(rca, rcm, self.bca, bcm, self.tfm, 0.01)
             self._cle.initialize()
         l.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
                  'robot control adapter ready'),
@@ -102,6 +103,23 @@ class TestClosedLoopEngine(unittest.TestCase):
         logcapture.check(('hbp_nrp_cle.cle.ClosedLoopEngine', 'INFO',
                           'simulations shutdown'))
 
+    def test_load_brain(self):
+        shutdown_mock = Mock()
+        reset_mock = Mock()
+        self.bca.shutdown = shutdown_mock
+        self.tfm.hard_reset_brain_devices = reset_mock
+        self._cle.load_brain("foo.py")
+        self.assertTrue(shutdown_mock.called)
+        self.assertTrue(reset_mock.called)
+        self._cle.load_brain("foo2.py")
+        self.assertEqual(2, shutdown_mock.call_count)
+        self.assertEqual(2, reset_mock.call_count)
+        self._cle.network_file = "foo3.py"
+        self.assertEqual(3, shutdown_mock.call_count)
+        self.assertEqual(3, reset_mock.call_count)
+        self._cle.network_configuration = {"name" : "foo"}
+        self.assertEqual(4, shutdown_mock.call_count)
+        self.assertEqual(4, reset_mock.call_count)
 
 if __name__ == '__main__':
     unittest.main()

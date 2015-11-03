@@ -10,6 +10,35 @@ class IClosedLoopControl(object):  # pragma: no cover
     """
     Represents the closed loop engine synchronization mechanism.
     """
+    @property
+    def network_file(self):
+        """
+        Gets or sets the neuronal network file
+
+        :return: The path to the neuronal network
+        """
+        raise NotImplementedError("Method not implemented")
+
+    @network_file.setter
+    def network_file(self, value):
+        """
+        Gets or sets the neuronal network file
+        """
+        raise NotImplementedError("Method not implemented")
+
+    @property
+    def network_configuration(self):
+        """
+        Gets or sets the neuronal network configuration
+        """
+        raise NotImplementedError("Method not implemented")
+
+    @network_configuration.setter
+    def network_configuration(self, value):
+        """
+        Gets or sets the neuronal network configuration
+        """
+        raise NotImplementedError("Method not implemented")
 
     def initialize(self):  # -> None:
         """

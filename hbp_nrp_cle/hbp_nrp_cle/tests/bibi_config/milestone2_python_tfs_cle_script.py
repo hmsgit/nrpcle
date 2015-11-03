@@ -109,17 +109,9 @@ def cle_function_init(world_file):
                                 True,  # update_progress
                                 True)  # block_ui
     # control adapter
-    brainfilepath = 'brain_model/braitenberg.h5'
-    if models_path is not None:
-        brainfilepath = os.path.join(models_path, brainfilepath)
     braincontrol = PyNNControlAdapter()
     # communication adapter
     braincomm = PyNNCommunicationAdapter()
-
-    braincontrol.load_h5_brain(brainfilepath,
-                               sensors=slice(0, 5),
-                               actors=slice(5, 8))
-
     # Create transfer functions manager
     cle_server.notify_current_task("Connecting neural simulator to neurobot",
                                 True,  # update_progress
@@ -230,6 +222,13 @@ def cle_function_init(world_file):
 
     # Create CLE
     cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
+    # load brain
+    brainfilepath = 'brain_model/braitenberg.h5'
+    if models_path is not None:
+        brainfilepath = os.path.join(models_path, brainfilepath)
+    cle.load_brain(brainfilepath,
+                   sensors=slice(0, 5),
+                   actors=slice(5, 8))
     # initialize everything
     cle.initialize()
 

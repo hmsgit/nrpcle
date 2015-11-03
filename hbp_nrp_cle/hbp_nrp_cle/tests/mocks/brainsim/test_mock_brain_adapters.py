@@ -41,7 +41,6 @@ class MockBrainAdaptersTest(unittest.TestCase):
                                 min_delay=0.1,
                                 max_delay=4.0,
                                 num_threads=1)
-        self.assertEqual(self.control.is_alive(), True)
         self.communicator = MockBrainCommunicationAdapter()
         self.neurons_cond = "4"
         self.neurons_curr = "8"

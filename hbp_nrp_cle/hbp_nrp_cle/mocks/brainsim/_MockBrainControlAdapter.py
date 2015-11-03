@@ -30,7 +30,6 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         :param params: A dictionary of configuration parameters
         """
         self.__is_initialized = True
-        self.__is_alive = True
         self.__rank = 0
 
         print "Setting up MOCK."
@@ -59,3 +58,13 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         """
         Resets the neuronal simulator
         """
+        pass
+
+    def load_brain(self, network_file, populations):
+        """
+        Loads the neuronal network contained in the given file
+
+        :param network_file: The path to the neuronal network file
+        :param populations: The populations to create
+        """
+        self.__is_alive = True

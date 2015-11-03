@@ -116,8 +116,22 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         """
         Resets the transfer functions
         """
+        pass
 
     def shutdown(self):
         """
         Shutdown the tf manager
         """
+        pass
+
+    def hard_reset_robot_devices(self):
+        """
+        Performs a hard reset for the devices that connect with the simulated robot
+        """
+        pass
+
+    def hard_reset_brain_devices(self):
+        """
+        Performs a hard reset for the devices that connect with the neuronal simulation
+        """
+        pass
