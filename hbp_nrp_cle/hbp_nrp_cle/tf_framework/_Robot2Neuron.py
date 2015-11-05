@@ -8,12 +8,13 @@ __author__ = 'GeorgHinkel'
 from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
 from . import config
 from ._TransferFunction import TransferFunction
+from ._MappingSpecification import ParameterMappingSpecification
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class MapRobotPublisher(object):
+class MapRobotPublisher(ParameterMappingSpecification):
     """
     Class to map parameters to robot publishers
     """
@@ -28,22 +29,10 @@ class MapRobotPublisher(object):
          or published to
         :param kwargs: Additional configuration parameters
         """
+        super(MapRobotPublisher, self).__init__(key)
         assert isinstance(value, Topic)
-        self.__key = key
         self.__value = value
         self.__config = kwargs
-
-    def __call__(self, transfer_function):  # -> Robot2Neuron:
-        """
-        Applies the parameter mapping to the given transfer function
-        """
-        assert isinstance(transfer_function, TransferFunction)
-        topics = transfer_function.params
-        for i in range(0, len(topics)):
-            if topics[i] == self.__key:
-                topics[i] = self
-                return transfer_function
-        raise Exception("Could not map parameter as no parameter with the given name exists")
 
     @property
     def topic(self):
@@ -59,12 +48,13 @@ class MapRobotPublisher(object):
         """
         return self.__config
 
-    @property
-    def name(self):
+    def is_robot_connection(self):
         """
-        Gets the name of the mapped parameter
+        Returns whether the parameter is connected to the simulated robot
+
+        :return: True, if the parameter is mapped to the simulated robot, otherwise False
         """
-        return self.__key
+        return True
 
     def create_adapter(self, transfer_function_manager):
         """

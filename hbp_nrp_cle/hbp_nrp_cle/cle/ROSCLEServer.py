@@ -397,7 +397,7 @@ class ROSCLEServer(threading.Thread):
 
         original_name = request.transfer_function_name
         # Delete synchronously the original if needed
-        if (original_name):
+        if original_name:
             tf_framework.delete_transfer_function(original_name)
 
         # Update transfer function's source code
@@ -411,9 +411,9 @@ class ROSCLEServer(threading.Thread):
             + repr(new_source)
         )
         m = re.findall(r"def\s+(\w+)\s*\(", new_source)
-        if (len(m) != 1):
+        if len(m) != 1:
             error_msg = original_name
-            if (len(m) == 0):
+            if len(m) == 0:
                 error_msg += " has no definition name."
             else:
                 error_msg += " has multiple definition names."

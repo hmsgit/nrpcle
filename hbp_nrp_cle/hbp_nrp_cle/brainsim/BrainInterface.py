@@ -313,6 +313,15 @@ class IBrainControlAdapter(object):  # pragma: no cover
     Represents a controller object for the neuronal simulator
     """
 
+    def load_brain(self, network_file, populations):
+        """
+        Loads the neuronal network contained in the given file
+
+        :param network_file: The path to the neuronal network file
+        :param populations: The populations to create
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
     def initialize(self):
         """
         Initializes the neuronal simulator

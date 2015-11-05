@@ -180,4 +180,5 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
         """
         Shuts down the brain communication adapter
         """
-        pass
+        del self.__detector_devices[:]
+        del self.__generator_devices[:]

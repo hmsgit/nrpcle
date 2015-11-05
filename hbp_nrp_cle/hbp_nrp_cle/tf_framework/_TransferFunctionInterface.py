@@ -58,3 +58,21 @@ class ITransferFunctionManager(object):  # pragma: no cover
         :return: A list of transfer functions
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def shutdown(self):
+        """
+        Shuts down the Transfer Function manager
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def hard_reset_robot_devices(self):
+        """
+        Performs a hard reset for the devices that connect with the simulated robot
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def hard_reset_brain_devices(self):
+        """
+        Performs a hard reset for the devices that connect with the neuronal simulation
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

@@ -7,6 +7,7 @@ from .BrainInterface import IBrainControlAdapter
 import pyNN.nest as sim
 from . import BrainLoader
 import logging
+from os import path
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,24 @@ class PyNNControlAdapter(IBrainControlAdapter):
         self.__is_alive = False
         self.__rank = None
 
-    def load_h5_brain(self, network_file, **populations):
+    def load_brain(self, network_file, populations):
+        """
+        Loads the neuronal network contained in the given file
+
+        :param network_file: The path to the neuronal network file
+        :param populations: The populations to create
+        """
+        self.__is_alive = True
+        extension = path.splitext(network_file)[1]
+        if extension == ".py":
+            self.__load_python_brain(network_file, populations)
+        elif extension == ".h5":
+            self.__load_h5_brain(network_file, populations)
+        else:
+            msg = "Neuronal network format {0} not supported".format(extension)
+            raise Exception(msg)
+
+    def __load_h5_brain(self, network_file, populations):
         """
         Loads the brain model in the given h5 file
 
@@ -37,7 +55,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
             self.initialize()
         BrainLoader.load_h5_network(network_file, populations)
 
-    def load_python_brain(self, network_file, **populations):
+    def __load_python_brain(self, network_file, populations):
         """
         Loads the brain model specified in the given Python script
 
@@ -69,7 +87,6 @@ class PyNNControlAdapter(IBrainControlAdapter):
                                     max_delay=max_delay, threads=threads,
                                     rng_seeds=rng_seeds)
             self.__is_initialized = True
-            self.__is_alive = True
             logger.info("neuronal simulator initialized")
         else:
             logger.warn("trying to initialize an already initialized controller")
@@ -103,14 +120,4 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         Resets the neuronal simulator
         """
-        # Don't do anything here since we can reuse the brain network as is
-        # Otherwise, the devices must be reconfigured
-        # self.__rank = sim.setup(timestep=sim.get_time_step(),
-        #                         min_delay=sim.get_min_delay(),
-        #                         max_delay=sim.get_max_delay(),
-        #                         threads=1,
-        #                         rng_seeds=[1234])
-        # if not self.__network_file == '':
-        #     BrainLoader.load_h5_network(self.__network_file,
-        #                                 self.__populations)
         logger.info("neuronal simulator reset")

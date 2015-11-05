@@ -202,6 +202,8 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
 
         self.__rca_elapsed_time = 0.0
         self.__bca_elapsed_time = 0.0
+        self.__network_file = None
+        self.__network_configuration = None
 
     def initialize(self):
         """
@@ -209,6 +211,7 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         """
         self.rca.initialize()
         self.bca.initialize()
+        self.bca.load_brain(self.network_file, self.network_configuration)
         self.tfm.initialize('tfnode')
         self.clock = 0.0
         self.initialized = True
@@ -216,6 +219,65 @@ class ClosedLoopEngine(IClosedLoopControl, threading.Thread):
         self.start_time = 0.0
         self.elapsed_time = 0.0
         logger.info("CLE initialized")
+
+    @property
+    def network_file(self):
+        """
+        Gets or sets the neuronal network file
+
+        :return: The path to the neuronal network
+        """
+        return self.__network_file
+
+    # pylint: disable=arguments-differ
+    @network_file.setter
+    def network_file(self, value):
+        """
+        Gets or sets the neuronal network file
+        """
+        self.__network_file = value
+        if self.initialized:
+            self.__recreate_brain()
+
+    @property
+    def network_configuration(self):
+        """
+        Gets or sets the neuronal network configuration
+        """
+        return self.__network_configuration
+
+    # pylint: disable=arguments-differ
+    @network_configuration.setter
+    def network_configuration(self, value):
+        """
+        Gets or sets the neuronal network configuration
+        """
+        self.__network_configuration = value
+        if self.initialized:
+            self.__recreate_brain()
+
+    def __recreate_brain(self):
+        """
+        Creates a new brain in the running simulation
+        """
+        if self.running:
+            self.stop()
+        if self.bca.is_alive():
+            self.bca.shutdown()
+        self.bca.load_brain(self.__network_file, self.network_configuration)
+        self.tfm.hard_reset_brain_devices()
+
+    def load_brain(self, network_file, **configuration):
+        """
+        Loads the neuronal network initially
+
+        :param network_file: The neuronal network file
+        :param configuration: The configuration of the network
+        """
+        self.__network_file = network_file
+        self.__network_configuration = configuration
+        if self.initialized:
+            self.__recreate_brain()
 
     @property
     def is_initialized(self):

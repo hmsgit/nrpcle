@@ -3,7 +3,7 @@ This module contains the mapping of transfer function local or global variables 
 """
 __author__ = 'sebastiankrach'
 
-from ._TransferFunction import TransferFunction
+from ._MappingSpecification import ParameterMappingSpecification
 
 import abc
 import logging
@@ -14,13 +14,13 @@ GLOBAL = "global_scope"
 TRANSFER_FUNCTION_LOCAL = "transfer_function_scope"
 
 
-class MapVariable(object):
+class MapVariable(ParameterMappingSpecification):
     """
     Class to map transfer function local or global variables to transfer function parameters
     """
 
     def __init__(self, parameter_name, global_key=None, initial_value=None,
-                 scope=TRANSFER_FUNCTION_LOCAL, **kwargs):  # -> None:
+                 scope=TRANSFER_FUNCTION_LOCAL):  # -> None:
         """
         Maps a parameter to a variable in the specified scope (per-default: the transfer function)
         and if the variable does not yet exist initializes it with the provided value.
@@ -30,9 +30,8 @@ class MapVariable(object):
         it is assumed to be equal to the parameter name
         :param initial_value: (Optional) the value for the parameter
         :param scope: (Optional) the scope of validity for the variable
-        :param kwargs: Additional configuration parameters
         """
-        self.__parameter_name = parameter_name
+        super(MapVariable, self).__init__(parameter_name)
         if global_key:
             self.__global_key = global_key
         else:
@@ -40,40 +39,15 @@ class MapVariable(object):
         self.__initial_value = initial_value
         self.__scope = scope
 
-        self.__config = kwargs
-
-        self.__tf = None
-
-    def __call__(self, transfer_function):  # -> Robot2Neuron:
-        """
-        Applies the parameter mapping to the given transfer function
-        """
-        assert isinstance(transfer_function, TransferFunction)
-        self.__tf = transfer_function
-
-        topics = transfer_function.params
-        for i in range(0, len(topics)):
-            if topics[i] == self.__parameter_name:
-                topics[i] = self
-                return transfer_function
-        raise Exception("Could not map parameter as no parameter with the given name exists")
-
-    @property
-    def name(self):
-        """
-        Gets the name of the mapped parameter
-        """
-        return self.__parameter_name
-
     def create_adapter(self, transfer_function_manager):
         """
         Replaces the current mapping operator with the mapping result
         """
         if self.__scope == GLOBAL:
-            return GlobalDataReference(self.__parameter_name, self.__global_key,
+            return GlobalDataReference(self.name, self.__global_key,
                                        self.__initial_value, transfer_function_manager.global_data)
         elif self.__scope == TRANSFER_FUNCTION_LOCAL:
-            return LocalDataReference(self.__parameter_name, self.__initial_value)
+            return LocalDataReference(self.name, self.__initial_value)
         else:
             raise AttributeError("The specified parameter scope is not valid.")
 

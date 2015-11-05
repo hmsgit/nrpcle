@@ -141,7 +141,8 @@ class TransferFunctionManager(ITransferFunctionManager):
         if self.__initialized:
             raise Exception("Cannot exchange robot adapter after node has been initialized!")
         else:
-            assert isinstance(robot_adapter, IRobotCommunicationAdapter)
+            if not isinstance(robot_adapter, IRobotCommunicationAdapter):
+                raise Exception("The given object is not a valid robot adapter!")
             self.__robotAdapter = robot_adapter
 
     @property
@@ -170,7 +171,8 @@ class TransferFunctionManager(ITransferFunctionManager):
         if self.__initialized:
             raise Exception("Cannot exchange brainsim adapter after node has been initialized!")
         else:
-            assert isinstance(nest_adapter, IBrainCommunicationAdapter)
+            if not isinstance(nest_adapter, IBrainCommunicationAdapter):
+                raise Exception("The given object is not a valid brain communication adapter")
             self.__nestAdapter = nest_adapter
 
     def transfer_functions(self):
@@ -200,6 +202,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         for i in range(1, len(tf.params)):
             param = tf.params[i]
             tf.params[i] = tf.params[i].create_adapter(self)
+            tf.params[i].spec = param
             tf.__dict__[param.name] = tf.params[i]
 
     def initialize(self, name):
@@ -209,14 +212,9 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param name: The name for this transfer function node
         """
         if self.__initialized:
-            pass
+            return
 
         logger.info("Initialize transfer functions node " + name)
-        if self.__nestAdapter is None:
-            raise Exception("No brain simulation adapter has been specified")
-
-        if self.__robotAdapter is None:
-            raise Exception("No robot simulation adapter has been specified")
 
         if not isinstance(self.__nestAdapter, IBrainCommunicationAdapter):
             raise Exception("The brain adapter is configured incorrectly")
@@ -254,21 +252,10 @@ class TransferFunctionManager(ITransferFunctionManager):
         Resets the transfer functions
         """
         logger.info("Resetting transfer functions")
-        if self.__nestAdapter is None:
-            raise Exception("No brain simulation adapter has been specified")
-
-        if self.__robotAdapter is None:
-            raise Exception("No robot simulation adapter has been specified")
-
-        assert isinstance(self.__nestAdapter, IBrainCommunicationAdapter)
-        assert isinstance(self.__robotAdapter, IRobotCommunicationAdapter)
 
         # Wire transfer functions from neuronal simulation to world simulation
         for tf in itertools.chain(self.__r2n, self.__n2r):
             self.__reset_tf(tf)
-
-        # Initialize dependencies
-        self.__nestAdapter.initialize()
 
     def publish_error(self, tf_run_exception):
         """
@@ -280,3 +267,48 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         """
         self.__publish_error_callback(tf_run_exception)
+
+    def shutdown(self):
+        """
+        Shuts down the Transfer Function manager
+        """
+        del self.__n2r[:]
+        del self.__r2n[:]
+        del self.__global_data[:]
+        self.__initialized = False
+
+    def hard_reset_brain_devices(self):
+        """
+        Performs a hard reset for the devices that connect with the neuronal simulation
+        """
+        if not self.initialized:
+            return
+
+        self.brain_adapter.shutdown()
+        self.brain_adapter.initialize()
+
+        for tf in itertools.chain(self.__r2n, self.__n2r):
+            for i in range(1, len(tf.params)):
+                spec = tf.params[i].spec
+                if spec.is_brain_connection:
+                    tf.params[i] = spec.create_adapter(self)
+                    tf.params[i].spec = spec
+                    tf.__dict__[spec.name] = tf.params[i]
+
+    def hard_reset_robot_devices(self):
+        """
+        Performs a hard reset for the devices that connect with the simulated robot
+        """
+        if not self.initialized:
+            return
+
+        self.robot_adapter.shutdown()
+        self.robot_adapter.initialize()
+
+        for tf in itertools.chain(self.__r2n, self.__n2r):
+            for i in range(1, len(tf.params)):
+                spec = tf.params[i].spec
+                if spec.is_robot_connection:
+                    tf.params[i] = spec.create_adapter(self)
+                    tf.params[i].spec = spec
+                    tf.__dict__[spec.name] = tf.params[i]

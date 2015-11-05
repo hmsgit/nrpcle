@@ -133,19 +133,9 @@ def cle_function_init(world_file):
                                 True,  # update_progress
                                 True)  # block_ui
     # control adapter
-    brainfilepath = '{{config.brainModel.file}}'
-    if models_path is not None:
-        brainfilepath = os.path.join(models_path, brainfilepath)
     braincontrol = PyNNControlAdapter()
     # communication adapter
     braincomm = PyNNCommunicationAdapter()
-{% if config.brainModel.file.endswith('.h5') %}
-    braincontrol.load_h5_brain(brainfilepath{% for p in config.brainModel.populations %},
-                               {{p.population}}={{get_neurons_index(p)}}{% endfor %})
-{% else %}
-    braincontrol.load_python_brain(brainfilepath{% for p in config.brainModel.populations %},
-                                   {{p.population}}={{get_neurons_index(p)}}{% endfor %})
-{% endif %}
     # Create transfer functions manager
     cle_server.notify_current_task("Connecting neural simulator to neurobot",
                                 True,  # update_progress
@@ -169,6 +159,12 @@ def cle_function_init(world_file):
 
     # Create CLE
     cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
+    # load brain
+    brainfilepath = '{{config.brainModel.file}}'
+    if models_path is not None:
+        brainfilepath = os.path.join(models_path, brainfilepath)
+    cle.load_brain(brainfilepath{% for p in config.brainModel.populations %},
+                   {{p.population}}={{get_neurons_index(p)}}{% endfor %})
     # initialize everything
     cle.initialize()
 
