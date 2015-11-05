@@ -5,8 +5,10 @@ ROSCLEServer unit test
 from hbp_nrp_cle.cle import ROSCLEServer
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 import logging
-from mock import patch, MagicMock, Mock
+from mock import patch, MagicMock, Mock, PropertyMock
 from testfixtures import log_capture
+from os import path
+import base64
 import unittest
 import json
 import threading
@@ -129,7 +131,7 @@ class TestROSCLEServer(unittest.TestCase):
     def test_prepare_initialization(self):
         self.__mocked_cle.is_initialized = False
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
-        self.assertEqual(8, self.__mocked_rospy.Service.call_count)
+        self.assertEqual(10, self.__mocked_rospy.Service.call_count)
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
         self.assertEqual(1, self.__ros_cle_server.start_timeout.call_count)
 
@@ -175,6 +177,65 @@ class TestROSCLEServer(unittest.TestCase):
         self.__ros_cle_server.main()
         self.assertEqual(str(state_handler(_)), ROSCLEState.STOPPED)
         self.__mocked_cle.stop.assert_called_once_with()
+
+    def test_get_brain(self):
+        self.craft_ros_cle_server(True)
+        self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
+        directory = path.split(__file__)[0]
+        self.__mocked_cle.network_file = path.join(directory, "dummy_brain.py")
+        get_brain_implementation = self.__mocked_rospy.Service.call_args_list[8][0][2]
+        brain = get_brain_implementation(Mock())
+        self.assertEqual("py", brain[0])
+        self.assertEqual("Dummy = None", brain[1])
+        self.assertEqual("text", brain[2])
+        self.__mocked_cle.network_file = path.join(directory, "dummy_brain.h5")
+        brain = get_brain_implementation(Mock())
+        self.assertEqual("h5", brain[0])
+        self.assertEqual("base64", brain[2])
+
+    def test_set_brain(self):
+        self.craft_ros_cle_server(True)
+        self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
+        self.__mocked_cle.network_file = PropertyMock()
+        get_brain_implementation = self.__mocked_rospy.Service.call_args_list[8][0][2]
+        set_brain_implementation = self.__mocked_rospy.Service.call_args_list[9][0][2]
+        request = Mock()
+        request.data_type = "text"
+        request.brain_type = "py"
+        request.brain_data = "Dummy = None"
+        response = set_brain_implementation(request)
+        self.assertEqual("", response[0])
+        self.assertEqual(0, response[1])
+        self.assertEqual(0, response[2])
+        brain1 = get_brain_implementation(None)
+        self.assertEqual(request.data_type, brain1[2])
+        self.assertEqual(request.brain_type, brain1[0])
+        self.assertEqual(request.brain_data, brain1[1])
+        request.data_type = "base64"
+        request.brain_data = base64.encodestring(request.brain_data)
+        response = set_brain_implementation(request)
+        self.assertEqual("", response[0])
+        self.assertEqual(0, response[1])
+        self.assertEqual(0, response[2])
+        brain2 = get_brain_implementation(None)
+        self.assertEqual(brain1[0], brain2[0])
+        self.assertEqual(brain1[1], brain2[1])
+        self.assertEqual(brain1[2], brain2[2])
+        request.data_type = "not_supported"
+        response = set_brain_implementation(request)
+        self.assertEqual("Data type not_supported is invalid", response[0])
+        def raise_syntax_error(foo):
+            exec "Foo Bar"
+        with patch("base64.decodestring") as mock_b64:
+            request.data_type = "base64"
+            mock_b64.side_effect = raise_syntax_error
+            response = set_brain_implementation(request)
+            self.assertNotEqual("", response[0])
+            self.assertEqual(1, response[1])
+            self.assertEqual(7, response[2])
+            mock_b64.side_effect = Exception
+            response = set_brain_implementation(request)
+            self.assertNotEqual("", response[0])
 
     @patch('hbp_nrp_cle.cle.ROSCLEServer.tf_framework')
     def test_get_transfer_functions(self, mocked_tf_framework):
@@ -360,9 +421,11 @@ class TestROSCLEServer(unittest.TestCase):
         i = self.__ros_cle_server._ROSCLEServer__cle = MagicMock()
         j = self.__ros_cle_server._ROSCLEServer__service_get_transfer_functions = MagicMock()
         k = self.__ros_cle_server._ROSCLEServer__service_set_transfer_function = MagicMock()
+        l = self.__ros_cle_server._ROSCLEServer__service_get_brain = MagicMock()
+        m = self.__ros_cle_server._ROSCLEServer__service_set_brain = MagicMock()
 
         self.__ros_cle_server.shutdown()
-        for x in [b, c, d, e, f, i]:
+        for x in [b, c, d, e, f, i, j, k, l, m]:
             self.assertEquals(x.shutdown.call_count, 1)
         self.assertEquals(a.join.call_count, 1)
         self.assertEquals(h.unregister.call_count, 1)

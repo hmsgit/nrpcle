@@ -24,11 +24,15 @@ from hbp_nrp_cle.common import SimulationFactoryCLEError
 from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_SIM_START_ID, \
     TOPIC_STATUS, TOPIC_TRANSFER_FUNCTION_ERROR, \
     SERVICE_SIM_PAUSE_ID, SERVICE_SIM_STOP_ID, SERVICE_SIM_RESET_ID, SERVICE_SIM_STATE_ID, \
-    SERVICE_GET_TRANSFER_FUNCTIONS, SERVICE_SET_TRANSFER_FUNCTION, SERVICE_DELETE_TRANSFER_FUNCTION
+    SERVICE_GET_TRANSFER_FUNCTIONS, SERVICE_SET_TRANSFER_FUNCTION, \
+    SERVICE_DELETE_TRANSFER_FUNCTION, SERVICE_GET_BRAIN, SERVICE_SET_BRAIN
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 from hbp_nrp_cle.cle import ros_handler
 import hbp_nrp_cle.tf_framework as tf_framework
 from hbp_nrp_cle.tf_framework import TFLoadingException
+from os import path
+import base64
+from tempfile import NamedTemporaryFile
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
 logger = logging.getLogger(__name__)
@@ -262,6 +266,8 @@ class ROSCLEServer(threading.Thread):
         self.__service_get_transfer_functions = None
         self.__service_set_transfer_function = None
         self.__service_delete_transfer_function = None
+        self.__service_get_brain = None
+        self.__service_set_brain = None
         self.__cle = None
 
         self.__to_be_executed_within_main_thread = []
@@ -359,6 +365,16 @@ class ROSCLEServer(threading.Thread):
             self.__delete_transfer_function
         )
 
+        self.__service_get_brain = rospy.Service(
+            SERVICE_GET_BRAIN(self.__simulation_id), srv.GetBrain,
+            self.__get_brain
+        )
+
+        self.__service_set_brain = rospy.Service(
+            SERVICE_SET_BRAIN(self.__simulation_id), srv.SetBrain,
+            self.__set_brain
+        )
+
         self.__timeout = timeout
         self.__double_timer = DoubleTimer(
             self.STATUS_UPDATE_INTERVAL,
@@ -374,6 +390,52 @@ class ROSCLEServer(threading.Thread):
         Get the remaining time of the simulation
         """
         return self.__double_timer.get_remaining_time()
+
+    # pylint: disable=unused-argument
+    def __get_brain(self, request):
+        """
+        Returns the current neuronal network model
+
+        :param request: The rospy request parameter
+        """
+        braintype = path.splitext(self.__cle.network_file)[1][1:]
+        data_type = "text"
+        with open(self.__cle.network_file, "r") as brain:
+            if braintype == "h5":
+                data_type = "base64"
+                brain_code = base64.encodestring(brain.read())
+            else:
+                brain_code = brain.read()
+        return [braintype, brain_code, data_type]
+
+    def __set_brain(self, request):
+        """
+        Sets the neuronal network according to the given request
+
+        :param request: The mandatory rospy request parameter
+        """
+        old_brain = self.__cle.network_file
+        try:
+            if not isinstance(self.__state, ROSCLEServer.InitialState):
+                self.__state.pause_simulation()
+            with NamedTemporaryFile(prefix='brain', suffix='.' + request.brain_type, delete=False)\
+                    as tmp:
+                with tmp.file as brain_file:
+                    if request.data_type == "text":
+                        brain_file.write(request.brain_data)
+                    elif request.data_type == "base64":
+                        brain_file.write(base64.decodestring(request.brain_data))
+                    else:
+                        tmp.delete = True
+                        return ["Data type {0} is invalid".format(request.data_type), 0, 0]
+                self.__cle.network_file = tmp.name
+            return ["", 0, 0]
+        except SyntaxError, e:
+            self.__cle.network_file = old_brain
+            return ["The new brain could not be parsed: " + str(e), e.lineno, e.offset]
+        except Exception, e:
+            self.__cle.network_file = old_brain
+            return ["Error changing neuronal network: " + str(e), 0, 0]
 
     # pylint: disable=unused-argument
     @staticmethod
@@ -590,6 +652,10 @@ class ROSCLEServer(threading.Thread):
         self.__service_get_transfer_functions.shutdown()
         logger.info("Shutting down set_transfer_function service")
         self.__service_set_transfer_function.shutdown()
+        logger.info("Shutting down get_brain service")
+        self.__service_get_brain.shutdown()
+        logger.info("Shutting down set_brain service")
+        self.__service_set_brain.shutdown()
         logger.info("Unregister error/transfer_function topic")
         self.__ros_tf_error_pub.unregister()
         self.__cle.shutdown()
