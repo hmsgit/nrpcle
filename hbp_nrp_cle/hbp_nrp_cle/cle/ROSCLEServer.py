@@ -416,7 +416,8 @@ class ROSCLEServer(threading.Thread):
         """
         old_brain = self.__cle.network_file
         try:
-            if not isinstance(self.__state, ROSCLEServer.InitialState):
+            if not isinstance(self.__state, ROSCLEServer.InitialState) and \
+                    not isinstance(self.__state, ROSCLEServer.PausedState):
                 self.__state.pause_simulation()
             with NamedTemporaryFile(prefix='brain', suffix='.' + request.brain_type, delete=False)\
                     as tmp:
