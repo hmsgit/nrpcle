@@ -37,7 +37,7 @@ def cle_function_init(world_file):
                                  {% if is_not_none(config.extRobotController) %}7{% else %}5{% endif %}, # number of subtasks
                                  True)  # block_ui
 
-    from hbp_nrp_cle.cle.SerialClosedLoopEngine import SerialClosedLoopEngine
+    from hbp_nrp_cle.cle.ClosedLoopEngine import ClosedLoopEngine
 
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import load_gazebo_model_file, empty_gazebo_world, load_gazebo_world_file
     from hbp_nrp_cle.robotsim.RobotInterface import Topic
@@ -158,7 +158,7 @@ def cle_function_init(world_file):
 {% for tf in config.transferFunction %}{{generate_tf(tf)}}{% endfor %}
 
     # Create CLE
-    cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
+    cle = ClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
     # load brain
     brainfilepath = '{{config.brainModel.file}}'
     if models_path is not None:
