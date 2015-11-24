@@ -7,7 +7,7 @@ __author__ = 'GeorgHinkel'
 # pylint: disable=W0613
 
 
-class IDeviceGroup(object):
+class IDeviceGroup(object):  # pragma: no cover
     """
     Gathers multiple devices to a group
     """
