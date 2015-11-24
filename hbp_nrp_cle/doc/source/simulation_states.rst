@@ -20,9 +20,9 @@ State machine of the CLC
 .. figure:: img/stateMachine.png
     :align: center
 
-    The state machine of the SerialClosedLoopEngine
+    The state machine of the ClosedLoopEngine
 
-The state machine of our current implementation of the CLC, the :class:`hbp_nrp_cle.cle.SerialClosedLoopEngine`,
+The state machine of our current implementation of the CLC, the :class:`hbp_nrp_cle.cle.ClosedLoopEngine`,
 is depicted in :num:`Fig. #state-machine`.
 
 When the CLC is created, no operation is allowed until the CLC has not been initialized. However, this is not enforced by the implementation, currently.
@@ -42,7 +42,7 @@ The state machine of the CLE is exposed via ROS through the ROS CLE server. This
 .. figure:: img/stateMachineServer.png
     :align: center
 
-    The state machine of the ROSCLEServer (internally mapped to the SerialClosedLoopEngine state machine)
+    The state machine of the ROSCLEServer (internally mapped to the ClosedLoopEngine state machine)
 
 ROS Simulation Factory
 ----------------------

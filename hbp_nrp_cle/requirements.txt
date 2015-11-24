@@ -2,8 +2,8 @@ bbp-numpy-1.8.0-system-numeric-mod==1.8.0.0
 bbp-scipy-0.13.3-system-numeric-mod==0.13.3.0
 PyNN==0.7.5
 PyYAML==3.11
-rospkg==1.0.28
-catkin_pkg==0.2.2
+rospkg==1.0.38
+catkin_pkg==0.2.10
 bbp-h5py==2.1.2.0
 progressbar==2.3
 psutil==2.0.0
@@ -14,3 +14,4 @@ pexpect==3.1
 netifaces==0.8
 pyxb==1.2.4
 RestrictedPython==3.6.0
+futures==3.0.3

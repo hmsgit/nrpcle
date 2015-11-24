@@ -37,7 +37,7 @@ def cle_function_init(world_file):
                                  5, # number of subtasks
                                  True)  # block_ui
 
-    from hbp_nrp_cle.cle.SerialClosedLoopEngine import SerialClosedLoopEngine
+    from hbp_nrp_cle.cle.ClosedLoopEngine import ClosedLoopEngine
 
     from hbp_nrp_cle.robotsim.GazeboLoadingHelper import load_gazebo_model_file, empty_gazebo_world, load_gazebo_world_file
     from hbp_nrp_cle.robotsim.RobotInterface import Topic
@@ -221,7 +221,7 @@ def cle_function_init(world_file):
 
 
     # Create CLE
-    cle = SerialClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
+    cle = ClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
     # load brain
     brainfilepath = 'brain_model/braitenberg.h5'
     if models_path is not None:

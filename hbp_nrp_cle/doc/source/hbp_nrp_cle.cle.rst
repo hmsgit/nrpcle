@@ -46,11 +46,3 @@ cle - The implementations of the CLE drivers
     :undoc-members:
     :show-inheritance:
 
-:mod:`SerialClosedLoopEngine` Module
-------------------------------------
-
-.. automodule:: hbp_nrp_cle.cle.SerialClosedLoopEngine
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

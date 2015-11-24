@@ -3,6 +3,7 @@ This module contains the mock implementation of the robot control adapter
 """
 
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotControlAdapter
+from concurrent.futures import Future
 import math
 
 __author__ = 'NinoCauli'
@@ -73,10 +74,20 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         if math.fmod(dt, self.__time_step) < 1e-10:
             self.__sim_time = self.__sim_time + dt
             simTime = self.__sim_time
+            return simTime
         else:
-            simTime = -1
             raise ValueError("dt is not multiple of the physics time step")
-        return simTime
+
+    def run_step_async(self, dt):
+        """
+        Runs the world simulation for the given CLE time step in seconds in an asynchronous manner.
+
+        :param dt: The CLE time step in seconds
+        :return a Future for the result or potential exceptions of the execution
+        """
+        future = Future()
+        future.set_result(self.run_step(dt))
+        return future
 
     def shutdown(self):
         """

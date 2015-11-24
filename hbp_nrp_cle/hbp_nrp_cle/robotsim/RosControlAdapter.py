@@ -4,9 +4,10 @@
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotControlAdapter
 import rospy
 import math
+from hbp_nrp_cle.robotsim.AsynchronousServiceProxy import AsynchonousRospyServiceProxy
 # pylint: disable=E0611
 from gazebo_msgs.srv import GetPhysicsProperties, GetWorldProperties, \
-                            SetPhysicsProperties, AdvanceSimulation
+    SetPhysicsProperties, AdvanceSimulation
 from std_srvs.srv import Empty
 import logging
 
@@ -23,13 +24,13 @@ class RosControlAdapter(IRobotControlAdapter):
     def __init__(self):
         rospy.wait_for_service('/gazebo/get_physics_properties')
         self.__get_physics_properties = rospy.ServiceProxy(
-                      'gazebo/get_physics_properties', GetPhysicsProperties, persistent=True)
+            'gazebo/get_physics_properties', GetPhysicsProperties, persistent=True)
         rospy.wait_for_service('/gazebo/get_world_properties')
         self.__get_world_properties = rospy.ServiceProxy(
-                      'gazebo/get_world_properties', GetWorldProperties, persistent=True)
+            'gazebo/get_world_properties', GetWorldProperties, persistent=True)
         rospy.wait_for_service('/gazebo/set_physics_properties')
         self.__set_physics_properties = rospy.ServiceProxy(
-                      'gazebo/set_physics_properties', SetPhysicsProperties, persistent=True)
+            'gazebo/set_physics_properties', SetPhysicsProperties, persistent=True)
         rospy.wait_for_service('/gazebo/pause_physics')
         self.__pause_client = rospy.ServiceProxy('gazebo/pause_physics', Empty, persistent=True)
         rospy.wait_for_service('/gazebo/unpause_physics')
@@ -39,8 +40,8 @@ class RosControlAdapter(IRobotControlAdapter):
         rospy.wait_for_service('gazebo/end_world')
         self.__endWorld = rospy.ServiceProxy('gazebo/end_world', Empty, persistent=True)
         rospy.wait_for_service('gazebo/advance_simulation')
-        self.__advance_simulation = rospy.ServiceProxy(
-                       'gazebo/advance_simulation', AdvanceSimulation, persistent=True)
+        self.__advance_simulation = AsynchonousRospyServiceProxy(
+            'gazebo/advance_simulation', AdvanceSimulation, persistent=True)
         self.__time_step = 0.0
         self.__is_initialized = False
 
@@ -113,7 +114,7 @@ class RosControlAdapter(IRobotControlAdapter):
         success = world.success
         return success
 
-    def run_step(self, dt):
+    def run_step_async(self, dt):
         """
         Runs the world simulation for the given CLE time step in seconds
 
@@ -122,10 +123,21 @@ class RosControlAdapter(IRobotControlAdapter):
         if math.fmod(dt, self.__time_step) < 1e-10:
             steps = dt / self.__time_step
             logger.debug("Advancing simulation")
-            self.__advance_simulation(steps)
+
+            return self.__advance_simulation(steps)
+
         else:
             logger.error("dt is not multiple of the physics time step")
             raise ValueError("dt is not multiple of the physics time step")
+
+    def run_step(self, dt):
+        """
+        Runs the world simulation for the given CLE time step in seconds
+
+        :param dt: The CLE time step in seconds
+        """
+
+        return self.run_step_async(dt).result()
 
     def shutdown(self):
         """
