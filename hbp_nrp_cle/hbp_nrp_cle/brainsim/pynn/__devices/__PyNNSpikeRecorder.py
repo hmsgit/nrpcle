@@ -2,7 +2,7 @@
 Implementation of PyNNSpikeDetector
 '''
 
-from ..BrainInterface import ISpikeRecorder
+from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder
 import numpy as np
 import nest
 import logging

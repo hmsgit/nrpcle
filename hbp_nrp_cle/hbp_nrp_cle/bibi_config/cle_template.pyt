@@ -44,9 +44,7 @@ def cle_function_init(world_file):
     from hbp_nrp_cle.robotsim.RosControlAdapter import RosControlAdapter
     from hbp_nrp_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter
 
-    from hbp_nrp_cle.brainsim.PyNNControlAdapter import PyNNControlAdapter
-    from hbp_nrp_cle.brainsim.PyNNCommunicationAdapter import PyNNCommunicationAdapter
-    import pyNN.nest as sim
+    from hbp_nrp_cle.brainsim import instantiate_communication_adapter, instantiate_control_adapter
 
     import hbp_nrp_cle.tf_framework as nrp
     import hbp_nrp_cle.tf_framework.monitoring as monitoring
@@ -133,9 +131,9 @@ def cle_function_init(world_file):
                                 True,  # update_progress
                                 True)  # block_ui
     # control adapter
-    braincontrol = PyNNControlAdapter()
+    braincontrol = instantiate_control_adapter()
     # communication adapter
-    braincomm = PyNNCommunicationAdapter()
+    braincomm = instantiate_communication_adapter()
     # Create transfer functions manager
     cle_server.notify_current_task("Connecting neural simulator to neurobot",
                                 True,  # update_progress

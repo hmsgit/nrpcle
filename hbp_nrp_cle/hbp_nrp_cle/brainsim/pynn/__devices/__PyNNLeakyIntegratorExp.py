@@ -1,19 +1,19 @@
 '''
-Implementation of PyNNLeakyIntegratorAlpha
+Implementation of PyNNLeakyIntegratorExp
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import ILeakyIntegratorAlpha
+from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorExp
 import warnings
 import pyNN.nest as sim
 
 __author__ = 'DimitriProbst'
 
 
-class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
+class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
     """
     Represents the membrane potential of a current-based LIF neuron
-    with alpha-shaped post synaptic currents
+    with decaying-exponential post-synaptic currents
     """
 
     # pylint: disable=W0221
@@ -21,7 +21,8 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         """
         Initializes the neuron whose membrane potential is to be read out.
         The obligatory threshold voltage 'v_thresh' is set to infinity
-        by default in order to forbid the neuron to elicit spikes.
+        by default in order to forbid the neuron to elicit
+        spikes.
 
         :param params: Dictionary of neuron configuration parameters
         :param v_thresh: Threshold voltage , default: infinity
@@ -61,7 +62,7 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
 
     def create_device(self, params):
         """
-        Creates a LIF neuron with alpha-shaped post synaptic currents
+        Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses
 
         :param params: Dictionary of neuron configuration parameters
@@ -77,14 +78,14 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         """
         cellparams = {'v_thresh': params.get('v_thresh', float('inf')),
                       'cm': params.get('cm', 1.0),
-                      'tau_m': params.get('tau_m', 10.0),
-                      'tau_syn_E': params.get('tau_syn_E', 2.),
-                      'tau_syn_I': params.get('tau_syn_I', 2.),
+                      'tau_m': params.get('tau_m', 20.0),
+                      'tau_syn_E': params.get('tau_syn_E', 0.5),
+                      'tau_syn_I': params.get('tau_syn_I', 0.5),
                       'v_rest': params.get('v_rest', 0.0),
                       'v_reset': params.get('v_reset', 0.0),
                       'tau_refrac': params.get('tau_refrac', 0.1),
                       'i_offset': params.get('i_offset', 0.0)}
-        self.__cell = sim.Population(1, sim.IF_curr_alpha, cellparams)
+        self.__cell = sim.Population(1, sim.IF_curr_exp, cellparams)
         sim.initialize(self.__cell, 'v', self.__cell[0].v_rest)
 
     def start_record_voltage(self):
@@ -153,13 +154,11 @@ class PyNNLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
         if connector is None:
             warnings.warn("Default weights and delays are used.",
                           UserWarning)
-            weights = params.get('weights')
-            if weights is None:
-                if target == 'excitatory':
-                    weights = sim.RandomDistribution('uniform', [0.01, 0.01])
-                else:
-                    weights = sim.RandomDistribution('uniform', [-0.01, -0.01])
-            delays = params.get('delays', sim.RandomDistribution('uniform', [.1, .1]))
+            if target == 'excitatory':
+                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+            else:
+                weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
+            delays = sim.RandomDistribution('uniform', [0.1, 2.0])
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
         proj = sim.Projection(presynaptic_population=neurons,

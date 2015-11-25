@@ -3,7 +3,7 @@ Implementation of PyNNACSource
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IACSource
+from hbp_nrp_cle.brainsim.BrainInterface import IACSource
 import pyNN.nest as sim
 import nest
 

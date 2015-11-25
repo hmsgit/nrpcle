@@ -4,8 +4,10 @@ Module only used to represent the PyNNControlAdapter and bypass importing pyNN.n
 
 __author__ = 'GeorgHinkel'
 
-import mock, sys
+import mock
+import sys
+
 sys.modules['pyNN'] = mock.Mock()
 sys.modules['pyNN.nest'] = mock.Mock()
-import hbp_nrp_cle.brainsim.PyNNControlAdapter as PCA
+import hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter as PCA
 sys.modules[__name__] = PCA

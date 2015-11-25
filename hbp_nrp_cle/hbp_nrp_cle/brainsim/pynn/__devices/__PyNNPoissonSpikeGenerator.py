@@ -3,7 +3,7 @@ Implementation of PyNNPoissonSpikeGenerator
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IPoissonSpikeGenerator
+from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
 import pyNN.nest as sim
 import warnings
 

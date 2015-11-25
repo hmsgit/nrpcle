@@ -3,9 +3,9 @@ PyNNControlAdapter.py
 moduleauthor: probst@fzi.de
 '''
 
-from .BrainInterface import IBrainControlAdapter
+from hbp_nrp_cle.brainsim import IBrainControlAdapter
 import pyNN.nest as sim
-from . import BrainLoader
+from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
 import logging
 from os import path
 

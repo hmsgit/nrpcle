@@ -3,7 +3,7 @@ Implementation of PyNNPopulationRate
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IPopulationRate
+from hbp_nrp_cle.brainsim.BrainInterface import IPopulationRate
 import pyNN.nest as sim
 # pylint: disable=E0611
 from scipy.integrate import simps
