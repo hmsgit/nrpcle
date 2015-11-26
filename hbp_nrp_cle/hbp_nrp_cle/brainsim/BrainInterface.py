@@ -2,54 +2,51 @@
 This module represents the interfaces for the brain communication and control adapter
 """
 
-__author__ = 'GeorgHinkel'
-
-# pylint: disable=W0613
+__author__ = 'GeorgHinkel, Sebastian Krach'
 
 
-class IDeviceGroup(object):  # pragma: no cover
+class IBrainDevice(object):  # pragma: no cover
+    """
+    Device to connect to brain simulation
+    """
+
+    def connect(self, neurons, **params):
+        """
+        Connects the brain device to the specified neuron population.
+        :param neurons: the neurons of the brain to which the device will connect
+        :param params: additional, device specific parameters
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset(self, transfer_function_manager):
+        """
+        Resets the device
+
+        :param transfer_function_manager: The transfer function manager the device belongs to
+        :return: The reset adapter
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
+class IDeviceGroup(IBrainDevice):  # pragma: no cover
     """
     Gathers multiple devices to a group
     """
-    def reset(self, tf_manager):
+
+    def connect(self, neurons, **params):
         """
-        Resets the current device group
+        Connects the devices contained in this device group to the specified neuron
+        population. If the neuron population has the same size as the amount of devices contained
+        in the device group a One-to-One connection is used.
 
-        :param tf_manager: The parent TF manager
-        :return: A new device group
+        :param neurons: the neurons of the brain to which the device will connect
+        :param params: additional, device specific parameters. For each parameter either the
+            value can be supplied, or a list of values, one for each nested device.
         """
-        return self
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class ISpikeGenerator(object):  # pragma: no cover
-    """
-    Represents a communication object that may generate spikes
-    """
-    def reset(self, transfer_function_manager):
-        """
-        Resets the device
-
-        :param transfer_function_manager: The transfer function manager the device belongs to
-        :return: The reset adapter
-        """
-        return self
-
-
-class ICurrentGenerator(object):  # pragma: no cover
-    """
-    Represents a communication object that may generate currents
-    """
-    def reset(self, transfer_function_manager):
-        """
-        Resets the device
-
-        :param transfer_function_manager: The transfer function manager the device belongs to
-        :return: The reset adapter
-        """
-        return self
-
-
-class IFixedSpikeGenerator(ISpikeGenerator):  # pragma: no cover
+class IFixedSpikeGenerator(IBrainDevice):  # pragma: no cover
     """
     Represents a communication object that generates spikes on a fixed rate
     """
@@ -71,7 +68,7 @@ class IFixedSpikeGenerator(ISpikeGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
+class IPoissonSpikeGenerator(IBrainDevice):  # pragma: no cover
     """
     Represents a spike generator based on a Poisson Distribution
     """
@@ -93,7 +90,7 @@ class IPoissonSpikeGenerator(ISpikeGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IDCSource(ICurrentGenerator):  # pragma: no cover
+class IDCSource(IBrainDevice):  # pragma: no cover
     """
     Represents a current generator which generates direct current
     """
@@ -115,7 +112,7 @@ class IDCSource(ICurrentGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IACSource(ICurrentGenerator):  # pragma: no cover
+class IACSource(IBrainDevice):  # pragma: no cover
     """
     Represents a current generator which generates alternating current
     """
@@ -137,7 +134,7 @@ class IACSource(ICurrentGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class INCSource(ICurrentGenerator):  # pragma: no cover
+class INCSource(IBrainDevice):  # pragma: no cover
     """
     Represents a current generator which generates noisy current
     """
@@ -159,21 +156,7 @@ class INCSource(ICurrentGenerator):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class ISpikeDetector(object):  # pragma: no cover
-    """
-    Represents a communication object that may detect spikes
-    """
-    def reset(self, transfer_function_manager):
-        """
-        Resets the device
-
-        :param transfer_function_manager: The transfer function manager the device belongs to
-        :return: The reset adapter
-        """
-        return self
-
-
-class ISpikeRecorder(ISpikeDetector):  # pragma: no cover
+class ISpikeRecorder(IBrainDevice):  # pragma: no cover
     """
     Represents a device that captures whether a neuron has spiked since the last iteration
     """
@@ -186,7 +169,7 @@ class ISpikeRecorder(ISpikeDetector):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class ILeakyIntegratorAlpha(ISpikeDetector):  # pragma: no cover
+class ILeakyIntegratorAlpha(IBrainDevice):  # pragma: no cover
     """
     Represents the membrane voltage of a current-based LIF neuron
     with alpha-shaped post-synaptic currents. The neurons default threshold
@@ -202,7 +185,7 @@ class ILeakyIntegratorAlpha(ISpikeDetector):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class ILeakyIntegratorExp(ISpikeDetector):  # pragma: no cover
+class ILeakyIntegratorExp(IBrainDevice):  # pragma: no cover
     """
     Represents the membrane voltage of a current-based LIF neuron
     with decaying-exponential post-synaptic currents. The neurons default
@@ -218,7 +201,7 @@ class ILeakyIntegratorExp(ISpikeDetector):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
-class IPopulationRate(ISpikeDetector):  # pragma: no cover
+class IPopulationRate(IBrainDevice):  # pragma: no cover
     """
     Represents a device which returns the spiking frequency of a population of neurons
     """

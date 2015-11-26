@@ -3,11 +3,10 @@ MockBrainCommunicationAdapter.py
 moduleauthor: Michael.Weber@fzi.de
 '''
 
-
-from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, \
-    ILeakyIntegratorAlpha, ISpikeDetector, IPoissonSpikeGenerator, \
+from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter
+from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, ICustomDevice, \
-    IFixedSpikeGenerator, ILeakyIntegratorExp, IPopulationRate
+    IFixedSpikeGenerator, ILeakyIntegratorExp, IPopulationRate, ISpikeRecorder
 from .__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
 from .__devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
 from .__devices.MockDCSource import MockDCSource
@@ -17,19 +16,15 @@ from .__devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
 from .__devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
 from .__devices.MockPopulationRate import MockPopulationRate
 from .__devices.MockSpikeRecorder import MockSpikeRecorder
-from .__devices.MockDeviceGroup import MockDeviceGroup
 
 __author__ = 'MichaelWeber'
 
 
-class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
+class MockBrainCommunicationAdapter(AbstractCommunicationAdapter):
     """
     Represents a mock of the brain communication adapter
     """
-    #pylint: disable=W0223
-    #pylint: disable=W0613
-    # In this dictionary, the association of spike generator types to classes implementing their
-    # functionality is established
+
     __device_dict = {IFixedSpikeGenerator: MockFixedSpikeGenerator,
                      IPoissonSpikeGenerator: MockPoissonSpikeGenerator,
                      IDCSource: MockDCSource,
@@ -38,22 +33,29 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
                      ILeakyIntegratorAlpha: MockLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: MockLeakyIntegratorExp,
                      IPopulationRate: MockPopulationRate,
-                     ISpikeDetector: MockSpikeRecorder}
+                     ISpikeRecorder: MockSpikeRecorder}
 
     def __init__(self):
         """
         Initializes a new mocked brain communication adapter
         """
-        self.__generator_devices = []
-        self.__detector_devices = []
-        self.__is_initialized = False
+        super(MockBrainCommunicationAdapter, self).__init__()
+
         self.__refreshed_at = []
 
     def initialize(self):
         """
         Marks the mock adapter as initialized
         """
-        self.__is_initialized = True
+        super(MockBrainCommunicationAdapter, self).initialize()
+
+    def _get_device_type(self, device_type):
+        """
+        Returns the specific mock implementation for specified device type
+        :param device_type: the device type for which the implementation type is requested
+        :return: the concrete mock type
+        """
+        return self.__device_dict[device_type]
 
     def register_spike_source(self, neurons, spike_generator_type, **params):
         """
@@ -71,46 +73,8 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
             spike_generator_type.apply(neurons, self, **params)
             return spike_generator_type
 
-        if not isinstance(neurons, list):
-            device = MockBrainCommunicationAdapter.__device_dict[
-                spike_generator_type](**params)
-        else:
-            device_list = []
-            device_type = MockBrainCommunicationAdapter.__device_dict[
-                spike_generator_type]
-            neuron_index = 0
-            for n in neurons:
-                new_parameters = MockBrainCommunicationAdapter.__create_device_config(
-                    params, neuron_index)
-                new_parameters['neurons'] = n
-                device_list.append(device_type(**new_parameters))
-                neuron_index += 1
-            device = MockDeviceGroup(device_list)
-        self.__generator_devices.append(device)
-        return device
-
-    @staticmethod
-    def __create_device_config(params, index):
-        """
-        Creates the configuration for the device with the given index
-
-        :param params: The original parameters
-        :param index: The index of the device
-        :return: A parameter array
-        """
-        new_params = {}
-        for key in params:
-            value = params[key]
-            if key == 'updates':
-                new_value = []
-                for (t, values) in value:
-                    new_value.append((t, values[index]))
-                value = new_value
-            else:
-                if hasattr(value, '__getitem__'):
-                    value = value[index]
-            new_params[key] = value
-        return new_params
+        return super(MockBrainCommunicationAdapter, self).register_spike_source(
+            neurons, spike_generator_type, **params)
 
     def register_spike_sink(self, neurons, spike_detector_type, **params):
         """
@@ -128,23 +92,8 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
             spike_detector_type.apply(neurons, self, **params)
             return spike_detector_type
 
-        if not isinstance(neurons, list):
-            device = MockBrainCommunicationAdapter.__device_dict[
-                spike_detector_type](**params)
-        else:
-            device_list = []
-            device_type = MockBrainCommunicationAdapter.__device_dict[
-                spike_detector_type]
-            neuron_index = 0
-            for n in neurons:
-                new_parameters = MockBrainCommunicationAdapter.__create_device_config(
-                    params, neuron_index)
-                new_parameters['neurons'] = n
-                device_list.append(device_type(**new_parameters))
-                neuron_index += 1
-            device = MockDeviceGroup(device_list)
-        self.__detector_devices.append(device)
-        return device
+        return super(MockBrainCommunicationAdapter, self).register_spike_sink(
+            neurons, spike_detector_type, **params)
 
     def refresh_buffers(self, t):
         """
@@ -153,30 +102,7 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         :param t: The brain simulation time
         """
         self.__refreshed_at.append(t)
-        for detector in self.__detector_devices:
-            if hasattr(detector, "refresh"):
-                detector.refresh(t)
-
-    @property
-    def detector_devices(self):
-        """
-        Gets the detector __devices created by this mock
-        """
-        return self.__detector_devices
-
-    @property
-    def generator_devices(self):
-        """
-        Gets the spike detector __devices created by this mock
-        """
-        return self.__generator_devices
-
-    @property
-    def is_initialized(self):
-        """
-        Gets a value indicating whether initialize has been called
-        """
-        return self.__is_initialized
+        super(MockBrainCommunicationAdapter, self).refresh_buffers(t)
 
     @property
     def refreshed_at(self):
@@ -186,7 +112,4 @@ class MockBrainCommunicationAdapter(IBrainCommunicationAdapter):
         return self.__refreshed_at
 
     def shutdown(self):
-        """
-        Shuts down the brain communication adapter
-        """
         pass

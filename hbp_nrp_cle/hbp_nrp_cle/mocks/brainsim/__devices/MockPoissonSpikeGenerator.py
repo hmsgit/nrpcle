@@ -3,12 +3,13 @@ Implementation of MockPoissonSpikeGenerator
 moduleauthor: Michael.Weber@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
 
 __author__ = 'MichaelWeber'
 
 
-class MockPoissonSpikeGenerator(IPoissonSpikeGenerator):
+class MockPoissonSpikeGenerator(AbstractMockBrainDevice, IPoissonSpikeGenerator):
     """
     Represents a Poisson spike generator
     """

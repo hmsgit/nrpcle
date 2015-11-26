@@ -3,6 +3,7 @@ Implementation of PyNNACSource
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IACSource
 import pyNN.nest as sim
 import nest
@@ -10,17 +11,16 @@ import nest
 __author__ = 'DimitriProbst'
 
 
-class PyNNACSource(IACSource):
+class PyNNACSource(AbstractBrainDevice, IACSource):
     """
     Represents an alternating current generator.
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes an alternating current generator.
 
-        :param params: Dictionary of neuron configuration parameters
         :param amplitude: Amplitude of alternating current, default: 1.0 nA
         :param offset: Offset of alternating current, default: 0.0 nA
         :param frequency: Frequency of alternating current, default: 10 Hz
@@ -130,7 +130,7 @@ class PyNNACSource(IACSource):
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the device.
 

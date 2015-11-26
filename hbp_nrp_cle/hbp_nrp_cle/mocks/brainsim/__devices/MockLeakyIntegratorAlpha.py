@@ -3,13 +3,14 @@ Implementation of MockLeakyIntegratorAlpha
 moduleauthor: Michael.Weber@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha
 import warnings
 
 __author__ = 'MichaelWeber'
 
 
-class MockLeakyIntegratorAlpha(ILeakyIntegratorAlpha):
+class MockLeakyIntegratorAlpha(AbstractMockBrainDevice, ILeakyIntegratorAlpha):
     """
     Represents the membrane potential of a current-based LIF neuron
     with alpha-shaped post synaptic currents

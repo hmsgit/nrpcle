@@ -3,12 +3,13 @@ Implementation of MockNCSource
 moduleauthor: Michael.Weber@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import INCSource
 
 __author__ = 'MichaelWeber'
 
 
-class MockNCSource(INCSource):
+class MockNCSource(AbstractMockBrainDevice, INCSource):
     """
     Represents ai Mock of a noisy current generator
     """

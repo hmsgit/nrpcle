@@ -3,13 +3,14 @@ Implementation of MockSpikeDetector
 moduleauthor: Michael.Weber@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder
 import warnings
 
 __author__ = 'MichaelWeber'
 
 
-class MockSpikeRecorder(ISpikeRecorder):
+class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
     """
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"

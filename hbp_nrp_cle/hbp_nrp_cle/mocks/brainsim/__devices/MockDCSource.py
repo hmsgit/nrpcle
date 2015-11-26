@@ -3,12 +3,13 @@ Implementation of MockDCSource
 moduleauthor: Michael.Weber@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IDCSource
 
 __author__ = 'MichaelWeber'
 
 
-class MockDCSource(IDCSource):
+class MockDCSource(AbstractMockBrainDevice, IDCSource):
     """
     Represents a direct current generator
     """

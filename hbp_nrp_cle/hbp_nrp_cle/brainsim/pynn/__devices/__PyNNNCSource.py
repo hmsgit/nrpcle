@@ -3,6 +3,7 @@ Implementation of PyNNNCSource
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import INCSource
 import pyNN.nest as sim
 import nest
@@ -10,18 +11,17 @@ import nest
 __author__ = 'DimitriProbst'
 
 
-class PyNNNCSource(INCSource):
+class PyNNNCSource(AbstractBrainDevice, INCSource):
     """
     Represents a noisy current generator
     :param kwargs: Optional configuration parameters
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a noisy current generator.
 
-        :param params: Dictionary of neuron configuration parameters
         :param mean: Mean value of the noisy current, default: 0.0 nA
         :param stdev: Standard deviation of the noisy current, default: 1.0 nA
         :param dt: Interval between updates of the current amplitude in ms,
@@ -95,9 +95,7 @@ class PyNNNCSource(INCSource):
             stop=params.get('stop', None),
             rng=params.get('rng', sim.NativeRNG()))
 
-    # No connection parameters necessary for this device
-    # pylint: disable=W0613
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the device.
         param neurons: must be a Population, PopulationView or

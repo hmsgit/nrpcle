@@ -2,6 +2,7 @@
 Implementation of PyNNSpikeDetector
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder
 import numpy as np
 import nest
@@ -11,7 +12,7 @@ __author__ = 'GeorgHinkel, Igor Peric, Alina Roitberg'
 logger = logging.getLogger(__name__)
 
 
-class PyNNSpikeRecorder(ISpikeRecorder):
+class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
     """
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"
@@ -20,7 +21,7 @@ class PyNNSpikeRecorder(ISpikeRecorder):
     # No connection parameters necessary for this device
     # pylint: disable=W0613
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Represents a device which returns a "1" whenever one of the recorded
         neurons has spiked, otherwise a "0"
@@ -64,9 +65,7 @@ class PyNNSpikeRecorder(ISpikeRecorder):
         nest.SetStatus(self.__neurons.recorders['spikes']._device.device, "to_memory", True)
         nest.SetStatus(self.__neurons.recorders['spikes']._device.device, "to_file", False)
 
-    # No connection parameters necessary for this device
-    # pylint: disable=W0613
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the
         spike recorder

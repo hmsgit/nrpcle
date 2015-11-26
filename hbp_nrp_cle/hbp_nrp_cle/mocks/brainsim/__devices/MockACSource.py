@@ -3,12 +3,13 @@ Implementation of MockACSource
 moduleauthor: Michael.Weber@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IACSource
 
 __author__ = 'MichaelWeber'
 
 
-class MockACSource(IACSource):
+class MockACSource(AbstractMockBrainDevice, IACSource):
     """
     Represents an alternating current generator.
     """

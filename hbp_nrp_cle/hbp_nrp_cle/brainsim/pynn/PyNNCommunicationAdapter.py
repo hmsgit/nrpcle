@@ -4,24 +4,21 @@ moduleauthor: probst@fzi.de
 '''
 
 import logging
+from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
+    IDCSource, IACSource, INCSource, ILeakyIntegratorExp, IPopulationRate, \
+    IFixedSpikeGenerator, ISpikeRecorder
 
-import numpy
-
-from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, \
-    ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
-    IDCSource, IACSource, INCSource, ISpikeDetector, \
-    ILeakyIntegratorExp, IPopulationRate, IFixedSpikeGenerator, ISpikeRecorder
-
-from hbp_nrp_cle.brainsim.pynn.__devices import PyNNSpikeRecorder, PyNNDeviceGroup, \
+from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter
+from hbp_nrp_cle.brainsim.pynn.__devices import PyNNSpikeRecorder, \
     PyNNPopulationRate, PyNNACSource, PyNNDCSource, PyNNFixedSpikeGenerator, \
     PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp, PyNNNCSource, PyNNPoissonSpikeGenerator
 
 logger = logging.getLogger(__name__)
 
-__author__ = 'DimitriProbst'
+__author__ = 'Dimitri Probst, Sebastian Krach'
 
 
-class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
+class PyNNCommunicationAdapter(AbstractCommunicationAdapter):
     """
     Represents the communication adapter to the neuronal simulator
     """
@@ -35,145 +32,21 @@ class PyNNCommunicationAdapter(IBrainCommunicationAdapter):
                      ILeakyIntegratorAlpha: PyNNLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: PyNNLeakyIntegratorExp,
                      IPopulationRate: PyNNPopulationRate,
-                     ISpikeRecorder: PyNNSpikeRecorder,
-                     ISpikeDetector: PyNNSpikeRecorder}
-
-    def __init__(self):
-        """
-        Initializes the communication adapter
-        """
-        self.__generator_devices = []
-        self.__detector_devices = []
-        self.__is_initialized = False
+                     ISpikeRecorder: PyNNSpikeRecorder}
 
     def initialize(self):
         """
         Marks the PyNN adapter as initialized
         """
-        self.__is_initialized = True
         logger.info("PyNN communication adapter initialized")
+        super(PyNNCommunicationAdapter, self).initialize()
 
-    def register_spike_source(self, populations, spike_generator_type, **params):
+    def _get_device_type(self, device_type):
         """
-        Requests a communication object with the given spike generator type
-        for the given set of neurons
-
-        :param populations: A reference to the populations to which the spike generator
-         should be connected
-        :param spike_generator_type: A spike generator type (see documentation
-         or a list of allowed values)
-        :param params: A dictionary of configuration parameters
-        :return: A communication object or a group of objects
+        Returns the pynn specific implementation for specified device type
+        :param device_type: the device type for which the implementation type is requested
+        :return: the concrete type
         """
-        device_type = PyNNCommunicationAdapter.__device_dict[spike_generator_type]
-        if not isinstance(populations, list):
-            device = device_type(params)
-            device.connect(populations, params)
-            self.__generator_devices.append(device)
-            logger.info("Communication object with spike generator\
- type \"%s\" requested (device)",
-                        spike_generator_type)
-            return device
-        else:
-            device_list = []
-            for (pop_index, pop) in enumerate(populations):
-                device = device_type(
-                    PyNNCommunicationAdapter.__create_device_config(params, pop_index))
-                device.connect(pop, params)
-                device_list.append(device)
-            self.__generator_devices += device_list
-            device_group = PyNNDeviceGroup(device_list)
-            logger.info("Communication object with spike generator\
- type \"%s\" requested (device group)",
-                        spike_generator_type)
-            return device_group
-
-    def register_spike_sink(self, populations, spike_detector_type, **params):
-        """
-        Requests a communication object with the given spike detector type
-        for the given set of neurons
-
-        :param populations: A reference to the populations which should be connected
-         to the spike detector
-        :param spike_detector_type: A spike detector type (see documentation
-         for a list of allowed values)
-        :param params: A dictionary of configuration parameters
-        :return: A Communication object or a group of objects
-        """
-        device_type = PyNNCommunicationAdapter.__device_dict[spike_detector_type]
-        if not isinstance(populations, list):
-            device = device_type(params)
-            device.connect(populations, params)
-            self.__detector_devices.append(device)
-            logger.info("Communication object with spike detector\
- type \"%s\" requested (device)",
-                        spike_detector_type)
-            return device
-        else:
-            device_list = []
-            for (pop_index, pop) in enumerate(populations):
-                device = device_type(
-                    PyNNCommunicationAdapter.__create_device_config(params, pop_index))
-                device.connect(pop, params)
-                device_list.append(device)
-            self.__detector_devices += device_list
-            device_group = PyNNDeviceGroup(device_list)
-            logger.info("Communication object with spike detector\
- type \"%s\" requested (device group)",
-                        spike_detector_type)
-            return device_group
-
-    def refresh_buffers(self, t):
-        """
-        Refreshes all detector buffers
-
-        :param t: The simulation time in milliseconds
-        """
-        for detector in self.__detector_devices:
-            if hasattr(detector, "refresh"):
-                detector.refresh(t)
-
-    @staticmethod
-    def __create_device_config(params, index):
-        """
-        Creates the configuration for the device with the given index
-
-        :param params: The original parameters
-        :param index: The index of the device
-        :return: A parameter array
-        """
-        new_params = {}
-        for key in params:
-            value = params[key]
-            if isinstance(value, list) or isinstance(value, numpy.ndarray):
-                value = value[index]
-            new_params[key] = value
-        return new_params
-
-    @property
-    def detector_devices(self):
-        """
-        Gets the created detector __devices
-        """
-        return self.__detector_devices
-
-    @property
-    def generator_devices(self):
-        """
-        Gets the created spike detector __devices
-        """
-        return self.__generator_devices
-
-    @property
-    def is_initialized(self):
-        """
-        Gets a value indicating whether initialize has been called
-        """
-        return self.__is_initialized
-
-    def shutdown(self):
-        """
-        Shuts down the brain communication adapter
-        """
-        del self.__detector_devices[:]
-        del self.__generator_devices[:]
+        if device_type in self.__device_dict:
+            return self.__device_dict[device_type]
+        super(PyNNCommunicationAdapter, self)._get_device_type(device_type)

@@ -3,6 +3,7 @@ Implementation of PyNNDCSource
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IDCSource
 import pyNN.nest as sim
 import nest
@@ -10,17 +11,16 @@ import nest
 __author__ = 'DimitriProbst'
 
 
-class PyNNDCSource(IDCSource):
+class PyNNDCSource(AbstractBrainDevice, IDCSource):
     """
     Represents a direct current generator
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a direct current generator.
 
-        :param params: Dictionary of neuron configuration parameters
         :param amplitude: Amplitude of direct current, default: 1.0 nA
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, default: infinity
@@ -62,7 +62,7 @@ class PyNNDCSource(IDCSource):
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the device.
 
