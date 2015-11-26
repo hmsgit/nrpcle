@@ -154,6 +154,7 @@ class AsynchonousRospyServiceProxy(object):
             # pylint: disable=broad-except
             except Exception:
                 logger.error("Error retrieving service result")
-                self.__call_future.set_exception_info(*exc_info()[1:3])
-                self.__call_future = Future()
+                exept_info = exc_info()[1:3]
+                old_future = self.__call_future
                 self.__retrieve_result.clear()
+                old_future.set_exception_info(*exept_info)
