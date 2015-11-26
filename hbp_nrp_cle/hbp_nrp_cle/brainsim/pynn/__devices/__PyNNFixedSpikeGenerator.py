@@ -3,7 +3,7 @@ Implementation of PyNNFixedSpikeGenerator
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IFixedSpikeGenerator
+from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
 import pyNN.nest as sim
 import nest
 import numpy as np

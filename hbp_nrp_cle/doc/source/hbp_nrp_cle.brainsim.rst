@@ -18,11 +18,11 @@ brainsim - adapters for neuronal simulation using PyNN
 -------------------------
 
 
-.. class:: hbp_nrp_cle.brainsim.BrainLoader.BrainLoader
+.. class:: hbp_nrp_cle.brainsim.pynn.PyNNBrainLoader
 
     .. note:: For technical reasons, the documentation of this class is moved to the class below.
 
-.. automodule:: hbp_nrp_cle.brainsim.__doc.__BrainLoaderDoc
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__doc.__PyNNBrainLoaderDoc
     :members: load_h5_network, load_pointneuron_circuit
     :undoc-members:
     :show-inheritance:
@@ -30,11 +30,11 @@ brainsim - adapters for neuronal simulation using PyNN
 :mod:`PyNNCommunicationAdapter` Module
 --------------------------------------
 
-.. class:: hbp_nrp_cle.brainsim.PyNNCommunicationAdapter.PyNNCommunicationAdapter
+.. class:: hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter.PyNNCommunicationAdapter
 
     .. note:: For technical reasons, the documentation of this class is moved to the class below.
 
-.. automodule:: hbp_nrp_cle.brainsim.__doc.__PyNNCommAdapterDoc
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__doc.__PyNNCommAdapterDoc
     :members: PyNNCommunicationAdapter
     :undoc-members:
     :show-inheritance:
@@ -47,70 +47,70 @@ The *PyNNCommunicationAdapter* uses the following modules to implement its mappi
 IACSource
 ^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNACSource
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNACSource
     :members:
     :show-inheritance:
 
 INCSource
 ^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNDCSource
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNDCSource
     :members:
     :show-inheritance:
     
 IFixedSpikeGenerator
 ^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNFixedSpikeGenerator
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNFixedSpikeGenerator
     :members:
     :show-inheritance:
     
 ILeakyIntegratorAlpha
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNLeakyIntegratorAlpha
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNLeakyIntegratorAlpha
     :members:
     :show-inheritance:
     
 ILeakyIntegratorExp
 ^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNLeakyIntegratorExp
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNLeakyIntegratorExp
     :members:
     :show-inheritance:
     
 INCSource
 ^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNNCSource
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNNCSource
     :members:
     :show-inheritance:
 
 IPoissonSpikeGenerator
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNPoissonSpikeGenerator
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNPoissonSpikeGenerator
     :members:
     :show-inheritance:
     
 IPopulationRate
 ^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNPopulationRate
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNPopulationRate
     :members:
     :show-inheritance:
 
 ISpikeRecorder
 ^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNSpikeRecorder
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNSpikeRecorder
     :members:
     :show-inheritance:
     
 Device groups of any kind
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.__devices.PyNNDeviceGroup
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNDeviceGroup
     :members:
     :show-inheritance:
 
@@ -118,11 +118,11 @@ Device groups of any kind
 --------------------------------
 
 
-.. class:: hbp_nrp_cle.brainsim.PyNNControlAdapter.PyNNControlAdapter
+.. class:: hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.PyNNControlAdapter
 
     .. note:: For technical reasons, the documentation of this class is moved to the class below.
 
-.. automodule:: hbp_nrp_cle.brainsim.__doc.__PyNNControlAdapterDoc
+.. automodule:: hbp_nrp_cle.brainsim.pynn.__doc.__PyNNControlAdapterDoc
     :members: PyNNControlAdapter
     :undoc-members:
     :show-inheritance:

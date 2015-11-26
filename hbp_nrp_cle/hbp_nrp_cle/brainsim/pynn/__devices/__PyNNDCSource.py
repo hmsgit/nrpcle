@@ -3,7 +3,7 @@ Implementation of PyNNDCSource
 moduleauthor: probst@fzi.de
 '''
 
-from ..BrainInterface import IDCSource
+from hbp_nrp_cle.brainsim.BrainInterface import IDCSource
 import pyNN.nest as sim
 import nest
 

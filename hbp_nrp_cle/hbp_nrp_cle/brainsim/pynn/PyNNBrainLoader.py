@@ -5,7 +5,6 @@ Load a brain network
 __author__ = "Lorenzo Vannucci"
 
 import pyNN.nest as sim
-import hbp_nrp_cle.tf_framework.config as config
 import numpy as np
 import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
@@ -196,7 +195,8 @@ def load_h5_network(path, populations):
         neurons = sim.PopulationView(population, populations[p])
         brain.__dict__[p] = neurons
 
-    config.brain_root = brain
+    import hbp_nrp_cle.tf_framework.config as tf_config
+    tf_config.brain_root = brain
 
 
 # pylint: disable=W0603
@@ -221,7 +221,8 @@ def load_py_network(path, populations):
         if len(populations) > 0:
             raise Exception("Could not initialize populations, no circuit found")
 
-    config.brain_root = brain_module
+    import hbp_nrp_cle.tf_framework.config as tf_config
+    tf_config.brain_root = brain_module
 
 
 class Brain(object):

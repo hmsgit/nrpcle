@@ -2,7 +2,7 @@
 brain_loader unit test
 """
 
-from hbp_nrp_cle.brainsim import BrainLoader
+from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
 import hbp_nrp_cle.tf_framework as nrp
 
 import unittest

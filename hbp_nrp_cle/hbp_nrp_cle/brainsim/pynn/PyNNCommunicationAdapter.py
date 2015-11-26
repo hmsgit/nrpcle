@@ -3,23 +3,18 @@ PyNNCommunicationAdapter.py
 moduleauthor: probst@fzi.de
 '''
 
-from .BrainInterface import IBrainCommunicationAdapter, \
+import logging
+
+import numpy
+
+from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, \
     ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, ISpikeDetector, \
     ILeakyIntegratorExp, IPopulationRate, IFixedSpikeGenerator, ISpikeRecorder
 
-from .__devices.PyNNPoissonSpikeGenerator import PyNNPoissonSpikeGenerator
-from .__devices.PyNNFixedSpikeGenerator import PyNNFixedSpikeGenerator
-from .__devices.PyNNDCSource import PyNNDCSource
-from .__devices.PyNNACSource import PyNNACSource
-from .__devices.PyNNNCSource import PyNNNCSource
-from .__devices.PyNNLeakyIntegratorAlpha import PyNNLeakyIntegratorAlpha
-from .__devices.PyNNLeakyIntegratorExp import PyNNLeakyIntegratorExp
-from .__devices.PyNNPopulationRate import PyNNPopulationRate
-from .__devices.PyNNSpikeRecorder import PyNNSpikeRecorder
-from .__devices.PyNNDeviceGroup import PyNNDeviceGroup
-import logging
-import numpy
+from hbp_nrp_cle.brainsim.pynn.__devices import PyNNSpikeRecorder, PyNNDeviceGroup, \
+    PyNNPopulationRate, PyNNACSource, PyNNDCSource, PyNNFixedSpikeGenerator, \
+    PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp, PyNNNCSource, PyNNPoissonSpikeGenerator
 
 logger = logging.getLogger(__name__)
 
