@@ -3,6 +3,7 @@ Implementation of PyNNFixedSpikeGenerator
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
 import pyNN.nest as sim
 import nest
@@ -12,18 +13,17 @@ import warnings
 __author__ = 'DimitriProbst'
 
 
-class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
+class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
     """
     Represents a spike generator which generated equidistant
     spike times at a given frequency
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a Fixed spike generator.
 
-        :param params: Optional configuration parameters
         :param rate: Rate/frequency of spike train, default: 0.0 Hz
         :param connector: a PyNN Connector object, or, if neurons is
             a list of two populations, a list of two Connector objects
@@ -101,7 +101,7 @@ class PyNNFixedSpikeGenerator(IFixedSpikeGenerator):
         self.__rate = rate
         return nom / denom
 
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the

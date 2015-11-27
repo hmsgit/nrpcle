@@ -4,7 +4,7 @@ Test the mocked brain communication, control and
 moduleauthor: Michael.Weber@fzi.de
 """
 
-from hbp_nrp_cle.brainsim.BrainInterface import ISpikeDetector, \
+from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
     IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, \
     IPopulationRate, IFixedSpikeGenerator, ILeakyIntegratorAlpha, \
     ILeakyIntegratorExp
@@ -21,7 +21,7 @@ from hbp_nrp_cle.mocks.brainsim.__devices.MockNCSource import MockNCSource
 from hbp_nrp_cle.mocks.brainsim.__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
 from hbp_nrp_cle.mocks.brainsim.__devices.MockPopulationRate import MockPopulationRate
 from hbp_nrp_cle.mocks.brainsim.__devices.MockSpikeRecorder import MockSpikeRecorder
-from hbp_nrp_cle.mocks.brainsim.__devices.MockDeviceGroup import MockDeviceGroup
+from hbp_nrp_cle.mocks.brainsim.__devices.MockAbstractBrainDevice import MockDeviceGroup
 
 __author__ = 'MichaelWeber'
 
@@ -154,7 +154,7 @@ class MockBrainAdaptersTest(unittest.TestCase):
         Tests the registration of the detector __devices
         """
         device_0 = self.communicator.register_spike_sink(
-            self.neurons_cond, ISpikeDetector)
+            self.neurons_cond, ISpikeRecorder)
         self.assertEqual(device_0, self.communicator.detector_devices[0])
         self.assertIsInstance(device_0, MockSpikeRecorder)
 
@@ -230,7 +230,7 @@ class MockBrainAdaptersTest(unittest.TestCase):
         Tests the refresh_buffers function
         """
         device_0 = self.communicator.register_spike_sink(
-            self.neurons_cond, ISpikeDetector)
+            self.neurons_cond, ISpikeRecorder)
         self.assertEqual(device_0, self.communicator.detector_devices[0])
         #self.assertIsInstance(device_0, SpikeDetector)
 

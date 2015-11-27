@@ -3,12 +3,13 @@ Implementation of MockFixedSpikeGenerator
 moduleauthor: scheidecker@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
 
 __author__ = 'PatrikScheidecker'
 
 
-class MockFixedSpikeGenerator(IFixedSpikeGenerator):
+class MockFixedSpikeGenerator(AbstractMockBrainDevice, IFixedSpikeGenerator):
     """
     Represents a Fixed Spike Generator, which generates spikes with a
     fixed predefined interval duration.

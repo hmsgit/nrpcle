@@ -14,6 +14,29 @@ brainsim - adapters for neuronal simulation using PyNN
     :undoc-members:
     :show-inheritance:
 
+:mod:`Common` Module
+--------------------
+
+.. automodule:: hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Device Groups of any kind
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.common.devices.__DeviceGroup
+    :members:
+    :show-inheritance:
+
+AbstractBrainDevice
+^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.common.devices.__AbstractBrainDevice
+    :members:
+    :show-inheritance:
+
+
 :mod:`BrainLoader` Module
 -------------------------
 
@@ -104,13 +127,6 @@ ISpikeRecorder
 ^^^^^^^^^^^^^^
 
 .. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNSpikeRecorder
-    :members:
-    :show-inheritance:
-    
-Device groups of any kind
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNDeviceGroup
     :members:
     :show-inheritance:
 

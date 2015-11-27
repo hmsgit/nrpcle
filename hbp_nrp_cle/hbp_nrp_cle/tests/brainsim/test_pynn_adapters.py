@@ -11,7 +11,7 @@ from hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter import \
     PyNNCommunicationAdapter
 
 import pyNN.nest as sim
-from hbp_nrp_cle.brainsim.BrainInterface import ISpikeDetector, \
+from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
     IPoissonSpikeGenerator, IDCSource, IACSource, INCSource, \
     IPopulationRate, IFixedSpikeGenerator, ILeakyIntegratorAlpha, \
     ILeakyIntegratorExp, IDeviceGroup
@@ -31,8 +31,9 @@ class PyNNAdaptersTest(unittest.TestCase):
         """
         Instantiates the PyNN communication and control adapter
         """
-        with LogCapture('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
-                        'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter') as l:
+        with LogCapture(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
+                        'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
+                        'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')) as l:
             self.control = PyNNControlAdapter()
             self.assertEqual(self.control.is_alive(), False)
             self.control.initialize(timestep=0.1,
@@ -86,7 +87,8 @@ class PyNNAdaptersTest(unittest.TestCase):
                           'PyNN communication adapter initialized'))
 
     @log_capture('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
-                 'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter')
+                 'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
+                 'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')
     def test_register_spike_source(self, logcapture):
         """
         Tests the registration of the generator __devices
@@ -157,59 +159,64 @@ class PyNNAdaptersTest(unittest.TestCase):
 
         self.communicator.register_spike_source(
             self.two_neurons_pop_cond, IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[5], IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[6], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[5], IDeviceGroup)
+        self.assertIsInstance(self.communicator.generator_devices[5][0], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[5][1], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.two_neurons_pop_curr, IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[7], IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[8], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[6], IDeviceGroup)
+        self.assertIsInstance(self.communicator.generator_devices[6][0], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[6][1], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.neurons_cond, IPoissonSpikeGenerator, target="inhibitory")
-        self.assertIsInstance(self.communicator.generator_devices[9], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[7], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.neurons_curr, IPoissonSpikeGenerator, target="inhibitory")
-        self.assertIsInstance(self.communicator.generator_devices[10], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[8], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.neurons_cond, IFixedSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[11], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[9], IFixedSpikeGenerator)
 
         print("Fixed Frequency Spike Generator Rate (before): ",
-              self.communicator.generator_devices[11].rate)
-        self.communicator.generator_devices[11].rate = 2.0
+              self.communicator.generator_devices[9].rate)
+        self.communicator.generator_devices[9].rate = 2.0
         print("Fixed Frequency Spike Generator Rate (after): ",
-              self.communicator.generator_devices[11].rate)
+              self.communicator.generator_devices[9].rate)
 
         self.communicator.register_spike_source(
             self.neurons_curr, IFixedSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[12], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[10], IFixedSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.two_neurons_pop_cond, IFixedSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[13], IFixedSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[14], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[11], IDeviceGroup)
+        self.assertIsInstance(self.communicator.generator_devices[11][0], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[11][1], IFixedSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.two_neurons_pop_curr, IFixedSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[15], IFixedSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[16], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[12], IDeviceGroup)
+        self.assertIsInstance(self.communicator.generator_devices[12][0], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[12][1], IFixedSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.neurons_cond, IFixedSpikeGenerator, target="inhibitory")
-        self.assertIsInstance(self.communicator.generator_devices[17], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[13], IFixedSpikeGenerator)
 
         self.communicator.register_spike_source(
             self.neurons_curr, IFixedSpikeGenerator, target="inhibitory")
-        self.assertIsInstance(self.communicator.generator_devices[18], IFixedSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[14], IFixedSpikeGenerator)
 
         group = self.communicator.register_spike_source(
             self.three_neurons_pop_cond, IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[19], IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[20], IPoissonSpikeGenerator)
-        self.assertIsInstance(self.communicator.generator_devices[21], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[15], IDeviceGroup)
+        self.assertIsInstance(self.communicator.generator_devices[15][0], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[15][1], IPoissonSpikeGenerator)
+        self.assertIsInstance(self.communicator.generator_devices[15][2], IPoissonSpikeGenerator)
 
         self.assertIsInstance(group, IDeviceGroup)
 
@@ -235,80 +242,81 @@ class PyNNAdaptersTest(unittest.TestCase):
             print group.voltage
         with self.assertRaises(AttributeError):
             print group[0:3].voltage
-        logcapture.check(('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+        logcapture.check(('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IDCSource\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IACSource\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.INCSource\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
-"<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
-requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
+"<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
+requested (device group)'),
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IFixedSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IFixedSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IFixedSpikeGenerator\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IFixedSpikeGenerator\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IFixedSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IFixedSpikeGenerator\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike generator type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device group)'))
 
     @log_capture('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
-                 'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter')
+                 'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
+                 'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')
     def test_register_spike_sink(self, logcapture):
         """
         Tests the registration of the detector __devices
         """
         self.communicator.register_spike_sink(
-            self.neurons_cond, ISpikeDetector)
-        self.assertIsInstance(self.communicator.detector_devices[0], ISpikeDetector)
+            self.neurons_cond, ISpikeRecorder)
+        self.assertIsInstance(self.communicator.detector_devices[0], ISpikeRecorder)
 
         self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorAlpha)
@@ -324,21 +332,23 @@ requested (device group)'))
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorAlpha)
-        self.assertIsInstance(self.communicator.detector_devices[3], ILeakyIntegratorAlpha)
-        self.assertIsInstance(self.communicator.detector_devices[4], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.detector_devices[3], IDeviceGroup)
+        self.assertIsInstance(self.communicator.detector_devices[3][0], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.detector_devices[3][1], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorAlpha)
-        self.assertIsInstance(self.communicator.detector_devices[5], ILeakyIntegratorAlpha)
-        self.assertIsInstance(self.communicator.detector_devices[6], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.detector_devices[4], IDeviceGroup)
+        self.assertIsInstance(self.communicator.detector_devices[4][0], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.detector_devices[4][1], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorAlpha, target='inhibitory')
-        self.assertIsInstance(self.communicator.detector_devices[7], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.detector_devices[5], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorExp)
-        self.assertIsInstance(self.communicator.detector_devices[8], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[6], ILeakyIntegratorExp)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device IFCurrExp): ",
@@ -346,75 +356,77 @@ requested (device group)'))
 
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp)
-        self.assertIsInstance(self.communicator.detector_devices[9], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[7], ILeakyIntegratorExp)
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorExp)
-        self.assertIsInstance(self.communicator.detector_devices[10], ILeakyIntegratorExp)
-        self.assertIsInstance(self.communicator.detector_devices[11], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[8], IDeviceGroup)
+        self.assertIsInstance(self.communicator.detector_devices[8][0], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[8][1], ILeakyIntegratorExp)
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorExp)
-        self.assertIsInstance(self.communicator.detector_devices[12], ILeakyIntegratorExp)
-        self.assertIsInstance(self.communicator.detector_devices[13], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[9], IDeviceGroup)
+        self.assertIsInstance(self.communicator.detector_devices[9][0], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[9][1], ILeakyIntegratorExp)
 
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp, target='inhibitory')
-        self.assertIsInstance(self.communicator.detector_devices[14], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.detector_devices[10], ILeakyIntegratorExp)
 
         self.communicator.register_spike_sink(
             self.neurons_curr, IPopulationRate)
-        self.assertIsInstance(self.communicator.detector_devices[15], IPopulationRate)
+        self.assertIsInstance(self.communicator.detector_devices[11], IPopulationRate)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device PopulationRate): ",
-              self.communicator.detector_devices[15].rate)
-        logcapture.check(('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
-"<class \'hbp_nrp_cle.brainsim.BrainInterface.ISpikeDetector\'>" \
+              self.communicator.detector_devices[11].rate)
+        logcapture.check(('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
+"<class \'hbp_nrp_cle.brainsim.BrainInterface.ISpikeRecorder\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorAlpha\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorAlpha\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorAlpha\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorAlpha\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with \
 type "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorAlpha\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorExp\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorExp\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorExp\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorExp\'>" \
 requested (device group)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.ILeakyIntegratorExp\'>" \
 requested (device)'),
-                         ('hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter', 'INFO',
-                          'Communication object with spike detector type \
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPopulationRate\'>" \
 requested (device)'))
 
@@ -423,8 +435,8 @@ requested (device)'))
         Tests the refresh_buffers function
         """
         self.communicator.register_spike_sink(
-            self.neurons_cond, ISpikeDetector)
-        self.assertIsInstance(self.communicator.detector_devices[0], ISpikeDetector)
+            self.neurons_cond, ISpikeRecorder)
+        self.assertIsInstance(self.communicator.detector_devices[0], ISpikeRecorder)
 
         self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorAlpha)

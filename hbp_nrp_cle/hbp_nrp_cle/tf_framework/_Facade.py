@@ -9,7 +9,7 @@ from . import config
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
-    ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
+    IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
 
 import logging
 logger = logging.getLogger(__name__)
@@ -72,7 +72,6 @@ leaky_integrator_alpha = ILeakyIntegratorAlpha
 leaky_integrator_exp = ILeakyIntegratorExp
 fixed_frequency = IFixedSpikeGenerator
 poisson = IPoissonSpikeGenerator
-detector = ISpikeDetector
 dc_source = IDCSource
 ac_source = IACSource
 nc_source = INCSource

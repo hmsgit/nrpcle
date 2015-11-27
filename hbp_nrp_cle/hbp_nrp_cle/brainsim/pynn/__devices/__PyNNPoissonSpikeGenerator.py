@@ -3,6 +3,7 @@ Implementation of PyNNPoissonSpikeGenerator
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
 import pyNN.nest as sim
 import warnings
@@ -10,17 +11,16 @@ import warnings
 __author__ = 'DimitriProbst'
 
 
-class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
+class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
     """
     Represents a Poisson spike generator
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes a Poisson spike generator.
 
-        :param params: Optional configuration parameters
         :param duration: Duration of spike train, default: infinity
         :param start: Start time of spike train, default: 0.0 ms
         :param rate: Rate/frequency of spike train, default: 0.0 Hz
@@ -70,7 +70,7 @@ class PyNNPoissonSpikeGenerator(IPoissonSpikeGenerator):
                   'rate': params.get('rate', 0.0)}
         self.__generator = sim.Population(1, sim.SpikeSourcePoisson, params)
 
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the

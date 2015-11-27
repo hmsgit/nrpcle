@@ -3,6 +3,7 @@ Implementation of PyNNLeakyIntegratorExp
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorExp
 import warnings
 import pyNN.nest as sim
@@ -10,21 +11,20 @@ import pyNN.nest as sim
 __author__ = 'DimitriProbst'
 
 
-class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
+class PyNNLeakyIntegratorExp(AbstractBrainDevice, ILeakyIntegratorExp):
     """
     Represents the membrane potential of a current-based LIF neuron
     with decaying-exponential post-synaptic currents
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes the neuron whose membrane potential is to be read out.
         The obligatory threshold voltage 'v_thresh' is set to infinity
         by default in order to forbid the neuron to elicit
         spikes.
 
-        :param params: Dictionary of neuron configuration parameters
         :param v_thresh: Threshold voltage , default: infinity
         :param cm: Membrane capacitance, default: 1.0 nF
         :param tau_m: Membrane time constant, default: 20.0 ms
@@ -94,7 +94,7 @@ class PyNNLeakyIntegratorExp(ILeakyIntegratorExp):
         """
         self.__cell.record_v()
 
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the

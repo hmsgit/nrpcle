@@ -3,6 +3,7 @@ Implementation of PyNNPopulationRate
 moduleauthor: probst@fzi.de
 '''
 
+from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPopulationRate
 import pyNN.nest as sim
 # pylint: disable=E0611
@@ -12,7 +13,7 @@ import numpy as np
 __author__ = 'DimitriProbst'
 
 
-class PyNNPopulationRate(IPopulationRate):
+class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
     """
     Represents the rate of a population of LIF neurons by
     measuring and normalizing the membrane potential of a
@@ -20,7 +21,7 @@ class PyNNPopulationRate(IPopulationRate):
     """
 
     # pylint: disable=W0221
-    def __init__(self, params):
+    def __init__(self, **params):
         """
         Initializes the neuron whose membrane potential is read out and
         normalized. The obligatory threshold voltage 'v_thresh' is set to
@@ -29,7 +30,6 @@ class PyNNPopulationRate(IPopulationRate):
         "tau_rise" is interpreted as falling time constant and
         "tau_fall" as rising time constant.
 
-        :param params: Dictionary of neuron configuration parameters
         :param tau_rise: Rising time constant, default: 10.0 ms
         :param tau_fall: Falling time constant, default: 20.0 ms
         """
@@ -87,7 +87,7 @@ class PyNNPopulationRate(IPopulationRate):
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
-    def connect(self, neurons, params):
+    def connect(self, neurons, **params):
         """
         Connects the neurons specified by "neurons" to the
         device.

@@ -72,11 +72,11 @@ class Test2(unittest.TestCase):
         config.active_node.run_neuron_to_robot(1.5)
         config.active_node.run_robot_to_neuron(1.5)
 
-        assert isinstance(husky_right_arm, MockPublishedTopic)
-        assert isinstance(husky_left_arm, MockPublishedTopic)
+        self.assertIsInstance(husky_right_arm, MockPublishedTopic)
+        self.assertIsInstance(husky_left_arm, MockPublishedTopic)
 
-        assert len(husky_right_arm.sent) == 2
-        assert len(husky_left_arm.sent) == 2
+        self.assertEqual(len(husky_right_arm.sent), 2)
+        self.assertEqual(len(husky_left_arm.sent), 2)
 
         self.assertEqual(husky_right_arm.sent[0], 1.345 * 2.0)
         self.assertEqual(husky_right_arm.sent[1], 1.345 * 0.3)

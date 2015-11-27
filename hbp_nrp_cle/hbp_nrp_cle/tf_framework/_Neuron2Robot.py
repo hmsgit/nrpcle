@@ -8,7 +8,7 @@ __author__ = 'GeorgHinkel'
 from hbp_nrp_cle.robotsim.RobotInterface import Topic
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
-    ISpikeDetector, IDCSource, IACSource, INCSource, IPopulationRate, \
+    IDCSource, IACSource, INCSource, IPopulationRate, \
     ICustomDevice, IBrainCommunicationAdapter, ISpikeRecorder
 from ._MappingSpecification import ParameterMappingSpecification
 from . import config
@@ -23,7 +23,7 @@ class MapSpikeSink(ParameterMappingSpecification):
     Class to map parameters to spike sinks such as leaky integrators
     """
 
-    supported_device_types = [ISpikeDetector, ILeakyIntegratorAlpha, ILeakyIntegratorExp,
+    supported_device_types = [ILeakyIntegratorAlpha, ILeakyIntegratorExp,
                               IPopulationRate, ISpikeRecorder]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:

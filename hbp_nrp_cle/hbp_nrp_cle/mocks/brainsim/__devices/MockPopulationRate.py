@@ -3,13 +3,14 @@ Implementation of MockPopulationRate
 moduleauthor: scheidecker@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPopulationRate
 import warnings
 
 __author__ = 'PatrikScheidecker'
 
 
-class MockPopulationRate(IPopulationRate):
+class MockPopulationRate(AbstractMockBrainDevice, IPopulationRate):
     """
     Represents the rate of a population of LIF neurons by
     measuring and normalizing the membrane potential of a

@@ -3,13 +3,14 @@ Implementation of MockLeakyIntegratorExp
 moduleauthor: scheidecker@fzi.de
 '''
 
+from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorExp
 import warnings
 
 __author__ = 'PatrikScheidecker'
 
 
-class MockLeakyIntegratorExp(ILeakyIntegratorExp):
+class MockLeakyIntegratorExp(AbstractMockBrainDevice, ILeakyIntegratorExp):
     """
     Represents the membrane potential of a current-based LIF neuron
     with decaying-exponential post-synaptic currents
