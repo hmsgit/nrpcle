@@ -12,7 +12,7 @@ __author__ = 'GeorgHinkel, Igor Peric, Alina Roitberg'
 logger = logging.getLogger(__name__)
 
 
-class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
+class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
     """
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"

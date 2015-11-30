@@ -6,12 +6,12 @@ moduleauthor: probst@fzi.de
 import logging
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, ILeakyIntegratorExp, IPopulationRate, \
-    IFixedSpikeGenerator, ISpikeRecorder
+    IFixedSpikeGenerator
 
 from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter
-from hbp_nrp_cle.brainsim.pynn.__devices import PyNNSpikeRecorder, \
-    PyNNPopulationRate, PyNNACSource, PyNNDCSource, PyNNFixedSpikeGenerator, \
-    PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp, PyNNNCSource, PyNNPoissonSpikeGenerator
+from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate, PyNNACSource, PyNNDCSource, \
+    PyNNFixedSpikeGenerator, PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp, PyNNNCSource, \
+    PyNNPoissonSpikeGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,10 @@ class PyNNCommunicationAdapter(AbstractCommunicationAdapter):
                      ILeakyIntegratorAlpha: PyNNLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: PyNNLeakyIntegratorExp,
                      IPopulationRate: PyNNPopulationRate,
-                     ISpikeRecorder: PyNNSpikeRecorder}
+                     # ISpikeRecorder: due to missing support of PyNN < 0.8 to retrieve spike data
+                     #                 from Nest through memory, there is currently no pure-PyNN
+                     #                 implementation for it.
+                     }
 
     def initialize(self):
         """
@@ -49,4 +52,4 @@ class PyNNCommunicationAdapter(AbstractCommunicationAdapter):
         """
         if device_type in self.__device_dict:
             return self.__device_dict[device_type]
-        super(PyNNCommunicationAdapter, self)._get_device_type(device_type)
+        return super(PyNNCommunicationAdapter, self)._get_device_type(device_type)

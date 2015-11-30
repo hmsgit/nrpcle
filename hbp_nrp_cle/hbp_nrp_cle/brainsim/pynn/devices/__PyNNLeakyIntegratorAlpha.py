@@ -6,7 +6,7 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha
 import warnings
-import pyNN.nest as sim
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
 __author__ = 'DimitriProbst'
 
@@ -47,8 +47,8 @@ class PyNNLeakyIntegratorAlpha(AbstractBrainDevice, ILeakyIntegratorAlpha):
         :param rng: RNG object to be used by the Connector
             synaptic plasticity mechanisms to use
         """
-        self.__cell = None
-        self.__voltage = None
+        self._cell = None
+        self._voltage = None
 
         self.create_device(params)
         self.start_record_voltage()
@@ -58,7 +58,7 @@ class PyNNLeakyIntegratorAlpha(AbstractBrainDevice, ILeakyIntegratorAlpha):
         """
         Returns the membrane voltage of the cell
         """
-        return self.__voltage
+        return self._voltage
 
     def create_device(self, params):
         """
@@ -85,14 +85,14 @@ class PyNNLeakyIntegratorAlpha(AbstractBrainDevice, ILeakyIntegratorAlpha):
                       'v_reset': params.get('v_reset', 0.0),
                       'tau_refrac': params.get('tau_refrac', 0.1),
                       'i_offset': params.get('i_offset', 0.0)}
-        self.__cell = sim.Population(1, sim.IF_curr_alpha, cellparams)
-        sim.initialize(self.__cell, 'v', self.__cell[0].v_rest)
+        self._cell = sim.Population(1, sim.IF_curr_alpha, cellparams)
+        sim.initialize(self._cell, 'v', self._cell[0].v_rest)
 
     def start_record_voltage(self):
         """
         Records the voltage of the neuron
         """
-        self.__cell.record_v()
+        self._cell.record_v()
 
     def connect(self, neurons, **params):
         """
@@ -124,33 +124,6 @@ class PyNNLeakyIntegratorAlpha(AbstractBrainDevice, ILeakyIntegratorAlpha):
         label = params.get('label', None)
         rng = params.get('rng', None)
 
-#        if type(neurons) == list:
-#            target = ['excitatory', 'inhibitory']
-#            if connector is None:
-#                warnings.warn("Default weights and delays are used.",
-#                              UserWarning)
-#                connector = []
-#                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-#                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
-#                connector.append(sim.AllToAllConnector(weights=weights,
-#                                                       delays=delays))
-#                weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
-#                connector.append(sim.AllToAllConnector(weights=weights,
-#                                                       delays=delays))
-#            proj_exc = sim.Projection(presynaptic_population=neurons[0],
-#                                      postsynaptic_population=self.__cell,
-#                                      method=connector[0], source=source,
-#                                      target=target[0],
-#                                      synapse_dynamics=synapse_dynamics,
-#                                      label=label, rng=rng)
-#            proj_inh = sim.Projection(presynaptic_population=neurons[1],
-#                                      postsynaptic_population=self.__cell,
-#                                      method=connector[1], source=source,
-#                                      target=target[1],
-#                                      synapse_dynamics=synapse_dynamics,
-#                                      label=label, rng=rng)
-#            return [proj_exc, proj_inh]
-#        else:
         if connector is None:
             warnings.warn("Default weights and delays are used.",
                           UserWarning)
@@ -164,7 +137,7 @@ class PyNNLeakyIntegratorAlpha(AbstractBrainDevice, ILeakyIntegratorAlpha):
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
         proj = sim.Projection(presynaptic_population=neurons,
-                              postsynaptic_population=self.__cell,
+                              postsynaptic_population=self._cell,
                               method=connector, source=source,
                               target=target,
                               synapse_dynamics=synapse_dynamics,
@@ -179,10 +152,4 @@ class PyNNLeakyIntegratorAlpha(AbstractBrainDevice, ILeakyIntegratorAlpha):
 
         :param time: The current simulation time
         """
-        ### HACK ###
-        # The usual PyNN get_v() call
-        # return self.__cell.get_v()[-1, -1]
-        # takes too much time.
-        # In the meantime, until the PyNN call gets fixed, we can use the
-        # function of the NEST back-end.
-        self.__voltage = sim.simulator.nest.GetStatus([self.__cell[0]])[0]['V_m']
+        self._voltage = self._cell.get_v()[-1, -1]

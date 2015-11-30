@@ -7,8 +7,6 @@ moduleauthor: probst@fzi.de
 import unittest
 
 import numpy as np
-from hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter import \
-    PyNNCommunicationAdapter
 
 import pyNN.nest as sim
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
@@ -16,6 +14,8 @@ from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
     IPopulationRate, IFixedSpikeGenerator, ILeakyIntegratorAlpha, \
     ILeakyIntegratorExp, IDeviceGroup
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
+from hbp_nrp_cle.brainsim.pynn_nest.PyNNNestCommunicationAdapter import \
+    PyNNNestCommunicationAdapter
 from mock import patch
 from testfixtures import log_capture, LogCapture
 
@@ -44,7 +44,7 @@ class PyNNAdaptersTest(unittest.TestCase):
                                     min_delay=0.1,
                                     max_delay=4.0,
                                     num_threads=1)
-            self.communicator = PyNNCommunicationAdapter()
+            self.communicator = PyNNNestCommunicationAdapter()
             self.neurons_cond = sim.Population(10, sim.IF_cond_exp)
             self.neurons_curr = sim.Population(10, sim.IF_curr_exp)
             self.two_neurons_pop_cond = [sim.Population(10, sim.IF_cond_exp),

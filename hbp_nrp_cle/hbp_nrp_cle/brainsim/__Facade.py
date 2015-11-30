@@ -8,12 +8,11 @@ The purpose of the abstraction is to facilitate later exchanges of the brain ada
 
 __author__ = "Sebastian Krach"
 
+from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
+from hbp_nrp_cle.brainsim.pynn_nest.PyNNNestCommunicationAdapter import PyNNNestCommunicationAdapter
 from . import config
 
-from hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter import PyNNCommunicationAdapter
-from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
-
-DEFAULT_COMMUNICATION_ADAPTER = PyNNCommunicationAdapter
+DEFAULT_COMMUNICATION_ADAPTER = PyNNNestCommunicationAdapter
 DEFAULT_CONTROL_ADAPTER = PyNNControlAdapter
 
 

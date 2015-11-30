@@ -5,8 +5,7 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
-import pyNN.nest as sim
-import nest
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import numpy as np
 import warnings
 
@@ -38,8 +37,8 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         :param rng: RNG object to be used by the Connector
             synaptic plasticity mechanisms to use
         """
-        self.__generator = None
-        self.__currentsource = None
+        self._generator = None
+        self._currentsource = None
         self.__rate = params.get('rate', 0.0)
         self.create_device()
 
@@ -50,6 +49,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         """
         return self.__rate
 
+    # pylint: disable=unused-argument
     @rate.setter
     def rate(self, value):
         """
@@ -57,11 +57,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
 
         :param value: float
         """
-        amplitude = self.set_current(value)
-        self.__currentsource.amplitude = amplitude
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__currentsource._device, {'amplitude': 1000.0 * amplitude})
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     def create_device(self):
         """
@@ -73,11 +69,11 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
                       'v_thresh': -50.0,
                       'v_reset': -100.0,
                       'v_rest': -100.0}
-        self.__generator = sim.Population(1, sim.IF_curr_exp, cellparams)
-        sim.initialize(self.__generator, 'v', self.__generator[0].v_rest)
-        self.__currentsource = sim.DCSource(
+        self._generator = sim.Population(1, sim.IF_curr_exp, cellparams)
+        sim.initialize(self._generator, 'v', self._generator[0].v_rest)
+        self._currentsource = sim.DCSource(
             amplitude=self.set_current(self.__rate))
-        self.__currentsource.inject_into(self.__generator)
+        self._currentsource.inject_into(self._generator)
 
     def set_current(self, rate):
         """
@@ -131,38 +127,6 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         label = params.get('label', None)
         rng = params.get('rng', None)
 
-#        if type(neurons) == list:
-#            target = ['excitatory', 'inhibitory']
-#            if connector is None:
-#                warnings.warn("Default weights and delays are used.",
-#                              UserWarning)
-#                connector = []
-#                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-#                delays = sim.RandomDistribution('uniform', [0.1, 2.0])
-#                connector.append(sim.AllToAllConnector(weights=weights,
-#                                                       delays=delays))
-#                if neurons[1].conductance_based:
-#                    weights = sim.RandomDistribution('uniform', [0.0,
-#                                                                 0.01])
-#                else:
-#                    weights = sim.RandomDistribution('uniform', [-0.01,
-#                                                                 -0.0])
-#                connector.append(sim.AllToAllConnector(weights=weights,
-#                                                       delays=delays))
-#            proj_exc = sim.Projection(presynaptic_population=self.__generator,
-#                                      postsynaptic_population=neurons[0],
-#                                      method=connector[0], source=source,
-#                                      target=target[0],
-#                                      synapse_dynamics=synapse_dynamics,
-#                                      label=label, rng=rng)
-#            proj_inh = sim.Projection(presynaptic_population=self.__generator,
-#                                      postsynaptic_population=neurons[1],
-#                                      method=connector[1], source=source,
-#                                      target=target[1],
-#                                      synapse_dynamics=synapse_dynamics,
-#                                      label=label, rng=rng)
-#            return [proj_exc, proj_inh]
-#        else:
         if connector is None:
             warnings.warn("Default weights and delays are used.",
                           UserWarning)
@@ -176,7 +140,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
             delays = sim.RandomDistribution('uniform', [0.1, 2.0])
             connector = sim.AllToAllConnector(weights=weights,
                                               delays=delays)
-        proj = sim.Projection(presynaptic_population=self.__generator,
+        proj = sim.Projection(presynaptic_population=self._generator,
                               postsynaptic_population=neurons,
                               method=connector, source=source,
                               target=target,

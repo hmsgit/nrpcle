@@ -5,10 +5,10 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IACSource
-import pyNN.nest as sim
-import nest
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
-__author__ = 'DimitriProbst'
+
+__author__ = 'DimitriProbst, Sebastian Krach'
 
 
 class PyNNACSource(AbstractBrainDevice, IACSource):
@@ -28,7 +28,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, dafault: infinity
         """
-        self.__generator = None
+        self._generator = None
 
         self.create_device(params)
 
@@ -37,8 +37,10 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         Returns the amplitude of the current
         """
-        return self.__generator.amplitude
+        return self._generator.amplitude
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @amplitude.setter
     def amplitude(self, value):
         """
@@ -46,18 +48,17 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        self.__generator.amplitude = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'amplitude': 1000.0 * value})
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     @property
     def offset(self):
         """
         Returns the offset of the current
         """
-        return self.__generator.offset
+        return self._generator.offset
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @offset.setter
     def offset(self, value):
         """
@@ -65,18 +66,17 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        self.__generator.offset = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'offset': 1000.0 * value})
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     @property
     def frequency(self):
         """
         Returns the frequency of the current
         """
-        return self.__generator.frequency
+        return self._generator.frequency
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @frequency.setter
     def frequency(self, value):
         """
@@ -84,18 +84,17 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        self.__generator.frequency = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'frequency': float(value)})
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     @property
     def phase(self):
         """
         Returns the phase of the current
         """
-        return self.__generator.phase
+        return self._generator.phase
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @phase.setter
     def phase(self, value):
         """
@@ -103,10 +102,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        self.__generator.phase = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'phase': float(value)})
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     def create_device(self, params):
         """
@@ -120,7 +116,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, dafault: infinity
         """
-        self.__generator = sim.ACSource(amplitude=params.get('amplitude', 1.0),
+        self._generator = sim.ACSource(amplitude=params.get('amplitude', 1.0),
                                         offset=params.get('offset', 0.0),
                                         frequency=params.get('frequency',
                                                              10.0),
@@ -137,4 +133,4 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
-        self.__generator.inject_into(neurons)
+        self._generator.inject_into(neurons)

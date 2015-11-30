@@ -5,8 +5,7 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IDCSource
-import pyNN.nest as sim
-import nest
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
 __author__ = 'DimitriProbst'
 
@@ -25,7 +24,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, default: infinity
         """
-        self.__generator = None
+        self._generator = None
         self.create_device(params)
 
     @property
@@ -33,8 +32,10 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         """
         Returns the amplitude of the current
         """
-        return self.__generator.amplitude
+        return self._generator.amplitude
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @amplitude.setter
     def amplitude(self, value):
         """
@@ -42,10 +43,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
 
         :param value: float
         """
-        self.__generator.amplitude = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'amplitude': 1000.0 * value})
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     def create_device(self, params):
         """
@@ -56,7 +54,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, default: infinity
         """
-        self.__generator = sim.DCSource(amplitude=params.get('amplitude', 1.0),
+        self._generator = sim.DCSource(amplitude=params.get('amplitude', 1.0),
                                         start=params.get('start', 0.0),
                                         stop=params.get('stop', None))
 
@@ -69,4 +67,4 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
-        self.__generator.inject_into(neurons)
+        self._generator.inject_into(neurons)

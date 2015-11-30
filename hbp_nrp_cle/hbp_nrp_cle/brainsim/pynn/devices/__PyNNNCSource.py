@@ -5,8 +5,7 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import INCSource
-import pyNN.nest as sim
-import nest
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
 __author__ = 'DimitriProbst'
 
@@ -31,7 +30,7 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         :param rng: an RNG object from the `pyNN.random` module,
             default: NativeRNG of the back-end
         """
-        self.__generator = None
+        self._generator = None
 
         self.create_device(params)
 
@@ -40,8 +39,10 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         """
         Returns the mean of the current
         """
-        return self.__generator.mean
+        return self._generator.mean
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @mean.setter
     def mean(self, value):
         """
@@ -49,18 +50,18 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
 
         :param value: float
         """
-        self.__generator.mean = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'mean': 1000.0 * value})
+
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     @property
     def stdev(self):
         """
         Returns the stdev of the current
         """
-        return self.__generator.stdev
+        return self._generator.stdev
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     @stdev.setter
     def stdev(self, value):
         """
@@ -68,10 +69,8 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
 
         :param value: float
         """
-        self.__generator.stdev = value
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self.__generator._device, {'std': 1000.0 * value})
+
+        raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
     def create_device(self, params):
         """
@@ -87,7 +86,7 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         :param rng: an RNG object from the `pyNN.random` module,
             default: NativeRNG of the back-end
         """
-        self.__generator = sim.NoisyCurrentSource(
+        self._generator = sim.NoisyCurrentSource(
             mean=params.get('mean', 0.0),
             stdev=params.get('stdev', 1.0),
             dt=params.get('dt', None),
@@ -101,4 +100,4 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         param neurons: must be a Population, PopulationView or
         Assembly object
         """
-        self.__generator.inject_into(neurons)
+        self._generator.inject_into(neurons)

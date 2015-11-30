@@ -4,8 +4,8 @@ moduleauthor: probst@fzi.de
 '''
 
 from hbp_nrp_cle.brainsim import IBrainControlAdapter
-import pyNN.nest as sim
 from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import logging
 from os import path
 
