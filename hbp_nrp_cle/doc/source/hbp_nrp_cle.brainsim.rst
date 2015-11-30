@@ -70,65 +70,120 @@ The *PyNNCommunicationAdapter* uses the following modules to implement its mappi
 IACSource
 ^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNACSource
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNACSource
     :members:
     :show-inheritance:
 
 INCSource
 ^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNDCSource
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNDCSource
     :members:
     :show-inheritance:
     
 IFixedSpikeGenerator
 ^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNFixedSpikeGenerator
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator
     :members:
     :show-inheritance:
     
-ILeakyIntegratorAlpha
-^^^^^^^^^^^^^^^^^^^^^
+ILeakyIntegratorAlpha and ILeakyIntegratorExp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNLeakyIntegratorAlpha
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegrator
     :members:
     :show-inheritance:
     
-ILeakyIntegratorExp
-^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNLeakyIntegratorExp
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegratorTypes
     :members:
     :show-inheritance:
     
 INCSource
 ^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNNCSource
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNNCSource
     :members:
     :show-inheritance:
+
 
 IPoissonSpikeGenerator
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNPoissonSpikeGenerator
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator
     :members:
     :show-inheritance:
     
 IPopulationRate
 ^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNPopulationRate
+.. automodule:: hbp_nrp_cle.brainsim.pynn.devices.__PyNNPopulationRate
+    :members:
+    :show-inheritance:
+
+
+Devices used by the PyNNNestCommunicationAdapter
+------------------------------------------------
+
+The *PyNNNestCommunicationAdapter* uses the following modules to implement its mapping:
+
+IACSource
+^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestACSource
+    :members:
+    :show-inheritance:
+
+INCSource
+^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestDCSource
+    :members:
+    :show-inheritance:
+
+IFixedSpikeGenerator
+^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestFixedSpikeGenerator
+    :members:
+    :show-inheritance:
+
+ILeakyIntegratorAlpha and ILeakyIntegratorExp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestLeakyIntegrator
+    :members:
+    :show-inheritance:
+
+
+INCSource
+^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestNCSource
+    :members:
+    :show-inheritance:
+
+IPoissonSpikeGenerator
+^^^^^^^^^^^^^^^^^^^^^^
+
+Thy *PyNNNestCommunicationAdapter* does not provide an own poisson spike generator implementation
+ but uses the one provided by the *PyNNCommunicationAdapter* (see
+ :class:`hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator`).
+
+IPopulationRate
+^^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestPopulationRate
     :members:
     :show-inheritance:
 
 ISpikeRecorder
 ^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__devices.__PyNNSpikeRecorder
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestSpikeRecorder
     :members:
     :show-inheritance:
+
 
 :mod:`PyNNControlAdapter` Module
 --------------------------------

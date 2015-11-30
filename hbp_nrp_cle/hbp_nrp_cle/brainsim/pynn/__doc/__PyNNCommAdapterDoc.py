@@ -10,5 +10,5 @@ import mock
 
 sys.modules['pyNN'] = mock.Mock()
 sys.modules['pyNN.nest'] = mock.Mock()
-import hbp_nrp_cle.brainsim.pynn_nest.PyNNCommunicationAdapter as PCA
+import hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter as PCA
 sys.modules[__name__] = PCA

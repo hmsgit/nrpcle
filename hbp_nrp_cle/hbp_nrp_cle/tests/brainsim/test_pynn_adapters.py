@@ -158,8 +158,9 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertIsInstance(self.communicator.generator_devices[4], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
-            self.two_neurons_pop_cond, IPoissonSpikeGenerator)
+            self.two_neurons_pop_cond, IPoissonSpikeGenerator, target=['excitatory', 'inhibitory'])
         self.assertIsInstance(self.communicator.generator_devices[5], IDeviceGroup)
+        self.assertEqual(len(self.communicator.generator_devices[5]), 2)
         self.assertIsInstance(self.communicator.generator_devices[5][0], IPoissonSpikeGenerator)
         self.assertIsInstance(self.communicator.generator_devices[5][1], IPoissonSpikeGenerator)
 

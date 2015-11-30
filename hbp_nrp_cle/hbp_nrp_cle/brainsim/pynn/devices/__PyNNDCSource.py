@@ -15,6 +15,12 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
     Represents a direct current generator
     """
 
+    default_parameters = {
+        "amplitude": 1.0,
+        "start": 0.0,
+        "stop": float("inf")
+    }
+
     # pylint: disable=W0221
     def __init__(self, **params):
         """
@@ -24,8 +30,10 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, default: infinity
         """
+
+        super(PyNNDCSource, self).__init__(**params)
         self._generator = None
-        self.create_device(params)
+        self.create_device()
 
     @property
     def amplitude(self):
@@ -43,24 +51,21 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
 
         :param value: float
         """
+
         raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
-    def create_device(self, params):
+    def create_device(self):
         """
         Create a direct current source
-
-        :param params: Dictionary of neuron configuration parameters
-        :param amplitude: Amplitude of direct current, default: 1.0 nA
-        :param start: Start time of current injection, default: 0.0 ms
-        :param stop: Stop time of current injection, default: infinity
         """
-        self._generator = sim.DCSource(amplitude=params.get('amplitude', 1.0),
-                                        start=params.get('start', 0.0),
-                                        stop=params.get('stop', None))
+
+        self._generator = sim.DCSource(**self.get_parameters("amplitude",
+                                                             "start",
+                                                             "stop"))
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
-    def connect(self, neurons, **params):
+    def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the device.
 

@@ -20,6 +20,17 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
     leaky integrator with decaying-exponential post-synaptic currents
     """
 
+    default_parameters = {
+        'tau_fall': 20.0,
+        'tau_rise': 10.0
+    }
+
+    fixed_parameters = {
+        'v_thresh': float('inf'),
+        'cm': 1.0,
+        'v_rest': 0.0
+    }
+
     # pylint: disable=W0221
     def __init__(self, **params):
         """
@@ -33,13 +44,15 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         :param tau_rise: Rising time constant, default: 10.0 ms
         :param tau_fall: Falling time constant, default: 20.0 ms
         """
+        super(PyNNPopulationRate, self).__init__(**params)
+
         self._cell = None
         self._weight = None
         self._rate = None
 
-        self.create_device(params)
-        self.calculate_weight()
-        self.start_record_rate()
+        self._create_device()
+        self._calculate_weight()
+        self._start_record_rate()
 
     @property
     def rate(self):
@@ -48,24 +61,26 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         """
         return self._rate
 
-    def create_device(self, params):
+    def _update_parameters(self, params):
+        super(PyNNPopulationRate, self)._update_parameters(params)
+        self._parameters["tau_rise"], self._parameters["tau_fall"] = \
+            sorted(self.get_parameters("tau_rise", "tau_fall").values())
+
+    def _create_device(self):
         """
         Creates a LIF neuron with decaying-exponential post-synaptic currents
         and current-based synapses.
-
-        :param params: Dictionary of neuron configuration parameters
-        :param tau_rise: Rising time constant, default: 10.0 ms
-        :param tau_fall: Falling time constant, default: 20.0 ms
         """
-        cellparams = {'v_thresh': float('inf'),
-                      'cm': 1.0,
-                      'tau_m': params.get('tau_fall', 20.0),
-                      'tau_syn_E': params.get('tau_rise', 10.0),
-                      'v_rest': 0.0}
-        self._cell = sim.Population(1, sim.IF_curr_exp, cellparams)
+
+        self._cell = sim.Population(1, sim.IF_curr_exp,
+                                    self.get_parameters(("tau_m", "tau_fall"),
+                                                        ("tau_syn_E", "tau_rise"),
+                                                        "v_thresh",
+                                                        "cm",
+                                                        "v_rest"))
         sim.initialize(self._cell, 'v', self._cell[0].v_rest)
 
-    def calculate_weight(self):
+    def _calculate_weight(self):
         """
         Calculates the weight of a neuron from the population to the device
         such that the area below the resulting PSP is 1. The exact shape of a
@@ -79,7 +94,7 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
             -x_new / self._cell[0].tau_syn_E))
         self._weight = 1.0 / simps(y_new, dx=sim.state.dt)
 
-    def start_record_rate(self):
+    def _start_record_rate(self):
         """
         Records the rate of a neuronal population
         """
@@ -87,7 +102,7 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
-    def connect(self, neurons, **params):
+    def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
         device.

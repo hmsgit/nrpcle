@@ -23,7 +23,8 @@ class PyNNNestDCSource(PyNNDCSource):
 
         :param value: float
         """
-        self._generator.amplitude = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'amplitude': 1000.0 * value})
+        if self._generator.amplitude != value:
+            self._generator.amplitude = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            nest.SetStatus(self._generator._device, {"amplitude": 1000.0 * value})

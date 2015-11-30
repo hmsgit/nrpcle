@@ -23,10 +23,11 @@ class PyNNNestACSource(PyNNACSource):
 
         :param value: float
         """
-        self._generator.amplitude = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'amplitude': 1000.0 * value})
+        if value != self._generator.amplitude:
+            self._generator.amplitude = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            nest.SetStatus(self._generator._device, {'amplitude': 1000.0 * value})
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ
@@ -37,10 +38,11 @@ class PyNNNestACSource(PyNNACSource):
 
         :param value: float
         """
-        self._generator.offset = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'offset': 1000.0 * value})
+        if self._generator.offset != value:
+            self._generator.offset = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            nest.SetStatus(self._generator._device, {'offset': 1000.0 * value})
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ
@@ -51,10 +53,11 @@ class PyNNNestACSource(PyNNACSource):
 
         :param value: float
         """
-        self._generator.frequency = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'frequency': float(value)})
+        if self._generator.frequency != value:
+            self._generator.frequency = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            nest.SetStatus(self._generator._device, {'frequency': float(value)})
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ
@@ -65,7 +68,8 @@ class PyNNNestACSource(PyNNACSource):
 
         :param value: float
         """
-        self._generator.phase = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'phase': float(value)})
+        if self._generator.phase != value:
+            self._generator.phase = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            nest.SetStatus(self._generator._device, {'phase': float(value)})

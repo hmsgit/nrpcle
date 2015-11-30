@@ -1,20 +1,25 @@
 '''
-Implementation of MockLeakyIntegratorAlpha
-moduleauthor: Michael.Weber@fzi.de
+This module contains a mock implementation for the two leaky integrator devices
+ILeakyIntegratorAlpha and ILeakyIntegratorExp
 '''
 
 from .MockAbstractBrainDevice import AbstractMockBrainDevice
-from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha
+from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, ILeakyIntegratorExp
 import warnings
 
 __author__ = 'MichaelWeber'
 
 
-class MockLeakyIntegratorAlpha(AbstractMockBrainDevice, ILeakyIntegratorAlpha):
+class MockLeakyIntegrator(AbstractMockBrainDevice):
     """
-    Represents the membrane potential of a current-based LIF neuron
-    with alpha-shaped post synaptic currents
+    Mock device for leaky integrators
     """
+
+    default_parameters = {
+        "target": "excitatory",
+        "v_rest": 0.0,
+        "updates": []
+    }
 
     def __init__(self, **params):
         """
@@ -25,8 +30,10 @@ class MockLeakyIntegratorAlpha(AbstractMockBrainDevice, ILeakyIntegratorAlpha):
 
         :param params: Dictionary of neuron configuration parameters
         """
-        self.__voltage = params.get('v_rest', 0.0)
-        self.__update = params.get('updates', [])
+        super(MockLeakyIntegrator, self).__init__(**params)
+
+        self.__voltage = self._parameters["v_rest"]
+        self.__update = self._parameters["updates"]
 
     @property
     def voltage(self):
@@ -42,7 +49,7 @@ class MockLeakyIntegratorAlpha(AbstractMockBrainDevice, ILeakyIntegratorAlpha):
         :param time: The current simulation time
         """
         if hasattr(self.__update, '__getitem__'):
-            while len(self.__update) > 0 and isinstance(self.__update[0], tuple)\
+            while len(self.__update) > 0 and isinstance(self.__update[0], tuple) \
                     and time >= self.__update[0][0]:
                 self.__voltage = self.__update[0][1]
                 self.__update = self.__update[1:]
@@ -69,3 +76,17 @@ class MockLeakyIntegratorAlpha(AbstractMockBrainDevice, ILeakyIntegratorAlpha):
         self.__update = updates
         if updates is None:
             self.__update = []
+
+
+class MockLeakyIntegratorAlpha(MockLeakyIntegrator, ILeakyIntegratorAlpha):
+    """
+    Mock device representing a leaky integrator using the membrane potential of a current-based
+    LIF neuron with alpha-shaped post synaptic currents
+    """
+
+
+class MockLeakyIntegratorExp(MockLeakyIntegrator, ILeakyIntegratorExp):
+    """
+    Mock device representing a leaky integrator using the membrane potential of a current-based
+    LIF neuron with alpha-shaped post synaptic currents
+    """

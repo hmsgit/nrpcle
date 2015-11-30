@@ -10,11 +10,10 @@ class IBrainDevice(object):  # pragma: no cover
     Device to connect to brain simulation
     """
 
-    def connect(self, neurons, **params):
+    def connect(self, neurons):
         """
         Connects the brain device to the specified neuron population.
         :param neurons: the neurons of the brain to which the device will connect
-        :param params: additional, device specific parameters
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

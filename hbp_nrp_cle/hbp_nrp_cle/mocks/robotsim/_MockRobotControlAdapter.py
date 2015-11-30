@@ -83,7 +83,7 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         Runs the world simulation for the given CLE time step in seconds in an asynchronous manner.
 
         :param dt: The CLE time step in seconds
-        :return a Future for the result or potential exceptions of the execution
+        :return: a Future for the result or potential exceptions of the execution
         """
         future = Future()
         future.set_result(self.run_step(dt))

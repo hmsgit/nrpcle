@@ -263,7 +263,7 @@ class IRobotControlAdapter(object):  # pragma: no cover
         Runs the world simulation for the given CLE time step in seconds in an asynchronous manner.
 
         :param dt: The CLE time step in seconds
-        :return a Future for the result or potential exceptions of the execution
+        :return: a Future for the result or potential exceptions of the execution
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

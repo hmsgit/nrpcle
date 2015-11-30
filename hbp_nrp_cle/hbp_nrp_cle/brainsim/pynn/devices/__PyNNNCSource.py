@@ -16,6 +16,15 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
     :param kwargs: Optional configuration parameters
     """
 
+    default_parameters = {
+        'mean': 0.0,
+        'stdev': 1.0,
+        "dt": None,
+        "start": 0.0,
+        "stop": float("inf"),
+        "rng": sim.NativeRNG()
+    }
+
     # pylint: disable=W0221
     def __init__(self, **params):
         """
@@ -30,9 +39,11 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         :param rng: an RNG object from the `pyNN.random` module,
             default: NativeRNG of the back-end
         """
+        super(PyNNNCSource, self).__init__(**params)
+
         self._generator = None
 
-        self.create_device(params)
+        self.create_device()
 
     @property
     def mean(self):
@@ -72,29 +83,15 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
 
         raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
-    def create_device(self, params):
+    def create_device(self):
         """
         Create a noisy current source
 
-        :param params: Dictionary of neuron configuration parameters
-        :param mean: Mean value of the noisy current, default: 0.0 nA
-        :param stdev: Standard deviation of the noisy current, default: 1.0 nA
-        :param dt: Interval between updates of the current amplitude in ms,
-            default: simulation time step
-        :param start: Start time of current injection, default: 0.0 ms
-        :param stop: Stop time of current injection, default: infinity
-        :param rng: an RNG object from the `pyNN.random` module,
-            default: NativeRNG of the back-end
         """
         self._generator = sim.NoisyCurrentSource(
-            mean=params.get('mean', 0.0),
-            stdev=params.get('stdev', 1.0),
-            dt=params.get('dt', None),
-            start=params.get('start', 0.0),
-            stop=params.get('stop', None),
-            rng=params.get('rng', sim.NativeRNG()))
+            **self.get_parameters("mean", "stdev", "dt", "start", "stop", "rng"))
 
-    def connect(self, neurons, **params):
+    def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the device.
         param neurons: must be a Population, PopulationView or

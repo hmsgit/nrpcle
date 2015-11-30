@@ -16,7 +16,7 @@ class PyNNNestPopulationRate(PyNNPopulationRate):
     leaky integrator with decaying-exponential post-synaptic currents
     """
 
-    def start_record_rate(self):
+    def _start_record_rate(self):
         # Since we get the data directly from Nest and Nest supports reading of just the latest
         # value we don't need to record the entire voltage trace.
         pass

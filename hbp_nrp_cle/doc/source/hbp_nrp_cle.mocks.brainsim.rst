@@ -19,40 +19,28 @@ Devices used by the MockCommunicationAdapter
 
 The *MockCommunicationAdapter* uses the following modules to implement its mapping:
 
-IACSource
-^^^^^^^^^
+IACSource and IDCSource
+^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockACSource
+.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockCurrentSource
     :members:
     :show-inheritance:
 
-INCSource
-^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockDCSource
-    :members:
-    :show-inheritance:
-    
-IFixedSpikeGenerator
-^^^^^^^^^^^^^^^^^^^^
+Spike Generators
+^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockFixedSpikeGenerator
+.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockSpikeGenerator
     :members:
     :show-inheritance:
     
-ILeakyIntegratorAlpha
-^^^^^^^^^^^^^^^^^^^^^
+Leaky Integrator Devices
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockLeakyIntegratorAlpha
+.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockLeakyIntegrator
     :members:
     :show-inheritance:
-    
-ILeakyIntegratorExp
-^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockLeakyIntegratorExp
-    :members:
-    :show-inheritance:
     
 INCSource
 ^^^^^^^^^
@@ -61,13 +49,6 @@ INCSource
     :members:
     :show-inheritance:
 
-IPoissonSpikeGenerator
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: hbp_nrp_cle.mocks.brainsim.__devices.MockPoissonSpikeGenerator
-    :members:
-    :show-inheritance:
-    
 IPopulationRate
 ^^^^^^^^^^^^^^^
 

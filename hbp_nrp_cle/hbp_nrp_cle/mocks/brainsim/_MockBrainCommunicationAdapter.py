@@ -1,19 +1,16 @@
 '''
-MockBrainCommunicationAdapter.py
-moduleauthor: Michael.Weber@fzi.de
+This module contains the MockBrainCommunicationAdapter which can be used for running the cle
+without a brain simulator backend.
 '''
 
 from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, ICustomDevice, \
     IFixedSpikeGenerator, ILeakyIntegratorExp, IPopulationRate, ISpikeRecorder
-from .__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
-from .__devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
-from .__devices.MockDCSource import MockDCSource
-from .__devices.MockACSource import MockACSource
+from .__devices.MockCurrentSource import MockACSource, MockDCSource
+from .__devices.MockSpikeGenerator import MockFixedSpikeGenerator, MockPoissonSpikeGenerator
 from .__devices.MockNCSource import MockNCSource
-from .__devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
-from .__devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
+from .__devices.MockLeakyIntegrator import MockLeakyIntegratorAlpha, MockLeakyIntegratorExp
 from .__devices.MockPopulationRate import MockPopulationRate
 from .__devices.MockSpikeRecorder import MockSpikeRecorder
 
@@ -22,7 +19,8 @@ __author__ = 'MichaelWeber'
 
 class MockBrainCommunicationAdapter(AbstractCommunicationAdapter):
     """
-    Represents a mock of the brain communication adapter
+    The MockBrainCommunicationAdapter implements the IBrainCommunicationAdapter interface with
+    mock capabilities. It can be used to run the CLE without having a brain simulation attached.
     """
 
     __device_dict = {IFixedSpikeGenerator: MockFixedSpikeGenerator,

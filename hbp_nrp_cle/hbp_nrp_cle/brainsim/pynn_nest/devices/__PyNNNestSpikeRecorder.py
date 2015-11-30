@@ -26,6 +26,7 @@ class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         Represents a device which returns a "1" whenever one of the recorded
         neurons has spiked, otherwise a "0"
         """
+        super(PyNNNestSpikeRecorder, self).__init__(**params)
         self.__spikes = np.array([[], []])
         self.__neurons = None
         self.__refresh_count = 0
@@ -48,7 +49,7 @@ class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         return self.__spikes
 
     # pylint: disable=protected-access
-    def start_record_spikes(self):
+    def _start_record_spikes(self):
         """
         Records the spikes of "neurons"
         """
@@ -74,7 +75,7 @@ class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
             Assembly object
         """
         self.__neurons = neurons
-        self.start_record_spikes()
+        self._start_record_spikes()
 
     # simulation time not necessary for this device
     # pylint: disable=W0613

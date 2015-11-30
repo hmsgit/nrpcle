@@ -6,7 +6,7 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNFixedSpikeGenerator
 import nest
 
-__author__ = 'DimitriProbst'
+__author__ = 'DimitriProbst, Sebastian Krach'
 
 
 class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator):
@@ -24,8 +24,10 @@ class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator):
 
         :param value: float
         """
-        amplitude = self.set_current(value)
-        self._currentsource.amplitude = amplitude
-        # PyNN<0.8 does not support changing current source reconfiguration
-        # pylint: disable=W0212
-        nest.SetStatus(self._currentsource._device, {'amplitude': 1000.0 * amplitude})
+        self._rate, current = self._calculate_rate_and_current(value)
+
+        if current != self._current:
+            self._current = current
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            nest.SetStatus(self._currentsource._device, {"amplitude": 1000.0 * current})

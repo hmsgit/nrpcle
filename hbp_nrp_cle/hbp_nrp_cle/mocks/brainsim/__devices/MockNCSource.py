@@ -1,6 +1,6 @@
 '''
-Implementation of MockNCSource
-moduleauthor: Michael.Weber@fzi.de
+This module contains the mock implementations for a noisy current source which records the
+changes to the supported device parameters and can be used to track transfer function activity.
 '''
 
 from .MockAbstractBrainDevice import AbstractMockBrainDevice
@@ -11,8 +11,13 @@ __author__ = 'MichaelWeber'
 
 class MockNCSource(AbstractMockBrainDevice, INCSource):
     """
-    Represents ai Mock of a noisy current generator
+    Represents a Mock of a noisy current generator
     """
+
+    default_parameters = {
+        "mean": 1.0
+    }
+
     #pylint: disable = W0221
     def __init__(self, **params):
         """
@@ -20,7 +25,9 @@ class MockNCSource(AbstractMockBrainDevice, INCSource):
 
         :param amplitude: Amplitude of alternating current, default: 1.0 nA
         """
-        self.__amplitude = params.get('amplitude', 1.0)
+        super(MockNCSource, self).__init__(**params)
+
+        self.__mean = self._parameters["mean"]
         self.__history = []
 
     @property
@@ -28,7 +35,7 @@ class MockNCSource(AbstractMockBrainDevice, INCSource):
         """
         Gets or sets the mean value for the noisy current
         """
-        return self.__amplitude
+        return self.__mean
 
     @mean.setter
     def mean(self, value):
@@ -37,7 +44,7 @@ class MockNCSource(AbstractMockBrainDevice, INCSource):
 
         :param value: The new mean current
         """
-        self.__amplitude = value
+        self.__mean = value
         self.__history.append(value)
 
     @property

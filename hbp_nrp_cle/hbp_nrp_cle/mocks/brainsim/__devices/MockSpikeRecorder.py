@@ -1,6 +1,7 @@
 '''
-Implementation of MockSpikeDetector
-moduleauthor: Michael.Weber@fzi.de
+This module contains the mock implementations for a spike recorder device which can be set up to
+provide predefined values at certain points in time. The device can be used as mock input for
+transfer functions, dispensing with the need to run a brain simulation to test them.
 '''
 
 from .MockAbstractBrainDevice import AbstractMockBrainDevice
@@ -16,6 +17,10 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
     neurons has spiked, otherwise a "0"
     """
 
+    default_parameters = {
+        "updates": []
+    }
+
     def __init__(self, **params):
         """
         Initializes the neuron whose membrane potential is to be read out.
@@ -25,8 +30,10 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
 
         :param params: Dictionary of neuron configuration parameters
         """
+        super(MockSpikeRecorder, self).__init__(**params)
+
         self.__spiked = False
-        self.__update = params.get('updates', [])
+        self.__update = self._parameters["updates"]
 
     @property
     def spiked(self):

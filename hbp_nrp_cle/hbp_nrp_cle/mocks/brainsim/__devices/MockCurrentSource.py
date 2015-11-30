@@ -1,26 +1,32 @@
 '''
-Implementation of MockACSource
-moduleauthor: Michael.Weber@fzi.de
+This module contains mock implementations for alternating and direct current sources which
+record the changes to the device parameters and can be used to track transfer function activity.
 '''
 
 from .MockAbstractBrainDevice import AbstractMockBrainDevice
-from hbp_nrp_cle.brainsim.BrainInterface import IACSource
+from hbp_nrp_cle.brainsim.BrainInterface import IACSource, IDCSource
 
 __author__ = 'MichaelWeber'
 
 
-class MockACSource(AbstractMockBrainDevice, IACSource):
+class MockCurrentSource(AbstractMockBrainDevice):
     """
     Represents an alternating current generator.
     """
-    #pylint: disable = W0221
+    default_parameters = {
+        "amplitude": 1.0
+    }
+
+    # pylint: disable = W0221
     def __init__(self, **params):
         """
         Initializes an alternating current generator.
 
-        :param amplitude: Amplitude of alternating current, default: 1.0 nA
+        :param amplitude: Amplitude of the current, default: 1.0 nA
         """
-        self.__amplitude = params.get('amplitude', 1.0)
+        super(MockCurrentSource, self).__init__(**params)
+
+        self.__amplitude = self._parameters["amplitude"]
         self.__history = []
 
     @property
@@ -48,3 +54,15 @@ class MockACSource(AbstractMockBrainDevice, IACSource):
         :return: A list of float values
         """
         return self.__history
+
+
+class MockACSource(MockCurrentSource, IACSource):
+    """
+    The mock device for an alternating current source
+    """
+
+
+class MockDCSource(MockCurrentSource, IDCSource):
+    """
+    The mock device ffor an direct current source
+    """

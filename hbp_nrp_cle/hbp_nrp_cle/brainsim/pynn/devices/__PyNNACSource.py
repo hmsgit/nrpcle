@@ -7,7 +7,6 @@ from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IACSource
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
-
 __author__ = 'DimitriProbst, Sebastian Krach'
 
 
@@ -15,6 +14,15 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
     """
     Represents an alternating current generator.
     """
+
+    default_parameters = {
+        "amplitude": 1.0,
+        "offset": 0.0,
+        "frequency": 10.0,
+        "phase": 0.0,
+        "start": 0.0,
+        "stop": float("inf")
+    }
 
     # pylint: disable=W0221
     def __init__(self, **params):
@@ -28,9 +36,11 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, dafault: infinity
         """
-        self._generator = None
 
-        self.create_device(params)
+        super(PyNNACSource, self).__init__(**params)
+
+        self._generator = None
+        self.create_device()
 
     @property
     def amplitude(self):
@@ -104,7 +114,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         raise RuntimeError("Resetting this property is currently not supported by PyNN")
 
-    def create_device(self, params):
+    def create_device(self):
         """
         Creates an alternating current source
 
@@ -116,17 +126,17 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, dafault: infinity
         """
-        self._generator = sim.ACSource(amplitude=params.get('amplitude', 1.0),
-                                        offset=params.get('offset', 0.0),
-                                        frequency=params.get('frequency',
-                                                             10.0),
-                                        phase=params.get('phase', 0.0),
-                                        start=params.get('start', 0.0),
-                                        stop=params.get('stop', None))
+
+        self._generator = sim.ACSource(**self.get_parameters("amplitude",
+                                                             "offset",
+                                                             "frequency",
+                                                             "phase",
+                                                             "start",
+                                                             "stop"))
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
-    def connect(self, neurons, **params):
+    def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the device.
 

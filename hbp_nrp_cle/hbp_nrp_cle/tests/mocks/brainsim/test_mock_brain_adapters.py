@@ -12,13 +12,12 @@ from hbp_nrp_cle.mocks.brainsim._MockBrainCommunicationAdapter import \
     MockBrainCommunicationAdapter
 from hbp_nrp_cle.mocks.brainsim._MockBrainControlAdapter import MockBrainControlAdapter
 import unittest
-from hbp_nrp_cle.mocks.brainsim.__devices.MockACSource import MockACSource
-from hbp_nrp_cle.mocks.brainsim.__devices.MockDCSource import MockDCSource
-from hbp_nrp_cle.mocks.brainsim.__devices.MockFixedSpikeGenerator import MockFixedSpikeGenerator
-from hbp_nrp_cle.mocks.brainsim.__devices.MockLeakyIntegratorAlpha import MockLeakyIntegratorAlpha
-from hbp_nrp_cle.mocks.brainsim.__devices.MockLeakyIntegratorExp import MockLeakyIntegratorExp
+from hbp_nrp_cle.mocks.brainsim.__devices.MockCurrentSource import MockACSource, MockDCSource
+from hbp_nrp_cle.mocks.brainsim.__devices.MockSpikeGenerator import MockFixedSpikeGenerator, \
+    MockPoissonSpikeGenerator
+from hbp_nrp_cle.mocks.brainsim.__devices.MockLeakyIntegrator import MockLeakyIntegratorAlpha, \
+    MockLeakyIntegratorExp
 from hbp_nrp_cle.mocks.brainsim.__devices.MockNCSource import MockNCSource
-from hbp_nrp_cle.mocks.brainsim.__devices.MockPoissonSpikeGenerator import MockPoissonSpikeGenerator
 from hbp_nrp_cle.mocks.brainsim.__devices.MockPopulationRate import MockPopulationRate
 from hbp_nrp_cle.mocks.brainsim.__devices.MockSpikeRecorder import MockSpikeRecorder
 from hbp_nrp_cle.mocks.brainsim.__devices.MockAbstractBrainDevice import MockDeviceGroup

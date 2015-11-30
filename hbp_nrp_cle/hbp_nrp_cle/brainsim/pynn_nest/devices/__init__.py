@@ -8,7 +8,6 @@ from .__PyNNNestACSource import PyNNNestACSource
 from .__PyNNNestDCSource import PyNNNestDCSource
 from .__PyNNNestNCSource import PyNNNestNCSource
 from .__PyNNNestFixedSpikeGenerator import PyNNNestFixedSpikeGenerator
-from .__PyNNNestLeakyIntegratorAlpha import PyNNNestLeakyIntegratorAlpha
-from .__PyNNNestLeakyIntegratorExp import PyNNNestLeakyIntegratorExp
+from .__PyNNNestLeakyIntegrator import PyNNNestLeakyIntegratorAlpha, PyNNNestLeakyIntegratorExp
 from .__PyNNNestPopulationRate import PyNNNestPopulationRate
 from .__PyNNNestSpikeRecorder import PyNNNestSpikeRecorder

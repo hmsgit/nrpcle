@@ -6,7 +6,6 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
-import warnings
 
 __author__ = 'DimitriProbst'
 
@@ -15,6 +14,20 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
     """
     Represents a Poisson spike generator
     """
+
+    default_parameters = {
+        "duration": float("inf"),
+        "start": 0.0,
+        "rate": 0.0,
+        "connector": None,
+        "weights": 0.00015,
+        "delays": 0.1,
+        "source": None,
+        "target": "excitatory",
+        "synapse_dynamics": None,
+        "label": None,
+        "rng": None
+    }
 
     # pylint: disable=W0221
     def __init__(self, **params):
@@ -37,8 +50,11 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         :param rng: RNG object to be used by the Connector
             synaptic plasticity mechanisms to use
         """
+        super(PyNNPoissonSpikeGenerator, self).__init__(**params)
+
         self.__generator = None
-        self.create_device(params)
+
+        self.create_device()
 
     @property
     def rate(self):
@@ -56,21 +72,16 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         self.__generator.set('rate', value)
 
-    def create_device(self, params):
+    def create_device(self):
         """
         Create Poisson spike generator device
-
-        :param params: generator configuration parameters
-        :param duration: Duration of spike train, default: infinity
-        :param start: Start time of spike train, default: 0.0 ms
-        :param rate: Rate/frequency of spike train, default: 0.0 Hz
         """
-        params = {'duration': params.get('duration', float('inf')),
-                  'start': params.get('start', 0.0),
-                  'rate': params.get('rate', 0.0)}
-        self.__generator = sim.Population(1, sim.SpikeSourcePoisson, params)
+        self.__generator = sim.Population(1, sim.SpikeSourcePoisson,
+                                          self.get_parameters("duration",
+                                                              "start",
+                                                              "rate"))
 
-    def connect(self, neurons, **params):
+    def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
         device. The connection structure is specified via the
@@ -80,43 +91,21 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
 
         :param neurons: must be a Population, PopulationView or
             Assembly object
-        :param params: optional configuration parameters
-        :param connector: a PyNN Connector object
-        :param source: string specifying which attribute of the presynaptic
-            cell signals action potentials
-        :param target: string specifying which synapse on the postsynaptic cell
-            to connect to: excitatory or inhibitory. If neurons is a list of
-            two populations, target is ['excitatory', 'inhibitory'], dafault is
-            excitatory
-        :param synapse_dynamics: a PyNN SynapseDy
-        :param label: label of the Projection object
-        :param rng: RNG object to be used by the Connector
-            synaptic plasticity mechanisms to use
         """
-        connector = params.get('connector', None)
-        source = params.get('source', None)
-        target = params.get('target', 'excitatory')
-        synapse_dynamics = params.get('synapse_dynamics', None)
-        label = params.get('label', None)
-        rng = params.get('rng', None)
 
-        if connector is None:
-            warnings.warn("Default weights and delays are used.",
-                          UserWarning)
-            if target == 'excitatory':
-                weights = sim.RandomDistribution('uniform', [0.00015, 0.00015])
-            else:
-                if neurons.conductance_based:
-                    weights = sim.RandomDistribution('uniform', [0.00015, 0.00015])
-                else:
-                    weights = sim.RandomDistribution('uniform', [-0.00015, -0.00015])
-            delays = sim.RandomDistribution('uniform', [.1, .1])
-            connector = sim.AllToAllConnector(weights=weights,
-                                              delays=delays)
-        proj = sim.Projection(presynaptic_population=self.__generator,
+        if "connector" in self._parameters or not self._parameters["connector"]:
+            if not (self._parameters["target"] == 'excitatory' or neurons.conductance_based):
+                self._parameters["weights"] *= -1
+
+            self._parameters["connector"] = \
+                sim.AllToAllConnector(**self.get_parameters("weights",
+                                                            "delays"))
+
+        return sim.Projection(presynaptic_population=self.__generator,
                               postsynaptic_population=neurons,
-                              method=connector, source=source,
-                              target=target,
-                              synapse_dynamics=synapse_dynamics,
-                              label=label, rng=rng)
-        return proj
+                              **self.get_parameters("source",
+                                                    "target",
+                                                    ("method", "connector"),
+                                                    "synapse_dynamics",
+                                                    "label",
+                                                    "rng"))

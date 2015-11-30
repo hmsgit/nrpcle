@@ -1,6 +1,7 @@
 '''
-Implementation of MockPopulationRate
-moduleauthor: scheidecker@fzi.de
+This module contains the mock implementations for a population rate device which can be set up to
+provide predefined values at certain points in time. The device can be used as mock input for
+transfer functions, dispensing with the need to run a brain simulation to test them.
 '''
 
 from .MockAbstractBrainDevice import AbstractMockBrainDevice
@@ -16,6 +17,12 @@ class MockPopulationRate(AbstractMockBrainDevice, IPopulationRate):
     measuring and normalizing the membrane potential of a
     leaky integrator with decaying-exponential post-synaptic currents
     """
+
+    default_parameters = {
+        "rate": 0.0,
+        "updates": []
+    }
+
     def __init__(self, **params):
         """
         Initializes the neuron whose membrane potential is to be read out.
@@ -25,8 +32,10 @@ class MockPopulationRate(AbstractMockBrainDevice, IPopulationRate):
 
         :param params: Dictionary of neuron configuration parameters
         """
-        self.__rate = params.get('rate', 0.0)
-        self.__update = params.get('updates', [])
+        super(MockPopulationRate, self).__init__(**params)
+
+        self.__rate = self._parameters["rate"]
+        self.__update = self._parameters["updates"]
 
     @property
     def rate(self):
