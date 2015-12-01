@@ -27,7 +27,7 @@ class SimulationTestCase(unittest.TestCase):
         dirpath = os.path.split(__file__)[0]
         MockedServiceRequest.generated_cle_script_file = os.path.join(dirpath, "dummy_experiment.py")
 
-        factory.start_new_simulation(MockedServiceRequest())
+        factory.create_new_simulation(MockedServiceRequest())
 
         self.assertTrue(val.experiment_cle_init_called)
         factory.simulation_terminate_event.wait()
@@ -45,7 +45,7 @@ class SimulationTestCase(unittest.TestCase):
         dirpath = os.path.split(__file__)[0]
         MockedServiceRequest.generated_cle_script_file = os.path.join(dirpath, "dummy_experiment_broken.py")
 
-        self.assertRaises(Exception, factory.start_new_simulation, MockedServiceRequest())
+        self.assertRaises(Exception, factory.create_new_simulation, MockedServiceRequest())
 
         self.assertTrue(val.experiment_cle_init_called)
         self.assertFalse(val.experiment_shutdown_called)

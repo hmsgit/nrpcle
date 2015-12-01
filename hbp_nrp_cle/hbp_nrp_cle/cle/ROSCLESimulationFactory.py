@@ -15,7 +15,7 @@ import signal
 # This package comes from the catkin package ROSCLEServicesDefinitions
 # in the GazeboRosPackage folder at the root of this CLE repository.
 from cle_ros_msgs import srv
-from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_START_NEW_SIMULATION, \
+from hbp_nrp_cle.cle import ROS_CLE_NODE_NAME, SERVICE_CREATE_NEW_SIMULATION, \
     SERVICE_VERSION, SERVICE_HEALTH, SERVICE_IS_SIMULATION_RUNNING
 
 __author__ = "Lorenzo Vannucci, Stefan Deser, Daniel Peppicelli"
@@ -66,7 +66,7 @@ class ROSCLESimulationFactory(object):
         """
         rospy.init_node(ROS_CLE_NODE_NAME)
         rospy.Service(
-            SERVICE_START_NEW_SIMULATION, srv.StartNewSimulation, self.start_new_simulation
+            SERVICE_CREATE_NEW_SIMULATION, srv.CreateNewSimulation, self.create_new_simulation
         )
         rospy.Service(
             SERVICE_IS_SIMULATION_RUNNING, srv.IsSimulationRunning, self.is_simulation_running
@@ -128,7 +128,7 @@ class ROSCLESimulationFactory(object):
         return self.running_simulation_thread is not None and \
             self.running_simulation_thread.is_alive()
 
-    def start_new_simulation(self, service_request):
+    def create_new_simulation(self, service_request):
         """
         Handler for the ROS service. Spawn a new simulation.
         Warning: Multiprocesses can not be used: https://code.ros.org/trac/ros/ticket/972

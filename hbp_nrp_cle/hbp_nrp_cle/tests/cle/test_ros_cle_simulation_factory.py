@@ -3,7 +3,7 @@ ROSCLESimulationFactory unit test
 """
 
 import hbp_nrp_cle
-from hbp_nrp_cle.cle import ROSCLESimulationFactory, ROS_CLE_NODE_NAME, SERVICE_VERSION, SERVICE_START_NEW_SIMULATION, \
+from hbp_nrp_cle.cle import ROSCLESimulationFactory, ROS_CLE_NODE_NAME, SERVICE_VERSION, SERVICE_CREATE_NEW_SIMULATION, \
     SERVICE_HEALTH
 import logging
 from mock import patch, MagicMock, Mock
@@ -82,9 +82,9 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.__ros_cle_simulation_factory.run()
         self.__mocked_rospy.init_node.assert_called_once_with(ROS_CLE_NODE_NAME)
         self.__mocked_rospy.Service.assert_any_call(
-            SERVICE_START_NEW_SIMULATION,
-            srv.StartNewSimulation,
-            self.__ros_cle_simulation_factory.start_new_simulation
+            SERVICE_CREATE_NEW_SIMULATION,
+            srv.CreateNewSimulation,
+            self.__ros_cle_simulation_factory.create_new_simulation
         )
         self.__mocked_rospy.Service.assert_any_call(
             SERVICE_VERSION,
@@ -107,7 +107,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.simulation_event.clear()
 
         background_simulation = threading.Thread(
-            target=self.__ros_cle_simulation_factory.start_new_simulation,
+            target=self.__ros_cle_simulation_factory.create_new_simulation,
             args=[self.mocked_service_request]
         )
         background_simulation.start()
@@ -125,7 +125,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.os')
     @patch('hbp_nrp_cle.robotsim.LocalGazebo.os')
-    def test_start_new_simulation_dead_thread(self, mocked_os, mocked_cle_os, mocked_logger):
+    def test_create_new_simulation_dead_thread(self, mocked_os, mocked_cle_os, mocked_logger):
         self.mockThreading()
         self.__ros_cle_simulation_factory.\
             running_simulation_thread.is_alive = MagicMock(return_value=False)
@@ -133,7 +133,7 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         with patch('hbp_nrp_cle.robotsim.LocalGazebo.LocalGazeboServerInstance.gazebo_master_uri')\
             as mock_gazebo_master_uri:
             mock_gazebo_master_uri.__get__ = Mock(return_value=None)
-            messages = self.__ros_cle_simulation_factory.start_new_simulation(
+            messages = self.__ros_cle_simulation_factory.create_new_simulation(
                 self.mocked_service_request
             )
 
@@ -155,13 +155,13 @@ class TestROSCLESimulationFactory(unittest.TestCase):
         self.assertEqual(error_message, "")
 
     @patch('hbp_nrp_cle.cle.ROSCLESimulationFactory.logger')
-    def test_start_new_simulation_living_thread(self, mocked_logger):
+    def test_create_new_simulation_living_thread(self, mocked_logger):
         self.mockThreading()
         self.__ros_cle_simulation_factory.running_simulation_thread.is_alive = MagicMock(
             return_value=True
         )
 
-        messages = self.__ros_cle_simulation_factory.start_new_simulation(
+        messages = self.__ros_cle_simulation_factory.create_new_simulation(
             self.mocked_service_request
         )
 

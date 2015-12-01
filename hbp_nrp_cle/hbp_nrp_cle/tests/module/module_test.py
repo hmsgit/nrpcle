@@ -8,7 +8,7 @@ import rospy
 import std_msgs.msg
 from std_srvs.srv import Empty
 from cle_ros_msgs.msg import SpikeRate
-from cle_ros_msgs.srv import StartNewSimulation
+from cle_ros_msgs.srv import CreateNewSimulation
 from hbp_nrp_cle.bibi_config.bibi_configuration_script import generate_cle
 from threading import Thread, Event
 import os
@@ -95,11 +95,11 @@ def run_integration_test():
 
         logging.info("Creating CLE Server")
 
-        start_new_simulation_service = rospy.ServiceProxy(
-            '/ros_cle_simulation/start_new_simulation', StartNewSimulation
+        create_new_simulation_service = rospy.ServiceProxy(
+            '/ros_cle_simulation/create_new_simulation', CreateNewSimulation
         )
         env_path = os.path.join(os.environ.get("NRP_MODELS_DIRECTORY"), 'virtual_room/virtual_room.sdf')
-        start_new_simulation_service(env_path, generated_bibi_path)
+        create_new_simulation_service(env_path, generated_bibi_path)
 
         logging.info("Creating CLE Client")
 
