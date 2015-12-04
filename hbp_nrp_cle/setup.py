@@ -29,6 +29,7 @@ config = {
                  'hbp_nrp_cle.bibi_config.generated',
                  'hbp_nrp_cle.brainsim',
                  'hbp_nrp_cle.brainsim.pynn', 'hbp_nrp_cle.brainsim.pynn.devices',
+                 'hbp_nrp_cle.brainsim.common', 'hbp_nrp_cle.brainsim.common.devices',
                  'hbp_nrp_cle.brainsim.pynn_nest', 'hbp_nrp_cle.brainsim.pynn_nest.devices',
                  'hbp_nrp_cle.cle', 'hbp_nrp_cle.mocks', 'hbp_nrp_cle.mocks.brainsim',
                  'hbp_nrp_cle.mocks.brainsim.__devices', 'hbp_nrp_cle.mocks.cle',
