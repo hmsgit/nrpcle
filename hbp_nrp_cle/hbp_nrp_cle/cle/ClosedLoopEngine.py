@@ -199,8 +199,8 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         # transfer functions
         logger.debug("Run step: Transfer functions")
-        self.tfm.run_neuron_to_robot(clk)
         self.tfm.run_robot_to_neuron(clk)
+        self.tfm.run_neuron_to_robot(clk)
 
         # update clock
         self.clock += timestep
