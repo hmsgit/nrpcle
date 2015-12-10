@@ -51,3 +51,7 @@ class SimulationTestCase(unittest.TestCase):
         self.assertFalse(val.experiment_shutdown_called)
         self.assertEqual(factory.simulation_count, 1)
         self.assertEqual(factory.failed_simulation_count, 1)
+
+
+if __name__ == '__main__':
+    unittest.main()
