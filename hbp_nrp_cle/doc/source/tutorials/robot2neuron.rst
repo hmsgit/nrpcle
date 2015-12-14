@@ -1,20 +1,24 @@
 Tutorial: Writing a Robot2Neuron TF
 ===================================
 
-This tutorial assumes you have familiarized yourself with the Braitenberg experiment. If not, please consider reading the :doc:`setup` first.
+This tutorial assumes you have familiarized yourself with the Braitenberg experiment. If not, please
+consider reading the :doc:`setup` first.
 
-Transfer Functions may be specified in two ways. The first way is to specify it on a high level through the :doc:`../BIBI-configuration`. Alternatively,
-one may specify TFs in Python through the :doc:`../hbp_nrp_cle.tf_framework`. If specified using the BIBI configuration, the TFs will be converted to Python code
-through the :doc:`../BIBI-configuration-generator`.
+Transfer Functions may be specified in two ways. The first way is to specify it on a high level
+through the :doc:`../architecture/BIBI-configuration`. Alternatively, one may specify TFs in Python
+through the :doc:`../codedoc/hbp_nrp_cle.tf_framework`. If specified using the BIBI configuration,
+the TFs will be converted to Python code through the :doc:`../codedoc/BIBI-configuration-generator`.
 
 .. note::
-    Currently, one can only specify the BIBI Configuration files through manually writing XML. However, it is intended for the future to be able to specify them in
+    Currently, one can only specify the BIBI Configuration files through manually writing XML.
+    However, it is intended for the future to be able to specify them in
     a graphical language as e.g. through a (web-based) editor as well.
 
 Specification in a BIBI Configuration XML file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: As there is a graphical editor planned, this section is subject to change as soon as the editor gets available.
+.. note:: As there is a graphical editor planned, this section is subject to change as soon as the
+    editor gets available.
 
 Again a new TF
 --------------
@@ -31,7 +35,8 @@ This will create a TF called *eye_sensor_transmit*.
 Connecting to the robot simulation
 ----------------------------------
 
-Connecting a Robot2Neuron TF to a robot simulation is pretty straightforward as we only have to specify the topic that should be listened to.
+Connecting a Robot2Neuron TF to a robot simulation is pretty straightforward as we only have to
+specify the topic that should be listened to.
 
 .. code-block:: xml
 
@@ -42,8 +47,9 @@ Connecting a Robot2Neuron TF to a robot simulation is pretty straightforward as 
 Connecting to the neuronal network
 ----------------------------------
 
-To connect a TF to the neuronal network, we first need to specify which neurons we want to connect with. Here, we have three channels, one for the
-right red pixels, one for the left right pixels and one for the green and blue pixels.
+To connect a TF to the neuronal network, we first need to specify which neurons we want to connect
+with. Here, we have three channels, one for the right red pixels, one for the left right pixels and
+one for the green and blue pixels.
 
 .. code-block:: xml
 
@@ -57,22 +63,27 @@ right red pixels, one for the left right pixels and one for the green and blue p
       <neurons xsi:type="Index" population="sensors" index="4"/>
     </device>
 
-Here, the red right pixels should be connected to neurons *0* and *2*, the left red pixels should be connected to neurons *1* and *3* and finally the green and blue pixels
-should be connected to neuron *4*. We realized the notion of multiple neurons with a range directive, but we also support a List that is more general. All of these devices shall be realized as Poisson generators.
+Here, the red right pixels should be connected to neurons *0* and *2*, the left red pixels should be
+connected to neurons *1* and *3* and finally the green and blue pixels should be connected to neuron
+*4*. We realized the notion of multiple neurons with a range directive, but we also support a List
+that is more general. All of these devices shall be realized as Poisson generators.
 
 Transferring data
 -----------------
 
-Now comes the tricky part since we need to transfer the image data to the devices. Here we assume to have a suitable library function.
-The rationale here is that TFs should be restricted to very simple transformations
-except for a few more advanced transformations that are purely implemented in Python. In our case, there is a library function for the image recognition of the Braitenberg
-experiment in *tf_lib.detect_red*.
+Now comes the tricky part since we need to transfer the image data to the devices. Here we assume to
+have a suitable library function. The rationale here is that TFs should be restricted to very simple
+transformations except for a few more advanced transformations that are purely implemented in Python.
+In our case, there is a library function for the image recognition of the Braitenberg experiment
+in *tf_lib.detect_red*.
 
-The configuration options may get more expressive in the future but right now it is limited to simple arithmetics. However, the arithmetics still allow us to calibrate the TF by
-scaling input and output values.
+The configuration options may get more expressive in the future but right now it is limited to simple
+arithmetics. However, the arithmetics still allow us to calibrate the TF by scaling input and output
+values.
 
-However, we need to ensure that an image is only traversed once and the results are used for all of the Poisson generators.
-We do this by using local variables which we then use to specify the body of the device channels.
+However, we need to ensure that an image is only traversed once and the results are used for all of
+the Poisson generators. We do this by using local variables which we then use to specify the body of
+the device channels.
 
 .. code-block:: xml
 
@@ -84,11 +95,14 @@ We do this by using local variables which we then use to specify the body of the
       </body>
     </local>
 
-We can then implement the device channel bodies using this local variable. Here, we have to know that the library function that we use returns an object with
-three attributes, one for the ratio of red pixels in the left half image, one with the ratio of red pixels in the right half image and one with the ratio non-red pixels in the
-image overall. The distinction whether a pixel is red is done in the library since the neuronal network with its effectively three sensor neurons is not capable of a reliable
-understanding of what a red color is which is why it is not useful to scale down the camera image to only two pixels.
-In particular, we decide whether a given color is red based on the HSV color model.
+We can then implement the device channel bodies using this local variable. Here, we have to know
+that the library function that we use returns an object with three attributes, one for the ratio
+of red pixels in the left half image, one with the ratio of red pixels in the right half image and
+one with the ratio non-red pixels in the image overall. The distinction whether a pixel is red is
+done in the library since the neuronal network with its effectively three sensor neurons is not
+capable of a reliable understanding of what a red color is which is why it is not useful to scale
+down the camera image to only two pixels. In particular, we decide whether a given color is red
+based on the HSV color model.
 
 .. code-block:: xml
 
@@ -153,8 +167,10 @@ The complete TF should look as follows:
 Specification in Python
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Same as for *Neuron2Robot*, a *Robot2Neuron* TF in Python is basically a Python function with a set of decorators. These decorators create a TF from a simple Python function by specifying where the function parameters come from and what should happen
-with the functions return value. Let us begin to manually implement the TF from above in Python code.
+Same as for *Neuron2Robot*, a *Robot2Neuron* TF in Python is basically a Python function with a set
+of decorators. These decorators create a TF from a simple Python function by specifying where the
+function parameters come from and what should happen with the functions return value. Let us begin
+to manually implement the TF from above in Python code.
 
 .. note:: The following code will usually be generated by the :doc:`../BIBI-configuration-generator` if BIBI Configurations are used.
 
@@ -191,7 +207,8 @@ image and *changed* which indicates whether the value has changed since the last
 Connecting to the neuronal network
 ----------------------------------
 
-As we now have three different neuron groups, we do not use the return channel but use dedicated channels for the devices. That is, we use dedicated parameters and decorators as follows:
+As we now have three different neuron groups, we do not use the return channel but use dedicated
+channels for the devices. That is, we use dedicated parameters and decorators as follows:
 
 .. code-block:: python
 
@@ -202,5 +219,7 @@ As we now have three different neuron groups, we do not use the return channel b
     @nrp.Robot2Neuron()
     def eye_sensor_transmit(t, camera, red_left_eye, red_right_eye, green_blue_eye):
 
-This has the same effect as the XML from above except that in Python implementation, we are not limited to use library functions but are free to implement the color detection directly.
-Thus, the Python way is more flexible but in the long term we aim to provide a better tool support through a graphical editor. However, also pure Python TFs will be supported, see :doc:`python_only_tfs`.
+This has the same effect as the XML from above except that in Python implementation, we are not
+limited to use library functions but are free to implement the color detection directly. Thus, the
+Python way is more flexible but in the long term we aim to provide a better tool support through a
+graphical editor. However, also pure Python TFs will be supported, see :doc:`python_only_tfs`.

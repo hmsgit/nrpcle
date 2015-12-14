@@ -1,9 +1,11 @@
 Installing the CLE
 ==================
 
-The CLE is not intended to be installed separately. Instead, it is recommended to use the CLE through the NRP platform that instantiates the CLE according to a good configuration and manages a simulation.
+The CLE is not intended to be installed separately. Instead, it is recommended to use the CLE through
+the NRP platform that instantiates the CLE according to a good configuration and manages a simulation.
 
-However, if you for whatever reason want to install the CLE isolated from the NRP platform, you can do so by following the instructions of this section.
+However, if you for whatever reason want to install the CLE isolated from the NRP platform, you can
+do so by following the instructions of this section.
 
 Install prerequisites
 ---------------------
@@ -27,7 +29,8 @@ This assumes work on Ubuntu (>= 13.10), otherwise use `ROS Hydro <http://wiki.ro
           sudo apt-get install ros-indigo-desktop-full
 
 
-* To add the `Gazebo <http://gazebosim.org/tutorials?tut=install_ubuntu&cat=installation>`_. Ubuntu package sources, run the following commands:
+* To add the `Gazebo <http://gazebosim.org/tutorials?tut=install_ubuntu&cat=installation>`_. Ubuntu
+package sources, run the following commands:
 
   .. code-block:: bash
 

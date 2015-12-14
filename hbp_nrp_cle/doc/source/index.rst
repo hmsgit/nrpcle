@@ -11,10 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   architecture
+   architecture/index
    installing_and_running
    tutorials/index
-   howtos
-   hbp_nrp_cle
+   manual/index
+   codedoc/index
    glossary
 

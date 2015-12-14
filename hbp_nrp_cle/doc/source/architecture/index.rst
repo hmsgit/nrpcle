@@ -8,9 +8,9 @@ Architecture
    cle_architecture
    synchronization
    transfer_functions
-   BIBI-configuration
-   BIBI-configuration-generator
    simulation_states
    brain_adapter
    robot_adapter
+   BIBI-configuration
+   BIBI-configuration-generator
 
