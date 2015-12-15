@@ -155,6 +155,7 @@ def cle_function_init(world_file):
 
     # Create CLE
     cle = ClosedLoopEngine(roscontrol, roscomm, braincontrol, braincomm, tfmanager, TIMESTEP)
+    cle.initial_robot_pose = rpose
     # load brain
     brainfilepath = 'brain_model/braitenberg.h5'
     if models_path is not None:

@@ -5,11 +5,12 @@ Tests the Gazebo loading helper class.
 import unittest
 import os
 from geometry_msgs.msg import Point, Pose, Quaternion
+from gazebo_msgs.srv import SetModelState
 from lxml import etree, objectify
 from mock import patch, call, MagicMock, Mock
 from hbp_nrp_cle.robotsim import ROS_S_SPAWN_SDF_LIGHT, ROS_S_SPAWN_SDF_MODEL
 from hbp_nrp_cle.robotsim.GazeboLoadingHelper import load_light_sdf, load_gazebo_sdf, load_gazebo_model_file, load_gazebo_world_file, \
-    empty_gazebo_world
+    empty_gazebo_world, set_model_pose, TIMEOUT
 from testfixtures import log_capture, LogCapture
 
 
@@ -253,6 +254,38 @@ class TestGazeboLoadingHelper(unittest.TestCase):
         empty_gazebo_world()
         self.assertGreater(mock_proxy.call_count, 0)
         self.assertGreater(mock_wait_service.call_count, 0)
+
+    @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.rospy.wait_for_service')
+    @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.rospy.ServiceProxy')
+    def test_set_model_pose(self, mock_proxy, mock_wait_service):
+      mock_service_proxy_callee = Mock()
+      mock_proxy.return_value = mock_service_proxy_callee
+
+      none_pose = Pose()
+      none_pose.position = Point(0, 0, 0)
+      none_pose.orientation = Quaternion(0, 0, 0, 1)
+
+      set_model_pose('robot', None)
+
+      mock_wait_service.assert_called_with('gazebo/set_model_state', TIMEOUT)
+      mock_proxy.assert_called_with('gazebo/set_model_state', SetModelState)
+
+      arg_model_state = mock_service_proxy_callee.call_args_list[0][0][0]
+      self.assertEquals(arg_model_state.model_name, 'robot')
+      self.assertEquals(arg_model_state.pose, none_pose)
+
+      custom_pose = Pose()
+      custom_pose.position = Point(0, 7, 0)
+      custom_pose.orientation = Quaternion(0, 0, 0, 1)
+
+      set_model_pose('robot', custom_pose)
+
+      mock_wait_service.assert_called_with('gazebo/set_model_state', TIMEOUT)
+      mock_proxy.assert_called_with('gazebo/set_model_state', SetModelState)
+
+      arg_model_state = mock_service_proxy_callee.call_args_list[1][0][0]
+      self.assertEquals(arg_model_state.model_name, 'robot')
+      self.assertEquals(arg_model_state.pose, custom_pose)
 
 if __name__ == "__main__":
     unittest.main()

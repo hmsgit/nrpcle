@@ -147,8 +147,8 @@ class ROSCLEServer(threading.Thread):
 
         # We disable the docstring here since there is nothing more to say than
         # what the method name already reveals.
-        # pylint: disable=missing-docstring
-        def reset_simulation(self):
+        # pylint: disable=missing-docstring, unused-argument
+        def reset_simulation(self, request):
             raise RuntimeError('You cannot reset the simulation while in %s.' %
                                (type(self).__name__, ))
 
@@ -189,8 +189,8 @@ class ROSCLEServer(threading.Thread):
         """
         Represents a running ROSCLEServer.
         """
-        def reset_simulation(self):
-            result = self._context.reset_simulation()
+        def reset_simulation(self, request):
+            result = self._context.reset_simulation(request)
             self._context.set_state(ROSCLEServer.InitialState(self._context))
             return result
 
@@ -231,8 +231,8 @@ class ROSCLEServer(threading.Thread):
             self._context.set_state(ROSCLEServer.StoppedState(self._context))
             return result
 
-        def reset_simulation(self):
-            result = self._context.reset_simulation()
+        def reset_simulation(self, request):
+            result = self._context.reset_simulation(request)
             self._context.set_state(ROSCLEServer.InitialState(self._context))
             return result
 
@@ -341,8 +341,8 @@ class ROSCLEServer(threading.Thread):
         )
 
         self.__service_reset = rospy.Service(
-            SERVICE_SIM_RESET_ID(self.__simulation_id), Empty,
-            lambda x: self.__state.reset_simulation()
+            SERVICE_SIM_RESET_ID(self.__simulation_id), srv.ResetSimulation,
+            lambda x: self.__state.reset_simulation(x)
         )
 
         self.__service_state = rospy.Service(
@@ -750,20 +750,31 @@ class ROSCLEServer(threading.Thread):
         self.__double_timer.cancel_all()
         self.__cle.stop()
 
-    @ros_handler
-    def reset_simulation(self):
+    # pylint: disable=broad-except
+    def reset_simulation(self, request):
         """
         Handler for the CLE reset() call, additionally triggers a CLE stop().
         """
-        # we have to call the stop function here, otherwise the main thread
-        # will not stop executing the simulation loop
-        self.__cle.stop()
-        self.stop_timeout()
-        self.__done_flag.wait()
-        self.__done_flag.clear()
-        # CLE reset() already includes stop() and wait_step()
-        self.__to_be_executed_within_main_thread.append(self.__cle.reset)
-        self.start_timeout()
+
+        if request.full_reset:
+            return False, "This feature has not been implemented yet."
+
+        try:
+            if request.reset_robot_pose:
+                self.__cle.reset_robot_pose()
+            else:
+                # we have to call the stop function here, otherwise the main thread
+                # will not stop executing the simulation loop
+                self.__cle.stop()
+                self.stop_timeout()
+                self.__done_flag.wait()
+                self.__done_flag.clear()
+                # CLE reset() already includes stop() and wait_step()
+                self.__to_be_executed_within_main_thread.append(self.__cle.reset)
+                self.start_timeout()
+            return True, ""
+        except Exception as e:
+            return False, str(e)
 
     def __push_status_on_ros(self, message):
         """

@@ -6,10 +6,11 @@ from hbp_nrp_cle.cle.ClosedLoopEngine import ClosedLoopEngine
 from hbp_nrp_cle.mocks.robotsim import MockRobotControlAdapter, MockRobotCommunicationAdapter
 from hbp_nrp_cle.mocks.brainsim import MockBrainControlAdapter, MockBrainCommunicationAdapter
 from hbp_nrp_cle.mocks.tf_framework import MockTransferFunctionManager
+from geometry_msgs.msg import Point, Pose, Quaternion
 
 import unittest
 import threading
-from mock import Mock
+from mock import Mock, patch
 
 __author__ = 'Nino Cauli'
 
@@ -89,6 +90,16 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertEqual(2, m.call_count)
         self._cle.network_configuration = {"name" : "foo"}
         self.assertEqual(3, m.call_count)
+
+    @patch('hbp_nrp_cle.cle.ClosedLoopEngine.set_model_pose')
+    def test_reset_robot_pose(self, set_model_pose_mock):
+        pose = Pose()
+        pose.position = Point(0, 0, 0)
+        pose.orientation = Quaternion(0, 0, 0, 1)
+
+        self._cle.initial_robot_pose = pose
+        self._cle.reset_robot_pose()
+        set_model_pose_mock.assert_called_with('robot', pose)
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,7 @@
 ROSCLEServer unit test
 """
 
+from cle_ros_msgs.srv import ResetSimulation
 from hbp_nrp_cle.cle import ROSCLEServer
 from hbp_nrp_cle.cle.ROSCLEState import ROSCLEState
 import logging
@@ -135,15 +136,22 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertEqual(1, self.__mocked_cle.initialize.call_count)
         self.assertEqual(1, self.__ros_cle_server.start_timeout.call_count)
 
-    def test_reset_timeout(self):
+    def test_reset_simulation(self):
         self.__mocked_cle.is_initialized = False
         self.__ros_cle_server.prepare_simulation(self.__mocked_cle)
         self.__ros_cle_server.start_simulation()
         self.__ros_cle_server.pause_simulation()
-        self.__ros_cle_server.reset_simulation()
+        msg = ResetSimulation()
+        msg.reset_robot_pose = False
+        msg.full_reset = False
+        self.__ros_cle_server.reset_simulation(msg)
         # start_timeout has been called in prepare_simulation AND in reset_simulation
         self.assertEqual(2, self.__ros_cle_server.start_timeout.call_count)
         self.assertEqual(1, self.__ros_cle_server.stop_timeout.call_count)
+
+        msg.full_reset = True
+        resp = self.__ros_cle_server.reset_simulation(msg)
+        self.assertFalse(resp[0])
 
     def __get_handlers_for_testing_main(self):
         self.__mocked_cle.is_initialized = True
@@ -326,7 +334,10 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertRaises(RuntimeError, state.start_simulation)
         self.assertRaises(RuntimeError, state.pause_simulation)
         self.assertRaises(RuntimeError, state.stop_simulation)
-        self.assertRaises(RuntimeError, state.reset_simulation)
+        msg = ResetSimulation()
+        msg.reset_robot_pose = False
+        msg.full_reset = False
+        self.assertRaises(RuntimeError, state.reset_simulation, msg)
         self.assertFalse(state.is_final_state())
 
     def test_initialized_state(self):
@@ -338,7 +349,10 @@ class TestROSCLEServer(unittest.TestCase):
 
         initialized = ROSCLEServer.ROSCLEServer.InitialState(ctx)
         self.assertRaises(RuntimeError, initialized.pause_simulation)
-        self.assertRaises(RuntimeError, initialized.reset_simulation)
+        msg = ResetSimulation()
+        msg.reset_robot_pose = False
+        msg.full_reset = False
+        self.assertRaises(RuntimeError, initialized.reset_simulation, msg)
         self.assertFalse(initialized.is_final_state())
 
         initialized.start_simulation()
@@ -359,7 +373,10 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertRaises(RuntimeError, running.start_simulation)
         self.assertFalse(running.is_final_state())
 
-        running.reset_simulation()
+        msg = ResetSimulation()
+        msg.reset_robot_pose = False
+        msg.full_reset = False
+        running.reset_simulation(msg)
         running.stop_simulation()
         running.pause_simulation()
         self.assertEqual(ctx.reset_simulation.call_count, 1)
@@ -381,7 +398,10 @@ class TestROSCLEServer(unittest.TestCase):
 
         paused.start_simulation()
         paused.stop_simulation()
-        paused.reset_simulation()
+        msg = ResetSimulation()
+        msg.reset_robot_pose = False
+        msg.full_reset = False
+        paused.reset_simulation(msg)
         self.assertEqual(ctx.start_simulation.call_count, 1)
         self.assertEqual(ctx.stop_simulation.call_count, 1)
         self.assertEqual(ctx.reset_simulation.call_count, 1)
@@ -394,7 +414,10 @@ class TestROSCLEServer(unittest.TestCase):
         self.assertRaises(RuntimeError, stopped.start_simulation)
         self.assertRaises(RuntimeError, stopped.pause_simulation)
         self.assertRaises(RuntimeError, stopped.stop_simulation)
-        self.assertRaises(RuntimeError, stopped.reset_simulation)
+        msg = ResetSimulation()
+        msg.reset_robot_pose = False
+        msg.full_reset = False
+        self.assertRaises(RuntimeError, stopped.reset_simulation, msg)
         self.assertTrue(stopped.is_final_state())
         self.assertEqual(str(stopped), ROSCLEState.STOPPED)
 

@@ -7,9 +7,10 @@ __author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
 
 import rospy
 import os
-from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel
+from gazebo_msgs.msg import ModelState
+from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel, SetModelState
 from std_srvs.srv import Empty
-from geometry_msgs.msg import Point, Pose, Quaternion
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from lxml import etree
 import logging
 from hbp_nrp_cle.bibi_config.notificator import Notificator
@@ -100,7 +101,7 @@ def load_light_sdf(light_name, light_sdf, initial_pose=None):
     rospy.wait_for_service(ROS_S_SPAWN_SDF_LIGHT, TIMEOUT)
     spawn_light_proxy = rospy.ServiceProxy(ROS_S_SPAWN_SDF_LIGHT, SpawnModel)
     # What if the service doesn't like the parameters?
-    spawn_light_proxy(light_name, light_sdf, "", initial_pose, "")
+    spawn_light_proxy(light_name, light_sdf, "", initial_pose, "world")
     spawn_light_proxy.close()
 
 
@@ -124,8 +125,31 @@ def load_gazebo_sdf(model_name, model_sdf, initial_pose=None):
     # spawn model
     rospy.wait_for_service(ROS_S_SPAWN_SDF_MODEL, TIMEOUT)
     spawn_model_proxy = rospy.ServiceProxy(ROS_S_SPAWN_SDF_MODEL, SpawnModel)
-    spawn_model_proxy(model_name, model_sdf, "", initial_pose, "")
+    spawn_model_proxy(model_name, model_sdf, "", initial_pose, "world")
     spawn_model_proxy.close()
+
+
+def set_model_pose(model_name, pose):
+    """
+    Sets the pose of a given model to a given pose.
+    :param model_name: The model to reposition.
+    :param pose: The new pose of the model, if None, it will be set to origin w/o rotation.
+    """
+
+    if pose is None:
+        pose = Pose()
+        pose.position = Point(0, 0, 0)
+        pose.orientation = Quaternion(0, 0, 0, 1)
+
+    rospy.wait_for_service('gazebo/set_model_state', TIMEOUT)
+    set_model_state_proxy = rospy.ServiceProxy('gazebo/set_model_state', SetModelState)
+    msg = ModelState()
+    msg.model_name = model_name
+    msg.pose = pose
+    msg.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
+    msg.reference_frame = "world"
+    set_model_state_proxy(msg)
+    set_model_state_proxy.close()
 
 
 def empty_gazebo_world():

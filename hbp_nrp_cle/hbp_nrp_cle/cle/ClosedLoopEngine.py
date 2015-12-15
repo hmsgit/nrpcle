@@ -12,6 +12,7 @@ from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
 from hbp_nrp_cle.cle.__helper import get_tf_elapsed_times
+from hbp_nrp_cle.robotsim.GazeboLoadingHelper import set_model_pose
 
 logger = logging.getLogger('hbp_nrp_cle')
 
@@ -92,6 +93,8 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.__bca_elapsed_time = 0.0
         self.__network_file = None
         self.__network_configuration = None
+
+        self.__initial_robot_pose = None
 
     def initialize(self):
         """
@@ -277,6 +280,28 @@ class ClosedLoopEngine(IClosedLoopControl):
         if self.running:
             return self.elapsed_time + time.time() - self.start_time
         return self.elapsed_time
+
+    @property
+    def initial_robot_pose(self):
+        """
+        Get the robot pose at the beginning of the simulation.
+        """
+        return self.__initial_robot_pose
+
+    @initial_robot_pose.setter
+    def initial_robot_pose(self, value):
+        """
+        Set the robot pose at the beginning of the simulation.
+        Usually performed after CLE initialization.
+        :param value: The new value for the initial robot pose.
+        """
+        self.__initial_robot_pose = value
+
+    def reset_robot_pose(self):
+        """
+        Set the robot in the simulation to its initial pose.
+        """
+        set_model_pose('robot', self.__initial_robot_pose)
 
     def tf_elapsed_time(self):
         """
