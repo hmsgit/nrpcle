@@ -1,13 +1,16 @@
 Tutorial: Writing a BIBI Configuration
 ======================================
 
-A BIBI Configuration contains all the information necessary to couple a brain model with a robot model using Transfer Functions and run these simulations
-in the Closed Loop Engine (CLE). Thus, besides references to brain model and robot model, it contains the specifications of the TFs.
+A BIBI Configuration contains all the information necessary to couple a brain model with a robot model
+using Transfer Functions and run these simulations in the Closed Loop Engine (CLE). Thus, besides
+references to brain model and robot model, it contains the specifications of the TFs.
 
-As an XML file, such a specification may be created by tools. We have an XML Schema document to validate BIBI Configuration files.
+As an XML file, such a specification may be created by tools. We have an XML Schema document to
+validate BIBI Configuration files.
 
-As the complete metamodel of the BIBI Configuration may be a bit complicated at the beginning, we build a BIBI Configuration stepwise in XML. However, at any point in time, you may
-find it useful to lookup :doc:`../BIBI-configuration` for a complete reference.
+As the complete metamodel of the BIBI Configuration may be a bit complicated at the beginning, we
+build a BIBI Configuration stepwise in XML. However, at any point in time, you may
+find it useful to lookup :doc:`../architecture/BIBI-configuration` for a complete reference.
 
 To begin, we start with a new BIBI Configuration.
 
@@ -19,12 +22,14 @@ To begin, we start with a new BIBI Configuration.
 
 That is, we simply created a *bibi* element in the BIBI Configuration namespace.
 
-.. note:: The namespace is subject to change. In particular, the XML Schema definition currently cannot be obtained via the given URL.
+.. note:: The namespace is subject to change. In particular, the XML Schema definition currently
+cannot be obtained via the given URL.
 
 Specification of the neuronal network
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-However, our BIBI Configuration is not valid. One of the reasons for this is that it lacks a description for the used neuronal network. We need to tell the CLE
+However, our BIBI Configuration is not valid. One of the reasons for this is that it lacks a
+description for the used neuronal network. We need to tell the CLE
 what brain models we are going to use and what neuron groups exist.
 
 .. code-block:: xml
@@ -37,14 +42,16 @@ what brain models we are going to use and what neuron groups exist.
 
 This code block must be inserted as a child element of the root *bibi* element.
 
-In this example, we have specified that the brain model from *brain_model/braitenberg.h5* should be used. This path is either absolute or
+In this example, we have specified that the brain model from *brain_model/braitenberg.h5* should be
+used. This path is either absolute or
 relative to the **NRP_MODELS_DIRECTORY** environment variable.
 
 .. note::
     The **NRP_MODELS_DIRECTORY** should be set to a Models repository clone. This is the case on the
     deployed NRP platform.
 
-We further specify two neuron groups, the sensors ranging from 0 to 5 (exclusive) and the actors from 6 to and excluding 8. Note that these neuron groups exactly match the
+We further specify two neuron groups, the sensors ranging from 0 to 5 (exclusive) and the actors from
+6 to and excluding 8. Note that these neuron groups exactly match the
 neuron groups (colors) from :doc:`setup page<setup>`. We will use these neuron groups in the TFs for reference.
 
 .. note:: The XML Schema enforces that the neuronal network file has the correct extension **.h5**.
@@ -52,7 +59,8 @@ neuron groups (colors) from :doc:`setup page<setup>`. We will use these neuron g
 Specification of the robot model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Our BIBI Configuration also needs a robot model. We specify it simply by the file name of the robot model in the SDF format. This file then contains both the robot meshes as well as
+Our BIBI Configuration also needs a robot model. We specify it simply by the file name of the robot
+model in the SDF format. This file then contains both the robot meshes as well as
 information on the plugins used by this robot.
 
 .. code-block:: xml
@@ -76,5 +84,6 @@ Up to this point, the BIBI Configuration should look as follows:
       <bodyModel>husky_model/model.sdf</bodyModel>
     </bibi>
 
-While we now have created a valid BIBI Configuration, it does not yet contain any TF, so the simulations will run in parallel with no connection to each other.
+While we now have created a valid BIBI Configuration, it does not yet contain any TF, so the
+simulations will run in parallel with no connection to each other.
 To learn how to specify TFs, see :doc:`neuron2robot`.
