@@ -19,6 +19,12 @@ __author__ = 'GeorgHinkel'
 
 
 class TestTransferFunction(unittest.TestCase):
+
+    def test_brain_source(self):
+        nrp.start_new_tf_manager()
+        config.brain_source = "some source"
+        self.assertEqual(config.brain_source, nrp.get_brain_source())
+
     def test_tf_source(self):
         nrp.start_new_tf_manager()
         brain = MockBrainCommunicationAdapter()

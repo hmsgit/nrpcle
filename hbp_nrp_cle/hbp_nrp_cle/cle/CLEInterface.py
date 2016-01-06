@@ -10,39 +10,22 @@ class IClosedLoopControl(object):  # pragma: no cover
     """
     Represents the closed loop engine synchronization mechanism.
     """
-    @property
-    def network_file(self):
+    def load_network_from_file(self, network_file):
         """
-        Gets or sets the neuronal network file
+        Load (or reload) the brain model from a file the neuronal network file
 
-        :return: The path to the neuronal network
+        :param network_file: A python PyNN script or an h5 file
+        containing the neural network definition
         """
         raise NotImplementedError("Method not implemented")
 
-    @network_file.setter
-    def network_file(self, value):
-        """
-        Gets or sets the neuronal network file
-        """
-        raise NotImplementedError("Method not implemented")
-
-    @property
-    def network_configuration(self):
-        """
-        Gets or sets the neuronal network configuration
-        """
-        raise NotImplementedError("Method not implemented")
-
-    @network_configuration.setter
-    def network_configuration(self, value):
-        """
-        Gets or sets the neuronal network configuration
-        """
-        raise NotImplementedError("Method not implemented")
-
-    def initialize(self):  # -> None:
+    def initialize(self, network_file, **configuration):  # -> None:
         """
         Initializes the closed loop engine.
+        :param network_file: A python PyNN script or an h5 file
+         containing the neural network definition
+        :param configuration: A set of populations
+        :return:
         """
         raise NotImplementedError("Method not implemented")
 

@@ -66,6 +66,11 @@ class PyNNControlAdapter(IBrainControlAdapter):
             self.initialize()
         BrainLoader.load_py_network(network_file, populations)
 
+        logger.info("Saving brain source")
+        import hbp_nrp_cle.tf_framework.config as tf_config
+        with open(network_file) as source:
+            tf_config.brain_source = source.read()
+
     def initialize(self, **params):
         """
         Initializes the neuronal simulator

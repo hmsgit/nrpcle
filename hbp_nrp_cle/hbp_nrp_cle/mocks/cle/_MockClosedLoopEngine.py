@@ -41,10 +41,13 @@ class MockClosedLoopEngine(IClosedLoopControl,
 
         self.initialized = False
 
-    def initialize(self):
+    def initialize(self, network_file, **configuration):
         """
         Initializes the closed loop engine.
 
+        :param configuration: A set of populations
+        containing the neural network definition
+        :param network_file: A python PyNN script or an h5 file
         """
         self.clock = 0.0
         self.initialized = True
@@ -60,7 +63,7 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         Runs both simulations for the given time step in seconds.
 
-        :param dt: The CLE time step in seconds
+        :param timestep: The CLE time step in seconds
         :return: Updated simulation time, otherwise -1
         """
         self.running_flag.clear()
@@ -156,10 +159,12 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         self.running_flag.wait()
 
-    @property
-    def network_file(self):
-        return None
+    def load_network_from_file(self, network_file):
 
-    @property
-    def network_configuration(self):
-        return None
+        """
+        Load (or reload) the brain model from a file the neuronal network file
+
+        :param network_file: A python PyNN script or an h5 file
+        containing the neural network definition
+        """
+        return

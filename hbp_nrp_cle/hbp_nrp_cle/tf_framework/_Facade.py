@@ -190,6 +190,16 @@ def get_transfer_function(name):
     return next((tf for tf in get_transfer_functions() if tf.name == name), None)
 
 
+def get_brain_source():
+    """
+    Get the source of the brain (if loaded from a python file). Otherwise, returns
+    None.
+
+    :return: The source of the brain model
+    """
+    return config.brain_source
+
+
 def delete_transfer_function(name):
     """
     Delete a transfer function. If the transfer function does not exist,

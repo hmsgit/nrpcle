@@ -16,8 +16,9 @@ from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
 from hbp_nrp_cle.brainsim.pynn_nest.PyNNNestCommunicationAdapter import \
     PyNNNestCommunicationAdapter
-from mock import patch
+from mock import mock_open, patch
 from testfixtures import log_capture, LogCapture
+import hbp_nrp_cle.tf_framework as tf_framework
 
 __author__ = 'DimitriProbst'
 
@@ -457,15 +458,18 @@ requested (device)'))
 
     def test_load_brain(self):
         with patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader") as loader:
-            self.control.load_brain("foo.py", {})
-            self.assertTrue(loader.load_py_network.called)
-            self.assertFalse(loader.load_h5_network.called)
-            loader.load_py_network.reset_mock()
-            self.control.load_brain("foo.h5", {})
-            self.assertTrue(loader.load_h5_network.called)
-            self.assertFalse(loader.load_py_network.called)
-            loader.load_h5_network.reset_mock()
-            self.assertRaises(Exception, self.control.load_brain, "foo.not_supported", {})
+            with patch('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open', mock_open(read_data='some python code'), create=True) as m:
+                self.control.load_brain("foo.py", {})
+                self.assertTrue(loader.load_py_network.called)
+                self.assertFalse(loader.load_h5_network.called)
+                self.assertEqual(tf_framework.config.brain_source, 'some python code')
+                loader.load_py_network.reset_mock()
+                self.control.load_brain("foo.h5", {})
+                self.assertTrue(loader.load_h5_network.called)
+                self.assertFalse(loader.load_py_network.called)
+                loader.load_h5_network.reset_mock()
+                self.assertRaises(Exception, self.control.load_brain, "foo.not_supported", {})
+
 
     def tearDown(self):
         """

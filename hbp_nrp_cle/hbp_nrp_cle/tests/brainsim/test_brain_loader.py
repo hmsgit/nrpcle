@@ -34,13 +34,13 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         Tests loading a Python brain model
         """
+        self.assertEquals(nrp.config.brain_source, None)
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModel.py')
         BrainLoader.load_py_network(filename, {'first': slice(0, 1), 'second': slice(1, 3)})
         first = nrp.config.brain_root.first
         second = nrp.config.brain_root.second
         circuit = nrp.config.brain_root.circuit
-
         self.assertIsInstance(circuit, sim.Population)
         self.assertIsInstance(first, sim.PopulationView)
         self.assertIsInstance(second, sim.PopulationView)
