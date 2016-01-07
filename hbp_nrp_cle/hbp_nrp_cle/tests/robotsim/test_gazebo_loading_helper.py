@@ -25,7 +25,7 @@ class TestGazeboLoadingHelper(unittest.TestCase):
 
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_gazebo_sdf')
     def test_load_gazebo_model_file(self, mocked_load_gazebo_sdf):
-        with LogCapture('hbp_nrp_cle.robotsim.GazeboLoadingHelper') as logcapture:
+        with LogCapture('hbp_nrp_cle.user_notifications') as logcapture:
             test_pose = Pose()
             test_pose.position = Point(1, 2, 3)
             test_pose.orientation = Quaternion(4, 5, 6, 7)
@@ -59,14 +59,14 @@ class TestGazeboLoadingHelper(unittest.TestCase):
 
             self.assertEqual(mocked_load_gazebo_sdf.call_count, 1)
             self.assertEqual(mocked_load_gazebo_sdf.call_args_list[0][0][2], test_pose)
-            logcapture.check(('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+            logcapture.check(('hbp_nrp_cle.user_notifications', 'DEBUG',
                               '%s successfully loaded in Gazebo' % wpath))
 
 
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_light_sdf')
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.load_gazebo_sdf')
     def test_load_gazebo_world_file(self, mocked_load_gazebo_sdf, mocked_load_light_sdf):
-        with LogCapture('hbp_nrp_cle.robotsim.GazeboLoadingHelper') as logcapture:
+        with LogCapture('hbp_nrp_cle.user_notifications') as logcapture:
             wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_world.sdf")
             load_gazebo_world_file(wpath)
             expected_load_gazebo_calls_args = [["ground_plane","""<?xml version=\"1.0\" ?>\n<sdf version="1.5"><model name="ground_plane">
@@ -152,13 +152,13 @@ class TestGazeboLoadingHelper(unittest.TestCase):
 
             self.assertEqual(len(mocked_load_gazebo_sdf.call_args_list), 1)
             self.assertEqual(len(mocked_load_light_sdf.call_args_list), 2)
-            logcapture.check(('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              'Loading light "sun1" in Gazebo.'),
-                             ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              'Loading light "sun2" in Gazebo.'),
-                             ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
-                              'Loading model "ground_plane" in Gazebo.'),
-                             ('hbp_nrp_cle.robotsim.GazeboLoadingHelper', 'INFO',
+            logcapture.check(('hbp_nrp_cle.user_notifications', 'INFO',
+                              'Loading light "sun1".'),
+                             ('hbp_nrp_cle.user_notifications', 'INFO',
+                              'Loading light "sun2".'),
+                             ('hbp_nrp_cle.user_notifications', 'INFO',
+                              'Loading model "ground_plane".'),
+                             ('hbp_nrp_cle.user_notifications', 'DEBUG',
                               '%s successfully loaded in Gazebo' % wpath))
 
     @patch('hbp_nrp_cle.robotsim.GazeboLoadingHelper.rospy.wait_for_service')

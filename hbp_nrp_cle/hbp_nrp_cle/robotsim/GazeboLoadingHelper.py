@@ -13,9 +13,9 @@ from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from lxml import etree
 import logging
-from hbp_nrp_cle.bibi_config.notificator import Notificator
 
-logger = logging.getLogger(__name__)
+# Info messages sent to this logger will be forwarded as notifications
+logger = logging.getLogger('hbp_nrp_cle.user_notifications')
 
 TIMEOUT = 180  # duplicated ROSCLEClient.ROSCLEClient.ROS_SERVICE_TIMEOUT
 
@@ -39,8 +39,7 @@ def load_gazebo_world_file(world_file):
         # Anyway, regardless of the warning, the lights are loaded with their correct
         # positions.
         light_name = light.xpath("@name")[0]
-        logger.info("Loading light \"%s\" in Gazebo.", light_name)
-        Notificator.notify("Loading light %s." % (light_name, ), False)
+        logger.info("Loading light \"%s\".", light_name)
         load_light_sdf(light_name, sdf_wrapper % (etree.tostring(light), ))
 
     models_state = world_file_sdf.xpath("/sdf/world/state/model")
@@ -48,8 +47,7 @@ def load_gazebo_world_file(world_file):
     # Load models
     for model in world_file_sdf.xpath("/sdf/world/model"):
         model_name = model.xpath("@name")[0]
-        logger.info("Loading model \"%s\" in Gazebo.", model_name)
-        Notificator.notify("Loading model %s." % (model_name, ), False)
+        logger.info("Loading model \"%s\".", model_name)
         # Checking whether some extra state is defined in the SDF
         state = [x for x in models_state if x.xpath("@name")[0] == model_name]
         if len(state) != 0:
@@ -57,7 +55,7 @@ def load_gazebo_world_file(world_file):
             model.append(state[0].find("pose"))
         load_gazebo_sdf(model_name, sdf_wrapper % (etree.tostring(model), ))
 
-    logger.info("%s successfully loaded in Gazebo", world_file)
+    logger.debug("%s successfully loaded in Gazebo", world_file)
 
 
 def load_gazebo_model_file(model_name, model_file, initial_pose=None):
@@ -77,7 +75,7 @@ def load_gazebo_model_file(model_name, model_file, initial_pose=None):
     model_file_sdf.close()
     # spawn model
     load_gazebo_sdf(model_name, model_sdf, initial_pose)
-    logger.info("%s successfully loaded in Gazebo", model_file)
+    logger.debug("%s successfully loaded in Gazebo", model_file)
 
 
 def load_light_sdf(light_name, light_sdf, initial_pose=None):
@@ -167,11 +165,11 @@ def empty_gazebo_world():
     rospy.wait_for_service('gazebo/delete_model', TIMEOUT)
     delete_model_proxy = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
     for model in world_properties.model_names:
-        Notificator.notify("Cleaning model " + model, False)
+        logger.info("Cleaning model " + model)
         delete_model_proxy(model)
     delete_model_proxy.close()
 
-    Notificator.notify("Cleaning lights", False)
+    logger.info("Cleaning lights")
     rospy.wait_for_service('gazebo/delete_lights', TIMEOUT)
     delete_lights_proxy = rospy.ServiceProxy('gazebo/delete_lights', Empty)
     delete_lights_proxy()

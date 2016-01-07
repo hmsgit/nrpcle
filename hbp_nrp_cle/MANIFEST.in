@@ -1,4 +1,2 @@
 include requirements.txt
-include hbp_nrp_cle/bibi_config/cle_template.pyt
-include hbp_nrp_cle/bibi_config/tf_template.pyt
 include hbp_nrp_cle/config.ini

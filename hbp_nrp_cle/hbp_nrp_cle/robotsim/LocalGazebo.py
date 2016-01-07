@@ -3,11 +3,14 @@ This module contains the classes needed to have all gazebo services running loca
 """
 
 from hbp_nrp_cle.robotsim.GazeboInterface import IGazeboServerInstance, IGazeboBridgeInstance
-from hbp_nrp_cle.bibi_config.notificator import Notificator
 import os
 from hbp_nrp_cle import config
+import logging
 
 __author__ = 'Alessandro Ambrosano'
+
+# Info messages sent to this logger will be forwarded as notifications
+logger = logging.getLogger('hbp_nrp_cle.user_notifications')
 
 
 class LocalGazeboServerInstance(IGazeboServerInstance):
@@ -22,21 +25,21 @@ class LocalGazeboServerInstance(IGazeboServerInstance):
 
         :param: ros_master_uri The ros master uri where to connect gzserver.
         """
-        Notificator.notify("Starting gzserver", False)
+        logger.info("Starting gzserver")
         os.system(config.config.get('gazebo', 'start-cmd'))
 
     def stop(self):
         """
         Stops the gzserver instance.
         """
-        Notificator.notify("Stopping gzserver", False)
+        logger.info("Stopping gzserver")
         os.system(config.config.get('gazebo', 'stop-cmd'))
 
     def restart(self, ros_master_uri):
         """
         Restarts the gzserver instance.
         """
-        Notificator.notify("Restarting gzserver", False)
+        logger.info("Restarting gzserver")
         os.system(config.config.get('gazebo', 'restart-cmd'))
 
     @property
@@ -62,19 +65,19 @@ class LocalGazeboBridgeInstance(IGazeboBridgeInstance):
         """
         Starts the gzbridge instance represented by the object.
         """
-        Notificator.notify("Starting gzbridge", False)
+        logger.info("Starting gzbridge")
         os.system(config.config.get('gzbridge', 'start-cmd'))
 
     def stop(self):
         """
         Stops the gzbridge instance represented by the object.
         """
-        Notificator.notify("Stopping gzbridge", False)
+        logger.info("Stopping gzbridge")
         os.system(config.config.get('gzbridge', 'stop-cmd'))
 
     def restart(self): # pylint: disable=unused-argument
         """
         Restarts the gzbridge instance represented by the object.
         """
-        Notificator.notify("Restarting gzbridge", False)
+        logger.info("Restarting gzbridge")
         os.system(config.config.get('gzbridge', 'restart-cmd'))
