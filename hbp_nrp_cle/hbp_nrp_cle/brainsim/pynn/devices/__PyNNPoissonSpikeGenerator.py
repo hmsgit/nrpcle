@@ -93,13 +93,37 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             Assembly object
         """
 
-        if "connector" in self._parameters or not self._parameters["connector"]:
+        if not "connector" in self._parameters or not self._parameters["connector"]:
             if not (self._parameters["target"] == 'excitatory' or neurons.conductance_based):
                 self._parameters["weights"] *= -1
 
             self._parameters["connector"] = \
                 sim.AllToAllConnector(**self.get_parameters("weights",
                                                             "delays"))
+        else:
+            conn = self._parameters["connector"]
+            if isinstance(conn, dict):
+                weights = self._parameters["weights"]
+                if not weights:
+                    weights = conn["weights"]
+                delays = self._parameters["delays"]
+                if conn["mode"] == "OneToOne":
+                    self._parameters["connector"] = \
+                        sim.OneToOneConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "AllToAll":
+                    self._parameters["connector"] = \
+                        sim.AllToAllConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "Fixed":
+                    self._parameters["connector"] = \
+                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
+                else:
+                    raise Exception("Invalid connector mode")
+        if isinstance(self._parameters["synapse_dynamics"], dict):
+            dyn = self._parameters["synapse_dynamics"]
+            if dyn["type"] == "TsodyksMarkram":
+                self._parameters["synapse_dynamics"] = \
+                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
+                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
 
         return sim.Projection(presynaptic_population=self.__generator,
                               postsynaptic_population=neurons,

@@ -7,9 +7,8 @@ from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import numpy as np
-import warnings
 
-__author__ = 'DimitriProbst, Sebastian Krach'
+__author__ = 'Dimitri Probst, Sebastian Krach, Georg Hinkel'
 
 
 class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
@@ -27,6 +26,8 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         'v_reset': -100.0,
         'v_rest': -100.0,
         'connector': None,
+        'weights': None,
+        'delays': sim.RandomDistribution('uniform', [0.1, 2.0]),
         'source': None,
         'target': 'excitatory',
         'synapse_dynamics': None,
@@ -145,16 +146,31 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         # As connection parameters depend on the passed neuron structure the parameters are
         # evaluated in the connect method.
         if not "connector" in self._parameters or not self._parameters["connector"]:
-            warnings.warn("Default weights and delays are used.", UserWarning)
-            if self._parameters["target"] == 'excitatory':
-                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-            else:
-                if neurons.conductance_based:
-                    weights = sim.RandomDistribution('uniform', [0.0, 0.01])
-                else:
-                    weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
-            delays = sim.RandomDistribution('uniform', [0.1, 2.0])
+            weights = self._parameters["weights"]
+            if not weights:
+                weights = self._get_default_weights(neurons.conductance_based)
+            delays = self._parameters["delays"]
             self._parameters["connector"] = sim.AllToAllConnector(weights=weights, delays=delays)
+        else:
+            conn = self._parameters["connector"]
+            if isinstance(conn, dict):
+                weights = self._parameters["weights"]
+                if not weights:
+                    weights = conn["weights"]
+                if not weights:
+                    weights = self._get_default_weights(neurons.conductance_based)
+                delays = self._parameters["delays"]
+                if conn["mode"] == "OneToOne":
+                    self._parameters["connector"] = \
+                        sim.OneToOneConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "AllToAll":
+                    self._parameters["connector"] = \
+                        sim.AllToAllConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "Fixed":
+                    self._parameters["connector"] = \
+                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
+                else:
+                    raise Exception("Invalid connector mode")
 
         return sim.Projection(presynaptic_population=self._generator,
                               postsynaptic_population=neurons,
@@ -164,3 +180,39 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
                                                      "synapse_dynamics",
                                                      "label",
                                                      "rng"))
+
+    def _update_parameters(self, params):
+        """
+        This method updates the device parameter dictionary with the provided parameter
+        dictionary. The dictionary has to be validated before as this method assumes it to be
+        correct.
+
+        Overriding subclasses can provide additional configuration parameter adaption as this
+        method is called before the brain simulator devices are constructed.
+
+        :param params: The validated parameter dictionary
+        """
+        super(PyNNFixedSpikeGenerator, self)._update_parameters(params)
+
+        if isinstance(self._parameters["synapse_dynamics"], dict):
+            dyn = self._parameters["synapse_dynamics"]
+            if dyn["type"] == "TsodyksMarkram":
+                self._parameters["synapse_dynamics"] = \
+                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
+                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
+
+    def _get_default_weights(self, conductance_based):
+        """
+        Gets the default weights distribution
+
+        :param conductance_based: Indicates whether the connected neurons
+        are conductance based
+        """
+        if self._parameters["target"] == 'excitatory':
+            weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+        else:
+            if conductance_based:
+                weights = sim.RandomDistribution('uniform', [0.0, 0.01])
+            else:
+                weights = sim.RandomDistribution('uniform', [-0.01, -0.0])
+        return weights

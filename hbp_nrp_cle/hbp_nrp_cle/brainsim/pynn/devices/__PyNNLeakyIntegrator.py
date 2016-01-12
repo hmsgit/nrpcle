@@ -6,7 +6,7 @@ devices.
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
-__author__ = 'DimitriProbst, Sebastian Krach'
+__author__ = 'Dimitri Probst, Sebastian Krach, Georg Hinkel'
 
 
 class PyNNLeakyIntegrator(AbstractBrainDevice):
@@ -107,13 +107,38 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         """
         super(PyNNLeakyIntegrator, self)._update_parameters(params)
 
-        if not self._parameters["connector"]:
-            if not self._parameters["weights"]:
-                self._parameters["weights"] = self._get_connector_weight()
-
-            self._parameters["connector"] = \
-                sim.AllToAllConnector(**self.get_parameters("weights",
-                                                            "delays"))
+        if not "connector" in self._parameters or not self._parameters["connector"]:
+            weights = self._parameters["weights"]
+            if not weights:
+                weights = self._get_connector_weight()
+            delays = self._parameters["delays"]
+            self._parameters["connector"] = sim.AllToAllConnector(weights=weights, delays=delays)
+        else:
+            conn = self._parameters["connector"]
+            if isinstance(conn, dict):
+                weights = self._parameters["weights"]
+                if not weights:
+                    weights = conn["weights"]
+                if not weights:
+                    weights = self._get_connector_weight()
+                delays = self._parameters["delays"]
+                if conn["mode"] == "OneToOne":
+                    self._parameters["connector"] = \
+                        sim.OneToOneConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "AllToAll":
+                    self._parameters["connector"] = \
+                        sim.AllToAllConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "Fixed":
+                    self._parameters["connector"] = \
+                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
+                else:
+                    raise Exception("Invalid connector mode")
+        if isinstance(self._parameters["synapse_dynamics"], dict):
+            dyn = self._parameters["synapse_dynamics"]
+            if dyn["type"] == "TsodyksMarkram":
+                self._parameters["synapse_dynamics"] = \
+                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
+                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
 
     def connect(self, neurons):
         """
