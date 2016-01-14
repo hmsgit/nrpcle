@@ -10,13 +10,19 @@ class TestRosControlAdapter(unittest.TestCase):
 
     def select_mock(self, *args, **kwargs):
         mock = {
-            'gazebo/get_physics_properties': self.__get_physics,
-            'gazebo/get_world_properties': self.__get_world,
-            'gazebo/set_physics_properties': self.__set_physics,
-            'gazebo/pause_physics': self.__pause_physics,
-            'gazebo/unpause_physics': self.__unpause_physics,
-            'gazebo/reset_sim': self.__reset_sim,
-            'gazebo/end_world': self.__end_world,
+            '/gazebo/get_physics_properties': self.__get_physics,
+            '/gazebo/get_world_properties': self.__get_world,
+            '/gazebo/set_physics_properties': self.__set_physics,
+            '/gazebo/pause_physics': self.__pause_physics,
+            '/gazebo/unpause_physics': self.__unpause_physics,
+            '/gazebo/reset_sim': self.__reset_sim,
+            '/gazebo/end_world': self.__end_world,
+            # These are due to the GazeboHelper
+            '/gazebo/spawn_sdf_light': self.__spawn_sdf_light,
+            '/gazebo/spawn_sdf_model': self.__spawn_sdf_model,
+            '/gazebo/set_model_state': self.__set_model_state,
+            '/gazebo/delete_model': self.__delete_model,
+            '/gazebo/delete_lights': self.__delete_lights
         }[args[0]]
 
         for key, value in kwargs.items():
@@ -36,6 +42,12 @@ class TestRosControlAdapter(unittest.TestCase):
         self.__unpause_physics = MagicMock()
         self.__reset_sim = MagicMock()
         self.__end_world = MagicMock()
+        # These are due to GazeboHelper
+        self.__spawn_sdf_light = MagicMock()
+        self.__spawn_sdf_model = MagicMock()
+        self.__set_model_state = MagicMock()
+        self.__delete_model = MagicMock()
+        self.__delete_lights = MagicMock()
 
         async_proxy_mock.return_value = self.__advance_simulation
 
@@ -143,38 +155,6 @@ class TestRosControlAdapter(unittest.TestCase):
                               'Advancing simulation'),
                              ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
                               'Resetting the world simulation'))
-
-    def test_pause(self):
-        with LogCapture('hbp_nrp_cle.robotsim.RosControlAdapter') as logcapture:
-            self.__set_physics.return_value=True
-            self._rca.set_time_step(0.01)
-            pastTime = self._rca.run_step(0.1)
-            self._rca.unpause()
-
-            gpp = MagicMock(pause=False)
-            self.__get_physics.return_value = gpp
-            self.assertFalse(self._rca.is_paused)
-
-            self.assertFalse(self.__pause_physics.called)
-            self._rca.pause()
-            self.assertTrue(self.__pause_physics.called)
-
-            gpp = MagicMock(pause=True)
-            self.__get_physics.return_value = gpp
-            self.assertTrue(self._rca.is_paused)
-
-            self._rca.run_step(0.05)
-            logcapture.check(
-                ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
-                 'new time step = 0.010000'),
-                ('hbp_nrp_cle.robotsim.RosControlAdapter', 'DEBUG',
-                 'Advancing simulation'),
-                ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
-                 'Unpausing the world simulation'),
-                ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
-                 'Pausing the world simulation'),
-                ('hbp_nrp_cle.robotsim.RosControlAdapter', 'DEBUG',
-                 'Advancing simulation'))
 
     def test_shutdown(self):
         with LogCapture('hbp_nrp_cle.robotsim.RosControlAdapter') as logcapture:

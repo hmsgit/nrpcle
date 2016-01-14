@@ -31,6 +31,13 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.bca = MockBrainControlAdapter()
         bcm = MockBrainCommunicationAdapter()
         tfm = MockTransferFunctionManager()
+
+        # These patches are to avoid timeouts during the GazeboHelper instantiations in the ClosedLoopEngine.
+        # They won't be necessary as soon as the ClosedLoopEngine won't embed a GazeboHelper anymore
+        # (see related comments there)
+        patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.wait_for_service').start()
+        patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.ServiceProxy').start()
+
         self._cle = ClosedLoopEngine(rca, rcm, self.bca, bcm, tfm, 0.01)
 
     def test_run_step(self):
@@ -78,15 +85,15 @@ class TestClosedLoopEngine(unittest.TestCase):
         self._cle.initialize("foo")
         self._cle.shutdown()
 
-    @patch('hbp_nrp_cle.cle.ClosedLoopEngine.set_model_pose')
-    def test_reset_robot_pose(self, set_model_pose_mock):
+    def test_reset_robot_pose(self):
+        self._cle.gazebo_helper.set_model_pose = Mock()
         pose = Pose()
         pose.position = Point(0, 0, 0)
         pose.orientation = Quaternion(0, 0, 0, 1)
 
         self._cle.initial_robot_pose = pose
         self._cle.reset_robot_pose()
-        set_model_pose_mock.assert_called_with('robot', pose)
+        self._cle.gazebo_helper.set_model_pose.assert_called_with('robot', pose)
 
 if __name__ == '__main__':
     unittest.main()

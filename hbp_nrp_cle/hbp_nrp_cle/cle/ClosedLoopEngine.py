@@ -12,7 +12,7 @@ from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
 from hbp_nrp_cle.cle.__helper import get_tf_elapsed_times
-from hbp_nrp_cle.robotsim.GazeboLoadingHelper import set_model_pose
+from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
 
 logger = logging.getLogger('hbp_nrp_cle')
 
@@ -94,6 +94,10 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.__network_configuration = None
 
         self.__initial_robot_pose = None
+
+        # This is to be eventually removed, as communications towards gazebo should
+        # be done from inside the RosControlAdapter
+        self.gazebo_helper = GazeboHelper()
 
     def initialize(self, network_file, **configuration):
         """
@@ -271,7 +275,7 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         Set the robot in the simulation to its initial pose.
         """
-        set_model_pose('robot', self.__initial_robot_pose)
+        self.gazebo_helper.set_model_pose('robot', self.__initial_robot_pose)
 
     def tf_elapsed_time(self):
         """

@@ -14,10 +14,10 @@ robotsim - Adapters for using Gazebo as the Robot simulation with ROS as middlew
     :undoc-members:
     :show-inheritance:
 
-:mod:`GazeboLoadingHelper` Module
+:mod:`GazeboHelper` Module
 ---------------------------------
 
-.. automodule:: hbp_nrp_cle.robotsim.GazeboLoadingHelper
+.. automodule:: hbp_nrp_cle.robotsim.GazeboHelper
     :members:
     :undoc-members:
     :show-inheritance:
@@ -61,4 +61,3 @@ robotsim - Adapters for using Gazebo as the Robot simulation with ROS as middlew
     :members:
     :undoc-members:
     :show-inheritance:
-

@@ -297,15 +297,3 @@ class IRobotControlAdapter(object):  # pragma: no cover
         Resets the physics simulation
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    def unpause(self):
-        """
-        Unpaused the physics
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
-
-    def pause(self):
-        """
-        Pause the physics
-        """
-        raise NotImplementedError("This method was not implemented in the concrete implementation")
