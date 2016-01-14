@@ -25,8 +25,6 @@ config = {
     'version': hbp_nrp_cle.__version__,
     'install_requires': reqs,
     'packages': ['hbp_nrp_cle',
-                 'hbp_nrp_cle.bibi_config',
-                 'hbp_nrp_cle.bibi_config.generated',
                  'hbp_nrp_cle.brainsim',
                  'hbp_nrp_cle.brainsim.pynn', 'hbp_nrp_cle.brainsim.pynn.devices',
                  'hbp_nrp_cle.brainsim.common', 'hbp_nrp_cle.brainsim.common.devices',
@@ -36,7 +34,6 @@ config = {
                  'hbp_nrp_cle.mocks.robotsim', 'hbp_nrp_cle.tf_framework',
                  'hbp_nrp_cle.tf_framework.spike_generators', 'hbp_nrp_cle.robotsim'],
     'package_data': {
-        'hbp_nrp_cle.bibi_config': ['cle_template.pyt', 'tf_template.pyt'],
         'hbp_nrp_cle': ['config.ini']
     },
     'scripts': [],
