@@ -7,3 +7,5 @@ User Manual
 
    installing
    running
+   transfer_functions
+   hard_reset
