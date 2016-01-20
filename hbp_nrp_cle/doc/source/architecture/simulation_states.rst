@@ -10,8 +10,8 @@ interact with the CLE. Furthermore, the CLE also contains a factory to spawn the
 However, this may be refactored since there is no point having two simulation servers in the same
 address space.
 
-The simulation server is implemented in the class :class:`hbp_nrp_cle.cle.ROSCLEServer` and the simulation
-factory is implemented as :class:`hbp_nrp_cle.cle.ROSCLESimulationFactory`.
+The simulation server is implemented in the class :class:`hbp_nrp_cleserver.server.ROSCLEServer`
+and the simulation factory is implemented as :class:`hbp_nrp_cle.cleserver.ROSCLESimulationFactory`.
 
 State machine of the Closed Loop Controller
 -------------------------------------------
@@ -46,7 +46,8 @@ exposes the exact same state machine as depicted in :num:`Fig. #state-machine` e
 *run_step* is not allowed directly and *start()* returns immediately. Furthermore, there's an
 additional state *Paused* which allows transition *start()* back to state *Running* (inside the CLE
 *Paused* is handled as *Stopped*). The transition *shutdown()* is not exposed, instead it's called
-*stop()* and allowed from *Running* and *Paused*.
+*stop()* and allowed from *Running* and *Paused*. The CLE Server is implemented in the package
+:doc:`hbp_nrp_cleserver`.
 
 .. _state-machine-server:
 .. figure:: img/stateMachineServer.png
@@ -59,4 +60,5 @@ ROS Simulation Factory
 
 The ROS Simulation Factory is a factory ROS node that spawns ROS server instances and equips them
 with a CLC. This CLC is generated from an experiment description generating code for the transfer
-functions that are described using the :doc:`BIBI-configuration`.
+functions that are described using the :doc:`BIBI-configuration`. The ROS Simulation Factory is
+implemented in the package :doc:`hbp_nrp_cleserver`.

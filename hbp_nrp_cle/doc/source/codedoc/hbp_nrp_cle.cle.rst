@@ -22,22 +22,6 @@ cle - The implementations of the CLE drivers
     :undoc-members:
     :show-inheritance:
 
-:mod:`ROSCLEServer` Module
---------------------------
-
-.. automodule:: hbp_nrp_cle.cle.ROSCLEServer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ROSCLESimulationFactory` Module
--------------------------------------
-
-.. automodule:: hbp_nrp_cle.cle.ROSCLESimulationFactory
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`ROSCLEState` Module
 -------------------------
 
@@ -45,4 +29,3 @@ cle - The implementations of the CLE drivers
     :members:
     :undoc-members:
     :show-inheritance:
-
