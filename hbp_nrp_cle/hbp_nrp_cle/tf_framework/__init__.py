@@ -7,5 +7,5 @@ __author__ = 'GeorgHinkel'
 
 # pylint: disable=W0401
 
-from ._Facade import *
+from hbp_nrp_cle.tf_framework._Facade import *
 start_new_tf_manager()

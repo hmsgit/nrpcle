@@ -3,9 +3,10 @@ This module contains the publicly visible interface for the transfer functions
 framework that allows the neuroscience user to conveniently specify the
 transfer functions
 """
+#pylint: disable=relative-import
 
 from hbp_nrp_cle.common import UserCodeException
-from . import config
+import config
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
@@ -49,19 +50,22 @@ _write_ = cle_write_guard
 
 # The following modules are needed for transfer function code's execution
 # pylint: disable=unused-import
-from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
-from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
-from ._TransferFunction import TransferFunction
-from ._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
-from . import _TransferFunctionManager, _PropertyPath, _NeuronSelectors
-from ._TransferFunctionInterface import ITransferFunctionManager
+from hbp_nrp_cle.tf_framework._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
+from hbp_nrp_cle.tf_framework._Robot2Neuron import \
+    Robot2Neuron, MapRobotPublisher, MapRobotSubscriber
+from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction
+from hbp_nrp_cle.tf_framework._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
+import _TransferFunctionManager
+import _PropertyPath
+import _NeuronSelectors
+from hbp_nrp_cle.tf_framework._TransferFunctionInterface import ITransferFunctionManager
 from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
 import std_msgs.msg
 import cle_ros_msgs.msg
 import geometry_msgs.msg
 import sensor_msgs.msg
 import gazebo_msgs.msg
-from hbp_nrp_cle.tf_framework import monitoring
+import monitoring
 import hbp_nrp_cle.tf_framework.tf_lib
 from geometry_msgs.msg import Point, Pose, Quaternion
 from std_msgs.msg import Float32, Int32, String

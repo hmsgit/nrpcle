@@ -12,7 +12,7 @@ Install prerequisites
 
 .. code-block:: bash
 
-   sudo apt-get install python-dev python-h5py libxslt-1dev python-lxml autogen automake libtool build-essential autoconf libltdl7-dev libreadline6-dev libncurses5-dev libgsl0-dev python-all-dev python-numpy python-scipy python-matplotlib ipython python-pynn python-pip
+   sudo apt-get install python-dev python-h5py libxslt-1dev python-lxml autogen automake libtool build-essential autoconf libltdl7-dev libreadline6-dev libncurses5-dev libgsl0-dev python-all-dev python-numpy python-scipy python-matplotlib ipython python-pynn python-pip python-opencv
 
 
 Installation of  ROS
@@ -105,5 +105,6 @@ Install CLE dependencies
 
 .. code-block:: bash
 
-    cd <root directory of CLE>
-    make devinstall
+    $ cd $CLE
+    $ ./ubuntu_fix_cv2.sh
+    $ make devinstall
