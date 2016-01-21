@@ -10,7 +10,7 @@ from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from scipy.integrate import simps
 import numpy as np
 
-__author__ = 'DimitriProbst'
+__author__ = 'Dimitri Probst'
 
 
 class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
