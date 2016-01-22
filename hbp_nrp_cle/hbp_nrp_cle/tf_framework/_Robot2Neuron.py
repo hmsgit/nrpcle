@@ -3,7 +3,7 @@ This module contains the representation of transfer functions from the world sim
 neuronal simulator
 """
 
-__author__ = 'GeorgHinkel'
+__author__ = 'Georg Hinkel'
 
 from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
 from . import config

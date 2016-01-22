@@ -205,6 +205,8 @@ class TransferFunctionManager(ITransferFunctionManager):
             tf.params[i].spec = param
             tf.__dict__[param.name] = tf.params[i]
 
+        tf.initialize(self, True, True)
+
     def initialize(self, name):
         """
         Initializes the transfer Function node with the given name
@@ -294,6 +296,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                     tf.params[i] = spec.create_adapter(self)
                     tf.params[i].spec = spec
                     tf.__dict__[spec.name] = tf.params[i]
+            tf.initialize(self, True, False)
 
     def hard_reset_robot_devices(self):
         """
@@ -312,3 +315,4 @@ class TransferFunctionManager(ITransferFunctionManager):
                     tf.params[i] = spec.create_adapter(self)
                     tf.params[i].spec = spec
                     tf.__dict__[spec.name] = tf.params[i]
+            tf.initialize(self, False, True)

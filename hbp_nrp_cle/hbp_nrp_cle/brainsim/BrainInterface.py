@@ -167,6 +167,13 @@ class ISpikeRecorder(IBrainDevice):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    @property
+    def times(self):
+        """
+        Returns the times and neuron IDs of the recorded spikes within the last time step.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class ILeakyIntegratorAlpha(IBrainDevice):  # pragma: no cover
     """

@@ -2,7 +2,7 @@
 This module contains test cases for the TransferFunctionManager component
 """
 
-__author__ = 'georghinkel'
+__author__ = 'Georg Hinkel'
 
 from hbp_nrp_cle.mocks.brainsim._MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
 from hbp_nrp_cle.mocks.robotsim._MockRobotCommunicationAdapter import MockRobotCommunicationAdapter
@@ -11,7 +11,21 @@ import hbp_nrp_cle.tf_framework as nrp
 from hbp_nrp_cle.tests.husky import Husky
 
 import unittest
+import mock
 
+
+class TestBrain(object):
+    @property
+    def circuit(self):
+        return mock.MagicMock()
+
+    @property
+    def sensors(self):
+        return mock.MagicMock()
+
+    @property
+    def actors(self):
+        return mock.MagicMock()
 
 class TestTransferFunctionManager(unittest.TestCase):
 
@@ -19,6 +33,7 @@ class TestTransferFunctionManager(unittest.TestCase):
         self.bcm = MockBrainCommunicationAdapter()
         self.rcm = MockRobotCommunicationAdapter()
         nrp.start_new_tf_manager()
+        nrp.config.brain_root = TestBrain()
         self.tfm = nrp.config.active_node
 
     def test_setting_brainsim_adapter(self):

@@ -1,7 +1,7 @@
 """
 This module contains the mapping of transfer function local or global variables to input parameters
 """
-__author__ = 'sebastiankrach'
+__author__ = 'Sebastian Krach'
 
 from ._MappingSpecification import ParameterMappingSpecification
 
