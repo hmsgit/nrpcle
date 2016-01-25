@@ -52,7 +52,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @amplitude.setter
-    def amplitude(self, value):
+    def amplitude(self, value):  # pragma: no cover
         """
         Sets the amplitude of the current
 
@@ -70,7 +70,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @offset.setter
-    def offset(self, value):
+    def offset(self, value):  # pragma: no cover
         """
         Sets the offset of the current
 
@@ -88,7 +88,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @frequency.setter
-    def frequency(self, value):
+    def frequency(self, value):  # pragma: no cover
         """
         Sets the frequency of the current
 
@@ -106,7 +106,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @phase.setter
-    def phase(self, value):
+    def phase(self, value):  # pragma: no cover
         """
         Sets the phase of the current
 

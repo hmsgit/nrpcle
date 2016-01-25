@@ -7,7 +7,7 @@ from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import INCSource
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
-__author__ = 'DimitriProbst'
+__author__ = 'Dimitri Probst, Georg Hinkel'
 
 
 class PyNNNCSource(AbstractBrainDevice, INCSource):
@@ -55,7 +55,7 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @mean.setter
-    def mean(self, value):
+    def mean(self, value):  # pragma: no cover
         """
         Sets the mean of the current
 
@@ -74,7 +74,7 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @stdev.setter
-    def stdev(self, value):
+    def stdev(self, value):  # pragma: no cover
         """
         Sets the stdev of the current
 

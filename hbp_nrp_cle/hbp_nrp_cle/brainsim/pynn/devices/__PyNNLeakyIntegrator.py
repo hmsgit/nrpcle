@@ -52,14 +52,14 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         self.start_record_voltage()
 
     @staticmethod
-    def _get_cell_type():
+    def _get_cell_type():  # pragma: no cover
         """
         Returns the cell type of the neuron to be created by this device
         :return: a PyNN cell type
         """
         raise NotImplementedError("The cell type has to be specified in a concrete implementation")
 
-    def _get_connector_weight(self):
+    def _get_connector_weight(self):  # pragma: no cover
         """
         Returns the default connector weight in case no explicit weight is specified as parameter
         :return: the weight of the synaptic connection
@@ -111,34 +111,48 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
             weights = self._parameters["weights"]
             if not weights:
                 weights = self._get_connector_weight()
+                self._parameters["weights"] = weights
             delays = self._parameters["delays"]
             self._parameters["connector"] = sim.AllToAllConnector(weights=weights, delays=delays)
         else:
             conn = self._parameters["connector"]
             if isinstance(conn, dict):
-                weights = self._parameters["weights"]
-                if not weights:
-                    weights = conn["weights"]
-                if not weights:
-                    weights = self._get_connector_weight()
-                delays = self._parameters["delays"]
-                if conn["mode"] == "OneToOne":
-                    self._parameters["connector"] = \
-                        sim.OneToOneConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "AllToAll":
-                    self._parameters["connector"] = \
-                        sim.AllToAllConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "Fixed":
-                    self._parameters["connector"] = \
-                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
-                else:
-                    raise Exception("Invalid connector mode")
+                self.__apply_connector(conn, params)
         if isinstance(self._parameters["synapse_dynamics"], dict):
             dyn = self._parameters["synapse_dynamics"]
             if dyn["type"] == "TsodyksMarkram":
                 self._parameters["synapse_dynamics"] = \
                     sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
                         U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
+
+    def __apply_connector(self, conn, params):
+        """
+        Applies the given connector respecting the given manual parameters
+
+        :param conn: The connector dict
+        :param params: Manual parameters
+        """
+        weights = self._parameters["weights"]
+        if not weights:
+            weights = conn["weights"]
+        if not weights:
+            weights = self._get_connector_weight()
+        delays = conn.get("delays")
+        if not delays or "delays" in params:
+            delays = self._parameters["delays"]
+        self._parameters["weights"] = weights
+        self._parameters["delays"] = delays
+        if conn["mode"] == "OneToOne":
+            self._parameters["connector"] = \
+                sim.OneToOneConnector(weights=weights, delays=delays)
+        elif conn["mode"] == "AllToAll":
+            self._parameters["connector"] = \
+                sim.AllToAllConnector(weights=weights, delays=delays)
+        elif conn["mode"] == "Fixed":
+            self._parameters["connector"] = \
+                sim.FixedNumberPreConnector(conn["n"], weights, delays)
+        else:
+            raise Exception("Invalid connector mode")
 
     def connect(self, neurons):
         """

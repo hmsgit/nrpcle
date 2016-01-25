@@ -45,7 +45,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
     # pylint: disable=unused-argument
     # pylint: disable=no-self-use
     @amplitude.setter
-    def amplitude(self, value):
+    def amplitude(self, value):  # pragma: no cover
         """
         Sets the amplitude of the current
 

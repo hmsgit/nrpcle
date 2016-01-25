@@ -7,7 +7,7 @@ from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
-__author__ = 'DimitriProbst'
+__author__ = 'Dimitri Probst, Georg Hinkel'
 
 
 class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
@@ -81,6 +81,52 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
                                                               "start",
                                                               "rate"))
 
+    def _update_parameters(self, params):
+        """
+        This method updates the device parameter dictionary with the provided parameter
+        dictionary. The dictionary has to be validated before as this method assumes it to be
+        correct.
+
+        Overriding subclasses can provide additional configuration parameter adaption as this
+        method is called before the brain simulator devices are constructed.
+
+        :param params: The validated parameter dictionary
+        """
+        super(PyNNPoissonSpikeGenerator, self)._update_parameters(params)
+
+        if "connector" in params:
+            conn = self._parameters["connector"]
+            if isinstance(conn, dict):
+                weights = params.get("weights")
+                if not weights:
+                    weights = conn["weights"]
+                if not weights:
+                    weights = self._parameters["weights"]
+                delays = params.get("delays")
+                if not delays:
+                    delays = conn.get("delays")
+                if not delays:
+                    delays = self._parameters["delays"]
+                self._parameters["weights"] = weights
+                self._parameters["delays"] = delays
+                if conn["mode"] == "OneToOne":
+                    self._parameters["connector"] = \
+                        sim.OneToOneConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "AllToAll":
+                    self._parameters["connector"] = \
+                        sim.AllToAllConnector(weights=weights, delays=delays)
+                elif conn["mode"] == "Fixed":
+                    self._parameters["connector"] = \
+                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
+                else:
+                    raise Exception("Invalid connector mode")
+        if isinstance(self._parameters["synapse_dynamics"], dict):
+            dyn = self._parameters["synapse_dynamics"]
+            if dyn["type"] == "TsodyksMarkram":
+                self._parameters["synapse_dynamics"] = \
+                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
+                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
+
     def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
@@ -100,30 +146,6 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             self._parameters["connector"] = \
                 sim.AllToAllConnector(**self.get_parameters("weights",
                                                             "delays"))
-        else:
-            conn = self._parameters["connector"]
-            if isinstance(conn, dict):
-                weights = self._parameters["weights"]
-                if not weights:
-                    weights = conn["weights"]
-                delays = self._parameters["delays"]
-                if conn["mode"] == "OneToOne":
-                    self._parameters["connector"] = \
-                        sim.OneToOneConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "AllToAll":
-                    self._parameters["connector"] = \
-                        sim.AllToAllConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "Fixed":
-                    self._parameters["connector"] = \
-                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
-                else:
-                    raise Exception("Invalid connector mode")
-        if isinstance(self._parameters["synapse_dynamics"], dict):
-            dyn = self._parameters["synapse_dynamics"]
-            if dyn["type"] == "TsodyksMarkram":
-                self._parameters["synapse_dynamics"] = \
-                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
-                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
 
         return sim.Projection(presynaptic_population=self.__generator,
                               postsynaptic_population=neurons,

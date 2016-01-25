@@ -27,7 +27,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         'v_rest': -100.0,
         'connector': None,
         'weights': None,
-        'delays': sim.RandomDistribution('uniform', [0.1, 2.0]),
+        'delays': None,
         'source': None,
         'target': 'excitatory',
         'synapse_dynamics': None,
@@ -74,7 +74,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
 
     # pylint: disable=unused-argument
     @rate.setter
-    def rate(self, value):
+    def rate(self, value):  # pragma: no cover
         """
         Sets the frequency of the Fixed spike generator
 
@@ -149,6 +149,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
             weights = self._parameters["weights"]
             if not weights:
                 weights = self._get_default_weights(neurons.conductance_based)
+                self._parameters["weights"] = weights
             delays = self._parameters["delays"]
             self._parameters["connector"] = sim.AllToAllConnector(weights=weights, delays=delays)
         else:
@@ -156,19 +157,23 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
             if isinstance(conn, dict):
                 weights = self._parameters["weights"]
                 if not weights:
-                    weights = conn["weights"]
+                    weights = conn.get("weights")
                 if not weights:
                     weights = self._get_default_weights(neurons.conductance_based)
-                delays = self._parameters["delays"]
-                if conn["mode"] == "OneToOne":
+                delays = conn.get("delays")
+                if not delays:
+                    delays = self._parameters["delays"]
+                self._parameters["delays"] = delays
+                self._parameters["weights"] = weights
+                if conn.get("mode") == "OneToOne":
                     self._parameters["connector"] = \
                         sim.OneToOneConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "AllToAll":
+                elif conn.get("mode") == "AllToAll":
                     self._parameters["connector"] = \
                         sim.AllToAllConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "Fixed":
+                elif conn.get("mode") == "Fixed":
                     self._parameters["connector"] = \
-                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
+                        sim.FixedNumberPreConnector(conn.get("n", 1), weights, delays)
                 else:
                     raise Exception("Invalid connector mode")
 
@@ -200,6 +205,8 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
                 self._parameters["synapse_dynamics"] = \
                     sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
                         U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
+        if not self._parameters["delays"]:
+            self._parameters["delays"] = sim.RandomDistribution('uniform', [0.1, 2.0])
 
     def _get_default_weights(self, conductance_based):
         """
