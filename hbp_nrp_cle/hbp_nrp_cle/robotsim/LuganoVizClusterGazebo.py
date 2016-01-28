@@ -159,7 +159,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         allocation will be cancelled.
         """
         self.__allocation_process = self.__spawn_ssh_SLURM_frontend()
-        notificator.info("Waiting on a cluster node allocation to be granted.")
+        notificator.info("Requesting resources on the cluster.")
         self.__allocation_process.sendline(self.ALLOCATION_COMMAND)
         result = self.__allocation_process.expect(['Granted job allocation ([0-9]+)',
                                                    'Submitted batch job [0-9]+',
@@ -169,8 +169,8 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         if result == 2:
             raise(Exception("Kerberos authentication missing"))
         elif result == 3:
-            raise(Exception("Unfortunately, the cluster is fully occupied. "
-                            "Please test again later."))
+            raise(Exception("No resources available on the cluster. "
+                            "Try again later."))
         elif result == 4:
             raise(Exception("Job allocation failed: " + str(self.__allocation_process.after)))
 
