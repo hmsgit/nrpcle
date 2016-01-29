@@ -173,6 +173,16 @@ class TransferFunction(object):
         except Exception as e:
             self.publish_error(e)
 
+    def initialize(self, tfm, bca_changed, rca_changed):
+        """
+        Initializes this transfer function to be used with the given TFM
+
+        :param tfm: The Transfer Function Manager
+        :param bca_changed: True, if the brain communication adapter has changed
+        :param rca_changed: True, if the robot communication adapter has changed
+        """
+        pass
+
     def publish_error(self, tf_run_exception):
         """
         Publishes an error message on the error/transfer_function ROS Topic

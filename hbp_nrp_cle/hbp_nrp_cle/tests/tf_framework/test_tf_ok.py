@@ -1,5 +1,5 @@
-from hbp_nrp_cle.tf_framework import _Facade as nrp
-from hbp_nrp_cle.tf_framework._Facade import TFLoadingException
+import hbp_nrp_cle.tf_framework as nrp
+from hbp_nrp_cle.tf_framework import TFLoadingException
 from hbp_nrp_cle.tf_framework import config
 from hbp_nrp_cle.tests.tf_framework.TestDevice import TestDevice
 from hbp_nrp_cle.tests.tf_framework.husky import Husky

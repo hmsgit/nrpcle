@@ -7,8 +7,9 @@ transfer functions, dispensing with the need to run a brain simulation to test t
 from .MockAbstractBrainDevice import AbstractMockBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder
 import warnings
+import numpy
 
-__author__ = 'MichaelWeber'
+__author__ = 'Michael Weber, Georg Hinkel'
 
 
 class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
@@ -41,6 +42,16 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
         Returns the membrane voltage of the cell
         """
         return self.__spiked
+
+    @property
+    def times(self):
+        """
+        Returns the times and neuron IDs of the recorded spikes within the last time step.
+        """
+        if self.__spiked:
+            return numpy.array([[0.0], [1]])
+        else:
+            return numpy.array([[], []])
 
     def refresh(self, time):
         """

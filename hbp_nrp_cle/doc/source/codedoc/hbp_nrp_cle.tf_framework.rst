@@ -6,14 +6,6 @@ tf_framework - The implementation of the TF framework
     :undoc-members:
     :show-inheritance:
 
-:mod:`_Facade` Module
----------------------
-
-.. automodule:: hbp_nrp_cle.tf_framework._Facade
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`_Neuron2Robot` Module
 ---------------------------
 
@@ -26,6 +18,14 @@ tf_framework - The implementation of the TF framework
 ------------------------------
 
 .. automodule:: hbp_nrp_cle.tf_framework._NeuronSelectors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`_NeuronMonitor` Module
+----------------------------
+
+.. automodule:: hbp_nrp_cle.tf_framework._NeuronMonitor
     :members:
     :undoc-members:
     :show-inheritance:
@@ -88,6 +88,9 @@ tf_framework - The implementation of the TF framework
 
 :mod:`monitoring` Module
 ------------------------
+
+.. note::
+    This module is obsolete. Monitoring should be done through the new :mod:`_Neuron2Monitor` module.
 
 .. automodule:: hbp_nrp_cle.tf_framework.monitoring
     :members:

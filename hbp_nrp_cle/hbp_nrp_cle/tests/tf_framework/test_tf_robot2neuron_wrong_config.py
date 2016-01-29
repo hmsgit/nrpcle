@@ -1,4 +1,4 @@
-from hbp_nrp_cle.tf_framework import _Facade as nrp
+import hbp_nrp_cle.tf_framework as nrp
 from hbp_nrp_cle.tests.tf_framework.husky import Husky
 
 from hbp_nrp_cle.mocks.robotsim import MockRobotCommunicationAdapter

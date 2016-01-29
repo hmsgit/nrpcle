@@ -1,5 +1,5 @@
 from hbp_nrp_cle.robotsim.RobotInterface import Topic
-from hbp_nrp_cle.tf_framework import _Facade as nrp
+import hbp_nrp_cle.tf_framework as nrp
 from hbp_nrp_cle.tf_framework import config
 from hbp_nrp_cle.mocks.robotsim._MockRobotCommunicationAdapter import MockRobotCommunicationAdapter, \
     MockPublishedTopic
