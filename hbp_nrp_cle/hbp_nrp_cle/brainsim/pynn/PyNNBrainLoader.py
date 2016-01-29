@@ -4,7 +4,7 @@ Load a brain network
 
 __author__ = "Lorenzo Vannucci"
 
-import pyNN.nest as sim
+from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import numpy as np
 import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
