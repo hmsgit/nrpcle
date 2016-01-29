@@ -112,3 +112,11 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         Pause the physics
         """
         pass
+
+    def reset_world(self, models, lights):
+        """
+        Resets the world excluding the robot
+        :param models: A dictionary containing pairs model_name: model_sdf.
+        :param lights: A dictionary containing pairs light_name: light sdf.
+        """
+        pass

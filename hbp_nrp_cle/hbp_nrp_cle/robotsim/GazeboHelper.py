@@ -1,14 +1,17 @@
 """
 Helper class for gazebo loading operations
 """
-from hbp_nrp_cle.robotsim import ROS_S_SPAWN_SDF_LIGHT, ROS_S_SPAWN_SDF_MODEL
+from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_LIGHT, GZROS_S_SPAWN_SDF_MODEL, \
+    GZROS_S_GET_WORLD_PROPERTIES, GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, \
+    GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, GZROS_S_GET_LIGHTS_NAME
 
 __author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
 
 import rospy
 import os
 from gazebo_msgs.msg import ModelState
-from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel, SetModelState
+from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel, SetModelState, \
+    GetLightsName, DeleteLight
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from lxml import etree
@@ -26,28 +29,37 @@ class GazeboHelper(object):
     """
 
     def __init__(self):
-        rospy.wait_for_service(ROS_S_SPAWN_SDF_LIGHT, TIMEOUT)
-        rospy.wait_for_service(ROS_S_SPAWN_SDF_MODEL, TIMEOUT)
-        rospy.wait_for_service('/gazebo/get_world_properties', TIMEOUT)
-        rospy.wait_for_service('/gazebo/set_model_state', TIMEOUT)
-        rospy.wait_for_service('/gazebo/delete_model', TIMEOUT)
-        rospy.wait_for_service('/gazebo/delete_lights', TIMEOUT)
+        rospy.wait_for_service(GZROS_S_SPAWN_SDF_LIGHT, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_SPAWN_SDF_MODEL, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_GET_WORLD_PROPERTIES, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_SET_MODEL_STATE, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_DELETE_MODEL, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_DELETE_LIGHT, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_DELETE_LIGHTS, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_GET_LIGHTS_NAME, TIMEOUT)
 
-        self.spawn_light_proxy = rospy.ServiceProxy(ROS_S_SPAWN_SDF_LIGHT, SpawnModel)
-        self.spawn_model_proxy = rospy.ServiceProxy(ROS_S_SPAWN_SDF_MODEL, SpawnModel)
-        self.get_world_properties_proxy = rospy.ServiceProxy('/gazebo/get_world_properties',
+        self.spawn_light_proxy = rospy.ServiceProxy(GZROS_S_SPAWN_SDF_LIGHT, SpawnModel)
+        self.spawn_model_proxy = rospy.ServiceProxy(GZROS_S_SPAWN_SDF_MODEL, SpawnModel)
+        self.get_world_properties_proxy = rospy.ServiceProxy(GZROS_S_GET_WORLD_PROPERTIES,
                                                              GetWorldProperties)
-        self.set_model_state_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
-        self.delete_model_proxy = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-        self.delete_lights_proxy = rospy.ServiceProxy('/gazebo/delete_lights', Empty)
+        self.set_model_state_proxy = rospy.ServiceProxy(GZROS_S_SET_MODEL_STATE, SetModelState)
+        self.delete_model_proxy = rospy.ServiceProxy(GZROS_S_DELETE_MODEL, DeleteModel)
+        self.delete_light_proxy = rospy.ServiceProxy(GZROS_S_DELETE_LIGHT, DeleteLight)
+        self.delete_lights_proxy = rospy.ServiceProxy(GZROS_S_DELETE_LIGHTS, Empty)
+        self.get_lights_name_proxy = rospy.ServiceProxy(GZROS_S_GET_LIGHTS_NAME, GetLightsName)
 
     def load_gazebo_world_file(self, world_file):
         """
         Load a SDF world file into the ROS connected gazebo running instance.
 
         :param world_file: The absolute path of the SDF world file.
+        :return A pair of dictionaries, the first containing pairs model_name: model_sdf,
+            the second pairs light_name: light_sdf
         """
         world_file_sdf = etree.parse(world_file)
+
+        world_lights_sdf = {}
+        world_models_sdf = {}
 
         sdf_wrapper = "<?xml version=\"1.0\" ?>\n<sdf version='1.5'>%s</sdf>"
 
@@ -61,7 +73,9 @@ class GazeboHelper(object):
             # positions.
             light_name = light.xpath("@name")[0]
             logger.info("Loading light \"%s\".", light_name)
-            self.load_light_sdf(light_name, sdf_wrapper % (etree.tostring(light), ))
+            light_sdf = sdf_wrapper % (etree.tostring(light), )
+            self.load_light_sdf(light_name, light_sdf)
+            world_lights_sdf[light_name] = light_sdf
 
         models_state = world_file_sdf.xpath("/sdf/world/state/model")
 
@@ -74,9 +88,13 @@ class GazeboHelper(object):
             if len(state) != 0:
                 model.remove(model.find("pose"))
                 model.append(state[0].find("pose"))
-            self.load_gazebo_sdf(model_name, sdf_wrapper % (etree.tostring(model), ))
+            models_sdf = sdf_wrapper % (etree.tostring(model), )
+            self.load_gazebo_sdf(model_name, models_sdf)
+            world_models_sdf[model_name] = models_sdf
 
         logger.debug("%s successfully loaded in Gazebo.", world_file)
+
+        return world_models_sdf, world_lights_sdf
 
     def load_gazebo_model_file(self, model_name, model_file, initial_pose=None):
         """

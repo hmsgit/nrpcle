@@ -10,7 +10,9 @@ import math
 from gazebo_msgs.srv import GetPhysicsProperties, GetWorldProperties, \
     SetPhysicsProperties, AdvanceSimulation
 from std_srvs.srv import Empty
+from geometry_msgs.msg import Point, Pose, Quaternion
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -153,3 +155,62 @@ class RosControlAdapter(IRobotControlAdapter):
         """
         logger.info("Resetting the world simulation")
         self.__reset()
+
+    def reset_world(self, models, lights):
+        """
+        Resets the world (robot excluded)
+        :param models: A dictionary containing pairs model_name: model_sdf.
+        :param lights: A dictionary containing pairs light_name: light sdf.
+        """
+        logger.info("Resetting the world")
+
+        # MODELS
+        # get the list of models' name currently the sim from gazebo
+        world_properties = self.__get_world_properties()
+
+        # robot models doesn't belong to the environment, so discard them from the active set
+        # we assume that the robot name contains the 'robot' substring
+        active_model_set = \
+            {m_name for m_name in world_properties.model_names if 'robot' not in m_name}
+        original_model_set = frozenset(models.keys())
+
+        logger.debug("active_model_set: %s", active_model_set)
+        logger.debug("original_model_set: %s", original_model_set)
+
+        # LIGHTS
+        # get from gazebo the name of the lights in the scene
+        world_lights = self.gazebo_helper.get_lights_name_proxy()
+
+        # filter sun from the world lights
+        active_lights_set = \
+            {l_name for l_name in world_lights.light_names if 'sun' not in l_name}
+        original_lights_set = frozenset(lights.keys())
+
+        logger.debug("active_lights_set: %s", active_lights_set)
+        logger.debug("original_lights_set: %s", original_lights_set)
+
+        # delete LIGHTS
+        for light_name in active_lights_set:
+            logger.debug("deleting: %s", light_name)
+            self.gazebo_helper.delete_light_proxy(light_name)
+
+        # delete MODELS
+        for model_name in active_model_set:
+            logger.debug("deleting: %s", model_name)
+            self.gazebo_helper.delete_model_proxy(model_name)
+
+        initial_pose = Pose()
+        initial_pose.position = Point(0, 0, 0)
+        initial_pose.orientation = Quaternion(0, 0, 0, 1)
+
+        # respawn LIGHTS
+        for light_name in original_lights_set:
+            logger.debug("spawning: %s", light_name)
+            self.gazebo_helper.spawn_light_proxy(light_name, lights[light_name],
+                                                 "", initial_pose, "")
+
+        # respawn MODELS
+        for model_name in original_model_set:
+            logger.debug("spawning: %s", model_name)
+            self.gazebo_helper.spawn_model_proxy(model_name, models[model_name],
+                                                 "", initial_pose, "")

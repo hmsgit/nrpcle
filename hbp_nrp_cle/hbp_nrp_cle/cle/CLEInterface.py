@@ -74,6 +74,12 @@ class IClosedLoopControl(object):  # pragma: no cover
         """
         raise NotImplementedError("Method not implemented")
 
+    def reset_world(self):  # -> None:
+        """
+        Reset the world of the orchestrated simulations.
+        """
+        raise NotImplementedError("Method not implemented")
+
     @property
     def simulation_time(self):  # -> float64
         """

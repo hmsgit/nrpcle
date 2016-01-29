@@ -8,7 +8,9 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 from gazebo_msgs.srv import SetModelState
 from lxml import etree, objectify
 from mock import patch, call, MagicMock, Mock
-from hbp_nrp_cle.robotsim import ROS_S_SPAWN_SDF_LIGHT, ROS_S_SPAWN_SDF_MODEL
+from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_LIGHT, GZROS_S_SPAWN_SDF_MODEL, \
+    GZROS_S_GET_WORLD_PROPERTIES, GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, \
+    GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, GZROS_S_GET_LIGHTS_NAME
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
 from testfixtures import log_capture, LogCapture
 
@@ -33,12 +35,14 @@ class TestGazeboHelper(unittest.TestCase):
         proxied = sorted([self.mock_service_proxy.call_args_list[x][0][0]
             for x in xrange(len(self.mock_service_proxy.call_args_list))])
         services = sorted([
-            ROS_S_SPAWN_SDF_LIGHT,
-            ROS_S_SPAWN_SDF_MODEL,
-            '/gazebo/get_world_properties',
-            '/gazebo/set_model_state',
-            '/gazebo/delete_model',
-            '/gazebo/delete_lights'
+            GZROS_S_SPAWN_SDF_LIGHT,
+            GZROS_S_SPAWN_SDF_MODEL,
+            GZROS_S_GET_WORLD_PROPERTIES,
+            GZROS_S_SET_MODEL_STATE,
+            GZROS_S_DELETE_MODEL,
+            GZROS_S_DELETE_LIGHT,
+            GZROS_S_DELETE_LIGHTS,
+            GZROS_S_GET_LIGHTS_NAME
         ])
 
         self.assertEquals(services, waited)

@@ -2,6 +2,7 @@ from mock import patch, PropertyMock, Mock, MagicMock
 from hbp_nrp_cle.robotsim.RosControlAdapter import RosControlAdapter
 import unittest
 from testfixtures import LogCapture
+from gazebo_msgs.srv import GetWorldProperties, GetLightsName
 
 __author__ = 'Lorenzo Vannucci, Sebastian Krach'
 
@@ -22,7 +23,9 @@ class TestRosControlAdapter(unittest.TestCase):
             '/gazebo/spawn_sdf_model': self.__spawn_sdf_model,
             '/gazebo/set_model_state': self.__set_model_state,
             '/gazebo/delete_model': self.__delete_model,
-            '/gazebo/delete_lights': self.__delete_lights
+            '/gazebo/delete_light': self.__delete_light,
+            '/gazebo/delete_lights': self.__delete_lights,
+            '/gazebo/get_lights_name': self.__get_lights_name
         }[args[0]]
 
         for key, value in kwargs.items():
@@ -46,8 +49,10 @@ class TestRosControlAdapter(unittest.TestCase):
         self.__spawn_sdf_light = MagicMock()
         self.__spawn_sdf_model = MagicMock()
         self.__set_model_state = MagicMock()
+        self.__delete_light = MagicMock()
         self.__delete_model = MagicMock()
         self.__delete_lights = MagicMock()
+        self.__get_lights_name = MagicMock()
 
         async_proxy_mock.return_value = self.__advance_simulation
 
@@ -155,6 +160,84 @@ class TestRosControlAdapter(unittest.TestCase):
                               'Advancing simulation'),
                              ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
                               'Resetting the world simulation'))
+
+    def test_reset_world(self):
+        with LogCapture('hbp_nrp_cle.robotsim.RosControlAdapter') as logcapture:
+
+            # mock world (which is loaded during simulation startup)
+            world_models_sdf = {'model1': '<sdf/>', 'model2': '<sdf/>'}
+            world_lights_sdf = {"light1": '<sdf/>', "light2": '<sdf/>'}
+
+            # mock current world status
+            mock_world_properties = GetWorldProperties()
+            mock_world_properties.model_names = ["model1", "model2", "robot"]
+
+            mock_world_lights = GetLightsName()
+            mock_world_lights.light_names = ["light1", "light2", "sun"]
+
+            # mock ros services
+            self._rca.gazebo_helper.get_lights_name_proxy = Mock(return_value=mock_world_lights)
+            self._rca._RosControlAdapter__get_world_properties = Mock(return_value=mock_world_properties)
+            # delete services
+            self._rca.gazebo_helper.delete_light_proxy = Mock(return_value=True)
+            self._rca.gazebo_helper.delete_model_proxy = Mock(return_value=True)
+            # spawn sdf services
+            self._rca.gazebo_helper.spawn_sdf_light_proxy = Mock(return_value=True)
+            self._rca.gazebo_helper.spawn_sdf_model_proxy = Mock(return_value=True)
+
+            # call the method under test
+            self._rca.reset_world(world_models_sdf, world_lights_sdf)
+
+            # check deletion
+            lights_to_delete_and_respawn = ["light1", "light2"]
+            models_to_delete_and_respawn = ["model1", "model2"]
+
+            # LIGHTS
+            for light in lights_to_delete_and_respawn:
+                self._rca.gazebo_helper.delete_light_proxy.assert_any_call(light)
+
+            # MODELS
+            self.assertTrue(False in map(lambda c: 'robot' in c[0],
+                                         self._rca.gazebo_helper.delete_model_proxy.call_args_list),
+                            'The robot must not be deleted from the scene')
+
+            for model in models_to_delete_and_respawn:
+                self._rca.gazebo_helper.delete_model_proxy.assert_any_call(model)
+
+            # check respawning
+            # LIGHTS
+            self.assertFalse(False in map(lambda c: c[0][0] in lights_to_delete_and_respawn,
+                                          self._rca.gazebo_helper.spawn_sdf_light_proxy.call_args_list),
+                             'Some light has not been re-spawned')
+
+            # MODELS
+            self.assertFalse(False in map(lambda c: c[0][0] in models_to_delete_and_respawn,
+                                          self._rca.gazebo_helper.spawn_sdf_model_proxy.call_args_list),
+                             'Some model has not been re-spawned')
+
+            # check log
+            rca_module_name_string = 'hbp_nrp_cle.robotsim.RosControlAdapter'
+            logcapture.check(
+                (rca_module_name_string, 'INFO', 'Resetting the world'),
+
+                (rca_module_name_string, 'DEBUG', "active_model_set: set(['model2', 'model1'])"),
+                (rca_module_name_string, 'DEBUG', "original_model_set: frozenset(['model2', 'model1'])"),
+
+                (rca_module_name_string, 'DEBUG', "active_lights_set: set(['light2', 'light1'])"),
+                (rca_module_name_string, 'DEBUG', "original_lights_set: frozenset(['light2', 'light1'])"),
+
+                (rca_module_name_string, 'DEBUG', "deleting: light2"),
+                (rca_module_name_string, 'DEBUG', "deleting: light1"),
+
+                (rca_module_name_string, 'DEBUG', "deleting: model2"),
+                (rca_module_name_string, 'DEBUG', "deleting: model1"),
+
+                (rca_module_name_string, 'DEBUG', "spawning: light2"),
+                (rca_module_name_string, 'DEBUG', "spawning: light1"),
+
+                (rca_module_name_string, 'DEBUG', "spawning: model2"),
+                (rca_module_name_string, 'DEBUG', "spawning: model1")
+            )
 
     def test_shutdown(self):
         with LogCapture('hbp_nrp_cle.robotsim.RosControlAdapter') as logcapture:

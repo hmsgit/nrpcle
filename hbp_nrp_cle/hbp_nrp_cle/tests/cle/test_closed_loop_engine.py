@@ -67,6 +67,11 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertEqual(self.__cle.simulation_time, 0.0)
         self.assertEqual(self.__cle.real_time, 0.0)
 
+    def test_reset_world(self):
+        self.__cle.rca = Mock()
+        self.__cle.reset_world()
+        self.assertEquals(1, self.__cle.rca.reset_world.call_count)
+
     def test_shutdown(self):
         self.__cle.initialize("foo")
         self.__cle.shutdown()

@@ -297,3 +297,11 @@ class IRobotControlAdapter(object):  # pragma: no cover
         Resets the physics simulation
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def reset_world(self, models, lights):  # -> None:
+        """
+        Resets the world excluding the robot
+        :param models: A dictionary containing pairs model_name: model_sdf.
+        :param lights: A dictionary containing pairs light_name: light sdf.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")

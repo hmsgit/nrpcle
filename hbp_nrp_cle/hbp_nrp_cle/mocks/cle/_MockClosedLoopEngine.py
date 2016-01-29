@@ -126,6 +126,13 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         return self.clock
 
+    def reset_world(self):
+        """
+        Reset the world, to its original configuration
+        """
+        self.stop()
+        self.running = False
+
     @property
     def real_time(self):  # -> float64
         """

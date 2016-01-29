@@ -98,6 +98,9 @@ class ClosedLoopEngine(IClosedLoopControl):
         # be done from inside the RosControlAdapter
         self.gazebo_helper = GazeboHelper()
 
+        self.initial_models = None
+        self.initial_lights = None
+
     def initialize(self, network_file, **configuration):
         """
         Initializes the closed loop engine.
@@ -231,6 +234,18 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.running = False
+        self.__rca_elapsed_time = 0.0
+        self.__bca_elapsed_time = 0.0
+        logger.info("CLE reset")
+
+    def reset_world(self):
+        """
+        Reset the world to its original configuration
+        """
+        self.stop()
+        self.rca.reset_world(self.initial_models, self.initial_lights)
+        self.running = False
+        logger.info("CLE world reset")
 
     @property
     def simulation_time(self):  # -> float64
