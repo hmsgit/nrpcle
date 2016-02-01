@@ -8,3 +8,4 @@ __author__ = 'Georg Hinkel'
 active_node = None
 brain_root = None
 brain_source = None
+brain_populations = None

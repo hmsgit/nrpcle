@@ -8,10 +8,11 @@ from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import logging
 from os import path
+import copy
 
 logger = logging.getLogger(__name__)
 
-__author__ = 'DimitriProbst'
+__author__ = 'DimitriProbst', 'DanielPeppicelli', 'LucGuyot'
 
 
 class PyNNControlAdapter(IBrainControlAdapter):
@@ -35,11 +36,19 @@ class PyNNControlAdapter(IBrainControlAdapter):
         :param populations: The populations to create
         """
         self.__is_alive = True
+        import hbp_nrp_cle.tf_framework.config as tf_config
+        tf_config.brain_populations = self.populations_using_json_slice(populations)
         extension = path.splitext(network_file)[1]
         if extension == ".py":
-            self.__load_python_brain(network_file, populations)
+            self.__load_python_brain(
+                network_file,
+                self.populations_using_python_slice(populations)
+            )
         elif extension == ".h5":
-            self.__load_h5_brain(network_file, populations)
+            self.__load_h5_brain(
+                network_file,
+                self.populations_using_python_slice(populations)
+            )
         else:
             msg = "Neuronal network format {0} not supported".format(extension)
             raise Exception(msg)
@@ -126,3 +135,44 @@ class PyNNControlAdapter(IBrainControlAdapter):
         Resets the neuronal simulator
         """
         logger.info("neuronal simulator reset")
+
+    @staticmethod
+    def populations_using_json_slice(populations):
+        """
+        Turn populations defined as python slices into python dicts
+        to allow straightforward translation in to json.
+
+        :param populations: a dictionary whose values are either
+        integers (indices), python lists or slices.
+        Slices can be of two types, either python slices,
+        or dictionnaries of the form {'from': 1, 'to': 10, 'step': 2}
+        :return: A dictionary where python slices have been replaced
+        by dictionaries referred to as 'json slices'.
+        """
+        result = copy.deepcopy(populations)
+        for key, value in populations.iteritems():
+            if (isinstance(value, slice)):
+                p = {'from': value.start, 'to': value.stop, 'step': value.step}
+                result[key] = p
+        return result
+
+    @staticmethod
+    def populations_using_python_slice(populations):
+        """
+        Turn slices defined as python dicts
+        into python slices.
+        Populations with different types as dict are left unchanged.
+
+        :param populations: a dictionary whose values are either
+        integers (indices), python lists or slices.
+        Slices can be of two types, either python slices,
+        or dictionnaries of the form {'from': 1, 'to': 10, 'step': 2}
+        :return: A dictionary where 'json slices' (plain python dicts) have been replaced
+        by python slices.
+        """
+        result = copy.deepcopy(populations)
+        for key, value in populations.iteritems():
+            if (isinstance(value, dict) and 'from' in value and 'to' in value):
+                step = value.get('step')
+                result[key] = slice(value['from'], value['to'], step)
+        return result
