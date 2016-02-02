@@ -201,6 +201,21 @@ def get_brain_source():
     return config.brain_source
 
 
+def get_brain_populations():
+    """
+    Get the brain populations as a dictionnary
+    If the brain model is not loaded,
+    the function returns None.
+
+    :return: A dictionnary containing the brain populations
+    The dictionnary keys are population names
+    and its values are one of the following types: integer (single index),
+    list, or a 'slice' dictionnary of the following form
+    {'from': 1, 'to': 10, 'step': 1}.
+    """
+    return config.brain_populations
+
+
 def delete_transfer_function(name):
     """
     Delete a transfer function. If the transfer function does not exist,

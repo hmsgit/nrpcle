@@ -458,11 +458,39 @@ requested (device)'))
 
     def test_load_brain(self):
         with patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader") as loader:
-            with patch('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open', mock_open(read_data='some python code'), create=True) as m:
-                self.control.load_brain("foo.py", {})
+            with patch(
+                'hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
+                mock_open(read_data='some python code'), create=True
+            ) as m:
+                slice1 = { 'from': 1, 'to': 2, 'step': 3}
+                slice2 = { 'from': 4, 'to': 5, 'step': None}
+                populations_mixed = {
+                    'population_1': 1, 'population_2': 2,
+                    'slice_1': slice1, 'slice_2': slice(4, 5),
+                    'list_1': [1, 2, 3]
+                }
+                self.control.load_brain("foo.py", populations_mixed)
+                populations_slice = {
+                    'population_1': 1, 'population_2': 2,
+                    'slice_1': slice(1, 2, 3), 'slice_2': slice(4, 5),
+                    'list_1': [1, 2, 3]
+                }
+                loader.load_py_network.assert_called_with(
+                    "foo.py",
+                    populations_slice
+                )
                 self.assertTrue(loader.load_py_network.called)
                 self.assertFalse(loader.load_h5_network.called)
                 self.assertEqual(tf_framework.config.brain_source, 'some python code')
+                populations_json = {
+                    'population_1': 1, 'population_2': 2,
+                    'slice_1': slice1, 'slice_2': slice2,
+                    'list_1': [1, 2, 3]
+                }
+                self.assertEqual(
+                  tf_framework.config.brain_populations,
+                  populations_json
+                )
                 loader.load_py_network.reset_mock()
                 self.control.load_brain("foo.h5", {})
                 self.assertTrue(loader.load_h5_network.called)
@@ -470,6 +498,51 @@ requested (device)'))
                 loader.load_h5_network.reset_mock()
                 self.assertRaises(Exception, self.control.load_brain, "foo.not_supported", {})
 
+    def test_populations_using_json_slice(self):
+        slice1 = { 'from': 1, 'to': 2, 'step': 3}
+        slice2 = { 'from': 1, 'to': 2, 'step': None}
+        populations_json_slice = {
+          'population_1': 1, 'population_2': 2,
+          'slice_1': slice1, 'slice_2': slice2,
+          'list_1': [1, 2, 3]
+        }
+        populations_python_slice = {
+          'population_1': 1, 'population_2': 2,
+          'slice_1': slice(1, 2, 3), 'slice_2': slice(1, 2),
+          'list_1': [1, 2, 3]
+        }
+        self.assertEqual(
+          self.control.populations_using_json_slice(populations_json_slice),
+          populations_json_slice
+        )
+
+        self.assertEqual(
+          self.control.populations_using_json_slice(populations_python_slice),
+          populations_json_slice
+        )
+
+    def test_populations_using_python_slice(self):
+        slice1 = { 'from': 1, 'to': 2, 'step': 3}
+        slice2 = { 'from': 1, 'to': 2}
+        populations_json_slice = {
+          'population_1': 1, 'population_2': 2,
+          'slice_1': slice1, 'slice_2': slice2,
+          'list_1': [1, 2, 3]
+        }
+        populations_python_slice = {
+          'population_1': 1, 'population_2': 2,
+          'slice_1': slice(1, 2, 3), 'slice_2': slice(1, 2),
+          'list_1': [1, 2, 3]
+        }
+        self.assertEqual(
+          self.control.populations_using_python_slice(populations_json_slice),
+          populations_python_slice
+        )
+
+        self.assertEqual(
+          self.control.populations_using_python_slice(populations_python_slice),
+          populations_python_slice
+        )
 
     def tearDown(self):
         """
