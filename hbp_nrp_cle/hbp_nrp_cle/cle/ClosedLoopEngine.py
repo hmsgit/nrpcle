@@ -91,7 +91,6 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         self.__rca_elapsed_time = 0.0
         self.__bca_elapsed_time = 0.0
-        self.__network_configuration = None
 
         self.__initial_robot_pose = None
 
@@ -108,8 +107,7 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         self.rca.initialize()
         self.bca.initialize()
-        self.__network_configuration = configuration
-        self.bca.load_brain(network_file, configuration)
+        self.bca.load_brain(network_file, **configuration)
         self.tfm.initialize('tfnode')
         self.clock = 0.0
         self.running = False
@@ -124,31 +122,26 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         return self.initialized
 
-    def load_network_from_file(self, network_file):
-        """
-        Load (or reload) the brain model from a file the neuronal network file
-
-        :param network_file: A python PyNN script or an h5 file
-        containing the neural network definition
-        """
-        if self.initialized:
-            self.__recreate_brain(network_file)
-
-    def __recreate_brain(self, network_file):
+    def load_network_from_file(self, network_file, **network_configuration):
         """
         Creates a new brain in the running simulation
 
         :param network_file: A python PyNN script or an h5 file
         containing the neural network definition
+        :param network_configuration: A dictionary indexed by population names and
+        containing neuron indices. Neuron indices can be defined by
+        lists of integers or slices. Slices are either python slices or
+        dictionaries containing 'from', 'to' and 'step' values.
         """
-        if self.running:
-            self.stop()
-        if self.bca.is_alive():
-            self.bca.shutdown()
-        logger.info("Recreating brain from file " + network_file)
-        self.bca.load_brain(network_file, self.__network_configuration)
-        logger.info("Resetting TFs")
-        self.tfm.hard_reset_brain_devices()
+        if self.initialized:
+            if self.running:
+                self.stop()
+            if self.bca.is_alive():
+                self.bca.shutdown()
+            logger.info("Recreating brain from file " + network_file)
+            self.bca.load_brain(network_file, **network_configuration)
+            logger.info("Resetting TFs")
+            self.tfm.hard_reset_brain_devices()
 
     def run_step(self, timestep):
         """

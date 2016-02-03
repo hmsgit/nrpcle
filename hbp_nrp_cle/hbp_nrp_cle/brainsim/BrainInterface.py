@@ -302,7 +302,7 @@ class IBrainControlAdapter(object):  # pragma: no cover
     Represents a controller object for the neuronal simulator
     """
 
-    def load_brain(self, network_file, populations):
+    def load_brain(self, network_file, **populations):
         """
         Loads the neuronal network contained in the given file
 

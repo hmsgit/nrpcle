@@ -37,7 +37,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertEquals(nrp.config.brain_source, None)
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModel.py')
-        BrainLoader.load_py_network(filename, {'first': slice(0, 1), 'second': slice(1, 3)})
+        BrainLoader.load_py_network(filename, **{'first': slice(0, 1), 'second': slice(1, 3)})
         first = nrp.config.brain_root.first
         second = nrp.config.brain_root.second
         circuit = nrp.config.brain_root.circuit
@@ -54,7 +54,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModelNoCircuit.py')
-        self.assertRaises(Exception, BrainLoader.load_py_network, filename, {'first': slice(0, 1)})
+        self.assertRaises(Exception, BrainLoader.load_py_network, filename, **{'first': slice(0, 1)})
 
     def test_load_python_network_no_extra_population(self):
         """
@@ -62,7 +62,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModelNoCircuit.py')
-        BrainLoader.load_py_network(filename, {})
+        BrainLoader.load_py_network(filename)
         foo = nrp.config.brain_root.foo
         self.assertIsInstance(foo, sim.Population)
         self.assertEqual(3, len(foo))

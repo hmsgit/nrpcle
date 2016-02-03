@@ -60,7 +60,7 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         """
         pass
 
-    def load_brain(self, network_file, populations):
+    def load_brain(self, network_file, **populations):
         """
         Loads the neuronal network contained in the given file
 

@@ -28,7 +28,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         self.__is_alive = False
         self.__rank = None
 
-    def load_brain(self, network_file, populations):
+    def load_brain(self, network_file, **populations):
         """
         Loads the neuronal network contained in the given file
 
@@ -42,18 +42,18 @@ class PyNNControlAdapter(IBrainControlAdapter):
         if extension == ".py":
             self.__load_python_brain(
                 network_file,
-                self.populations_using_python_slice(populations)
+                **self.populations_using_python_slice(populations)
             )
         elif extension == ".h5":
             self.__load_h5_brain(
                 network_file,
-                self.populations_using_python_slice(populations)
+                **self.populations_using_python_slice(populations)
             )
         else:
             msg = "Neuronal network format {0} not supported".format(extension)
             raise Exception(msg)
 
-    def __load_h5_brain(self, network_file, populations):
+    def __load_h5_brain(self, network_file, **populations):
         """
         Loads the brain model in the given h5 file
 
@@ -62,9 +62,9 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         if not self.__is_initialized:
             self.initialize()
-        BrainLoader.load_h5_network(network_file, populations)
+        BrainLoader.load_h5_network(network_file, **populations)
 
-    def __load_python_brain(self, network_file, populations):
+    def __load_python_brain(self, network_file, **populations):
         """
         Loads the brain model specified in the given Python script
 
@@ -73,7 +73,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         if not self.__is_initialized:
             self.initialize()
-        BrainLoader.load_py_network(network_file, populations)
+        BrainLoader.load_py_network(network_file, **populations)
 
         logger.info("Saving brain source")
         import hbp_nrp_cle.tf_framework.config as tf_config
