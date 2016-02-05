@@ -3,7 +3,40 @@ This package contains the classes to specify transfer functions and connect them
 adapters of both the neuronal simulator and the world simulator
 """
 
+
 from hbp_nrp_cle.common import UserCodeException
+
+
+class TFException(UserCodeException):
+    """
+    Exception class used to return a meaningful message
+    to ExD front-end in case the update of TF's user code
+    fails.
+
+    :param tf_name: name of the TF updated by the user.
+    :param message: message that needs to be forwarded to the front-end.
+    """
+
+    def __init__(self, tf_name, message, error_type):
+        super(TFException, self).__init__(message, error_type)
+        self.tf_name = tf_name
+
+    def __str__(self):
+        return "{0}: {1} ({2})".format(self.tf_name, repr(self.message), self.error_type)
+
+
+class TFLoadingException(TFException):
+    """
+    Exception class used to return a meaningful message
+    to ExD front-end in case the loading of a TF with updated user code
+    fails.
+
+    :param tf_name: name of the TF updated by the user.
+    :param message: message that needs to be forwarded to the front-end.
+    """
+
+    def __init__(self, tf_name, message):
+        super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
 from . import config
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
@@ -83,38 +116,6 @@ population_rate = IPopulationRate
 spike_recorder = ISpikeRecorder
 
 brain = _PropertyPath.PropertyPath()
-
-
-class TFException(UserCodeException):
-    """
-    Exception class used to return a meaningful message
-    to ExD front-end in case the update of TF's user code
-    fails.
-
-    :param tf_name: name of the TF updated by the user.
-    :param message: message that needs to be forwarded to the front-end.
-    """
-
-    def __init__(self, tf_name, message, error_type):
-        super(TFException, self).__init__(message, error_type)
-        self.tf_name = tf_name
-
-    def __str__(self):
-        return "{0}: {1} ({2})".format(self.tf_name, repr(self.message), self.error_type)
-
-
-class TFLoadingException(TFException):
-    """
-    Exception class used to return a meaningful message
-    to ExD front-end in case the loading of a TF with updated user code
-    fails.
-
-    :param tf_name: name of the TF updated by the user.
-    :param message: message that needs to be forwarded to the front-end.
-    """
-
-    def __init__(self, tf_name, message):
-        super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
 
 
 def map_neurons(neuron_range, mapping):

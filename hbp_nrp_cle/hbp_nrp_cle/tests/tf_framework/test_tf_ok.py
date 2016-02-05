@@ -1,5 +1,5 @@
 import hbp_nrp_cle.tf_framework as nrp
-from hbp_nrp_cle.tf_framework import TFLoadingException
+from hbp_nrp_cle.tf_framework import TFLoadingException, TFException
 from hbp_nrp_cle.tf_framework import config
 from hbp_nrp_cle.tests.tf_framework.TestDevice import TestDevice
 from hbp_nrp_cle.tests.tf_framework.husky import Husky
@@ -187,22 +187,10 @@ def transform_camera(t, camera, camera_device):
                                 v_rest=1.0, updates=[(1.0, 0.3)])
         @nrp.Neuron2Robot(Husky.RightArm.pose)
         def right_arm(t, neuron0):
-            return neuron0.voltage * 1.345
+            raise Exception('foo')
 
         tf = nrp.get_transfer_function('right_arm')
-        exception_message = "This should never happen again!"
-        tf.publish_error(exception_message)
-        error_message = "Error while running transfer function right_arm:\n" + exception_message
-        logcapture.check(
-            (TFModuleName, 'ERROR', error_message)
-        )
-        self.assertEqual(1, config.active_node.publish_error_callback.call_count)
-        self.assertEqual(False, tf.updated)
-        tf.publish_error("This should never happen again!")
-        self.assertEqual(1, config.active_node.publish_error_callback.call_count)
-        tf.updated = True
-        tf.publish_error("Same mistake, be more careful")
-        self.assertEqual(2, config.active_node.publish_error_callback.call_count)
+        self.assertRaises(TFException, tf.run, 0.1)
 
     def test_all_right(self):
 
