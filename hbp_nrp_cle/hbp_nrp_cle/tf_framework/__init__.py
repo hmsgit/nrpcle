@@ -209,7 +209,7 @@ def get_brain_populations():
 
     :return: A dictionnary containing the brain populations
     The dictionnary keys are population names
-    and its values are one of the following types: integer (single index),
+    and its values are one of the following types:
     list, or a 'slice' dictionnary of the following form
     {'from': 1, 'to': 10, 'step': 1}.
     """

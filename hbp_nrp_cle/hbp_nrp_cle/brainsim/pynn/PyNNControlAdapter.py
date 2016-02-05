@@ -143,7 +143,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         to allow straightforward translation in to json.
 
         :param populations: a dictionary whose values are either
-        integers (indices), python lists or slices.
+        python lists or slices.
         Slices can be of two types, either python slices,
         or dictionnaries of the form {'from': 1, 'to': 10, 'step': 2}
         :return: A dictionary where python slices have been replaced
@@ -161,10 +161,10 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         Turn slices defined as python dicts
         into python slices.
-        Populations with different types as dict are left unchanged.
+        Populations of type list are left unchanged.
 
         :param populations: a dictionary whose values are either
-        integers (indices), python lists or slices.
+        python lists or slices.
         Slices can be of two types, either python slices,
         or dictionnaries of the form {'from': 1, 'to': 10, 'step': 2}
         :return: A dictionary where 'json slices' (plain python dicts) have been replaced

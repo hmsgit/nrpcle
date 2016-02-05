@@ -465,13 +465,11 @@ requested (device)'))
                 slice1 = { 'from': 1, 'to': 2, 'step': 3}
                 slice2 = { 'from': 4, 'to': 5, 'step': None}
                 populations_mixed = {
-                    'population_1': 1, 'population_2': 2,
                     'slice_1': slice1, 'slice_2': slice(4, 5),
                     'list_1': [1, 2, 3]
                 }
                 self.control.load_brain("foo.py", populations_mixed)
                 populations_slice = {
-                    'population_1': 1, 'population_2': 2,
                     'slice_1': slice(1, 2, 3), 'slice_2': slice(4, 5),
                     'list_1': [1, 2, 3]
                 }
@@ -483,7 +481,6 @@ requested (device)'))
                 self.assertFalse(loader.load_h5_network.called)
                 self.assertEqual(tf_framework.config.brain_source, 'some python code')
                 populations_json = {
-                    'population_1': 1, 'population_2': 2,
                     'slice_1': slice1, 'slice_2': slice2,
                     'list_1': [1, 2, 3]
                 }
@@ -502,12 +499,10 @@ requested (device)'))
         slice1 = { 'from': 1, 'to': 2, 'step': 3}
         slice2 = { 'from': 1, 'to': 2, 'step': None}
         populations_json_slice = {
-          'population_1': 1, 'population_2': 2,
           'slice_1': slice1, 'slice_2': slice2,
           'list_1': [1, 2, 3]
         }
         populations_python_slice = {
-          'population_1': 1, 'population_2': 2,
           'slice_1': slice(1, 2, 3), 'slice_2': slice(1, 2),
           'list_1': [1, 2, 3]
         }
