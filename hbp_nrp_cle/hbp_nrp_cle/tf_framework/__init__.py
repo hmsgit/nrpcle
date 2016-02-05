@@ -43,6 +43,9 @@ import gazebo_msgs.msg
 import hbp_nrp_cle.tf_framework.tf_lib
 from geometry_msgs.msg import Point, Pose, Quaternion
 from std_msgs.msg import Float32, Int32, String
+from cv_bridge import CvBridge
+import cv2
+import numpy as np
 
 __author__ = 'Georg Hinkel'
 
