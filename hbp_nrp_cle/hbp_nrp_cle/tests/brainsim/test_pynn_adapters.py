@@ -468,14 +468,14 @@ requested (device)'))
                     'slice_1': slice1, 'slice_2': slice(4, 5),
                     'list_1': [1, 2, 3]
                 }
-                self.control.load_brain("foo.py", populations_mixed)
+                self.control.load_brain("foo.py", **populations_mixed)
                 populations_slice = {
                     'slice_1': slice(1, 2, 3), 'slice_2': slice(4, 5),
                     'list_1': [1, 2, 3]
                 }
                 loader.load_py_network.assert_called_with(
                     "foo.py",
-                    populations_slice
+                    **populations_slice
                 )
                 self.assertTrue(loader.load_py_network.called)
                 self.assertFalse(loader.load_h5_network.called)
@@ -489,7 +489,7 @@ requested (device)'))
                   populations_json
                 )
                 loader.load_py_network.reset_mock()
-                self.control.load_brain("foo.h5", {})
+                self.control.load_brain("foo.h5")
                 self.assertTrue(loader.load_h5_network.called)
                 self.assertFalse(loader.load_py_network.called)
                 loader.load_h5_network.reset_mock()

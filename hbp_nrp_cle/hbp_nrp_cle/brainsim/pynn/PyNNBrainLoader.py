@@ -199,8 +199,8 @@ def load_h5_network(path, populations):
     tf_config.brain_root = brain
 
 
-# pylint: disable=W0603
-def load_py_network(path, populations):
+# pylint: disable=global-statement
+def load_py_network(path, **populations):
     """
     Load a python network file
 

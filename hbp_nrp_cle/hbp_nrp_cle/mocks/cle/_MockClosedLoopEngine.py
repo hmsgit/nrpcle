@@ -159,12 +159,16 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         self.running_flag.wait()
 
-    def load_network_from_file(self, network_file):
+    def load_network_from_file(self, network_file, **network_configuration):
 
         """
         Load (or reload) the brain model from a file the neuronal network file
 
         :param network_file: A python PyNN script or an h5 file
         containing the neural network definition
+        :param network_configuration: A dictionary indexed by population names and
+        containing neuron indices. Neuron indices could be defined a single integer,
+        list of integers or python slices. Python slices could be replaced by a
+        dictionary containing the 'from', 'to' and 'step' values.
         """
         return
