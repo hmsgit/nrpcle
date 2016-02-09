@@ -126,9 +126,12 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         return self.clock
 
-    def reset_world(self):
+    def reset_world(self, sdf_world_string=None):
         """
-        Reset the world, to its original configuration
+        Reset the world to a given configuration, or to the initial one if none is passed.
+
+        :param sdf_world_string: the new environment to be set in the world simulator
+            (default value is the empty string for compatibility with the ROS message).
         """
         self.stop()
         self.running = False

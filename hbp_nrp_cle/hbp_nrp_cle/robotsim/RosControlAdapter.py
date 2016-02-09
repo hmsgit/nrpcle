@@ -158,9 +158,10 @@ class RosControlAdapter(IRobotControlAdapter):
 
     def reset_world(self, models, lights):
         """
-        Resets the world (robot excluded)
-        :param models: A dictionary containing pairs model_name: model_sdf.
-        :param lights: A dictionary containing pairs light_name: light sdf.
+        Resets the world (robot excluded) to the state described by
+        models and lights
+        :param models: A dictionary containing pairs (model_name: model_sdf).
+        :param lights: A dictionary containing pairs (light_name: light sdf).
         """
         logger.info("Resetting the world")
 

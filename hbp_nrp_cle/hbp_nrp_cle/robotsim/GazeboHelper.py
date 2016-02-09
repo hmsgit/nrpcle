@@ -53,10 +53,31 @@ class GazeboHelper(object):
         Load a SDF world file into the ROS connected gazebo running instance.
 
         :param world_file: The absolute path of the SDF world file.
-        :return A pair of dictionaries, the first containing pairs model_name: model_sdf,
-            the second pairs light_name: light_sdf
+        :return A pair of dictionaries, the first containing pairs (model_name: model_sdf),
+            the second pairs (light_name: light_sdf)
         """
-        world_file_sdf = etree.parse(world_file)
+
+        with open(world_file, 'r') as world_file_sdf:
+            world_sdf_string = world_file_sdf.read()
+
+        world_models_sdf, world_lights_sdf = GazeboHelper.parse_world_file(world_sdf_string)
+
+        self.load_gazebo_world(world_models_sdf, world_lights_sdf)
+
+        return world_models_sdf, world_lights_sdf
+
+    @staticmethod
+    def parse_world_file(world_string):
+        """
+        Parse an SDF world file producing a pair of dictionaries:
+        - (model_name: model_sdf)
+        - (light_name: light_sdf)
+
+        :param world_string: A string containing the SDF world.
+        :return A pair of dictionaries, the first containing pairs (model_name: model_sdf),
+            the second pairs (light_name: light_sdf)
+        """
+        world_file_sdf = etree.fromstring(world_string)
 
         world_lights_sdf = {}
         world_models_sdf = {}
@@ -65,16 +86,8 @@ class GazeboHelper(object):
 
         # Load lights
         for light in world_file_sdf.xpath("/sdf/world/light"):
-            # This call will produce errors on the console in this form:
-            # [ WARN] [1422519240.507654550, 234.622000000]: Could not find <model>
-            # or <world> element in sdf, so name and initial position cannot be applied
-            # This is because ROS is based on an old and deprecated version of SDF.
-            # Anyway, regardless of the warning, the lights are loaded with their correct
-            # positions.
             light_name = light.xpath("@name")[0]
-            logger.info("Loading light \"%s\".", light_name)
             light_sdf = sdf_wrapper % (etree.tostring(light), )
-            self.load_light_sdf(light_name, light_sdf)
             world_lights_sdf[light_name] = light_sdf
 
         models_state = world_file_sdf.xpath("/sdf/world/state/model")
@@ -82,19 +95,42 @@ class GazeboHelper(object):
         # Load models
         for model in world_file_sdf.xpath("/sdf/world/model"):
             model_name = model.xpath("@name")[0]
-            logger.info("Loading model \"%s\".", model_name)
             # Checking whether some extra state is defined in the SDF
             state = [x for x in models_state if x.xpath("@name")[0] == model_name]
             if len(state) != 0:
                 model.remove(model.find("pose"))
                 model.append(state[0].find("pose"))
             models_sdf = sdf_wrapper % (etree.tostring(model), )
-            self.load_gazebo_sdf(model_name, models_sdf)
             world_models_sdf[model_name] = models_sdf
 
-        logger.debug("%s successfully loaded in Gazebo.", world_file)
-
         return world_models_sdf, world_lights_sdf
+
+    def load_gazebo_world(self, models_sdf_dict, lights_sdf_dict):
+        """
+        Load a SDF world into the ROS connected gazebo running instance.
+        The world is described by the models_sdf_dict and lights_sdf_dict dictionaries.
+
+        :param models_sdf_dict: A dictionary containing pairs (model_name: model_sdf)
+        :param lights_sdf_dict: A dictionary containing pairs (light_name: light_sdf)
+        """
+
+        # Load lights
+        for light_name, light_sdf in lights_sdf_dict.items():
+            # This call will produce errors on the console in this form:
+            # [ WARN] [1422519240.507654550, 234.622000000]: Could not find <model>
+            # or <world> element in sdf, so name and initial position cannot be applied
+            # This is because ROS is based on an old and deprecated version of SDF.
+            # Anyway, regardless of the warning, the lights are loaded with their correct
+            # positions.
+            logger.info("Loading light \"%s\".", light_name)
+            self.load_light_sdf(light_name, light_sdf)
+
+        # Load models
+        for model_name, models_sdf in models_sdf_dict.items():
+            logger.info("Loading model \"%s\".", model_name)
+            self.load_gazebo_sdf(model_name, models_sdf)
+
+        logger.debug("World successfully loaded in Gazebo.")
 
     def load_gazebo_model_file(self, model_name, model_file, initial_pose=None):
         """

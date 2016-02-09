@@ -67,10 +67,28 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertEqual(self.__cle.simulation_time, 0.0)
         self.assertEqual(self.__cle.real_time, 0.0)
 
-    def test_reset_world(self):
+    def test_reset_world_backwards_compatibility(self):
         self.__cle.rca = Mock()
+        self.__cle.rca.reset_world = Mock()
+
         self.__cle.reset_world()
-        self.assertEquals(1, self.__cle.rca.reset_world.call_count)
+        self.__cle.rca.reset_world.assert_called_with(self.__cle.initial_models, self.__cle.initial_lights)
+
+    def test_reset_world(self):
+
+        mock_sdf = "<sdf></sdf>"
+
+        mock_models_dict = {'box_0': mock_sdf}
+        mock_lights_dict = {'light1': mock_sdf}
+
+        self.__cle.gazebo_helper.parse_world_file = Mock(return_value=(mock_models_dict, mock_lights_dict))
+
+        self.__cle.rca = Mock()
+
+        mock_sdf_world = mock_sdf
+        self.__cle.reset_world(mock_sdf_world)
+
+        self.__cle.rca.reset_world.assert_called_with(mock_models_dict, mock_lights_dict)
 
     def test_shutdown(self):
         self.__cle.initialize("foo")

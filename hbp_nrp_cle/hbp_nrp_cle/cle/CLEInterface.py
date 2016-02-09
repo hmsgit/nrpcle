@@ -74,9 +74,9 @@ class IClosedLoopControl(object):  # pragma: no cover
         """
         raise NotImplementedError("Method not implemented")
 
-    def reset_world(self):  # -> None:
+    def reset_world(self, sdf_world_string):
         """
-        Reset the world of the orchestrated simulations.
+        Reset the world to the configuration described by sdf_world_string.
         """
         raise NotImplementedError("Method not implemented")
 

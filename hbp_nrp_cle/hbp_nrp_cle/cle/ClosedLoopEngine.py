@@ -238,12 +238,23 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.__bca_elapsed_time = 0.0
         logger.info("CLE reset")
 
-    def reset_world(self):
+    def reset_world(self, sdf_world_string=""):
         """
-        Reset the world to its original configuration
+        Reset the world to a given configuration, or to the initial one if none is passed.
+
+        :param sdf_world_string: the new environment to be set in the world simulator
+            (default value is the empty string for compatibility with the ROS message).
         """
+        if len(sdf_world_string) > 0:
+            models, lights = self.gazebo_helper.parse_world_file(sdf_world_string)
+        else:
+            # backward compatibility
+            # when working without collab, reset to the initial state
+            models = self.initial_models
+            lights = self.initial_lights
+
         self.stop()
-        self.rca.reset_world(self.initial_models, self.initial_lights)
+        self.rca.reset_world(models, lights)
         self.running = False
         logger.info("CLE world reset")
 

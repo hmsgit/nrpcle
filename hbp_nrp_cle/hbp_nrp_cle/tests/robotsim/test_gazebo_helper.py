@@ -5,14 +5,13 @@ Tests the Gazebo loading helper class.
 import unittest
 import os
 from geometry_msgs.msg import Point, Pose, Quaternion
-from gazebo_msgs.srv import SetModelState
 from lxml import etree, objectify
-from mock import patch, call, MagicMock, Mock
+from mock import patch, call, MagicMock
 from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_LIGHT, GZROS_S_SPAWN_SDF_MODEL, \
     GZROS_S_GET_WORLD_PROPERTIES, GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, \
     GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, GZROS_S_GET_LIGHTS_NAME
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
-from testfixtures import log_capture, LogCapture
+from testfixtures import LogCapture
 
 
 class TestGazeboHelper(unittest.TestCase):
@@ -88,104 +87,58 @@ class TestGazeboHelper(unittest.TestCase):
             logcapture.check(('hbp_nrp_cle.user_notifications', 'DEBUG',
                               '%s successfully loaded in Gazebo' % wpath))
 
-    def test_load_gazebo_world_file(self):
+    def test_parse_world_file(self):
+
+        def file_to_normalized_xml_string(file_name):
+            file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
+            with open(file_path, 'r') as file:
+                sdf_string = file.read()
+            return normalize_xml(sdf_string)
+
+        def normalize_xml(xml_string):
+            sdf_XML = objectify.fromstring(xml_string)
+            return etree.tostring(sdf_XML) # normalised sdf
+
+        sample_world_sdf = file_to_normalized_xml_string("sample_world.sdf")
+
+        # call target function
+        models, lights = GazeboHelper.parse_world_file(sample_world_sdf)
+
+        normalised_sun1_sdf = file_to_normalized_xml_string('sun1.sdf')
+        normalised_sun2_sdf = file_to_normalized_xml_string('sun2.sdf')
+        normalised_ground_plane_sdf = file_to_normalized_xml_string('ground_plane.sdf')
+
+        self.assertEquals(normalize_xml(models['ground_plane']), normalised_ground_plane_sdf)
+        self.assertEquals(normalize_xml(lights['sun1']), normalised_sun1_sdf)
+        self.assertEquals(normalize_xml(lights['sun2']), normalised_sun2_sdf)
+
+    def test_load_gazebo_world(self):
         self.gazebo_helper.load_light_sdf = MagicMock()
         self.gazebo_helper.load_gazebo_sdf = MagicMock()
 
-        with LogCapture('hbp_nrp_cle.user_notifications') as logcapture:
-            wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_world.sdf")
-            self.gazebo_helper.load_gazebo_world_file(wpath)
-            expected_load_gazebo_calls_args = [["ground_plane","""<?xml version=\"1.0\" ?>\n<sdf version="1.5"><model name="ground_plane">
-            <static>1</static>
-            <link name="link">
-              <collision name="collision">
-                 <geometry>
-                  <plane>
-                    <normal>0 0 1</normal>
-                    <size>100 100</size>
-                  </plane>
-                </geometry>
-                <surface>
-                  <friction>
-                    <ode>
-                      <mu>100</mu>
-                      <mu2>50</mu2>
-                    </ode>
-                  </friction>
-                  <contact>
-                    <ode/>
-                  </contact>
-                  <bounce/>
-                </surface>
-                <max_contacts>10</max_contacts>
-              </collision>
-              <visual name="visual">
-                <cast_shadows>0</cast_shadows>
-                <geometry>
-                  <plane>
-                    <normal>0 0 1</normal>
-                    <size>100 100</size>
-                  </plane>
-                </geometry>
-                <material>
-                  <script>
-                    <uri>file://media/materials/scripts/gazebo.material</uri>
-                    <name>Gazebo/Grey</name>
-                  </script>
-                </material>
-              </visual>
-            </link></model></sdf>"""]]
+        fake_sdf = '<sdf></sdf>'
+        fake_models = {'ground_plane': fake_sdf}
+        fake_lights = {'sun1': '<sdf></sdf>', 'sun2': fake_sdf}
 
-            for i, args in enumerate(expected_load_gazebo_calls_args):
-                for (j, (a, b)) in enumerate(zip(self.gazebo_helper.load_gazebo_sdf.call_args_list[i][0], args)):
-                    if j % 2:
-                        # TODO: use an external library to compare XML trees, or avoid comparison
-                        pass
-                    else:
-                        self.assertEquals(a, b)
+        self.gazebo_helper.load_gazebo_world(fake_models, fake_lights)
 
-            expected_load_light_calls_args = [["sun1","""<?xml version=\"1.0\" ?>\n<sdf version="1.5"><light name="sun1" type="directional">
-            <cast_shadows>0</cast_shadows>
-            <pose>0 0 10 0 -0 0</pose>
-            <diffuse>0.3 0.3 0.3 1</diffuse>
-            <specular>0.1 0.1 0.1 1</specular>
-            <direction>-0.8 0 0.6</direction>
-            <attenuation>
-              <range>20</range>
-              <constant>0.5</constant>
-              <linear>0.01</linear>
-              <quadratic>0.001</quadratic>
-            </attenuation> </light></sdf>"""],["sun2","""<?xml version=\"1.0\" ?>\n<sdf version="1.5"><light name="sun2" type="directional">
-            <cast_shadows>0</cast_shadows>
-            <pose>0 0 10 0 -0 0</pose>
-            <diffuse>0.4 0.4 0.4 1</diffuse>
-            <specular>0.1 0.1 0.1 1</specular>
-            <direction>0.8 0 0.6</direction>
-            <attenuation>
-              <range>20</range>
-              <constant>0.5</constant>
-              <linear>0.01</linear>
-              <quadratic>0.001</quadratic>
-            </attenuation></light></sdf>"""]]
+        self.assertEqual(len(self.gazebo_helper.load_light_sdf.call_args_list), 2)
+        self.gazebo_helper.load_light_sdf.assert_any_call("sun1", fake_sdf)
+        self.gazebo_helper.load_light_sdf.assert_any_call("sun2", fake_sdf)
 
-            for i, args in enumerate(expected_load_light_calls_args):
-                for (j, (a, b)) in enumerate(zip(self.gazebo_helper.load_light_sdf.call_args_list[i][0], args)):
-                    if j % 2:
-                        # TODO: use an external library to compare XML trees, or avoid comparison
-                        pass
-                    else:
-                        self.assertEquals(a, b)
+        self.assertEqual(len(self.gazebo_helper.load_gazebo_sdf.call_args_list), 1)
+        self.gazebo_helper.load_gazebo_sdf.assert_called_with("ground_plane", fake_sdf)
 
-            self.assertEqual(len(self.gazebo_helper.load_gazebo_sdf.call_args_list), 1)
-            self.assertEqual(len(self.gazebo_helper.load_light_sdf.call_args_list), 2)
-            logcapture.check(('hbp_nrp_cle.user_notifications', 'INFO',
-                              'Loading light "sun1".'),
-                             ('hbp_nrp_cle.user_notifications', 'INFO',
-                              'Loading light "sun2".'),
-                             ('hbp_nrp_cle.user_notifications', 'INFO',
-                              'Loading model "ground_plane".'),
-                             ('hbp_nrp_cle.user_notifications', 'DEBUG',
-                              '%s successfully loaded in Gazebo.' % wpath))
+    def test_load_gazebo_world_file(self):
+        self.gazebo_helper.load_gazebo_world = MagicMock()
+
+        wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_world.sdf")
+
+        # models = {'ground_plane': sdfGP }
+        # lights = {'sun1': sdf1, 'sun2': sdf1}
+        models, lights = self.gazebo_helper.load_gazebo_world_file(wpath)
+
+        self.gazebo_helper.load_gazebo_world.assert_called_with(models, lights)
 
     def test_load_gazebo_sdf(self):
         instance = self.gazebo_helper.spawn_model_proxy
