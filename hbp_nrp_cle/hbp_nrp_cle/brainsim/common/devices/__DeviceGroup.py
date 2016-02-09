@@ -22,6 +22,7 @@ class DeviceGroup(IDeviceGroup):
         """
         # use this form since __setattr__ is overridden
         self.__dict__['devices'] = devices
+        self.__dict__['_spec'] = None
 
     @classmethod
     def create_new_device_group(cls, nested_device_type, length, params):
@@ -55,6 +56,10 @@ class DeviceGroup(IDeviceGroup):
         return len(self.devices)
 
     def __getattr__(self, attrname):
+        # TODO: This is actually a hack to enable a device group reset.
+        if attrname == 'spec':
+            return self.__dict__['_spec']
+
         if hasattr(DeviceGroup, attrname):
             return super(DeviceGroup, self).__getattr__(attrname)
         array = numpy.zeros(len(self.devices))
@@ -67,6 +72,9 @@ class DeviceGroup(IDeviceGroup):
     def __setattr__(self, attrname, value):
         if attrname in self.__dict__:
             self.__dict__[attrname] = value
+        # TODO: This is actually a hack to enable a device group reset.
+        elif attrname == 'spec':
+            self.__dict__['_spec'] = value
         else:
             if hasattr(value, '__getitem__'):
                 i = 0
