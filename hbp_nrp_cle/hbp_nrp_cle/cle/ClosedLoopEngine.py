@@ -91,6 +91,8 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         self.__rca_elapsed_time = 0.0
         self.__bca_elapsed_time = 0.0
+        self.__network_file = None
+        self.__network_configuration = None
 
         self.__initial_robot_pose = None
 
@@ -110,6 +112,8 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         self.rca.initialize()
         self.bca.initialize()
+        self.__network_file = network_file
+        self.__network_configuration = configuration
         self.bca.load_brain(network_file, **configuration)
         self.tfm.initialize('tfnode')
         self.clock = 0.0
@@ -257,6 +261,20 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.rca.reset_world(models, lights)
         self.running = False
         logger.info("CLE world reset")
+
+    def reset_brain(self, network_file=None, network_configuration=None):
+        """
+        Reloads the brain and resets the transfer function.
+        If no parameter is specified, it reloads the initial brain.
+
+        :param network_file: A python PyNN script containing the neural network definition
+        :param network_configuration: A set of populations
+        """
+        if network_file is not None and network_configuration is not None:
+            self.load_network_from_file(network_file, **network_configuration)
+        else:
+            self.load_network_from_file(self.__network_file, **self.__network_configuration)
+        logger.info("CLE Brain reset")
 
     @property
     def simulation_time(self):  # -> float64

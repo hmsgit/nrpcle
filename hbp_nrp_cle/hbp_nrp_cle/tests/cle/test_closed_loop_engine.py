@@ -90,6 +90,12 @@ class TestClosedLoopEngine(unittest.TestCase):
 
         self.__cle.rca.reset_world.assert_called_with(mock_models_dict, mock_lights_dict)
 
+    def test_reset_brain(self):
+        self.__cle.load_network_from_file = Mock()
+        self.__cle._ClosedLoopEngine__network_configuration = {}
+        self.__cle.reset_brain()
+        self.assertEquals(1, self.__cle.load_network_from_file.call_count)
+
     def test_shutdown(self):
         self.__cle.initialize("foo")
         self.__cle.shutdown()
