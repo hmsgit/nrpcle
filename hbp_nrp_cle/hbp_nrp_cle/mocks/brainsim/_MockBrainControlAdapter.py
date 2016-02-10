@@ -5,7 +5,7 @@ moduleauthor: Michael.Weber@fzi.de
 
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainControlAdapter
 
-__author__ = 'MichaelWeber'
+__author__ = 'Michael Weber'
 
 
 class MockBrainControlAdapter(IBrainControlAdapter):
@@ -23,6 +23,14 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         self.__rank = None
         self.detector_devices = []
         self.generator_devices = []
+
+    def get_populations(self):
+        """
+        Gets an information about the populations currently available
+
+        :return: A list of population infos
+        """
+        return []
 
     def initialize(self, **params):
         """

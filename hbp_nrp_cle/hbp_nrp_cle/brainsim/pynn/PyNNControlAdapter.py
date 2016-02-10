@@ -6,9 +6,11 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim import IBrainControlAdapter
 from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
+from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
 import logging
 from os import path
 import copy
+from pyNN.common import BasePopulation, Assembly
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +107,20 @@ class PyNNControlAdapter(IBrainControlAdapter):
         else:
             logger.warn("trying to initialize an already initialized controller")
         return self.__is_initialized
+
+    def get_populations(self):
+        """
+        Gets an information about the populations currently available
+
+        :return: A list of population infos
+        """
+        import hbp_nrp_cle.tf_framework.config as config
+        populations = []
+        for member in dir(config.brain_root):
+            candidate = getattr(config.brain_root, member)
+            if isinstance(candidate, BasePopulation) or isinstance(candidate, Assembly):
+                populations.append(PyNNPopulationInfo(candidate, member))
+        return populations
 
     def is_alive(self):  # -> bool:
         """

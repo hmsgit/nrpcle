@@ -5,6 +5,40 @@ This module represents the interfaces for the brain communication and control ad
 __author__ = 'GeorgHinkel, Sebastian Krach'
 
 
+class PopulationInfo(object): # pragma: no cover
+    """
+    Gathers information about neuron populations
+    """
+
+    @property
+    def name(self):
+        """
+        Gets the population name
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @property
+    def celltype(self):
+        """
+        Gets the celltype of the population
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @property
+    def parameters(self):
+        """
+        Gets the parameters of a the population as dict
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @property
+    def gids(self):
+        """
+        Gets the global unique identifiers for this population
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
 class IBrainDevice(object):  # pragma: no cover
     """
     Device to connect to brain simulation
@@ -307,7 +341,15 @@ class IBrainControlAdapter(object):  # pragma: no cover
         Loads the neuronal network contained in the given file
 
         :param network_file: The path to the neuronal network file
-        :param populations: The populations to create
+        :param populations: Additional populations to create
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def get_populations(self):
+        """
+        Gets an information about the populations currently available
+
+        :return: A list of population infos
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
