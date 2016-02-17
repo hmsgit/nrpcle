@@ -10,7 +10,7 @@ class IClosedLoopControl(object):  # pragma: no cover
     """
     Represents the closed loop engine synchronization mechanism.
     """
-    def load_network_from_file(self, network_file, network_configuration):
+    def load_network_from_file(self, network_file, **network_configuration):
         """
         Load (or reload) the brain model from a file the neuronal network file
 
