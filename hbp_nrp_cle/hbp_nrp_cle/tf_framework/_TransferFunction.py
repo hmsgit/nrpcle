@@ -5,8 +5,7 @@ Defines the base class for a transfer function
 import inspect
 import textwrap
 import logging
-from . import config
-from hbp_nrp_cle.common import SimulationFactoryCLEError
+from . import TFException
 from abc import abstractmethod
 
 logger = logging.getLogger(__name__)
@@ -18,6 +17,18 @@ class TransferFunction(object):
     """
     Represents the base class for a transfer function
     """
+
+    @staticmethod
+    def __default_excepthook(tf, error):
+        """
+        The default exception handler for transfer functions
+
+        :param tf: The transfer function that raised the exception
+        :param error: The exception object that was raised
+        """
+        raise TFException(tf.name, str(error), "Runtime")
+
+    excepthook = __default_excepthook
 
     def __init__(self):
         self._params = []
@@ -75,15 +86,6 @@ class TransferFunction(object):
         """
 
         return self.__updated_since_last_error
-
-    @updated.setter
-    def updated(self, status):
-        """
-        Sets the update flag of this transfer function.
-
-        :param status: Boolean reflecting the current status of the transfer function
-        """
-        self.__updated_since_last_error = status
 
     @property
     def source(self):
@@ -170,8 +172,9 @@ class TransferFunction(object):
         try:
             self._params[0] = t
             return self._func(*self._params)
-        except Exception as e:
-            self.publish_error(e)
+        except Exception, e:
+            self.__updated_since_last_error = False
+            TransferFunction.excepthook(self, e)
 
     def initialize(self, tfm, bca_changed, rca_changed):
         """
@@ -182,26 +185,3 @@ class TransferFunction(object):
         :param rca_changed: True, if the robot communication adapter has changed
         """
         pass
-
-    def publish_error(self, tf_run_exception):
-        """
-        Publishes an error message on the error/transfer_function ROS Topic
-        to inform the client.
-
-        :param tf_run_exception: exception raised due to run time failure
-        """
-        error_publisher = config.active_node.publish_error_callback
-        if error_publisher and self.updated:  # avoid duplicate error messages
-            self.updated = False
-            logger.error(
-                "Error while running transfer function " + self.name + ":\n"
-                + str(tf_run_exception)
-            )
-            error_publisher(
-                SimulationFactoryCLEError(
-                    "Transfer Function",
-                    "Runtime",
-                    str(tf_run_exception),
-                    self.name,
-                )
-            )
