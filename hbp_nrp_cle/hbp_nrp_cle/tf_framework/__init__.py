@@ -40,6 +40,7 @@ import cle_ros_msgs.msg
 import geometry_msgs.msg
 import sensor_msgs.msg
 import gazebo_msgs.msg
+import hbp_nrp_cle.tf_framework.monitoring
 import hbp_nrp_cle.tf_framework.tf_lib
 from geometry_msgs.msg import Point, Pose, Quaternion
 from std_msgs.msg import Float32, Int32, String
