@@ -8,10 +8,13 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 import math
+import logging
+
 
 __author__ = 'GeorgHinkel, AlessandroAmbrosano'
 
 bridge = CvBridge()
+logger = logging.getLogger(__name__)
 
 
 class Camera(object):
@@ -279,43 +282,42 @@ class Camera(object):
 cam = Camera()
 
 
-def exp_wrapper(x=0):
+def find_centroid_hsv(image, lower, upper):
     """
-    Allows for the use of math.exp in the BIBI XML file
-    since it isn't available in the language
+    Finds the centroid of the pixels in an image lying in a given HSV slice.
 
-    :return: math.exp(x)
+    :param image: A Gazebo ROS image (sensor_msgs.msg.Image)
+    :param lower: The lower value of the HSV slice we want to detect (a 3 elements int list with
+        values in range 0-255, refer to cv2 documentation for more details).
+    :param upper: The upper value of the HSV slice we want to detect (a 3 elements int list with
+        values in range 0-255, refer to cv2 documentation for more details).
+    :returns: a pair (x, y) denoting the image pixel where the centroid lies, or None if anything
+        goes wrong.
     """
-    return math.exp(x)
 
+    try:
+        img_in = bridge.imgmsg_to_cv2(image)
+        hsv_im = cv2.cvtColor(img_in, cv2.COLOR_RGB2HSV)
+        lower_np = np.array(lower, dtype="uint8")
+        upper_np = np.array(upper, dtype="uint8")
+        mask = cv2.inRange(hsv_im, lower_np, upper_np)
+        img_out = cv2.bitwise_and(img_in, img_in, mask=mask)
 
-def ball_position_finder(image):
-    """
-    Finds the angle of the (green) ball used in the iCub tracking experiment
+        a = cv2.findNonZero(cv2.cvtColor(img_out, cv2.COLOR_RGB2GRAY))
 
-    :param image: The image
-    :return: The angle of the ball relative to the center of the eye
-    """
-    if image is None:
-        return 0
-    img_in = bridge.imgmsg_to_cv2(image)
-    hsv_im = cv2.cvtColor(img_in, cv2.COLOR_RGB2HSV)
-    lower = np.array([50, 50, 100], dtype="uint8")
-    upper = np.array([70, 255, 250], dtype="uint8")
-    mask = cv2.inRange(hsv_im, lower, upper)
-    img_out = cv2.bitwise_and(img_in, img_in, mask=mask)
+        # At least one point in the HSV slice is detected in the image
+        if a is not None and a.size != 0:
+            b = np.array(
+                    [[float(x[0][0]) / (a.size / 2), float(x[0][1]) / (a.size / 2)] for x in a]
+                ).transpose()
+            y_c, x_c = int(cv2.sumElems(b[1])[0]), int(cv2.sumElems(b[0])[0])
+            return x_c, y_c
 
-    a = cv2.findNonZero(cv2.cvtColor(img_out, cv2.COLOR_RGB2GRAY))
-
-    # There is at least one greenish point
-    if a is not None and a.size != 0:
-        b = np.array([[float(x[0][0]) / (a.size / 2), float(x[0][1]) / (a.size / 2)] for x in a])\
-            .transpose()
-        y_c, x_c = int(cv2.sumElems(b[1])[0]), int(cv2.sumElems(b[0])[0])
-
-        p2a = cam.pixel2angle(x_c, y_c)
-        return p2a[0]
-    return 0
+        return None
+    # pylint: disable=broad-except
+    except Exception as e:
+        logger.error("%s", str(e))
+        return None
 
 
 def detect_red(image):

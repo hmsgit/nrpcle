@@ -9,7 +9,7 @@ __author__ = 'Alessandro Ambrosano'
 
 class TestTFLib(unittest.TestCase):
 
-    def test_ball_position_finder(self):
+    def test_find_centroid_hsv(self):
         for i in range(0, 100):
             tf_lib.cam.set_image_size(640, 480)
             img = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -20,9 +20,10 @@ class TestTFLib(unittest.TestCase):
             )
             # Note: color is given in BGR
             cv2.circle(img, ball_pos, ball_radius, (23, 230, 23), -1)
-            ang_cmptd = tf_lib.ball_position_finder(
-                tf_lib.bridge.cv2_to_imgmsg(img)
+            xy_cmptd = tf_lib.find_centroid_hsv(
+                tf_lib.bridge.cv2_to_imgmsg(img, 'rgb8'), [50, 100, 100], [70, 255, 255]
             )
+            ang_cmptd = tf_lib.cam.pixel2angle(xy_cmptd[0], xy_cmptd[1])[0]
             ang_ideal = tf_lib.cam.pixel2angle(ball_pos[0], ball_pos[1])[0]
             self.assertLessEqual(abs(ang_cmptd - ang_ideal), 0.2)
 
@@ -141,10 +142,6 @@ class TestTFLib(unittest.TestCase):
 
         self.assertAlmostEqual(_x, x)
         self.assertAlmostEqual(_y, y)
-
-    def test_exp(self):
-        self.assertAlmostEqual(1, tf_lib.exp_wrapper(0))
-        self.assertAlmostEqual(1, tf_lib.exp_wrapper(1) * tf_lib.exp_wrapper(-1))
 
 
 if __name__ == '__main__':
