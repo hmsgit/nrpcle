@@ -15,6 +15,8 @@ import logging
 
 
 logger = logging.getLogger(__name__)
+# Info messages sent to this logger will be forwarded as notifications
+user_notifications_logger = logging.getLogger('hbp_nrp_cle.user_notifications')
 
 __author__ = 'NinoCauli'
 
@@ -163,7 +165,7 @@ class RosControlAdapter(IRobotControlAdapter):
         :param models: A dictionary containing pairs (model_name: model_sdf).
         :param lights: A dictionary containing pairs (light_name: light sdf).
         """
-        logger.info("Resetting the world")
+        logger.debug("Resetting the Environment")
 
         # MODELS
         # get the list of models' name currently the sim from gazebo
@@ -192,12 +194,12 @@ class RosControlAdapter(IRobotControlAdapter):
 
         # delete LIGHTS
         for light_name in active_lights_set:
-            logger.debug("deleting: %s", light_name)
+            user_notifications_logger.info("Deleting: %s", light_name)
             self.gazebo_helper.delete_light_proxy(light_name)
 
         # delete MODELS
         for model_name in active_model_set:
-            logger.debug("deleting: %s", model_name)
+            user_notifications_logger.info("Deleting: %s", model_name)
             self.gazebo_helper.delete_model_proxy(model_name)
 
         initial_pose = Pose()
@@ -206,12 +208,12 @@ class RosControlAdapter(IRobotControlAdapter):
 
         # respawn LIGHTS
         for light_name in original_lights_set:
-            logger.debug("spawning: %s", light_name)
+            user_notifications_logger.info("Loading: %s", light_name)
             self.gazebo_helper.spawn_light_proxy(light_name, lights[light_name],
                                                  "", initial_pose, "")
 
         # respawn MODELS
         for model_name in original_model_set:
-            logger.debug("spawning: %s", model_name)
+            user_notifications_logger.info("Loading: %s", model_name)
             self.gazebo_helper.spawn_model_proxy(model_name, models[model_name],
                                                  "", initial_pose, "")
