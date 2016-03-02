@@ -157,7 +157,7 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
     return circuit
 
 
-def load_h5_network(path, populations):
+def load_h5_network(path, **populations):
     """
     Load a h5 brain network file.
 

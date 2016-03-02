@@ -28,7 +28,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'braitenberg.h5')
-        BrainLoader.load_h5_network(filename, {'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
+        BrainLoader.load_h5_network(filename, **{'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
 
     def test_load_python_network(self):
         """
