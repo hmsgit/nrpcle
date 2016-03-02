@@ -56,4 +56,4 @@ class PyNNPopulationInfo(PopulationInfo):
         """
         Gets the global unique identifiers for this population
         """
-        return [i for i in self.__population.all()]
+        return [long(i) for i in self.__population.all()]
