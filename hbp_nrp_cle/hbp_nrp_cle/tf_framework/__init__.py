@@ -61,8 +61,11 @@ from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, \
     MapRobotSubscriber
 from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction
+from hbp_nrp_cle.tf_framework._CSVRecorder import MapCSVRecorder, CSVRecorder
 from hbp_nrp_cle.tf_framework._NeuronMonitor import NeuronMonitor
 from hbp_nrp_cle.tf_framework._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
+from hbp_nrp_cle.tf_framework._CleanableTransferFunctionParameter \
+    import ICleanableTransferFunctionParameter
 from . import _TransferFunctionManager
 from . import _PropertyPath
 from . import _NeuronSelectors
@@ -174,6 +177,7 @@ def start_new_tf_manager():
     Start a new transfer function manager
     """
     config.active_node = _TransferFunctionManager.TransferFunctionManager()
+    config.csv_recorders = []
 
 
 def get_transfer_functions():
@@ -221,6 +225,34 @@ def get_brain_populations():
     return config.brain_populations
 
 
+def dump_csv_recorder_to_files():
+    """
+    Find out all CSV recorders and dump their values to CSV files.
+
+    :return: an array of pairs containing the filename wanted by the user and a temporary
+    filepath to a file containing the values.
+    """
+    result = []
+    for tf in get_transfer_functions():
+        print tf.params
+        for i in range(1, len(tf.params)):
+            if isinstance(tf.params[i], CSVRecorder):
+                name, temporary_path = tf.params[i].dump_to_file()
+                result.append([name, temporary_path])
+    return result
+
+
+def clean_csv_recorders_files():
+    """
+    Clean out all CSV recorders generated files.
+    """
+    for tf in get_transfer_functions():
+        print tf.params
+        for i in range(1, len(tf.params)):
+            if isinstance(tf.params[i], CSVRecorder):
+                tf.params[i].cleanup()
+
+
 def delete_transfer_function(name):
     """
     Delete a transfer function. If the transfer function does not exist,
@@ -236,12 +268,16 @@ def delete_transfer_function(name):
         for i in range(1, len(tf.params)):
             if tf.params[i] in config.active_node.brain_adapter.detector_devices:
                 config.active_node.brain_adapter.detector_devices.remove(tf.params[i])
+            if isinstance(tf.params[i], ICleanableTransferFunctionParameter):
+                tf.params[i].cleanup()
         config.active_node.n2r.remove(tf)
     elif tf in config.active_node.r2n:
         config.active_node.r2n.remove(tf)
         for i in range(1, len(tf.params)):
             if tf.params[i] in config.active_node.brain_adapter.generator_devices:
                 config.active_node.brain_adapter.generator_devices.remove(tf.params[i])
+            if isinstance(tf.params[i], ICleanableTransferFunctionParameter):
+                tf.params[i].cleanup()
     else:
         result = False
     return result
