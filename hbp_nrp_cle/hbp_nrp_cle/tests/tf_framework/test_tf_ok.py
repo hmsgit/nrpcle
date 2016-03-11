@@ -11,9 +11,9 @@ from hbp_nrp_cle.mocks.brainsim._MockBrainCommunicationAdapter import MockBrainC
 from hbp_nrp_cle.tests.tf_framework.MockBrain import MockPopulation
 
 import unittest
-from mock import MagicMock
+from mock import MagicMock, Mock, patch
 import logging
-from testfixtures import log_capture
+from testfixtures import log_capture, replace
 
 __author__ = 'GeorgHinkel'
 
@@ -129,28 +129,61 @@ def transform_camera(t, camera, camera_device):
             self.assertIn('invalid syntax', e.message)
             self.assertIn('line 4', e.message)
             self.assertEqual('it_cant_work', e.tf_name)
-        
 
 
-    def test_tf_delete(self):
+    @patch('hbp_nrp_cle.tf_framework.CSVRecorder.cleanup')
+    @patch('hbp_nrp_cle.tf_framework.CSVRecorder.dump_to_file')
+    def test_tf_dump(self, mock_dump_to_file, mock_cleanup):
+
+        mock_dump_to_file.return_value = ('filename', 'temp_filepath')
 
         nrp.start_new_tf_manager()
 
         brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
+
+        nrp.set_nest_adapter(brain)
+        nrp.set_robot_adapter(robot)
+
+        @nrp.MapCSVRecorder("recorder", filename = "all_joints_positions.csv", headers=["Name", "time", "Position"])
+        @nrp.Robot2Neuron()
+        def joint_state_monitor(t, recorder):
+            recorder.record_entry("foo", t, "bar")
+
+        nrp.initialize("MyTransferFunctions")
+        self.assertEqual(mock_cleanup.call_count, 0)
+        self.assertEqual([['filename','temp_filepath']], nrp.dump_csv_recorder_to_files())
+        self.assertEqual(mock_cleanup.call_count, 0)
+        nrp.clean_csv_recorders_files()
+        self.assertEqual(mock_cleanup.call_count, 1)
+
+    @patch('hbp_nrp_cle.tf_framework.CSVRecorder.cleanup')
+    def test_tf_delete(self, mock_cleanup):
+
+        nrp.start_new_tf_manager()
+
+        brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
         config.active_node.brain_adapter = brain
 
+        nrp.set_nest_adapter(brain)
+        nrp.set_robot_adapter(robot)
+
+        @nrp.MapCSVRecorder("recorder1", filename = "1", headers=["Name", "time", "Position"])
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,
                                 v_rest=1.0, updates=[(1.0, 0.3)])
         @nrp.Neuron2Robot(Husky.RightArm.pose)
-        def right_arm(t, neuron0):
+        def right_arm(t, neuron0, recorder1):
             return neuron0.voltage * 1.345
 
+
+        @nrp.MapCSVRecorder("recorder2", filename = "2", headers=["Name", "time", "Position"])
         @nrp.MapSpikeSink("neuron1", nrp.brain.actors[slice(2, 4, 1)], nrp.leaky_integrator_alpha,
                                 updates=[(1.0, 0.4)], v_rest=1.0)
         @nrp.MapSpikeSink("neuron2", nrp.brain.actors[slice(4, 6, 1)], nrp.leaky_integrator_alpha,
                                 updates=[(1.0, 0.4)], v_rest=1.0)
         @nrp.Neuron2Robot(Husky.LeftArm.twist)
-        def left_arm_tw(t, neuron1, neuron2):
+        def left_arm_tw(t, neuron1, neuron2, recorder2):
             if neuron1.voltage < 0.678:
                 if neuron2.voltage > 0.345:
                     return 0.756
@@ -162,10 +195,13 @@ def transform_camera(t, camera, camera_device):
                 else:
                     return 0.256
 
+        nrp.initialize("MyTransferFunctions")
+
         # Delete an existing transfer function
         self.assertEqual(2, len(nrp.get_transfer_functions()))
         self.assertEqual(True, nrp.delete_transfer_function("left_arm_tw"))
         self.assertEqual(1, len(nrp.get_transfer_functions()))
+        self.assertEqual(mock_cleanup.call_count, 1)
         # Try to delete it again
         self.assertEqual(False, nrp.delete_transfer_function("left_arm_tw"))
         self.assertEqual(1, len(nrp.get_transfer_functions()))
@@ -173,6 +209,7 @@ def transform_camera(t, camera, camera_device):
         self.assertEqual(True, nrp.delete_transfer_function("right_arm"))
         self.assertEqual(0, len(nrp.get_transfer_functions()))
         self.assertEqual(0, len(config.active_node.brain_adapter.detector_devices))
+        self.assertEqual(mock_cleanup.call_count, 2)
 
     @log_capture(level=logging.ERROR)
     def test_tf_publish_error(self, logcapture):
