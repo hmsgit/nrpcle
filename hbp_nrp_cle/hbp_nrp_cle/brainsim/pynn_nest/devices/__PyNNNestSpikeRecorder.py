@@ -82,7 +82,7 @@ class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
     # pylint: disable=protected-access
     def refresh(self, time):
         """
-        Refreshes the voltage value
+        Refreshes the recorded spikes
 
         :param time: The current simulation time
         """
@@ -91,5 +91,16 @@ class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         nest_info = nest.GetStatus(nest_device, 'events')[0]
         times_nest = nest_info['times']
         spikes_nest = nest_info['senders']
-        nest.SetStatus(nest_device, 'n_events', 0)
         self.__spikes = np.array([spikes_nest, times_nest]).T
+
+    # simulation time not necessary for this device
+    # pylint: disable=W0613
+    # pylint: disable=protected-access
+    def finalize_refresh(self, time):
+        """
+        Resets the number of spikes for the connected spike recorder
+
+        :param time: The current simulation time
+        """
+        nest_device = self.__neurons.recorders['spikes']._device.device
+        nest.SetStatus(nest_device, 'n_events', 0)
