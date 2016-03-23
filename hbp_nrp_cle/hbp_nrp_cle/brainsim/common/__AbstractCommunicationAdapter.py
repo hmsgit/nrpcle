@@ -22,6 +22,8 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
         """
         self.__generator_devices = []
         self.__detector_devices = []
+        self.__refreshable_devices = []
+        self.__finalizable_devices = []
         self.__is_initialized = False
 
     def _get_device_type(self, device_type):
@@ -97,6 +99,10 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
         """
         device = self.__register_device(populations, spike_detector_type, **params)
         self.__detector_devices.append(device)
+        if hasattr(device, "refresh"):
+            self.__refreshable_devices.append(device)
+        if hasattr(device, "finalize_refresh"):
+            self.__finalizable_devices.append(device)
         return device
 
     def refresh_buffers(self, t):
@@ -105,9 +111,10 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
 
         :param t: The simulation time in milliseconds
         """
-        for detector in self.__detector_devices:
-            if hasattr(detector, "refresh"):
-                detector.refresh(t)
+        for detector in self.__refreshable_devices:
+            detector.refresh(t)
+        for detector in self.__finalizable_devices:
+            detector.finalize_refresh(t)
 
     @property
     def detector_devices(self):
