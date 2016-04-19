@@ -223,19 +223,19 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertIsInstance(group, IDeviceGroup)
 
         np.testing.assert_array_equal(group.rate, np.array([0.0, 0.0, 0.0]))
-        print "Poissong generator group: rates (before)", group.rate
+        print "Poisson generator group: rates (before)", group.rate
         group.rate = np.array([3.0, 4.0, 5.0])
         np.testing.assert_array_equal(group.rate, np.array([3.0, 4.0, 5.0]))
-        print "Poissong generator group: change all rates separaterly (after)", group.rate
+        print "Poisson generator group: change all rates separaterly (after)", group.rate
         group.rate = 2.0
         np.testing.assert_array_equal(group.rate, np.array([2.0, 2.0, 2.0]))
-        print "Poissong generator group: set all rates to the same value (after)", group.rate
+        print "Poisson generator group: set all rates to the same value (after)", group.rate
         group[1].rate = 3.0
         np.testing.assert_array_equal(group.rate, np.array([2.0, 3.0, 2.0]))
-        print "Poissong generator group: set second rate to 3.0 Hz (after)", group.rate
+        print "Poisson generator group: set second rate to 3.0 Hz (after)", group.rate
         group[0:2].rate = np.array([5.0, 5.0])
         np.testing.assert_array_equal(group.rate, np.array([5.0, 5.0, 2.0]))
-        print "Poissong generator group: change the rates between in slice (0, 2, None) (after)", \
+        print "Poisson generator group: change the rates between in slice (0, 2, None) (after)", \
             group.rate
 
         with self.assertRaises(TypeError):
@@ -319,10 +319,11 @@ requested (device group)'))
         self.communicator.register_spike_sink(
             self.neurons_cond, ISpikeRecorder)
         self.assertIsInstance(self.communicator.detector_devices[0], ISpikeRecorder)
+        self.assertIsInstance(self.communicator.refreshable_devices[0], ISpikeRecorder)
 
-        self.communicator.register_spike_sink(
-            self.neurons_cond, ILeakyIntegratorAlpha)
+        self.communicator.register_spike_sink(self.neurons_cond, ILeakyIntegratorAlpha)
         self.assertIsInstance(self.communicator.detector_devices[1], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[1], ILeakyIntegratorAlpha)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device IFCurrAlpha): ",
@@ -331,26 +332,39 @@ requested (device group)'))
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorAlpha)
         self.assertIsInstance(self.communicator.detector_devices[2], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[2], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorAlpha)
         self.assertIsInstance(self.communicator.detector_devices[3], IDeviceGroup)
+        self.assertIsInstance(self.communicator.refreshable_devices[3], IDeviceGroup)
+
         self.assertIsInstance(self.communicator.detector_devices[3][0], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[3][0], ILeakyIntegratorAlpha)
+
         self.assertIsInstance(self.communicator.detector_devices[3][1], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[3][1], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorAlpha)
         self.assertIsInstance(self.communicator.detector_devices[4], IDeviceGroup)
+        self.assertIsInstance(self.communicator.detector_devices[4], IDeviceGroup)
+
         self.assertIsInstance(self.communicator.detector_devices[4][0], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[4][0], ILeakyIntegratorAlpha)
+
         self.assertIsInstance(self.communicator.detector_devices[4][1], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[4][1], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorAlpha, target='inhibitory')
         self.assertIsInstance(self.communicator.detector_devices[5], ILeakyIntegratorAlpha)
+        self.assertIsInstance(self.communicator.refreshable_devices[5], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
             self.neurons_cond, ILeakyIntegratorExp)
         self.assertIsInstance(self.communicator.detector_devices[6], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[6], ILeakyIntegratorExp)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device IFCurrExp): ",
@@ -359,26 +373,46 @@ requested (device group)'))
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp)
         self.assertIsInstance(self.communicator.detector_devices[7], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[7], ILeakyIntegratorExp)
+
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_cond, ILeakyIntegratorExp)
         self.assertIsInstance(self.communicator.detector_devices[8], IDeviceGroup)
+        self.assertIsInstance(self.communicator.refreshable_devices[8], IDeviceGroup)
+
         self.assertIsInstance(self.communicator.detector_devices[8][0], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[8][0], ILeakyIntegratorExp)
+
         self.assertIsInstance(self.communicator.detector_devices[8][1], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[8][1], ILeakyIntegratorExp)
 
         self.communicator.register_spike_sink(
             self.two_neurons_pop_curr, ILeakyIntegratorExp)
         self.assertIsInstance(self.communicator.detector_devices[9], IDeviceGroup)
+        self.assertIsInstance(self.communicator.refreshable_devices[9], IDeviceGroup)
+
         self.assertIsInstance(self.communicator.detector_devices[9][0], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[9][0], ILeakyIntegratorExp)
+
         self.assertIsInstance(self.communicator.detector_devices[9][1], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[9][1], ILeakyIntegratorExp)
+
 
         self.communicator.register_spike_sink(
             self.neurons_curr, ILeakyIntegratorExp, target='inhibitory')
         self.assertIsInstance(self.communicator.detector_devices[10], ILeakyIntegratorExp)
+        self.assertIsInstance(self.communicator.refreshable_devices[10], ILeakyIntegratorExp)
 
         self.communicator.register_spike_sink(
             self.neurons_curr, IPopulationRate)
         self.assertIsInstance(self.communicator.detector_devices[11], IPopulationRate)
+        self.assertIsInstance(self.communicator.refreshable_devices[11], IPopulationRate)
+
+        #check communicator lists length
+        self.assertEquals(len(self.communicator.detector_devices), 12)
+        self.assertEquals(len(self.communicator.refreshable_devices), 12)
+        self.assertEquals(len(self.communicator.finalizable_devices), 1)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device PopulationRate): ",
@@ -538,6 +572,17 @@ requested (device)'))
           self.control.populations_using_python_slice(populations_python_slice),
           populations_python_slice
         )
+
+    def test_shutdown(self):
+
+        self.control.shutdown()
+
+        #communicator's lists must be empty
+        self.assertEquals(len(self.communicator.detector_devices), 0)
+        self.assertEquals(len(self.communicator.refreshable_devices), 0)
+        self.assertEquals(len(self.communicator.finalizable_devices), 0)
+
+        self.assertFalse(self.communicator.is_initialized)
 
     def tearDown(self):
         """

@@ -137,10 +137,26 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
         """
         return self.__is_initialized
 
+    @property
+    def refreshable_devices(self):
+        """
+        Gets the created refreshable __devices
+        """
+        return self.__refreshable_devices
+
+    @property
+    def finalizable_devices(self):
+        """
+        Gets the created finalizable __devices
+        """
+        return self.__finalizable_devices
+
     def shutdown(self):
         """
         Shuts down the brain communication adapter
         """
         del self.__detector_devices[:]
         del self.__generator_devices[:]
-        del self.__generator_devices[:]
+        del self.__refreshable_devices[:]
+        del self.__finalizable_devices[:]
+        self.__is_initialized = False
