@@ -4,11 +4,14 @@ Defines a neuron monitor
 
 import logging
 from ._TransferFunction import TransferFunction
+from ._Neuron2Robot import MapSpikeSink
+from ._Robot2Neuron import MapRobotPublisher
 from hbp_nrp_cle.tf_framework import config
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, ILeakyIntegratorAlpha, \
     ILeakyIntegratorExp, IPopulationRate
 from hbp_nrp_cle.robotsim.RobotInterface import Topic
 from cle_ros_msgs.msg import SpikeRate, SpikeEvent, SpikeData
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,20 +36,33 @@ class NeuronMonitor(TransferFunction):
         :param monitor_type: The type of monitor that should be injected
         """
         super(NeuronMonitor, self).__init__()
-        self.__neurons = None
-        self.__device = None
-        self.__type = monitor_type
-        self.__publisher = None
+        self.__publisher_spec = MapRobotPublisher
         self.__count = 0
-        self.__neurons_spec = neurons
+
+        _topic = None
+        _type = SpikeRate
         if monitor_type is ISpikeRecorder:
             self.__handler = self.__send_spike_recorder
-        elif monitor_type is ILeakyIntegratorExp or type is ILeakyIntegratorAlpha:
+            _topic = SPIKE_RECORDER_TOPIC
+            _type = SpikeEvent
+        elif monitor_type is ILeakyIntegratorExp:
             self.__handler = self.__send_leaky_integrator
+            _topic = LEAKY_INTEGRATOR_EXP_TOPIC
+        elif type is ILeakyIntegratorAlpha:
+            self.__handler = self.__send_leaky_integrator
+            _topic = LEAKY_INTEGRATOR_ALPHA_TOPIC
         elif monitor_type is IPopulationRate:
             self.__handler = self.__send_population_rate
+            _topic = POPULATION_RATE_TOPIC
         else:
             raise Exception("Type {0} is not a supported monitor type".format(type))
+
+        self.__publisher_spec = MapRobotPublisher("publisher", Topic(_topic, _type))
+        self.__device_spec = MapSpikeSink("device", neurons, monitor_type)
+        self.__neurons = None
+
+        self.device = None
+        self.publisher = None
 
     def __call__(self, func):  # -> Neuron2Robot:
         """
@@ -56,11 +72,15 @@ class NeuronMonitor(TransferFunction):
         :return The transfer function object
         """
         self._init_function(func, config.active_node.n2r)
+        if self.__publisher_spec not in self._params:
+            self._params.append(self.__publisher_spec)
+        if self.__device_spec not in self._params:
+            self._params.append(self.__device_spec)
         return self
 
     def __repr__(self):  # pragma: no cover
         return "{0} monitors {1}" \
-            .format(self.name, self.__neurons_spec)
+            .format(self.name, self.__device_spec.neurons)
 
     def initialize(self, tfm, bca_changed, rca_changed):
         """
@@ -71,22 +91,12 @@ class NeuronMonitor(TransferFunction):
         :param rca_changed: True, if the robot communication adapter has changed
         """
         if bca_changed:
-            self.__neurons = self.__neurons_spec.select(config.brain_root)
-            self.__count = self.__neurons.size
-            self.__device = tfm.brain_adapter.register_spike_sink(self.__neurons, self.__type)
-        if rca_changed:
-            _topic = None
-            _type = SpikeRate
-            if self.__type is ISpikeRecorder:
-                _topic = SPIKE_RECORDER_TOPIC
-                _type = SpikeEvent
-            elif self.__type is ILeakyIntegratorAlpha:
-                _topic = LEAKY_INTEGRATOR_ALPHA_TOPIC
-            elif self.__type is ILeakyIntegratorExp:
-                _topic = LEAKY_INTEGRATOR_EXP_TOPIC
-            elif self.__type is IPopulationRate:
-                _topic = POPULATION_RATE_TOPIC
-            self.__publisher = tfm.robot_adapter.register_publish_topic(Topic(_topic, _type))
+            if hasattr(self.device, 'neurons'):
+                self.__neurons = self.device.neurons
+                self.__count = self.__neurons.size
+            else:
+                self.__neurons = None
+                self.__count = None
 
     def __send_spike_recorder(self, t):
         """
@@ -95,14 +105,14 @@ class NeuronMonitor(TransferFunction):
         :param t: The simulation time
         :return:
         """
-        spikes = self.__device.times
+        spikes = self.device.times
         msgs = []
         for spike in spikes:
             try:
                 msgs.append(SpikeData(self.__neurons.id_to_index(int(spike[0])), spike[1]))
             except IndexError:
                 pass
-        self.__publisher.send_message(SpikeEvent(t, self.__count, msgs, self.name))
+        self.publisher.send_message(SpikeEvent(t, self.__count, msgs, self.name))
 
     def __send_leaky_integrator(self, t):
         """
@@ -111,7 +121,7 @@ class NeuronMonitor(TransferFunction):
         :param t: The simulation time
         :return:
         """
-        self.__publisher.send_message(SpikeRate(t, self.__device.voltage, self.name))
+        self.publisher.send_message(SpikeRate(t, self.device.voltage, self.name))
 
     def __send_population_rate(self, t):
         """
@@ -120,7 +130,7 @@ class NeuronMonitor(TransferFunction):
         :param t: The simulation time
         :return:
         """
-        self.__publisher.send_message(SpikeRate(t, self.__device.rate, self.name))
+        self.publisher.send_message(SpikeRate(t, self.device.rate, self.name))
 
     def run(self, t):  # -> None:
         """
@@ -128,8 +138,11 @@ class NeuronMonitor(TransferFunction):
 
         :param t: The simulation time
         """
-
-        return_value = super(NeuronMonitor, self).run(t)
-
-        if return_value:
-            self.__handler(t)
+        # pylint: disable=broad-except
+        try:
+            self._params[0] = t
+            return_value = self._func(*self._params[:-2])
+            if return_value:
+                self.__handler(t)
+        except Exception, e:
+            self._handle_error(e)

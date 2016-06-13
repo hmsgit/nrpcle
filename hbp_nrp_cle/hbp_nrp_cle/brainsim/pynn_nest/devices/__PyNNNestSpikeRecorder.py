@@ -77,6 +77,15 @@ class PyNNNestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         self.__neurons = neurons
         self._start_record_spikes()
 
+    @property
+    def neurons(self):
+        """
+        Gets the neurons connected to this device
+
+        :return: Th neurons connected to this device
+        """
+        return self.__neurons
+
     # simulation time not necessary for this device
     # pylint: disable=W0613
     # pylint: disable=protected-access

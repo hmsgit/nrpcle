@@ -173,8 +173,16 @@ class TransferFunction(object):
             self._params[0] = t
             return self._func(*self._params)
         except Exception, e:
-            TransferFunction.excepthook(self, e)
-            self.__updated_since_last_error = False
+            self._handle_error(e)
+
+    def _handle_error(self, e):
+        """
+        Handles the given exception
+
+        :param e: The exception that occurred
+        """
+        TransferFunction.excepthook(self, e)
+        self.__updated_since_last_error = False
 
     def initialize(self, tfm, bca_changed, rca_changed):
         """
