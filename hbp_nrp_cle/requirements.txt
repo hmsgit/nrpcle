@@ -1,10 +1,9 @@
-# BBP-Requirements (substituted by packages below, left here for reference)
-bbp-numpy-1.8.0-system-numeric-mod==1.8.0.0
-bbp-scipy-0.13.3-system-numeric-mod==0.13.3.0
-bbp-lxml-3.3.2-system-mod==3.3.2.0
-bbp-h5py==2.1.2.0
-
 # other requirements
+cython==0.23.4
+numpy==1.11.0
+scipy==0.17.1
+lxml==3.4.0
+h5py==2.6.0
 PyNN==0.7.5
 PyYAML==3.11
 rospkg==1.0.38
