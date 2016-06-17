@@ -98,7 +98,10 @@ class NeuronMonitor(TransferFunction):
         spikes = self.__device.times
         msgs = []
         for spike in spikes:
-            msgs.append(SpikeData(self.__neurons.id_to_index(int(spike[0])), spike[1]))
+            try:
+                msgs.append(SpikeData(self.__neurons.id_to_index(int(spike[0])), spike[1]))
+            except IndexError:
+                pass
         self.__publisher.send_message(SpikeEvent(t, self.__count, msgs, self.name))
 
     def __send_leaky_integrator(self, t):
