@@ -63,7 +63,8 @@ from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, \
 from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction
 from hbp_nrp_cle.tf_framework._CSVRecorder import MapCSVRecorder, CSVRecorder
 from hbp_nrp_cle.tf_framework._NeuronMonitor import NeuronMonitor
-from hbp_nrp_cle.tf_framework._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
+from hbp_nrp_cle.tf_framework._GlobalData \
+    import MapVariable, MapRetina, PyRetinaWrapper, GLOBAL, TRANSFER_FUNCTION_LOCAL
 from hbp_nrp_cle.tf_framework._CleanableTransferFunctionParameter \
     import ICleanableTransferFunctionParameter
 from . import _TransferFunctionManager

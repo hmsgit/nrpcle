@@ -7,11 +7,51 @@ from ._MappingSpecification import ParameterMappingSpecification
 
 import abc
 import logging
+import pyretina
 
 logger = logging.getLogger(__name__)
 
 GLOBAL = "global_scope"
 TRANSFER_FUNCTION_LOCAL = "transfer_function_scope"
+
+
+class PyRetinaWrapper(object):
+    """
+    Class to wrap a retina object
+    """
+
+    def __init__(self, retina):
+        """
+        Wraps a retina object
+
+        :param retina: a retina object
+        """
+        self.__retina = retina
+
+    # pylint: disable=unused-argument
+    def reset(self, transfer_function_manager):
+        """
+        Reset a retina
+        """
+        return self
+
+    def update(self, image):
+        """
+        Update a retina with respect to an image
+
+        :param image: a cv2 image
+        """
+        return self.__retina.update(image)
+
+    def getValue(self, x, y, layer_name):
+        """
+        Read activation of a retina neuron
+
+        :param x: the x coordinate of the retina neuron
+        :param y: the y coordinate of the retina neuron
+        :param layer_name: the name of the layer of the retina neuron
+        """
+        return self.__retina.getValue(x, y, layer_name)
 
 
 class MapVariable(ParameterMappingSpecification):
@@ -50,6 +90,32 @@ class MapVariable(ParameterMappingSpecification):
             return LocalDataReference(self.name, self.__initial_value)
         else:
             raise AttributeError("The specified parameter scope is not valid.")
+
+
+class MapRetina(ParameterMappingSpecification):
+    """
+    Class to map transfer function local or global retina config file
+    to transfer function parameters
+    """
+
+    def __init__(self, parameter_name, config=None):
+        """
+        Maps a parameter to a retina in the transfer function scope
+        and if the variable does not yet exist initializes it with the provided config file.
+
+        :param parameter_name: the name of the parameter
+        :param config: the selected config file
+        """
+        self.retina_config_file = config
+        super(MapRetina, self).__init__(parameter_name)
+
+    # pylint: disable=unused-argument
+    def create_adapter(self, transfer_function_manager):
+        """
+        Replaces the current mapping operator with the mapping result
+        """
+        retina = pyretina.InterfaceNEST(self.retina_config_file)
+        return PyRetinaWrapper(retina)
 
 
 class DataReference(object):
