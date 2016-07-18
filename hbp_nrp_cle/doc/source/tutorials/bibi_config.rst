@@ -36,8 +36,8 @@ what brain models we are going to use and what neuron groups exist.
 
     <brainModel>
       <file>brain_model/braitenberg.h5</file>
-      <neuronGroup population="sensors" xsi:type="Range" from="0" to="5"/>
-      <neuronGroup population="actors" xsi:type="Range" from="6" to="8"/>
+      <populations population="sensors" xsi:type="Range" from="0" to="5"/>
+      <populations population="actors" xsi:type="Range" from="6" to="8"/>
     </brainModel>
 
 This code block must be inserted as a child element of the root *bibi* element.
@@ -78,8 +78,8 @@ Up to this point, the BIBI Configuration should look as follows:
           xmlns="http://schemas.humanbrainproject.eu/SP10/2014/BIBI">
       <brainModel>
         <file>brain_model/braitenberg.h5</file>
-        <neuronGroup population="sensors" xsi:type="Range" from="0" to="5"/>
-        <neuronGroup population="actors" xsi:type="Range" from="6" to="8"/>
+        <populations population="sensors" xsi:type="Range" from="0" to="5"/>
+        <populations population="actors" xsi:type="Range" from="6" to="8"/>
       </brainModel>
       <bodyModel>husky_model/model.sdf</bodyModel>
     </bibi>
