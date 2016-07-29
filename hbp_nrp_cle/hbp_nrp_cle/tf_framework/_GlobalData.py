@@ -114,7 +114,7 @@ class MapRetina(ParameterMappingSpecification):
         """
         Replaces the current mapping operator with the mapping result
         """
-        retina = pyretina.InterfaceNEST(self.retina_config_file)
+        retina = pyretina.Retina(self.retina_config_file)
         return PyRetinaWrapper(retina)
 
 
