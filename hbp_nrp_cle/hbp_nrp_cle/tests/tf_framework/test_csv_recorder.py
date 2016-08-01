@@ -66,3 +66,26 @@ class TestCSVRecorder(unittest.TestCase):
         result = recorder.dump_to_file()
         recorder.cleanup()
         mock_os_remove.assert_called_with(temp_dir + "/aaa")
+
+    @patch('csv.writer')
+    @patch('tempfile.NamedTemporaryFile')
+    def test_reset(self, mock_tempfile, mock_csv_writer):
+        mocked_tempfile = Mock()
+        mocked_tempfile.name = "some_temp_file_name"
+        mock_tempfile.return_value.__enter__.return_value = mocked_tempfile
+        mock_tempfile.return_value.__exit__.return_value = None
+        mocked_csv_writer = Mock()
+        mocked_csv_writer.writerows = Mock()
+        mock_csv_writer.return_value = mocked_csv_writer
+
+        recorder = nrp.CSVRecorder("dummy_file.csv", ['header1', 'header2', 'header3'])
+        recorder.record_entry(1, 2, 3)
+        reset_recorder = recorder.reset(None)
+        recorder.record_entry(3, 4, 5)
+        recorder.dump_to_file()
+
+        self.assertEqual(recorder, reset_recorder)
+        mocked_csv_writer.writerows.assert_called_with([['header1', 'header2', 'header3'],
+                                                        (1,2, 3),
+                                                        ['(Simulation Reset)', '(Simulation Reset)', '(Simulation Reset)'],
+                                                        (3, 4, 5)])

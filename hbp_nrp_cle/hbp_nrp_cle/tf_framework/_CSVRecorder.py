@@ -1,7 +1,7 @@
 """
 This module contains the mapping of a CSV recorder object to input parameters
 """
-__author__ = ''
+__author__ = 'Daniel Peppicelli, Georg Hinkel'
 
 from ._MappingSpecification import ParameterMappingSpecification
 from ._CleanableTransferFunctionParameter import ICleanableTransferFunctionParameter
@@ -19,7 +19,7 @@ class MapCSVRecorder(ParameterMappingSpecification):
     Class to map a CSV recorder object to transfer function parameters
     """
 
-    def __init__(self, parameter_name, filename, headers):
+    def __init__(self, parameter_name, filename, headers, erase_on_reset=False):
         """
         Maps a parameter to a variable in the specified scope (per-default: the transfer function)
         and if the variable does not yet exist initializes it with the provided value.
@@ -40,10 +40,13 @@ class MapCSVRecorder(ParameterMappingSpecification):
         :param filename: the name of the file to write
         :param headers: An array of string containing the name of the columns that will be written
         in the CSV file
+        :param erase_on_reset: A value indicating whether the csv recorder should erase its contents
+        when the simulation is reset
         """
         super(MapCSVRecorder, self).__init__(parameter_name)
         self.__filename = filename
         self.__headers = headers
+        self.__erase_on_reset = erase_on_reset
 
     def create_adapter(self, transfer_function_manager): # pylint: disable=unused-argument
         """
@@ -51,23 +54,26 @@ class MapCSVRecorder(ParameterMappingSpecification):
 
         :return: A ready to use CSVRecorder object
         """
-        return CSVRecorder(self.__filename, self.__headers)
+        return CSVRecorder(self.__filename, self.__headers, self.__erase_on_reset)
 
 
 class CSVRecorder(ICleanableTransferFunctionParameter):
     """
     Record value and memory and dump them to a temporary file when asked to.
     """
-    def __init__(self, filename, headers):
+    def __init__(self, filename, headers, erase_on_reset=False):
         """
         Constructor. Pretty straightforward,
 
         :param filename: the filename to save to.
         :param headers: the name of the columns.
+        :param erase_on_reset: A value indicating whether the csv recorder should erase its contents
+        when the simulation is reset
         """
         self.__filename = filename
         self.__generatedFiles = []
         self.__values = [headers]
+        self.__erase_on_reset = erase_on_reset
 
     def record_entry(self, *values):
         """
@@ -94,6 +100,20 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
             f.flush()
             self.__generatedFiles.append(temporary_path)
         return self.__filename, temporary_path
+
+    # pylint: disable=unused-argument
+    def reset(self, tf_manager):
+        """
+        Resets the recorder
+        """
+        if self.__erase_on_reset:
+            header = self.__values[0]
+            del self.__values[:]
+            self.__values.append(header)
+        else:
+            length = len(self.__values[0])
+            self.__values.append(["(Simulation Reset)"] * length)
+        return self
 
     def cleanup(self):
         """
