@@ -295,8 +295,11 @@ def find_centroid_hsv(image, lower, upper):
         goes wrong.
     """
 
+    if isinstance(image, type(None)):  # Problem: starts as NoneType
+        return None
+
     try:
-        img_in = bridge.imgmsg_to_cv2(image)
+        img_in = bridge.imgmsg_to_cv2(image, "rgb8")
         hsv_im = cv2.cvtColor(img_in, cv2.COLOR_RGB2HSV)
         lower_np = np.array(lower, dtype="uint8")
         upper_np = np.array(upper, dtype="uint8")
