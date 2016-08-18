@@ -78,11 +78,20 @@ class AttributePathSegment(PropertyPath):
         """
         return self.__name
 
+    @name.setter
+    def name(self, value):
+        """
+        Sets the attribute name
+
+        :param value: The new attribute name
+        """
+        self.__name = value
+
     def __repr__(self):
         """
         Gets a string representation of the path
         """
-        return repr(self.__parent) + "." + self.__name
+        return repr(self.__parent) + "." + self.name
 
     def select(self, root):
         """
@@ -93,7 +102,7 @@ class AttributePathSegment(PropertyPath):
         parent = self.__parent.select(root)
         if parent is None:
             return None
-        return getattr(parent, self.__name)
+        return getattr(parent, self.name)
 
 
 class IndexPathSegment(PropertyPath):
