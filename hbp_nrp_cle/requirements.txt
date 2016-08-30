@@ -17,3 +17,4 @@ netifaces==0.8
 pyxb==1.2.4
 RestrictedPython==3.6.0
 futures==3.0.3
+mpi4py==2.0.0
