@@ -17,3 +17,5 @@ build/
 .settings
 ContinuousIntegration/
 .idea/
+hbp_nrp_cle/hbp_nrp_cle/config.ini
+hbp_nrp_cle/hbp_nrp_cle/config.ini.local
