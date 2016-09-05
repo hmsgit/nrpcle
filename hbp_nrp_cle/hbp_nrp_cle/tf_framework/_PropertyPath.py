@@ -148,3 +148,10 @@ class IndexPathSegment(PropertyPath):
         if parent is None:
             return None
         return parent[self.__index]
+
+    @property
+    def parent(self):
+        """
+        Gets the parent node for this element
+        """
+        return self.__parent
