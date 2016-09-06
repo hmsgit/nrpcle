@@ -34,7 +34,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param frequency: Frequency of alternating current, default: 10 Hz
         :param phase: Phase of alternating current, default: 0.0
         :param start: Start time of current injection, default: 0.0 ms
-        :param stop: Stop time of current injection, dafault: infinity
+        :param stop: Stop time of current injection, default: infinity
         """
 
         super(PyNNACSource, self).__init__(**params)
@@ -49,8 +49,6 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         return self._generator.amplitude
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @amplitude.setter
     def amplitude(self, value):  # pragma: no cover
         """
@@ -58,7 +56,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(amplitude=value)
 
     @property
     def offset(self):
@@ -67,8 +65,6 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         return self._generator.offset
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @offset.setter
     def offset(self, value):  # pragma: no cover
         """
@@ -76,7 +72,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(offset=value)
 
     @property
     def frequency(self):
@@ -85,8 +81,6 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         return self._generator.frequency
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @frequency.setter
     def frequency(self, value):  # pragma: no cover
         """
@@ -94,7 +88,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(frequency=value)
 
     @property
     def phase(self):
@@ -103,8 +97,6 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         return self._generator.phase
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @phase.setter
     def phase(self, value):  # pragma: no cover
         """
@@ -112,19 +104,11 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
 
         :param value: float
         """
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(phase=value)
 
     def create_device(self):
         """
         Creates an alternating current source
-
-        :param params: Dictionary of neuron configuration parameters
-        :param amplitude: Amplitude of alternating current, default: 1.0 nA
-        :param offset: Offset of alternating current, default: 0.0 nA
-        :param frequency: Frequency of alternating current, default: 10 Hz
-        :param phase: Phase of alternating current, default: 0.0
-        :param start: Start time of current injection, default: 0.0 ms
-        :param stop: Stop time of current injection, dafault: infinity
         """
 
         self._generator = sim.ACSource(**self.get_parameters("amplitude",
@@ -134,8 +118,6 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
                                                              "start",
                                                              "stop"))
 
-    # No connection parameters necessary for this device
-    # pylint: disable=W0613
     def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the device.

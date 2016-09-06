@@ -10,7 +10,7 @@ from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from scipy.integrate import simps
 import numpy as np
 
-__author__ = 'Dimitri Probst'
+__author__ = 'Dimitri Probst, Sebastian Krach'
 
 
 class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
@@ -72,13 +72,13 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         and current-based synapses.
         """
 
-        self._cell = sim.Population(1, sim.IF_curr_exp,
-                                    self.get_parameters(("tau_m", "tau_fall"),
-                                                        ("tau_syn_E", "tau_rise"),
-                                                        "v_thresh",
-                                                        "cm",
-                                                        "v_rest"))
-        sim.initialize(self._cell, 'v', self._cell[0].v_rest)
+        self._cell = sim.Population(1, sim.IF_curr_exp(**self.get_parameters(("tau_m", "tau_fall"),
+                                                                             ("tau_syn_E",
+                                                                              "tau_rise"),
+                                                                             "v_thresh",
+                                                                             "cm",
+                                                                             "v_rest")))
+        sim.initialize(self._cell, v=self._cell[0].v_rest)
 
     def _calculate_weight(self):
         """
@@ -90,15 +90,15 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         t_end = -np.log(1e-10) * self._cell[0].tau_m
         x_new = np.arange(0., t_end, 0.1)
         y_new = tau_c / self._cell[0].cm * (np.exp(
-            -x_new / self._cell[0].tau_m) - np.exp(
-            -x_new / self._cell[0].tau_syn_E))
+                -x_new / self._cell[0].tau_m) - np.exp(
+                -x_new / self._cell[0].tau_syn_E))
         self._weight = 1.0 / simps(y_new, dx=sim.state.dt)
 
     def _start_record_rate(self):
         """
         Records the rate of a neuronal population
         """
-        self._cell.record_v()
+        self._cell.record('v')
 
     # No connection parameters necessary for this device
     # pylint: disable=W0613
@@ -110,14 +110,18 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
-        connector = sim.AllToAllConnector(weights=self._weight * 1000,
-                                          delays=sim.state.dt)
-        sim.Projection(presynaptic_population=neurons,
-                       postsynaptic_population=self._cell,
-                       method=connector, target='excitatory')
+
+        connector = sim.AllToAllConnector()
+        synapse_type = sim.StaticSynapse(weight=self._weight * 1000,
+                                         delay=sim.state.dt)
+
+        return sim.Projection(presynaptic_population=neurons,
+                              postsynaptic_population=self._cell,
+                              connector=connector, receptor_type='excitatory',
+                              synapse_type=synapse_type)
 
     # simulation time not necessary for this device
-    # pylint: disable=W0613
+    # pylint: disable=unused-argument
     def refresh(self, time):
         """
         Refreshes the rate value
@@ -125,4 +129,4 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         :param time: The current simulation time
         """
 
-        self._rate = self._cell.get_v()[-1, -1]
+        self._rate = self._cell.get_data('v', clear=True)[-1, -1]

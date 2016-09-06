@@ -19,10 +19,9 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
     default_parameters = {
         'mean': 0.0,
         'stdev': 1.0,
-        "dt": None,
+        "dt": sim.state.dt,
         "start": 0.0,
-        "stop": float("inf"),
-        "rng": sim.NativeRNG()
+        "stop": float("inf")
     }
 
     # pylint: disable=W0221
@@ -36,8 +35,6 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
             default: simulation time step
         :param start: Start time of current injection, default: 0.0 ms
         :param stop: Stop time of current injection, default: infinity
-        :param rng: an RNG object from the `pyNN.random` module,
-            default: NativeRNG of the back-end
         """
         super(PyNNNCSource, self).__init__(**params)
 
@@ -52,8 +49,6 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         """
         return self._generator.mean
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @mean.setter
     def mean(self, value):  # pragma: no cover
         """
@@ -62,7 +57,7 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         :param value: float
         """
 
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(mean=value)
 
     @property
     def stdev(self):
@@ -71,8 +66,6 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         """
         return self._generator.stdev
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @stdev.setter
     def stdev(self, value):  # pragma: no cover
         """
@@ -81,7 +74,7 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         :param value: float
         """
 
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(stdev=value)
 
     def create_device(self):
         """
@@ -89,7 +82,11 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
 
         """
         self._generator = sim.NoisyCurrentSource(
-            **self.get_parameters("mean", "stdev", "dt", "start", "stop", "rng"))
+                **self.get_parameters("mean",
+                                      "stdev",
+                                      "dt",
+                                      "start",
+                                      "stop"))
 
     def connect(self, neurons):
         """

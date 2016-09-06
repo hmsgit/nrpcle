@@ -7,6 +7,7 @@ from hbp_nrp_cle.brainsim import IBrainControlAdapter
 from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
+
 import logging
 from os import path
 import copy
@@ -95,13 +96,14 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         if not self.__is_initialized:
             timestep = params.get('timestep', 0.1)
-            min_delay = params.get('min_delay', 0.1)
+            min_delay = params.get('min_delay', "auto")
             max_delay = params.get('max_delay', 20.0)
             threads = params.get('threads', 1)
             rng_seeds = params.get('rng_seeds', [1234])
+            spike_precision = params.get('spike_precision', 'on_grid')
             self.__rank = sim.setup(timestep=timestep, min_delay=min_delay,
                                     max_delay=max_delay, threads=threads,
-                                    rng_seeds=rng_seeds)
+                                    grng_seeds=rng_seeds, spike_precision=spike_precision)
             self.__is_initialized = True
             logger.info("neuronal simulator initialized")
         else:

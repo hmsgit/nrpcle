@@ -5,6 +5,7 @@ devices.
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
+from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
 
 __author__ = 'Dimitri Probst, Sebastian Krach, Georg Hinkel'
 
@@ -38,7 +39,7 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         :param target: string specifying which synapse on the postsynaptic cell
             to connect to: excitatory or inhibitory. If neurons is a list of
             two populations, target is ['excitatory', 'inhibitory']
-        :param synapse_dynamics: a PyNN SynapseDynamics object
+        :param synapse_type: a PyNN Synapse Type object
         :param label: label of the Projection object
         :param rng: RNG object to be used by the Connector
             synaptic plasticity mechanisms to use
@@ -52,9 +53,10 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         self.start_record_voltage()
 
     @staticmethod
-    def _get_cell_type():  # pragma: no cover
+    def _get_cell_type(**params):
         """
         Returns the cell type of the neuron to be created by this device
+        :param params: parameters passed to the cell type constructor
         :return: a PyNN cell type
         """
         raise NotImplementedError("The cell type has to be specified in a concrete implementation")
@@ -79,17 +81,16 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         and current-based synapses
         """
         self._cell = sim.Population(1,
-                                    self._get_cell_type(),
-                                    self.get_parameters('v_thresh',
-                                                        'cm',
-                                                        'tau_m',
-                                                        'tau_syn_E',
-                                                        'tau_syn_I',
-                                                        'v_rest',
-                                                        'v_reset',
-                                                        'tau_refrac',
-                                                        'i_offset'))
-        sim.initialize(self._cell, 'v', self._cell[0].v_rest)
+                                    self._get_cell_type(**self.get_parameters('v_thresh',
+                                                                              'cm',
+                                                                              'tau_m',
+                                                                              'tau_syn_E',
+                                                                              'tau_syn_I',
+                                                                              'v_rest',
+                                                                              'v_reset',
+                                                                              'tau_refrac',
+                                                                              'i_offset')))
+        sim.initialize(self._cell, v=self._parameters["v_rest"])
 
     def start_record_voltage(self):
         """
@@ -107,23 +108,16 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         """
         super(PyNNLeakyIntegrator, self)._update_parameters(params)
 
-        if not "connector" in self._parameters or not self._parameters["connector"]:
-            weights = self._parameters["weights"]
-            if not weights:
-                weights = self._get_connector_weight()
-                self._parameters["weights"] = weights
-            delays = self._parameters["delays"]
-            self._parameters["connector"] = sim.AllToAllConnector(weights=weights, delays=delays)
+        if "connector" not in self._parameters or not self._parameters["connector"]:
+            self._parameters["connector"] = sim.AllToAllConnector()
         else:
             conn = self._parameters["connector"]
             if isinstance(conn, dict):
                 self.__apply_connector(conn, params)
-        if isinstance(self._parameters["synapse_dynamics"], dict):
-            dyn = self._parameters["synapse_dynamics"]
-            if dyn["type"] == "TsodyksMarkram":
-                self._parameters["synapse_dynamics"] = \
-                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
-                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
+        if not self._parameters["weight"]:
+            self._parameters["weight"] = self._get_connector_weight()
+
+        set_synapse_type(self._parameters, sim)
 
     def __apply_connector(self, conn, params):
         """
@@ -132,25 +126,23 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         :param conn: The connector dict
         :param params: Manual parameters
         """
-        weights = self._parameters["weights"]
-        if not weights:
-            weights = conn["weights"]
-        if not weights:
-            weights = self._get_connector_weight()
-        delays = conn.get("delays")
-        if not delays or "delays" in params:
-            delays = self._parameters["delays"]
-        self._parameters["weights"] = weights
-        self._parameters["delays"] = delays
-        if conn["mode"] == "OneToOne":
+        weights = conn.get("weight")
+        if weights and "weight" not in params:
+            self._parameters["weight"] = weights
+        delays = conn.get("delay")
+        if delays and "delay" not in params:
+            self._parameters["delay"] = delays
+
+        conn_mode = conn.get("mode")
+        if conn_mode == "OneToOne":
             self._parameters["connector"] = \
-                sim.OneToOneConnector(weights=weights, delays=delays)
-        elif conn["mode"] == "AllToAll":
+                sim.OneToOneConnector()
+        elif conn_mode == "AllToAll":
             self._parameters["connector"] = \
-                sim.AllToAllConnector(weights=weights, delays=delays)
-        elif conn["mode"] == "Fixed":
+                sim.AllToAllConnector()
+        elif conn_mode == "Fixed":
             self._parameters["connector"] = \
-                sim.FixedNumberPreConnector(conn["n"], weights, delays)
+                sim.FixedNumberPreConnector(conn.get("n", 1))
         else:
             raise Exception("Invalid connector mode")
 
@@ -168,12 +160,11 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
 
         return sim.Projection(presynaptic_population=neurons,
                               postsynaptic_population=self._cell,
-                              **self.get_parameters(("method", "connector"),
-                                                     "source",
-                                                     "target",
-                                                     "synapse_dynamics",
-                                                     "label",
-                                                     "rng"))
+                              **self.get_parameters("connector",
+                                                    "source",
+                                                    "receptor_type",
+                                                    "synapse_type",
+                                                    "label"))
 
     # simulation time not necessary for this device
     # pylint: disable=W0613
@@ -183,4 +174,4 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
 
         :param time: The current simulation time
         """
-        self._voltage = self._cell.get_v()[-1, -1]
+        self._voltage = self._cell.get_data('v', clear=True)[-1, -1]

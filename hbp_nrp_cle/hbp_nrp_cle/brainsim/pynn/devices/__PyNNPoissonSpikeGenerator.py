@@ -1,11 +1,11 @@
-'''
+"""
 Implementation of PyNNPoissonSpikeGenerator
-moduleauthor: probst@fzi.de
-'''
+"""
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
+from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
 
 __author__ = 'Dimitri Probst, Georg Hinkel'
 
@@ -20,11 +20,11 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         "start": 0.0,
         "rate": 0.0,
         "connector": None,
-        "weights": 0.00015,
-        "delays": 0.1,
+        "weight": 0.00015,
+        "delay": 0.1,
         "source": None,
-        "target": "excitatory",
-        "synapse_dynamics": None,
+        "receptor_type": "excitatory",
+        "synapse_type": None,
         "label": None,
         "rng": None
     }
@@ -41,7 +41,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             a list of two populations, a list of two Connector objects
         :param source: string specifying which attribute of the presynaptic
             cell signals action potentials
-        :param target: string specifying which synapse on the postsynaptic cell
+        :param receptor_type: string specifying which synapse on the postsynaptic cell
             to connect to: excitatory or inhibitory. If neurons is a list of
             two populations, target is ['excitatory', 'inhibitory'], dafault is
             excitatory
@@ -61,7 +61,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         Returns the frequency of the Poisson spike generator
         """
-        return self.__generator.get('rate')[0]
+        return self.__generator.get('rate')
 
     @rate.setter
     def rate(self, value):
@@ -70,16 +70,16 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
 
         :param value: float
         """
-        self.__generator.set('rate', value)
+        self.__generator.set(rate=value)
 
     def create_device(self):
         """
         Create Poisson spike generator device
         """
-        self.__generator = sim.Population(1, sim.SpikeSourcePoisson,
-                                          self.get_parameters("duration",
-                                                              "start",
-                                                              "rate"))
+        self.__generator = sim.Population(1, sim.SpikeSourcePoisson(
+                **self.get_parameters("duration",
+                                      "start",
+                                      "rate")))
 
     def _update_parameters(self, params):
         """
@@ -94,38 +94,48 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         super(PyNNPoissonSpikeGenerator, self)._update_parameters(params)
 
+        weights = params.get("weight")
+        delays = params.get("delay")
+
         if "connector" in params:
             conn = self._parameters["connector"]
             if isinstance(conn, dict):
-                weights = params.get("weights")
-                if not weights:
-                    weights = conn["weights"]
-                if not weights:
-                    weights = self._parameters["weights"]
-                delays = params.get("delays")
-                if not delays:
-                    delays = conn.get("delays")
-                if not delays:
-                    delays = self._parameters["delays"]
-                self._parameters["weights"] = weights
-                self._parameters["delays"] = delays
-                if conn["mode"] == "OneToOne":
-                    self._parameters["connector"] = \
-                        sim.OneToOneConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "AllToAll":
-                    self._parameters["connector"] = \
-                        sim.AllToAllConnector(weights=weights, delays=delays)
-                elif conn["mode"] == "Fixed":
-                    self._parameters["connector"] = \
-                        sim.FixedNumberPreConnector(conn["n"], weights, delays)
-                else:
-                    raise Exception("Invalid connector mode")
-        if isinstance(self._parameters["synapse_dynamics"], dict):
-            dyn = self._parameters["synapse_dynamics"]
-            if dyn["type"] == "TsodyksMarkram":
-                self._parameters["synapse_dynamics"] = \
-                    sim.SynapseDynamics(sim.TsodyksMarkramMechanism(
-                        U=dyn["U"], tau_rec=dyn["tau_rec"], tau_facil=dyn["tau_facil"]))
+                delays, weights = self.__apply_connector(conn, delays, weights)
+        else:
+            self._parameters["connector"] = sim.AllToAllConnector()
+        if weights:
+            self._parameters["weight"] = weights
+        if delays:
+            self._parameters["delay"] = delays
+
+        set_synapse_type(self._parameters, sim)
+
+    def __apply_connector(self, conn, delays, weights):
+        """
+        Applies the given connector dictionary
+
+        :param conn: The connector as dictionary
+        :param delays: The current delays
+        :param weights: The current weights
+        :returns: The updated weights and delays
+        """
+        if not weights:
+            weights = conn.get("weight")
+        if not delays:
+            delays = conn.get("delay")
+        conn_mode = conn.get("mode")
+        if conn_mode == "OneToOne":
+            self._parameters["connector"] = \
+                sim.OneToOneConnector()
+        elif conn_mode == "AllToAll":
+            self._parameters["connector"] = \
+                sim.AllToAllConnector()
+        elif conn_mode == "Fixed":
+            self._parameters["connector"] = \
+                sim.FixedNumberPreConnector(conn.get("n", 1))
+        else:
+            raise Exception("Invalid connector mode")
+        return delays, weights
 
     def connect(self, neurons):
         """
@@ -139,19 +149,17 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             Assembly object
         """
 
-        if not "connector" in self._parameters or not self._parameters["connector"]:
-            if not (self._parameters["target"] == 'excitatory' or neurons.conductance_based):
-                self._parameters["weights"] *= -1
+        if not self._parameters["synapse_type"]:
+            if not (self._parameters["receptor_type"] == 'excitatory' or neurons.conductance_based):
+                self._parameters["weight"] = -abs(self._parameters["weight"])
 
-            self._parameters["connector"] = \
-                sim.AllToAllConnector(**self.get_parameters("weights",
-                                                            "delays"))
+            self._parameters["synapse_type"] = sim.StaticSynapse(**self.get_parameters("weight",
+                                                                                       "delay"))
 
         return sim.Projection(presynaptic_population=self.__generator,
                               postsynaptic_population=neurons,
                               **self.get_parameters("source",
-                                                    "target",
-                                                    ("method", "connector"),
-                                                    "synapse_dynamics",
-                                                    "label",
-                                                    "rng"))
+                                                    "receptor_type",
+                                                    "connector",
+                                                    "synapse_type",
+                                                    "label"))

@@ -42,8 +42,6 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         """
         return self._generator.amplitude
 
-    # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     @amplitude.setter
     def amplitude(self, value):  # pragma: no cover
         """
@@ -52,7 +50,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         :param value: float
         """
 
-        raise RuntimeError("Resetting this property is currently not supported by PyNN")
+        self._generator.set(amplitude=value)
 
     def create_device(self):
         """
@@ -63,8 +61,6 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
                                                              "start",
                                                              "stop"))
 
-    # No connection parameters necessary for this device
-    # pylint: disable=W0613
     def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the device.

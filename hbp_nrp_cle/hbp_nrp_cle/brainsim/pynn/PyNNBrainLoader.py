@@ -8,6 +8,7 @@ from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import numpy as np
 import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
+from .__simulator import simulator as sim
 import logging
 
 logger = logging.getLogger("BrainLoader")
@@ -54,7 +55,7 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
     if neuron_ids is not None:
         slist = neuron_ids
     id_max = max(slist)
-    cells = sim.Population(id_max, sim.EIF_cond_alpha_isfa_ista)  # AdEx
+    cells = sim.Population(id_max, sim.EIF_cond_alpha_isfa_ista())  # AdEx
 
     pbar = ProgressBar(widgets=['Loading model',
                                 Percentage(),
@@ -63,8 +64,7 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
                        maxval=len(slist)).start()
 
     if synapse_model == 'TsodyksMarkramMechanism':
-        tso_model = sim.TsodyksMarkramMechanism()
-        syndynamics = sim.SynapseDynamics(fast=tso_model)
+        synapse_type = sim.TsodyksMarkramSynapse()
 
     i = 0
     for i, gid_ in enumerate(slist):
@@ -101,17 +101,16 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
                                       synapse_parameters["delay"]]).T
             connector = sim.FromListConnector(conn_list)
             if h5file["excitatory"][i] > 100:
-                proj = sim.Projection(cells, cells, method=connector,
-                                      synapse_dynamics=syndynamics,
-                                      target='excitatory')
+                proj = sim.Projection(cells, cells, connector=connector,
+                                      synapse_type=synapse_type,
+                                      receptor_type='excitatory')
             else:
-                proj = sim.Projection(cells, cells, method=connector,
-                                      synapse_dynamics=syndynamics,
-                                      target='inhibitory')
-            proj.setSynapseDynamics('U', synapse_parameters['U'])
-            proj.setSynapseDynamics('tau_rec', synapse_parameters['tau_rec'])
-            proj.setSynapseDynamics('tau_facil',
-                                    synapse_parameters['tau_facil'])
+                proj = sim.Projection(cells, cells, connector=connector,
+                                      synapse_type=synapse_type,
+                                      receptor_type='inhibitory')
+            proj.set(U=synapse_parameters['U'])
+            proj.set(tau_rec=synapse_parameters['tau_rec'])
+            proj.set(tau_facil=synapse_parameters['tau_facil'])
 
     circuit = {
         "population": cells,
@@ -169,24 +168,23 @@ def load_h5_network(path, **populations):
     population = circuit['population']
 
     # AdEx parameters are set
-    population.tset('a', circuit["a"])        # nS
-    population.tset('b', circuit["b"] * 1e-3)        # pA -> nA
-    population.tset('v_thresh', circuit["V_th"])
-    population.tset('delta_T', circuit["Delta_T"])
-    population.tset('cm', circuit["C_m"] * 1e-3)     # pF -> nF
-    population.tset('tau_m', circuit["C_m"] / circuit["g_L"])
-    population.tset('v_reset', circuit["V_reset"])
-    population.tset('tau_w', circuit["tau_w"])
-    population.tset('tau_refrac', circuit["t_ref"])
-    population.tset('v_spike', circuit["V_peak"])
-    population.tset('v_rest', circuit["E_L"])
-    population.tset('e_rev_E', circuit["E_ex"])
-    population.tset('e_rev_I', circuit["E_in"])
-    population.tset('tau_syn_E', circuit["tau_syn_E"])
-    population.tset('tau_syn_I', circuit["tau_syn_I"])
+    population.set(a=circuit["a"])  # nS
+    population.set(b=circuit["b"] * 1e-3)  # pA -> nA
+    population.set(v_thresh=circuit["V_th"])
+    population.set(delta_T=circuit["Delta_T"])
+    population.set(cm=circuit["C_m"] * 1e-3)  # pF -> nF
+    population.set(tau_m=circuit["C_m"] / circuit["g_L"])
+    population.set(v_reset=circuit["V_reset"])
+    population.set(tau_w=circuit["tau_w"])
+    population.set(tau_refrac=circuit["t_ref"])
+    population.set(v_spike=circuit["V_peak"])
+    population.set(v_rest=circuit["E_L"])
+    population.set(e_rev_E=circuit["E_ex"])
+    population.set(e_rev_I=circuit["E_in"])
+    population.set(tau_syn_E=circuit["tau_syn_E"])
+    population.set(tau_syn_I=circuit["tau_syn_I"])
 
-    sim.initialize(population, 'v',
-                   population.get('v_rest'))
+    sim.initialize(population, v=population.get('v_rest'))
 
     # set sensors and actors
     brain = Brain(population)
@@ -215,7 +213,8 @@ def load_py_network(path, **populations):
         circuit = brain_module.circuit
         logger.info("Found circuit")
         for p in populations:
-            neurons = sim.PopulationView(circuit, populations[p])
+            neurons = circuit[populations[p]]
+            logger.info("Population '%s': %s", p, neurons)
             brain_module.__dict__[p] = neurons
     except AttributeError:
         if len(populations) > 0:
@@ -229,6 +228,7 @@ class Brain(object):
     """
     Represents a simple model of a generic brain.
     """
+
     def __init__(self, circuit):
         self.__circuit = circuit
 

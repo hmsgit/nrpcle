@@ -6,12 +6,12 @@ moduleauthor: probst@fzi.de
 import logging
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, ILeakyIntegratorExp, IPopulationRate, \
-    IFixedSpikeGenerator
+    IFixedSpikeGenerator, ISpikeRecorder
 
 from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate, PyNNACSource, PyNNDCSource, \
     PyNNFixedSpikeGenerator, PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp, PyNNNCSource, \
-    PyNNPoissonSpikeGenerator
+    PyNNPoissonSpikeGenerator, PyNNSpikeRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +32,7 @@ class PyNNCommunicationAdapter(AbstractCommunicationAdapter):
                      ILeakyIntegratorAlpha: PyNNLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: PyNNLeakyIntegratorExp,
                      IPopulationRate: PyNNPopulationRate,
-                     # ISpikeRecorder: due to missing support of PyNN < 0.8 to retrieve spike data
-                     #                 from Nest through memory, there is currently no pure-PyNN
-                     #                 implementation for it.
+                     ISpikeRecorder: PyNNSpikeRecorder
                      }
 
     def initialize(self):

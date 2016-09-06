@@ -7,8 +7,12 @@ __author__ = 'Georg Hinkel'
 
 class TestFixedSpikeGenerator(unittest.TestCase):
 
+    def setUp(self):
+        self.maxDiff = None
+
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.sim")
-    def test_default_config(self, sim_mock):
+    @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.RandomDistribution")
+    def test_default_config(self, random_mock, sim_mock):
         dev = FixedSpikeGenerator()
         dev.connect(Mock())
         self.assertTrue(sim_mock.Population.called)
@@ -22,18 +26,17 @@ class TestFixedSpikeGenerator(unittest.TestCase):
             'v_reset': -100.0,
             'v_rest': -100.0,
             'connector': sim_mock.AllToAllConnector(),
-            'weights': sim_mock.RandomDistribution(),
-            'delays': sim_mock.RandomDistribution(),
+            'weight': random_mock(),
+            'delay': None,
             'source': None,
-            'target': 'excitatory',
-            'synapse_dynamics': None,
-            'label': None,
-            'rng': None
+            'receptor_type': 'excitatory',
+            'synapse_type': sim_mock.StaticSynapse(),
+            'label': None
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.sim")
     def test_connector(self, sim_mock):
-        dev = FixedSpikeGenerator(connector={'weights': 2, 'delays': 4, 'mode': 'OneToOne'})
+        dev = FixedSpikeGenerator(connector={'weight': 2, 'delay': 4, 'mode': 'OneToOne'}, receptor_type="inhibitory")
         dev.connect(Mock())
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
@@ -46,18 +49,17 @@ class TestFixedSpikeGenerator(unittest.TestCase):
             'v_reset': -100.0,
             'v_rest': -100.0,
             'connector': sim_mock.OneToOneConnector(),
-            'weights': 2,
-            'delays': 4,
+            'weight': 2,
+            'delay': 4,
             'source': None,
-            'target': 'excitatory',
-            'synapse_dynamics': None,
-            'label': None,
-            'rng': None
+            'receptor_type': 'inhibitory',
+            'synapse_type': sim_mock.StaticSynapse(),
+            'label': None
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.sim")
     def test_connector_no_delays(self, sim_mock):
-        dev = FixedSpikeGenerator(connector={'weights': 1, 'mode': 'Fixed', 'n': 1})
+        dev = FixedSpikeGenerator(connector={'weight': 1, 'mode': 'Fixed', 'n': 1})
         dev.connect(Mock())
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
@@ -70,18 +72,17 @@ class TestFixedSpikeGenerator(unittest.TestCase):
             'v_reset': -100.0,
             'v_rest': -100.0,
             'connector': sim_mock.FixedNumberPreConnector(),
-            'weights': 1,
-            'delays': sim_mock.RandomDistribution(),
+            'weight': 1,
+            'delay': None,
             'source': None,
-            'target': 'excitatory',
-            'synapse_dynamics': None,
-            'label': None,
-            'rng': None
+            'receptor_type': 'excitatory',
+            'synapse_type': sim_mock.StaticSynapse(),
+            'label': None
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.sim")
     def test_manual_weight_overrides_connector(self, sim_mock):
-        dev = FixedSpikeGenerator(connector={'weights': 2, 'delays': 4, 'mode': 'AllToAll'}, weights=42)
+        dev = FixedSpikeGenerator(connector={'weight': 2, 'delay': 4, 'mode': 'AllToAll'}, weight=42)
         dev.connect(Mock())
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
@@ -94,28 +95,26 @@ class TestFixedSpikeGenerator(unittest.TestCase):
             'v_reset': -100.0,
             'v_rest': -100.0,
             'connector': sim_mock.AllToAllConnector(),
-            'weights': 42,
-            'delays': 4,
+            'weight': 42,
+            'delay': 4,
             'source': None,
-            'target': 'excitatory',
-            'synapse_dynamics': None,
-            'label': None,
-            'rng': None
+            'receptor_type': 'excitatory',
+            'synapse_type': sim_mock.StaticSynapse(),
+            'label': None
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.sim")
     def test_synapse_dynamics(self, sim_mock):
-        dev = FixedSpikeGenerator(synapse_dynamics={'type': 'TsodyksMarkram', 'U': 0, 'tau_rec': 8, 'tau_facil': 15})
+        dev = FixedSpikeGenerator(synapse_type={'type': 'TsodyksMarkram', 'U': 0, 'tau_rec': 8, 'tau_facil': 15})
         dev.connect(Mock())
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
-        self.assertIsNotNone(dev._parameters["synapse_dynamics"])
-        self.assertTrue(sim_mock.TsodyksMarkramMechanism.called)
+        self.assertIsNotNone(dev._parameters["synapse_type"])
+        self.assertTrue(sim_mock.TsodyksMarkramSynapse.called)
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.sim")
     def test_invalid_connector_raises(self, sim_mock):
-        connector={'weights': 2, 'delays': 4, 'mode': 'invalid'}
-        dev = FixedSpikeGenerator(connector=connector)
-        self.assertRaises(Exception, dev.connect, Mock())
+        connector={'weight': 2, 'delay': 4, 'mode': 'invalid'}
+        self.assertRaises(Exception, FixedSpikeGenerator, connector=connector)
         del connector['mode']
-        self.assertRaises(Exception, dev.connect, Mock())
+        self.assertRaises(Exception, FixedSpikeGenerator, connector=connector)

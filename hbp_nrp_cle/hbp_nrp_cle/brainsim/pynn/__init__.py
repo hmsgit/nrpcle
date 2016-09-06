@@ -36,9 +36,9 @@ class PyNNPopulationInfo(PopulationInfo):
         """
         Gets the celltype of the population
         """
-        if hasattr(self.__population, "celltype"):
+        try:
             return type(self.__population.celltype).__name__
-        else:
+        except AttributeError:
             return "PopulationAssembly"
 
     @property
@@ -46,9 +46,10 @@ class PyNNPopulationInfo(PopulationInfo):
         """
         Gets the parameters of a the population as dict
         """
-        if hasattr(self.__population, "celltype"):
-            return self.__population.celltype.parameters
-        else:
+        try:
+            celltype = self.__population.celltype.parameter_space
+            return {a: celltype[a].base_value for a in celltype.keys()}
+        except AttributeError:
             return {}
 
     @property

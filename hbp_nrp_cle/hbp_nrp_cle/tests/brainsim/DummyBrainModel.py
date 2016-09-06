@@ -6,4 +6,4 @@ import pyNN.nest as sim
 
 __author__ = 'GeorgHinkel'
 
-circuit = sim.Population(3, sim.EIF_cond_alpha_isfa_ista)
+circuit = sim.Population(3, sim.EIF_cond_alpha_isfa_ista())

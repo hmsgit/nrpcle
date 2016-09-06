@@ -17,10 +17,11 @@ def create_spike_recorder_message(t, neuron_count, spikes, monitor_name):
     :param monitor_name: The name of the monitor
     :return:
     """
+
     if spikes is None or spikes.shape[1] == 0:
-        return SpikeEvent(t, 0, [], monitor_name) # return a SpikeEvent message with zero spikes
+        return SpikeEvent(t, 0, [], monitor_name)  # return a SpikeEvent message with zero spikes
 
     msgs = []
     for spike in spikes:
-        msgs.append(SpikeData(int(spike[0]) - 1, spike[1])) # Neuron ID start at 1.
+        msgs.append(SpikeData(int(spike[0]) - 3, spike[1]))  # Neuron ID start at 1.
     return SpikeEvent(t, neuron_count, msgs, monitor_name)

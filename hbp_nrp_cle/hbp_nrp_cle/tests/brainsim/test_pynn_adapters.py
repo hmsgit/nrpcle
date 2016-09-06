@@ -46,15 +46,15 @@ class PyNNAdaptersTest(unittest.TestCase):
                                     max_delay=4.0,
                                     num_threads=1)
             self.communicator = PyNNNestCommunicationAdapter()
-            self.neurons_cond = sim.Population(10, sim.IF_cond_exp)
-            self.neurons_curr = sim.Population(10, sim.IF_curr_exp)
-            self.two_neurons_pop_cond = [sim.Population(10, sim.IF_cond_exp),
-                                         sim.Population(10, sim.IF_cond_exp)]
-            self.two_neurons_pop_curr = [sim.Population(10, sim.IF_curr_exp),
-                                         sim.Population(10, sim.IF_curr_exp)]
-            self.three_neurons_pop_cond = [sim.Population(10, sim.IF_cond_exp),
-                                           sim.Population(10, sim.IF_cond_exp),
-                                           sim.Population(10, sim.IF_cond_exp)]
+            self.neurons_cond = sim.Population(10, sim.IF_cond_exp())
+            self.neurons_curr = sim.Population(10, sim.IF_curr_exp())
+            self.two_neurons_pop_cond = [sim.Population(10, sim.IF_cond_exp()),
+                                         sim.Population(10, sim.IF_cond_exp())]
+            self.two_neurons_pop_curr = [sim.Population(10, sim.IF_curr_exp()),
+                                         sim.Population(10, sim.IF_curr_exp())]
+            self.three_neurons_pop_cond = [sim.Population(10, sim.IF_cond_exp()),
+                                           sim.Population(10, sim.IF_cond_exp()),
+                                           sim.Population(10, sim.IF_cond_exp())]
 
             self.assertEqual(self.communicator.is_initialized, False)
             self.assertEqual(self.communicator.detector_devices, [])
@@ -68,11 +68,15 @@ class PyNNAdaptersTest(unittest.TestCase):
                  'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter')
     def test_reset(self, logcapture):
         """
-        Test the reset functionality
+        Test the reset functionality. The reset must not unload the brain, therefore the neurons
+        that have been setup before must still exist after the reset.
         """
         self.control.reset()
-        population = sim.Population(10, sim.IF_cond_exp)
-        self.assertEqual(population.all_cells[9], 100)
+
+        population = sim.Population(10, sim.IF_cond_exp())
+        # As PyNN >= 0.8 creates a multimeter and a spike_recorder per population, the ID of the
+        # 10th neuron of the 10th population (9 are created during setUp) must be 120
+        self.assertEqual(population.all_cells[9], 120)
         logcapture.check(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter', 'INFO',
                           'neuronal simulator reset'))
 
@@ -139,8 +143,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         print("AC Phase (after): ",
               self.communicator.generator_devices[2].phase)
 
-        self.communicator.register_spike_source(
-            self.neurons_cond, INCSource)
+        self.communicator.register_spike_source(self.neurons_cond, INCSource)
         self.assertIsInstance(self.communicator.generator_devices[3], INCSource)
 
         print("NC Mean (before): ",
@@ -159,7 +162,8 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertIsInstance(self.communicator.generator_devices[4], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
-            self.two_neurons_pop_cond, IPoissonSpikeGenerator, target=['excitatory', 'inhibitory'])
+            self.two_neurons_pop_cond, IPoissonSpikeGenerator,
+                receptor_type=['excitatory', 'inhibitory'])
         self.assertIsInstance(self.communicator.generator_devices[5], IDeviceGroup)
         self.assertEqual(len(self.communicator.generator_devices[5]), 2)
         self.assertIsInstance(self.communicator.generator_devices[5][0], IPoissonSpikeGenerator)
@@ -172,11 +176,11 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertIsInstance(self.communicator.generator_devices[6][1], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
-            self.neurons_cond, IPoissonSpikeGenerator, target="inhibitory")
+            self.neurons_cond, IPoissonSpikeGenerator, receptor_type="inhibitory")
         self.assertIsInstance(self.communicator.generator_devices[7], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
-            self.neurons_curr, IPoissonSpikeGenerator, target="inhibitory")
+            self.neurons_curr, IPoissonSpikeGenerator, receptor_type="inhibitory")
         self.assertIsInstance(self.communicator.generator_devices[8], IPoissonSpikeGenerator)
 
         self.communicator.register_spike_source(
@@ -206,11 +210,11 @@ class PyNNAdaptersTest(unittest.TestCase):
         self.assertIsInstance(self.communicator.generator_devices[12][1], IFixedSpikeGenerator)
 
         self.communicator.register_spike_source(
-            self.neurons_cond, IFixedSpikeGenerator, target="inhibitory")
+            self.neurons_cond, IFixedSpikeGenerator, receptor_type="inhibitory")
         self.assertIsInstance(self.communicator.generator_devices[13], IFixedSpikeGenerator)
 
         self.communicator.register_spike_source(
-            self.neurons_curr, IFixedSpikeGenerator, target="inhibitory")
+            self.neurons_curr, IFixedSpikeGenerator, receptor_type="inhibitory")
         self.assertIsInstance(self.communicator.generator_devices[14], IFixedSpikeGenerator)
 
         group = self.communicator.register_spike_source(
@@ -357,7 +361,7 @@ requested (device group)'))
         self.assertIsInstance(self.communicator.refreshable_devices[4][1], ILeakyIntegratorAlpha)
 
         self.communicator.register_spike_sink(
-            self.neurons_curr, ILeakyIntegratorAlpha, target='inhibitory')
+            self.neurons_curr, ILeakyIntegratorAlpha, receptor_type='inhibitory')
         self.assertIsInstance(self.communicator.detector_devices[5], ILeakyIntegratorAlpha)
         self.assertIsInstance(self.communicator.refreshable_devices[5], ILeakyIntegratorAlpha)
 
@@ -400,9 +404,10 @@ requested (device group)'))
 
 
         self.communicator.register_spike_sink(
-            self.neurons_curr, ILeakyIntegratorExp, target='inhibitory')
+            self.neurons_curr, ILeakyIntegratorExp, receptor_type='inhibitory')
         self.assertIsInstance(self.communicator.detector_devices[10], ILeakyIntegratorExp)
         self.assertIsInstance(self.communicator.refreshable_devices[10], ILeakyIntegratorExp)
+
 
         self.communicator.register_spike_sink(
             self.neurons_curr, IPopulationRate)
