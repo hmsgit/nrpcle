@@ -25,7 +25,7 @@ class TestTransferFunctionRetina(unittest.TestCase):
         brain.sensors = MockPopulation(range(45, 645))
         config.brain_root = brain
 
-    @patch('pyretina.InterfaceNEST')
+    @patch('pyretina.Retina')
     def test_tf_map_retina(self, mock_retina_interface_nest):
         mock_retina_interface_nest.return_value = nrp.PyRetinaWrapper('fakeretina')
         @nrp.MapRetina("retina", "someConfig.py")
@@ -44,7 +44,7 @@ class TestTransferFunctionRetina(unittest.TestCase):
         for assertion in topic1.sent:
             self.assertTrue(assertion)
 
-    @patch('pyretina.InterfaceNEST')
+    @patch('pyretina.Retina')
     def test_tf_map_retina_not_found(self, mock_retina_interface_nest):
         mock_retina_interface_nest.side_effect = ValueError('no such file')
         @nrp.MapRetina("retina", "dontexist.py")
