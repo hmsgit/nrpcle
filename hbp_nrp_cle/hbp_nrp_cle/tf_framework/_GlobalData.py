@@ -79,6 +79,13 @@ class MapVariable(ParameterMappingSpecification):
         self.__initial_value = initial_value
         self.__scope = scope
 
+    @property
+    def initial_value(self):
+        """
+        Gets the initial value for the current variable
+        """
+        return self.__initial_value
+
     def create_adapter(self, transfer_function_manager):
         """
         Replaces the current mapping operator with the mapping result

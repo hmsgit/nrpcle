@@ -174,7 +174,9 @@ class TransferFunctionManager(ITransferFunctionManager):
         tf.elapsed_time = 0.0
 
         if hasattr(tf, 'topic') and tf.topic is not None:
-            tf.topic = self.__robotAdapter.register_publish_topic(tf.topic)
+            saved = tf.topic
+            tf.topic = self.__robotAdapter.register_publish_topic(saved)
+            tf.topic.spec = saved
 
         for i in range(1, len(tf.params)):
             param = tf.params[i]
