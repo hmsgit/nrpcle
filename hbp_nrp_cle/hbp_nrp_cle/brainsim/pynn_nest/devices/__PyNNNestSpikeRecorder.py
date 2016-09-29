@@ -27,9 +27,8 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
         # is available. This should be investigated.
         # Meanwhile, we are interacting with NEST directly.
 
-        # Fortunately for us, record implementation in PyNN will call "_reset" that will
-        # remove the NEST recording device from the simulation (see src/common/populations.py
-        # and src/nest/recording.py in PyNN source code)
+        # Population recorders need to be reset before being reused
+        self._neurons.recorder.reset()
         self._neurons.record("spikes", to_file=False)
         recorder_device = self._neurons.recorder._spike_detector.device
         nest.SetStatus(recorder_device, "to_memory", True)
