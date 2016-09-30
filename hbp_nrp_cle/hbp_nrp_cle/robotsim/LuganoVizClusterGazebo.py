@@ -210,7 +210,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
                                                  'Initializing built-in extension',
                                                  pexpect.TIMEOUT])
         if result == 2:
-            raise(Exception("Cannot start Xvfb"))
+            raise(XvfbXvnError("Cannot start Xvfb"))
 
     def __spawn_vglconnect(self):
         """
@@ -283,10 +283,10 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             if ps_result == 0:
                 self.__remote_display_port = self.__remote_xvnc_process.match.groups()[0]
             else:
-                raise(Exception("Cannot start Xvnc, can't get running instance display port."))
+                raise(XvfbXvnError("Cannot start Xvnc, can't get running instance display port."))
         elif start_result == 3:
             self.__remote_display_port = -1
-            raise(Exception("Cannot start Xvnc, unknown error."))
+            raise(XvfbXvnError("Cannot start Xvnc, unknown error."))
 
     def __sync_models(self):
         """
@@ -419,6 +419,13 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         notificator.info("Restarting gzserver")
         self.stop()
         self.start(ros_master_uri)
+
+
+class XvfbXvnError(Exception):
+    """
+    This exception class is a marker for errors coming from Xvfb or Xvn.
+    """
+    pass
 
 
 def _get_roscore_master_uri():
