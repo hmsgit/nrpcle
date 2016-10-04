@@ -4,8 +4,8 @@ numpy==1.11.0
 scipy==0.17.1
 lxml==3.4.0
 h5py==2.6.0
-bbp-lazyarray==0.2.8
-bbp-neo==0.4.0.dev0
+lazyarray==0.2.8
+neo==0.4.0.dev0
 PyNN==0.8.1
 PyYAML==3.11
 rospkg==1.0.38
