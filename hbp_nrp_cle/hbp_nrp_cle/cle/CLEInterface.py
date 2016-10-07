@@ -5,6 +5,14 @@ This module represents the interfaces for the closed loop engine.
 __author__ = 'LorenzoVannucci'
 
 
+class ForcedStopException(Exception):
+    """
+    Represents that a closed loop has been forced to quit
+    """
+    def __init__(self):
+        super(ForcedStopException, self).__init__("The simulation was forced to stop")
+
+
 # pylint: disable=R0921
 class IClosedLoopControl(object):  # pragma: no cover
     """
@@ -61,10 +69,12 @@ class IClosedLoopControl(object):  # pragma: no cover
         """
         raise NotImplementedError("Method not implemented")
 
-    def stop(self):  # -> None:
+    def stop(self, forced=False):  # -> None:
         """
         Stops the orchestrated simulations. Also waits for the current
         simulation step to end.
+
+        :param forced: If set, the CLE instance cancels pending tasks
         """
         raise NotImplementedError("Method not implemented")
 
