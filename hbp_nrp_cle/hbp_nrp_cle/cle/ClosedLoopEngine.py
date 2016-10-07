@@ -7,7 +7,7 @@ __author__ = 'LorenzoVannucci'
 import time
 import logging
 import threading
-from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl
+from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl, ForcedStopException
 from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
 from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
@@ -51,6 +51,7 @@ class ClosedLoopEngine(IClosedLoopControl):
         assert isinstance(transfer_function_manager, ITransferFunctionManager)
 
         self.rca = robot_control_adapter
+        self.rca_future = None
         self.rcm = robot_comm_adapter
 
         self.bca = brain_control_adapter
@@ -163,7 +164,7 @@ class ClosedLoopEngine(IClosedLoopControl):
         # robot simulation
         logger.debug("Run step: Robot simulation.")
         start = time.time()
-        rca_future = self.rca.run_step_async(timestep)
+        self.rca_future = self.rca.run_step_async(timestep)
         self.rcm.refresh_buffers(clk)
         self.__rca_elapsed_time += time.time() - start
 
@@ -184,7 +185,10 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         # wait for all thread to finish
         logger.debug("Run_step: waiting on Control thread")
-        rca_future.result()
+        try:
+            self.rca_future.result()
+        except ForcedStopException:
+            logger.warn("Simulation was brutally stopped.")
 
         self.running_flag.set()
         logger.debug("Run_step: done !")
@@ -216,14 +220,20 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.elapsed_time += time.time() - self.start_time
         self.stopped_flag.set()
 
-    def stop(self):
+    def stop(self, forced=False):
         """
         Stops the orchestrated simulations. Also waits for the current
         simulation step to end.
         Must be called on a separate thread from the start one, as an example
         by a threading.Timer.
+
+        :param forced: If set, the CLE instance cancels pending tasks
         """
         self.stop_flag.set()
+        if forced and self.rca_future is not None and self.rca_future.running():
+            self.running_flag.wait(5)
+            if self.rca_future.running():
+                self.rca_future.set_exception(ForcedStopException())
         self.wait_step()
 
     def reset(self):

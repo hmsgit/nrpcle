@@ -98,10 +98,12 @@ class MockClosedLoopEngine(IClosedLoopControl,
             self.run_step(self.timestep)
             self.stop_flag.wait()
 
-    def stop(self):
+    def stop(self, forced=False):
         """
         Stops the orchestrated simulations. Also waits for the current
         simulation step to end.
+
+        :param forced: If set, the CLE instance cancels pending tasks
         """
         self.stop_flag.clear()
         self.wait_step()
