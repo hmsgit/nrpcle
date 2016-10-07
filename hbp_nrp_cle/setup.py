@@ -36,7 +36,9 @@ config = {
     'url': 'http://neurorobotics.net',
     'author_email': 'neurorobotics@humanbrainproject.eu',
     'version': hbp_nrp_cle.__version__,
-    'setup_requires': ['numpy'], # numpy needs to be installed before scipy (http://stackoverflow.com/questions/27021270/how-to-handle-dependency-on-scipy-in-setup-py)
+    # numpy needs to be installed before scipy
+    # see http://stackoverflow.com/questions/27021270/how-to-handle-dependency-on-scipy-in-setup-py
+    'setup_requires': ['numpy'],
     'install_requires': reqs,
     'packages': ['hbp_nrp_cle',
                  'hbp_nrp_cle.brainsim',
