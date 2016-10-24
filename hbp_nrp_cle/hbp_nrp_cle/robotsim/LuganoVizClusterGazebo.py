@@ -109,7 +109,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     # -A, --account=<account>
     # Charge resources used by this job to specified account.The account is an arbitrary string.
     # The account name maybe changed after job submission using the scontrolcommand.
-    ALLOCATION_COMMAND = ("salloc --immediate=25 --time=10:00:00 -p interactive"
+    ALLOCATION_COMMAND = ("salloc --immediate=25 --time=0:45:00 -p interactive"
                           " -c 4 --account=proj30 --gres=gpu:1")
     DEALLOCATION_COMMAND = 'scancel %s'
     NODE_DOMAIN = '.cscs.ch'
