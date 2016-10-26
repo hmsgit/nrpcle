@@ -165,11 +165,13 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         return 0.0
 
-    def wait_step(self):
+    def wait_step(self, timeout=None):
         """
         Wait for the currently running simulation step to end.
+
+        :param timeout: The maximum amount of time (in seconds) to wait for the end of this step
         """
-        self.running_flag.wait()
+        self.running_flag.wait(timeout=timeout)
 
     def load_network_from_file(self, network_file, **network_configuration):
 

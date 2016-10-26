@@ -122,8 +122,10 @@ class IClosedLoopControl(object):  # pragma: no cover
         """
         raise NotImplementedError("Method not implemented")
 
-    def wait_step(self):  # -> None
+    def wait_step(self, timeout=None):  # -> None
         """
         Wait for the currently running simulation step to end.
+
+        :param timeout: The maximum amount of time (in seconds) to wait for the end of this step
         """
         raise NotImplementedError("Method not implemented")

@@ -228,13 +228,20 @@ class ClosedLoopEngine(IClosedLoopControl):
         by a threading.Timer.
 
         :param forced: If set, the CLE instance cancels pending tasks
+        :except Exception: throws an exception if the CLE was forced to stop but could not be
+        stopped
         """
         self.stop_flag.set()
-        if forced and self.rca_future is not None and self.rca_future.running():
-            self.running_flag.wait(5)
-            if self.rca_future.running():
-                self.rca_future.set_exception(ForcedStopException())
-        self.wait_step()
+        if forced:
+            if self.rca_future is not None and self.rca_future.running():
+                self.running_flag.wait(5)
+                if self.rca_future.running():
+                    self.rca_future.set_exception(ForcedStopException())
+            self.wait_step(timeout=5)
+            if not self.running_flag.isSet():
+                raise Exception("The simulation loop could not be completed")
+        else:
+            self.wait_step()
 
     def reset(self):
         """
@@ -342,8 +349,10 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         return self.__rca_elapsed_time
 
-    def wait_step(self):
+    def wait_step(self, timeout=None):
         """
         Wait for the currently running simulation step to end.
+
+        :param timeout: The maximum amount of time (in seconds) to wait for the end of this step
         """
-        self.running_flag.wait()
+        self.running_flag.wait(timeout)
