@@ -1,3 +1,4 @@
 .idea/
+.eggs/
 hbp_nrp_cle.egg-info/
 requirements_extension_tests.req_make
