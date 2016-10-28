@@ -235,6 +235,10 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         if result == 2:
             raise(Exception("Cannot connect to node."))
 
+        # Always load virtualgl on vgl connections to be able to use a 3D display
+        vglconnect_process.sendline('module load virtualgl')
+        vglconnect_process.sendline('export VGL_FORCEALPHA=1') # force 32-bit buffers
+
         return vglconnect_process  # This object has to live until the end.
 
     def __create_remote_working_directory(self):
@@ -363,8 +367,10 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__gazebo_remote_process.sendline('source $GAZEBO_RESOURCE_PATH/setup.sh')
         self.__gazebo_remote_process.sendline('source $ROS_THIRDPARTY_PACKAGES_SETUP_FILE')
         self.__gazebo_remote_process.sendline('source $ROS_HBP_PACKAGES_SETUP_FILE')
+
+        # launch Gazebo with virtualgl, use -nodl to redirect native opengl calls to virtualgl
         self.__gazebo_remote_process.sendline(
-            'vglrun $GAZEBO_BIN_DIR/gzserver ' +
+            'vglrun -nodl $GAZEBO_BIN_DIR/gzserver ' +
             '-s $ROS_HBP_PACKAGES_LIB_DIR/libgazebo_ros_api_plugin.so ' +
             '-s $ROS_HBP_PACKAGES_LIB_DIR/libgazebo_ros_paths_plugin.so ' +
             '--verbose')
