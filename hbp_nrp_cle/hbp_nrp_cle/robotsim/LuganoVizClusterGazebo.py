@@ -344,12 +344,14 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         self.__gazebo_remote_process.sendline('source /usr/share/Modules/init/bash 2> /dev/null')
 
         # load the modules
-        self.__gazebo_remote_process.sendline('module load ros/indigo-rhel6-x86_64-gcc4.8.2')
+        self.__gazebo_remote_process.sendline(
+            'module load ros/indigo-numpy-1.11-rhel6-x86_64-gcc4.8.2')
         self.__gazebo_remote_process.sendline('module load gazebo/last-build')
         self.__gazebo_remote_process.sendline('module load sdf/last-build')
         self.__gazebo_remote_process.sendline('module load ogre/1.9.0-rhel6-x86_64-gcc-4.8.2')
         self.__gazebo_remote_process.sendline('module load boost/1.55zlib-rhel6-x86_64-gcc4.4')
-        self.__gazebo_remote_process.sendline('module load opencv/2.4.9-rhel6-x86_64-gcc-4.4.7')
+        self.__gazebo_remote_process.sendline(
+            'module load opencv/2.4.9-numpy-1.11-rhel6-x86_64-gcc-4.4.7')
         self.__gazebo_remote_process.sendline('module load tbb/4.0.5-rhel6-x86_64-gcc4.4')
         self.__gazebo_remote_process.sendline(
             'module load console_bridge/0.2.7-rhel6-x86_64-gcc-4.8.2')
@@ -359,7 +361,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             'module load collada-dom/2.3.0-rhel6-x86_64-gcc-4.8.2')
         self.__gazebo_remote_process.sendline('module load ros-hbp-packages/last-build')
         self.__gazebo_remote_process.sendline(
-            'module load ros-thirdparty/indigo-rhel6-x86_64-gcc4.8.2')
+            'module load ros-thirdparty/indigo-numpy-1.11-rhel6-x86_64-gcc4.8.2')
 
         # source ROS, Gazebo and our plugins
         self.__gazebo_remote_process.sendline('source $ROS_PYTHON_VENV/bin/activate')
