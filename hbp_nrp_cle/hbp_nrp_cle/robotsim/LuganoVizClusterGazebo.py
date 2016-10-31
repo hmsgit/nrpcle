@@ -192,6 +192,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         if self.__allocation_process is not None:
             self.__allocation_process.sendline('exit')
+            self.__allocation_process.terminate()
             self.__allocation_process = None
             self.__job_ID = None
             self.__state = "UNDEFINED"
@@ -251,6 +252,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         create_temporary_folder_process.sendline('mktemp -d')
         create_temporary_folder_process.expect(r'\/tmp\/[a-zA-Z0-9\.]+')
         self.__remote_working_directory = create_temporary_folder_process.after
+        create_temporary_folder_process.terminate()
 
     def __clean_remote_files(self):
         """
@@ -263,6 +265,7 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             clean_process.sendline('rm -rf ' + self.__remote_working_directory)
             # Clean all old Xvnc lock files.
             clean_process.sendline('rm -rf /tmp/.X*')
+            clean_process.terminate()
 
     def __start_xvnc(self):
         """
@@ -388,17 +391,30 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         """
         Start gzserver on the Lugano viz cluster
         """
-        notificator.info('Allocating one job on the vizualization cluster')
-        self.__allocate_job()
-        notificator.info('Start an XServer without attached screen')
-        self.__start_fake_X()
-        notificator.info('Sync models on the remote node')
-        self.__create_remote_working_directory()
-        self.__sync_models()
-        notificator.info('Start Xvnc on the remote node')
-        self.__start_xvnc()
-        notificator.info('Start gzserver on the remote node')
-        self.__start_gazebo(ros_master_uri)
+        try:
+            notificator.info('Allocating one job on the vizualization cluster')
+            self.__allocate_job()
+            notificator.info('Start an XServer without attached screen')
+            self.__start_fake_X()
+            notificator.info('Sync models on the remote node')
+            self.__create_remote_working_directory()
+            self.__sync_models()
+            notificator.info('Start Xvnc on the remote node')
+            self.__start_xvnc()
+            notificator.info('Start gzserver on the remote node')
+            self.__start_gazebo(ros_master_uri)
+        # pylint: disable=broad-except
+        except Exception:
+            logger.exception('Failure launching gzserver on remote node.')
+
+            # always cleanup, but only raise the start exception up, not any shutdown errors
+            try:
+                self.stop()
+            # pylint: disable=broad-except
+            except Exception:
+                pass
+
+            raise
 
     @property
     def gazebo_master_uri(self):
@@ -416,12 +432,44 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
             return None
 
     def stop(self):
-        notificator.info("Stopping gzserver")
-        self.__clean_remote_files()
-        self.__remote_xvnc_process.terminate()
-        self.__gazebo_remote_process.terminate()
-        self.__x_server_process.terminate()
-        self.__deallocate_job()
+        # cluster node cleanup (this can fail, but make sure we always release the job below)
+        try:
+            # terminate running gzserver and invoking bash shell
+            if self.__gazebo_remote_process:
+                notificator.info('Stopping gzserver on the remote node')
+                self.__gazebo_remote_process.sendcontrol('z')
+                self.__gazebo_remote_process.sendline('killall -9 gzserver')
+                self.__gazebo_remote_process.terminate()
+
+            # directly terminate Xvnc process (not invoked via bash)
+            if self.__remote_xvnc_process:
+                notificator.info('Stopping Xvnc on the remote node')
+                self.__remote_xvnc_process.terminate()
+
+            # delete remote directory and models
+            if self.__remote_working_directory:
+                notificator.info('Deleting models on the remote node')
+                self.__clean_remote_files()
+
+        # pylint: disable=broad-except
+        except Exception:
+            logger.exception('Error cleaning up remote node.')
+        finally:
+            self.__gazebo_remote_process = None
+            self.__remote_working_directory = None
+            self.__remote_xvnc_process = None
+            self.__remote_display_port = -1
+
+        # SLURM cleanup (not on the cluster node), always try even if cluster cleanup fails
+        if self.__allocation_process:
+            notificator.info('Deallocating one job on the vizualization cluster')
+            self.__deallocate_job()
+
+        # cleserver cleanup Xvfb, this is not critical
+        if self.__x_server_process:
+            notificator.info('Stopping XServer without attached screen')
+            self.__x_server_process.terminate()
+            self.__x_server_process = None
 
     def restart(self, ros_master_uri):
         notificator.info("Restarting gzserver")
