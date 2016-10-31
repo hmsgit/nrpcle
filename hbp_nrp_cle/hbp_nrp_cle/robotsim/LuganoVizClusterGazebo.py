@@ -204,12 +204,21 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
         performs all graphical operations in memory without showing any screen output. The goal
         is to be able to use vglconnect from the local node to the remote viz cluster node. For
         that, we do need an XServer.
+
+        Xvfb startup should generally produce no output, but handle the following cases:
+        - server is already running (e.g. started by root and could not be killed, valid)
+        - server needs to initialize GPU/hardware extensions (valid but strange configuration)
+        - no output (expected, handled by short timeout with no output)
+        - failure to launch (EOF when process reports failure, invalid so abort)
         """
         self.__x_server_process = pexpect.spawn('Xvfb :1', logfile=logger)
         result = self.__x_server_process.expect(['Server is already active for display',
                                                  'Initializing built-in extension',
-                                                 pexpect.TIMEOUT])
-        if result == 2:
+                                                 pexpect.TIMEOUT,    # no output (expected)
+                                                 pexpect.EOF],       # crash/failed launch
+                                                 self.SMALL_TIMEOUT)
+
+        if result == 3:
             raise(XvfbXvnError("Cannot start Xvfb"))
 
     def __spawn_vglconnect(self):

@@ -79,7 +79,7 @@ class TestLuganoVizClusterGazebo(unittest.TestCase):
         self.assertEqual(mock_spawn.call_count, 1)
         self.assertNotEqual(mock_spawn().expect.call_count, 0)
 
-        mock_spawn().expect = Mock(return_value = 2)
+        mock_spawn().expect = Mock(return_value = 3)
         self.assertRaises(Exception, self.instance._LuganoVizClusterGazebo__start_fake_X)
 
     @patch('pexpect.spawn')
