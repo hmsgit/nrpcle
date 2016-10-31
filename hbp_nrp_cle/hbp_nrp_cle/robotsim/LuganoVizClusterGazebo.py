@@ -12,7 +12,6 @@ import os
 import sys
 import netifaces
 from hbp_nrp_cle.robotsim.GazeboInterface import IGazeboServerInstance
-from random import randint
 
 # Info messages sent to the notificator will be forwarded as notifications
 notificator = logging.getLogger('hbp_nrp_cle.user_notifications')
@@ -267,30 +266,34 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
     def __start_xvnc(self):
         """
         Start a remote Xvnc server. This is the only (known to us) way to have Gazebo using
-        the graphic card. If the Xvnc server is already running, we re-use it !
+        the graphic card.
         """
         if self.__node is None or self.__allocation_process is None:
             raise(Exception("Cannot connect to a cluster node without a proper Job allocation."))
 
         self.__remote_xvnc_process = self.__spawn_vglconnect()
-        self.__remote_display_port = randint(10, 100)
-        self.__remote_xvnc_process.sendline('Xvnc :' + str(self.__remote_display_port))
-        start_result = self.__remote_xvnc_process.expect(['created VNC server for screen 0',
-                                                          'Server is already active for display',
-                                                          'server already running',
-                                                          pexpect.TIMEOUT], self.TIMEOUT)
-        if start_result in [1, 2]:
-            #Xvnc is already running on the machine. Get its display port
-            self.__remote_xvnc_process.sendline('ps -Af | grep [X]vnc | cut -d ' ' -f 13')
-            ps_result = self.__remote_xvnc_process.expect([':([0-9]+)',
-                                                          pexpect.TIMEOUT], self.TIMEOUT)
-            if ps_result == 0:
-                self.__remote_display_port = self.__remote_xvnc_process.match.groups()[0]
-            else:
-                raise(XvfbXvnError("Cannot start Xvnc, can't get running instance display port."))
-        elif start_result == 3:
-            self.__remote_display_port = -1
-            raise(XvfbXvnError("Cannot start Xvnc, unknown error."))
+
+        # Find the first available Xvnc port to use, we are not the only cluster user so we cannot
+        # guarantee that no other Xvnc is running on a port or that we have access to running
+        # sessions. Ohter users may also spawn instances arbitrarily, this ensures a valid session.
+        for p in xrange(10, 100):
+            self.__remote_xvnc_process.sendline('Xvnc :' + str(p))
+            result = self.__remote_xvnc_process.expect(['created VNC server for screen 0',
+                                                        'Server is already active for display',
+                                                        'server already running',
+                                                         pexpect.TIMEOUT], self.TIMEOUT)
+
+            # valid Xvnc session spawned on port, stop searching
+            if result == 0:
+                self.__remote_display_port = p
+                return
+
+            # timeout while trying to start Xvnc, abort
+            elif result == 3:
+                raise(XvfbXvnError("Cannot start Xvnc, unknown error."))
+
+        # unable to find an open Xvnc port (very unlikely), abort
+        raise(XvfbXvnError("Cannot start Xvnc, no open display ports."))
 
     def __sync_models(self):
         """
