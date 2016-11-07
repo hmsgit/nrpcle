@@ -285,6 +285,11 @@ class LuganoVizClusterGazebo(IGazeboServerInstance):
 
         self.__remote_xvnc_process = self.__spawn_vglconnect()
 
+        # Cleanup any leftover Xvnc sessions from our user on this cluster node from failed
+        # sessions (e.g. crashes or other rare network issues). This won't impact other cluster
+        # node users or their running Xvnc sessions.
+        self.__remote_xvnc_process.sendline('killall -9 Xvnc')
+
         # Find the first available Xvnc port to use, we are not the only cluster user so we cannot
         # guarantee that no other Xvnc is running on a port or that we have access to running
         # sessions. Ohter users may also spawn instances arbitrarily, this ensures a valid session.
