@@ -38,8 +38,13 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         "True": neuron spiked within the last time step
         "False": neuron was silent within the last time step
         """
-
-        return self._spikes.shape[0] > 0
+        for spike in self._spikes:
+            try:
+                if self._neurons.id_to_index(int(spike[0])) is not None:
+                    return True
+            except IndexError:
+                pass
+        return False
 
     @property
     def times(self):
@@ -53,7 +58,6 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
 
         :return: a numpy array containing times and neuron IDs of neurons which spiked.
         """
-
         return self._spikes
 
     def _start_record_spikes(self):
