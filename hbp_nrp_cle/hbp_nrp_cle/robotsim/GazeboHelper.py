@@ -1,16 +1,16 @@
 """
 Helper class for gazebo loading operations
 """
-from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_LIGHT, GZROS_S_SPAWN_SDF_MODEL, \
-    GZROS_S_GET_WORLD_PROPERTIES, GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, \
-    GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, GZROS_S_GET_LIGHTS_NAME
+from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_ENTITY, GZROS_S_GET_WORLD_PROPERTIES, \
+    GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, \
+    GZROS_S_GET_LIGHTS_NAME
 
 __author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
 
 import rospy
 import os
 from gazebo_msgs.msg import ModelState
-from gazebo_msgs.srv import SpawnModel, GetWorldProperties, DeleteModel, SetModelState, \
+from gazebo_msgs.srv import SpawnEntity, GetWorldProperties, DeleteModel, SetModelState, \
     GetLightsName, DeleteLight
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
@@ -29,8 +29,7 @@ class GazeboHelper(object):
     """
 
     def __init__(self):
-        rospy.wait_for_service(GZROS_S_SPAWN_SDF_LIGHT, TIMEOUT)
-        rospy.wait_for_service(GZROS_S_SPAWN_SDF_MODEL, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_SPAWN_SDF_ENTITY, TIMEOUT)
         rospy.wait_for_service(GZROS_S_GET_WORLD_PROPERTIES, TIMEOUT)
         rospy.wait_for_service(GZROS_S_SET_MODEL_STATE, TIMEOUT)
         rospy.wait_for_service(GZROS_S_DELETE_MODEL, TIMEOUT)
@@ -38,8 +37,7 @@ class GazeboHelper(object):
         rospy.wait_for_service(GZROS_S_DELETE_LIGHTS, TIMEOUT)
         rospy.wait_for_service(GZROS_S_GET_LIGHTS_NAME, TIMEOUT)
 
-        self.spawn_light_proxy = rospy.ServiceProxy(GZROS_S_SPAWN_SDF_LIGHT, SpawnModel)
-        self.spawn_model_proxy = rospy.ServiceProxy(GZROS_S_SPAWN_SDF_MODEL, SpawnModel)
+        self.spawn_entity_proxy = rospy.ServiceProxy(GZROS_S_SPAWN_SDF_ENTITY, SpawnEntity)
         self.get_world_properties_proxy = rospy.ServiceProxy(GZROS_S_GET_WORLD_PROPERTIES,
                                                              GetWorldProperties)
         self.set_model_state_proxy = rospy.ServiceProxy(GZROS_S_SET_MODEL_STATE, SetModelState)
@@ -123,12 +121,12 @@ class GazeboHelper(object):
             # Anyway, regardless of the warning, the lights are loaded with their correct
             # positions.
             logger.info("Loading light \"%s\".", light_name)
-            self.load_light_sdf(light_name, light_sdf)
+            self.load_sdf_entity(light_name, light_sdf)
 
         # Load models
         for model_name, models_sdf in models_sdf_dict.items():
             logger.info("Loading model \"%s\".", model_name)
-            self.load_gazebo_sdf(model_name, models_sdf)
+            self.load_sdf_entity(model_name, models_sdf)
 
         logger.debug("World successfully loaded in Gazebo.")
 
@@ -148,31 +146,10 @@ class GazeboHelper(object):
         with open(model_file_path, 'r') as model_file_sdf:
             model_sdf = model_file_sdf.read()
             # spawn model
-            self.load_gazebo_sdf(model_name, model_sdf, initial_pose)
+            self.load_sdf_entity(model_name, model_sdf, initial_pose)
             logger.debug("%s successfully loaded in Gazebo", model_file)
 
-    def load_light_sdf(self, light_name, light_sdf, initial_pose=None):
-        """
-        Load a gazebo light (sdf) into the ROS connected running gazebo instance.
-
-        :param light_name: Name of the light (can be anything).
-        :param light_sdf: The SDF xml code describing the light.
-        :param initial_pose: Initial pose of the light. Uses the Gazebo \
-            "Pose" type.
-        """
-        # We are checking here that light_sdf is indeed an XML string, fromstring() raises
-        # exception if the parameter is not a valid XML.
-        etree.fromstring(light_sdf)
-        # set initial pose
-        if initial_pose is None:
-            initial_pose = Pose()
-            initial_pose.position = Point(0, 0, 0)
-            initial_pose.orientation = Quaternion(0, 0, 0, 1)
-        # spawn light
-        # What if the service doesn't like the parameters?
-        self.spawn_light_proxy(light_name, light_sdf, "", initial_pose, "world")
-
-    def load_gazebo_sdf(self, model_name, model_sdf, initial_pose=None):
+    def load_sdf_entity(self, model_name, model_sdf, initial_pose=None):
         """
         Load a gazebo model (sdf) into the ROS connected running gazebo instance.
 
@@ -190,7 +167,7 @@ class GazeboHelper(object):
             initial_pose.position = Point(0, 0, 0)
             initial_pose.orientation = Quaternion(0, 0, 0, 1)
         # spawn model
-        self.spawn_model_proxy(model_name, model_sdf, "", initial_pose, "world")
+        self.spawn_entity_proxy(model_name, model_sdf, "", initial_pose, "world")
 
     def set_model_pose(self, model_name, pose):
         """

@@ -209,11 +209,11 @@ class RosControlAdapter(IRobotControlAdapter):
         # respawn LIGHTS
         for light_name in original_lights_set:
             user_notifications_logger.info("Loading: %s", light_name)
-            self.gazebo_helper.spawn_light_proxy(light_name, lights[light_name],
-                                                 "", initial_pose, "")
+            self.gazebo_helper.spawn_entity_proxy(light_name, lights[light_name],
+                                                  "", initial_pose, "")
 
         # respawn MODELS
         for model_name in original_model_set:
             user_notifications_logger.info("Loading: %s", model_name)
-            self.gazebo_helper.spawn_model_proxy(model_name, models[model_name],
-                                                 "", initial_pose, "")
+            self.gazebo_helper.spawn_entity_proxy(model_name, models[model_name],
+                                                  "", initial_pose, "")

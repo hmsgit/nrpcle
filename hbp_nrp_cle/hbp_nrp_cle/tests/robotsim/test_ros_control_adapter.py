@@ -19,8 +19,7 @@ class TestRosControlAdapter(unittest.TestCase):
             '/gazebo/reset_sim': self.__reset_sim,
             '/gazebo/end_world': self.__end_world,
             # These are due to the GazeboHelper
-            '/gazebo/spawn_sdf_light': self.__spawn_sdf_light,
-            '/gazebo/spawn_sdf_model': self.__spawn_sdf_model,
+            '/gazebo/spawn_sdf_entity': self.__spawn_sdf_entity,
             '/gazebo/set_model_state': self.__set_model_state,
             '/gazebo/delete_model': self.__delete_model,
             '/gazebo/delete_light': self.__delete_light,
@@ -46,8 +45,7 @@ class TestRosControlAdapter(unittest.TestCase):
         self.__reset_sim = MagicMock()
         self.__end_world = MagicMock()
         # These are due to GazeboHelper
-        self.__spawn_sdf_light = MagicMock()
-        self.__spawn_sdf_model = MagicMock()
+        self.__spawn_sdf_entity = MagicMock()
         self.__set_model_state = MagicMock()
         self.__delete_light = MagicMock()
         self.__delete_model = MagicMock()
@@ -185,8 +183,7 @@ class TestRosControlAdapter(unittest.TestCase):
                 self._rca.gazebo_helper.delete_light_proxy = Mock(return_value=True)
                 self._rca.gazebo_helper.delete_model_proxy = Mock(return_value=True)
                 # spawn sdf services
-                self._rca.gazebo_helper.spawn_sdf_light_proxy = Mock(return_value=True)
-                self._rca.gazebo_helper.spawn_sdf_model_proxy = Mock(return_value=True)
+                self._rca.gazebo_helper.spawn_sdf_entity_proxy = Mock(return_value=True)
 
                 # call the method under test
                 self._rca.reset_world(world_models_sdf, world_lights_sdf)
@@ -207,16 +204,10 @@ class TestRosControlAdapter(unittest.TestCase):
                 for model in models_to_delete_and_respawn:
                     self._rca.gazebo_helper.delete_model_proxy.assert_any_call(model)
 
-                # check reLoading
-                # LIGHTS
-                self.assertFalse(False in map(lambda c: c[0][0] in lights_to_delete_and_respawn,
-                                              self._rca.gazebo_helper.spawn_sdf_light_proxy.call_args_list),
-                                 'Some light has not been re-spawned')
-
-                # MODELS
-                self.assertFalse(False in map(lambda c: c[0][0] in models_to_delete_and_respawn,
-                                              self._rca.gazebo_helper.spawn_sdf_model_proxy.call_args_list),
-                                 'Some model has not been re-spawned')
+                # check reLoading                
+                self.assertFalse(False in map(lambda c: c[0][0] in models_to_delete_and_respawn + lights_to_delete_and_respawn,
+                                              self._rca.gazebo_helper.spawn_sdf_entity_proxy.call_args_list),
+                                 'Some entity has not been re-spawned')
 
                 # check log
                 logcapture.check(

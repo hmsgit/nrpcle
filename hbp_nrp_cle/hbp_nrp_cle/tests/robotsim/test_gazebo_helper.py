@@ -7,9 +7,9 @@ import os
 from geometry_msgs.msg import Point, Pose, Quaternion
 from lxml import etree, objectify
 from mock import patch, call, MagicMock
-from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_LIGHT, GZROS_S_SPAWN_SDF_MODEL, \
-    GZROS_S_GET_WORLD_PROPERTIES, GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, \
-    GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, GZROS_S_GET_LIGHTS_NAME
+from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_ENTITY, GZROS_S_GET_WORLD_PROPERTIES, \
+    GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, \
+    GZROS_S_GET_LIGHTS_NAME
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
 from testfixtures import LogCapture
 
@@ -34,8 +34,7 @@ class TestGazeboHelper(unittest.TestCase):
         proxied = sorted([self.mock_service_proxy.call_args_list[x][0][0]
             for x in xrange(len(self.mock_service_proxy.call_args_list))])
         services = sorted([
-            GZROS_S_SPAWN_SDF_LIGHT,
-            GZROS_S_SPAWN_SDF_MODEL,
+            GZROS_S_SPAWN_SDF_ENTITY,
             GZROS_S_GET_WORLD_PROPERTIES,
             GZROS_S_SET_MODEL_STATE,
             GZROS_S_DELETE_MODEL,
@@ -48,7 +47,7 @@ class TestGazeboHelper(unittest.TestCase):
         self.assertEquals(services, proxied)
 
     def test_load_gazebo_model_file(self):
-        self.gazebo_helper.load_gazebo_sdf = MagicMock()
+        self.gazebo_helper.load_sdf_entity = MagicMock()
 
         with LogCapture('hbp_nrp_cle.user_notifications') as logcapture:
             test_pose = Pose()
@@ -57,9 +56,9 @@ class TestGazeboHelper(unittest.TestCase):
             wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_model.sdf")
             self.gazebo_helper.load_gazebo_model_file("toto", wpath, test_pose)
 
-            self.assertEqual(self.gazebo_helper.load_gazebo_sdf.call_args_list[0][0][0], "toto")
+            self.assertEqual(self.gazebo_helper.load_sdf_entity.call_args_list[0][0][0], "toto")
 
-            actual_XML = objectify.fromstring(self.gazebo_helper.load_gazebo_sdf.call_args_list[0][0][1])
+            actual_XML = objectify.fromstring(self.gazebo_helper.load_sdf_entity.call_args_list[0][0][1])
             actual_normalized_string = etree.tostring(actual_XML)
             expected_XML = objectify.fromstring("""<?xml version="1.0" ?>
                 <sdf version="1.5">
@@ -82,8 +81,8 @@ class TestGazeboHelper(unittest.TestCase):
             expected_normalized_string = etree.tostring(expected_XML)
             self.assertEqual(actual_normalized_string, expected_normalized_string)
 
-            self.assertEqual(self.gazebo_helper.load_gazebo_sdf.call_count, 1)
-            self.assertEqual(self.gazebo_helper.load_gazebo_sdf.call_args_list[0][0][2], test_pose)
+            self.assertEqual(self.gazebo_helper.load_sdf_entity.call_count, 1)
+            self.assertEqual(self.gazebo_helper.load_sdf_entity.call_args_list[0][0][2], test_pose)
             logcapture.check(('hbp_nrp_cle.user_notifications', 'DEBUG',
                               '%s successfully loaded in Gazebo' % wpath))
 
@@ -113,8 +112,7 @@ class TestGazeboHelper(unittest.TestCase):
         self.assertEquals(normalize_xml(lights['sun2']), normalised_sun2_sdf)
 
     def test_load_gazebo_world(self):
-        self.gazebo_helper.load_light_sdf = MagicMock()
-        self.gazebo_helper.load_gazebo_sdf = MagicMock()
+        self.gazebo_helper.load_sdf_entity = MagicMock()
 
         fake_sdf = '<sdf></sdf>'
         fake_models = {'ground_plane': fake_sdf}
@@ -122,12 +120,10 @@ class TestGazeboHelper(unittest.TestCase):
 
         self.gazebo_helper.load_gazebo_world(fake_models, fake_lights)
 
-        self.assertEqual(len(self.gazebo_helper.load_light_sdf.call_args_list), 2)
-        self.gazebo_helper.load_light_sdf.assert_any_call("sun1", fake_sdf)
-        self.gazebo_helper.load_light_sdf.assert_any_call("sun2", fake_sdf)
-
-        self.assertEqual(len(self.gazebo_helper.load_gazebo_sdf.call_args_list), 1)
-        self.gazebo_helper.load_gazebo_sdf.assert_called_with("ground_plane", fake_sdf)
+        self.assertEqual(len(self.gazebo_helper.load_sdf_entity.call_args_list), 3)
+        self.gazebo_helper.load_sdf_entity.assert_any_call("sun1", fake_sdf)
+        self.gazebo_helper.load_sdf_entity.assert_any_call("sun2", fake_sdf)
+        self.gazebo_helper.load_sdf_entity.assert_any_call("ground_plane", fake_sdf)
 
     def test_load_gazebo_world_file(self):
         self.gazebo_helper.load_gazebo_world = MagicMock()
@@ -140,8 +136,8 @@ class TestGazeboHelper(unittest.TestCase):
 
         self.gazebo_helper.load_gazebo_world.assert_called_with(models, lights)
 
-    def test_load_gazebo_sdf(self):
-        instance = self.gazebo_helper.spawn_model_proxy
+    def test_load_sdf_entity(self):
+        instance = self.gazebo_helper.spawn_entity_proxy
         sdf_xml = """<?xml version="1.0" ?>
         <sdf version="1.5">
           <model name='vr_poster'>
@@ -159,8 +155,8 @@ class TestGazeboHelper(unittest.TestCase):
             </link>
           </model>
         </sdf>"""
-        self.gazebo_helper.load_gazebo_sdf("toto", sdf_xml)
-        arg_initial_pose = self.gazebo_helper.spawn_model_proxy.call_args_list[0][0][3]
+        self.gazebo_helper.load_sdf_entity("toto", sdf_xml)
+        arg_initial_pose = self.gazebo_helper.spawn_entity_proxy.call_args_list[0][0][3]
         ptn = arg_initial_pose.position
         orn = arg_initial_pose.orientation
         self.assertEquals((ptn.x, ptn.y, ptn.z), (0, 0, 0))
@@ -171,15 +167,13 @@ class TestGazeboHelper(unittest.TestCase):
         test_pose = Pose()
         test_pose.position = Point(5, 3, 5)
         test_pose.orientation = Quaternion(1, 2, 3, 4)
-        self.gazebo_helper.load_gazebo_sdf("toto", sdf_xml, test_pose)
-        arg_initial_pose = self.gazebo_helper.spawn_model_proxy.call_args_list[1][0][3]
+        self.gazebo_helper.load_sdf_entity("toto", sdf_xml, test_pose)
+        arg_initial_pose = self.gazebo_helper.spawn_entity_proxy.call_args_list[1][0][3]
         self.assertEquals(arg_initial_pose, test_pose)
 
         # Testing with invalid XML
-        self.assertRaises(etree.XMLSyntaxError, self.gazebo_helper.load_gazebo_sdf, "toto", "invalid XML string")
+        self.assertRaises(etree.XMLSyntaxError, self.gazebo_helper.load_sdf_entity, "toto", "invalid XML string")
 
-    def test_load_light_sdf(self):
-        instance = self.gazebo_helper.spawn_light_proxy
         sdf_xml = """<?xml version="1.0" ?>
         <sdf version="1.5">
             <light name='sun2' type='directional'>
@@ -196,24 +190,24 @@ class TestGazeboHelper(unittest.TestCase):
               </attenuation>
             </light>
         </sdf>"""
-        self.gazebo_helper.load_light_sdf("light", sdf_xml)
-        arg_initial_pose = self.gazebo_helper.spawn_light_proxy.call_args_list[0][0][3]
+        self.gazebo_helper.load_sdf_entity("light", sdf_xml)
+        arg_initial_pose = self.gazebo_helper.spawn_entity_proxy.call_args_list[2][0][3]
         ptn = arg_initial_pose.position
         orn = arg_initial_pose.orientation
         self.assertEquals((ptn.x, ptn.y, ptn.z), (0, 0, 0))
         self.assertEquals((orn.x, orn.y, orn.z, orn.w), (0, 0, 0, 1))
-        self.assertEquals(instance.call_args_list[0][0][0], "light")
+        self.assertEquals(instance.call_args_list[2][0][0], "light")
 
         # Testing with given pose
         test_pose = Pose()
         test_pose.position = Point(5, 3, 5)
         test_pose.orientation = Quaternion(1, 2, 3, 4)
-        self.gazebo_helper.load_light_sdf("light", sdf_xml, test_pose)
-        arg_initial_pose = self.gazebo_helper.spawn_light_proxy.call_args_list[1][0][3]
+        self.gazebo_helper.load_sdf_entity("light", sdf_xml, test_pose)
+        arg_initial_pose = self.gazebo_helper.spawn_entity_proxy.call_args_list[3][0][3]
         self.assertEquals(arg_initial_pose, test_pose)
 
         # Testing with invalid XML
-        self.assertRaises(etree.XMLSyntaxError, self.gazebo_helper.load_light_sdf, "light", "invalid XML string")
+        self.assertRaises(etree.XMLSyntaxError, self.gazebo_helper.load_sdf_entity, "light", "invalid XML string")
 
     def test_empty_gazebo_world(self):
         self.gazebo_helper.empty_gazebo_world()
