@@ -26,8 +26,8 @@ class MapCSVRecorder(ParameterMappingSpecification):
         A transfer function using it could look like this:
 
         @nrp.MapRobotSubscriber("joint_state",
-                                Topic('/gazebo/joint_states',
-                                gazebo_msgs.msg.JointStates))
+                                Topic('/joint_states',
+                                sensor_msgs.msg.JointState))
         @nrp.MapCSVRecorder("recorder",
                             filename = "all_joints_positions.csv",
                             headers=["Name", "time", "Position"])
