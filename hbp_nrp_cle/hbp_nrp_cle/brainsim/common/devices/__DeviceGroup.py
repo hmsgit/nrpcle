@@ -16,11 +16,12 @@ class DeviceGroup(IDeviceGroup):
     and returns the property values as numpy array.
     """
 
-    def __init__(self, devices):
+    def __init__(self, cls, devices):
         """
         Initializes a device group
         """
         # use this form since __setattr__ is overridden
+        self.__dict__['device_type'] = cls
         self.__dict__['devices'] = devices
         self.__dict__['_spec'] = None
 
@@ -42,11 +43,11 @@ class DeviceGroup(IDeviceGroup):
             device = nested_device_type.create_new_device(
                 **cls._create_device_config(params, i))
             devices.append(device)
-        return cls(devices)
+        return cls(nested_device_type, devices)
 
     def __getitem__(self, index):
         if isinstance(index, (slice, numpy.ndarray)):
-            return DeviceGroup(self.devices[index])
+            return type(self)(self.device_type, self.devices[index])
         elif isinstance(index, int):
             return self.devices[index]
         else:
@@ -56,12 +57,21 @@ class DeviceGroup(IDeviceGroup):
         return len(self.devices)
 
     def __getattr__(self, attrname):
-        # TODO: This is actually a hack to enable a device group reset.
+        # This is required to enable a device group reset.
         if attrname == 'spec':
             return self.__dict__['_spec']
-
         if hasattr(DeviceGroup, attrname):
             return super(DeviceGroup, self).__getattr__(attrname)
+        return self.get(attrname)
+
+    def get(self, attrname):
+        """
+        Gets the specified attribute of all devices in the device group
+
+        :param attrname: The attribute to get
+        :return: A numpy array with all the values for the given attribute for all the devices
+        in this device group
+        """
         array = numpy.zeros(len(self.devices))
         i = 0
         for device in self.devices:
@@ -72,18 +82,28 @@ class DeviceGroup(IDeviceGroup):
     def __setattr__(self, attrname, value):
         if attrname in self.__dict__:
             self.__dict__[attrname] = value
-        # TODO: This is actually a hack to enable a device group reset.
+        # This is needed to enable a device group reset.
         elif attrname == 'spec':
             self.__dict__['_spec'] = value
         else:
-            if hasattr(value, '__getitem__'):
-                i = 0
-                for device in self.devices:
-                    setattr(device, attrname, value[i])
-                    i += 1
-            else:
-                for device in self.devices:
-                    setattr(device, attrname, value)
+            self.set(attrname, value)
+
+    def set(self, attrname, value):
+        """
+        Sets the specified attribute of all devices to the given value
+
+        :param attrname: The name of the attribute
+        :param value: The value that should be assigned to the attribute.
+        If this value is indexable, each device is assigned the respective index of the value
+        """
+        if hasattr(value, '__getitem__'):
+            i = 0
+            for device in self.devices:
+                setattr(device, attrname, value[i])
+                i += 1
+        else:
+            for device in self.devices:
+                setattr(device, attrname, value)
 
     def refresh(self, t):
         """
@@ -115,7 +135,7 @@ class DeviceGroup(IDeviceGroup):
         reset_devices = list()
         for device in self.devices:
             reset_devices.append(device.reset(transfer_function_manager))
-        return DeviceGroup(reset_devices)
+        return type(self)(self.device_type, reset_devices)
 
     @classmethod
     def _create_device_config(cls, params, index):

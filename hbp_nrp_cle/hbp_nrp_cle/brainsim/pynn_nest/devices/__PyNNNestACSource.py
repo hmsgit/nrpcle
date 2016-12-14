@@ -4,15 +4,24 @@ moduleauthor: probst@fzi.de
 '''
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNACSource
+from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
+    create_transformation
 import nest
 
 __author__ = 'DimitriProbst'
 
 
-class PyNNNestACSource(PyNNACSource):
+class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
     """
     Represents an alternating current generator.
     """
+
+    transformations = {
+        "amplitude": create_transformation("amplitude", 1000.0),
+        "offset": create_transformation("offset", 1000.0),
+        "frequency": create_transformation("frequency"),
+        "phase": create_transformation("phase")
+    }
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ

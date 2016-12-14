@@ -228,7 +228,6 @@ class Brain(object):
     """
     Represents a simple model of a generic brain.
     """
-
     def __init__(self, circuit):
         self.__circuit = circuit
 
