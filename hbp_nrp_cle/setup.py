@@ -9,7 +9,6 @@ except ImportError:
 
 import hbp_nrp_cle
 import pip
-import sys
 
 from pip.req import parse_requirements
 from optparse import Option
@@ -32,10 +31,9 @@ else:
 reqs = [str(ir.req) for ir in install_reqs]
 
 # workaround to avoid compilation of multiple numpy versions - see NRRPLT-4130
-if 'egg_info' in sys.argv:  # only for the main package (causes errors in other CI packages)
-    cython_req = next(r for r in reqs if r.startswith('cython'))
-    numpy_req = next(r for r in reqs if r.startswith('numpy'))
-    pip.main(['install', cython_req, numpy_req])
+cython_req = next(r for r in reqs if r.startswith('cython'))
+numpy_req = next(r for r in reqs if r.startswith('numpy'))
+pip.main(['install', '--no-clean', cython_req, numpy_req])
 
 config = {
     'description': 'Python Implementation of Closed Loop Engine',
