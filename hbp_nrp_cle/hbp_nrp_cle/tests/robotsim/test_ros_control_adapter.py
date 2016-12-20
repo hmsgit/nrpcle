@@ -166,8 +166,10 @@ class TestRosControlAdapter(unittest.TestCase):
         with LogCapture(rca_module_name) as logcapture:
             with LogCapture(user_notifications_module_name) as logcapture_user_notif:
                 # mock world (which is loaded during simulation startup)
-                world_models_sdf = {'model1': '<sdf/>', 'model2': '<sdf/>'}
-                world_lights_sdf = {"light1": '<sdf/>', "light2": '<sdf/>'}
+                mock_sdf = '<sdf/>'
+                world_models_sdf = {'model1': {'model_sdf': mock_sdf, 'model_state_sdf': mock_sdf},
+                                    'model2': {'model_sdf': mock_sdf, 'model_state_sdf': mock_sdf} }
+                world_lights_sdf = {"light1": mock_sdf, "light2": mock_sdf}
 
                 # mock current world status
                 mock_world_properties = GetWorldProperties()
@@ -182,7 +184,8 @@ class TestRosControlAdapter(unittest.TestCase):
                 # delete services
                 self._rca.gazebo_helper.delete_light_proxy = Mock(return_value=True)
                 self._rca.gazebo_helper.delete_model_proxy = Mock(return_value=True)
-                # spawn sdf services
+
+                # spawn sdf service
                 self._rca.gazebo_helper.spawn_sdf_entity_proxy = Mock(return_value=True)
 
                 # call the method under test
@@ -204,7 +207,7 @@ class TestRosControlAdapter(unittest.TestCase):
                 for model in models_to_delete_and_respawn:
                     self._rca.gazebo_helper.delete_model_proxy.assert_any_call(model)
 
-                # check reLoading                
+                # check reLoading
                 self.assertFalse(False in map(lambda c: c[0][0] in models_to_delete_and_respawn + lights_to_delete_and_respawn,
                                               self._rca.gazebo_helper.spawn_sdf_entity_proxy.call_args_list),
                                  'Some entity has not been re-spawned')

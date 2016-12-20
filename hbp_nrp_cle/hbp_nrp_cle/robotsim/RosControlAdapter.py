@@ -162,7 +162,8 @@ class RosControlAdapter(IRobotControlAdapter):
         """
         Resets the world (robot excluded) to the state described by
         models and lights
-        :param models: A dictionary containing pairs (model_name: model_sdf).
+        :param models: A dictionary containing pairs
+            (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf}).
         :param lights: A dictionary containing pairs (light_name: light sdf).
         """
         logger.debug("Resetting the Environment")
@@ -171,7 +172,7 @@ class RosControlAdapter(IRobotControlAdapter):
         # get the list of models' name currently the sim from gazebo
         world_properties = self.__get_world_properties()
 
-        # robot models doesn't belong to the environment, so discard them from the active set
+        # robot model doesn't belong to the environment, so discard them from the active set
         # we assume that the robot name contains the 'robot' substring
         active_model_set = \
             {m_name for m_name in world_properties.model_names if 'robot' not in m_name}
@@ -184,7 +185,7 @@ class RosControlAdapter(IRobotControlAdapter):
         # get from gazebo the name of the lights in the scene
         world_lights = self.gazebo_helper.get_lights_name_proxy()
 
-        # filter sun from the world lights
+        # filter out sun from the world lights
         active_lights_set = \
             {l_name for l_name in world_lights.light_names if 'sun' not in l_name}
         original_lights_set = frozenset(lights.keys())
@@ -215,5 +216,6 @@ class RosControlAdapter(IRobotControlAdapter):
         # respawn MODELS
         for model_name in original_model_set:
             user_notifications_logger.info("Loading: %s", model_name)
-            self.gazebo_helper.spawn_entity_proxy(model_name, models[model_name],
+
+            self.gazebo_helper.spawn_entity_proxy(model_name, models[model_name]['model_sdf'],
                                                   "", initial_pose, "")
