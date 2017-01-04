@@ -4,16 +4,23 @@ moduleauthor: probst@fzi.de
 '''
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNNCSource
+from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
+    create_transformation
 import nest
 
 __author__ = 'DimitriProbst'
 
 
-class PyNNNestNCSource(PyNNNCSource):
+class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
     """
     Represents a noisy current generator
     :param kwargs: Optional configuration parameters
     """
+
+    transformations = {
+        "mean": create_transformation("mean", 1000.0),
+        "stdev": create_transformation("std", 1000.0)
+    }
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ
