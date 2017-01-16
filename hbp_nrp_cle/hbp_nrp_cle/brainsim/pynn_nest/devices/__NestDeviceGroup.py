@@ -96,7 +96,7 @@ class PyNNNestDeviceGroup(DeviceGroup):
         :return: A numpy array with all the values for the given attribute for all the devices
         in this device group
         """
-        self.device_type.transformations[attrname][0](self.__dict__['_device_ids'])
+        return self.device_type.transformations[attrname][0](self.__dict__['_device_ids'])
 
     def set(self, attrname, value):
         """

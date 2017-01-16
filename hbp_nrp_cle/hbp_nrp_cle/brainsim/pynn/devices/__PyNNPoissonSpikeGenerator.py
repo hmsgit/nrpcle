@@ -52,7 +52,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         super(PyNNPoissonSpikeGenerator, self).__init__(**params)
 
-        self.__generator = None
+        self._generator = None
 
         self.create_device()
 
@@ -61,7 +61,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         Returns the frequency of the Poisson spike generator
         """
-        return self.__generator.get('rate')
+        return self._generator.get('rate')
 
     @rate.setter
     def rate(self, value):
@@ -70,13 +70,13 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
 
         :param value: float
         """
-        self.__generator.set(rate=value)
+        self._generator.set(rate=value)
 
     def create_device(self):
         """
         Create Poisson spike generator device
         """
-        self.__generator = sim.Population(1, sim.SpikeSourcePoisson(
+        self._generator = sim.Population(1, sim.SpikeSourcePoisson(
                 **self.get_parameters("duration",
                                       "start",
                                       "rate")))
@@ -156,7 +156,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             self._parameters["synapse_type"] = sim.StaticSynapse(**self.get_parameters("weight",
                                                                                        "delay"))
 
-        return sim.Projection(presynaptic_population=self.__generator,
+        return sim.Projection(presynaptic_population=self._generator,
                               postsynaptic_population=neurons,
                               **self.get_parameters("source",
                                                     "receptor_type",

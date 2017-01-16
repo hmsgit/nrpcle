@@ -8,7 +8,7 @@ from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDev
     create_transformation
 import nest
 
-__author__ = 'DimitriProbst, Sebastian Krach'
+__author__ = 'Georg Hinkel, DimitriProbst, Sebastian Krach'
 
 
 class PyNNNestDCSource(PyNNNestDevice, PyNNDCSource):
