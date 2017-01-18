@@ -9,6 +9,7 @@ __author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
 
 import rospy
 import os
+import tf.transformations
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SpawnEntity, GetWorldProperties, DeleteModel, SetModelState, \
     GetLightsName, DeleteLight
@@ -51,8 +52,9 @@ class GazeboHelper(object):
         Load a SDF world file into the ROS connected gazebo running instance.
 
         :param world_file: The absolute path of the SDF world file.
-        :return A pair of dictionaries, the first containing pairs (model_name: model_sdf),
-            the second pairs (light_name: light_sdf)
+        :return A pair of dictionaries:
+            1st containing pairs (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf}),
+            2nd second pairs (light_name: light_sdf)
         """
 
         with open(world_file, 'r') as world_file_sdf:
@@ -68,12 +70,13 @@ class GazeboHelper(object):
     def parse_world_file(world_string):
         """
         Parse an SDF world file producing a pair of dictionaries:
-        - (model_name: model_sdf)
+        - (model_name: (model_sdf, model_state_sdf))
         - (light_name: light_sdf)
 
         :param world_string: A string containing the SDF world.
-        :return A pair of dictionaries, the first containing pairs (model_name: model_sdf),
-            the second pairs (light_name: light_sdf)
+        :return A pair of dictionaries,
+            the 1st containing pairs (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf},
+            the 2nd pairs (light_name: light_sdf)
         """
         world_file_sdf = etree.fromstring(world_string)
 
@@ -96,19 +99,66 @@ class GazeboHelper(object):
             # Checking whether some extra state is defined in the SDF
             state = [x for x in models_state if x.xpath("@name")[0] == model_name]
             if len(state) != 0:
-                model.remove(model.find("pose"))
-                model.append(state[0].find("pose"))
-            models_sdf = sdf_wrapper % (etree.tostring(model), )
-            world_models_sdf[model_name] = models_sdf
+                model_state_sdf = etree.tostring(state[0])
+                model.remove(model.find("pose"))  # remove model pose
+                model.append(state[0].find("pose"))  # apply state pose
+            else:
+                model_state_sdf = None
+
+            model_sdf = sdf_wrapper % (etree.tostring(model), )
+            world_models_sdf[model_name] = \
+                {'model_sdf': model_sdf, 'model_state_sdf': model_state_sdf}
 
         return world_models_sdf, world_lights_sdf
+
+    @staticmethod
+    def parse_model_state_sdf(model_state_sdf):
+        """
+        Create a ModelState message using a model state sdf element
+
+        :param model_state_sdf: A string serialization of a model state sdf element
+        :return: A ModelState message
+        """
+
+        if model_state_sdf is None or model_state_sdf == '':
+            return None
+
+        model_state_root = etree.fromstring(model_state_sdf)
+        #no twist informations in sdf files
+
+        model_name = model_state_root.get('name')
+        scale_elem = model_state_root.find('scale')
+        scale_str = scale_elem.text if scale_elem is not None else None
+
+        pose_elem = model_state_root.find('pose')
+        pose_str = pose_elem.text if pose_elem is not None else None
+
+        reference_frame = pose_elem.get('frame') if pose_elem is not None else None
+
+        #parse pose and scale
+        if (scale_str is not None) and (pose_str is not None):
+            scale_values = [float(n) for n in scale_str.split(' ')]  # [x, y ,z]
+            pose_values = [float(n) for n in pose_str.split(' ')]  # [x, y ,z, roll, pitch, yaw]
+
+            pose = Pose()
+            pose.position = Point(*pose_values[0:3])
+            pose.orientation = \
+                Quaternion(*tf.transformations.quaternion_from_euler(*pose_values[3:6]))
+            scale = Vector3(*scale_values[0:3])
+        else:
+            pose = None
+            scale = None
+
+        return GazeboHelper.make_model_state_msg(model_name, pose, scale,
+                                                 reference_frame=reference_frame)
 
     def load_gazebo_world(self, models_sdf_dict, lights_sdf_dict):
         """
         Load a SDF world into the ROS connected gazebo running instance.
         The world is described by the models_sdf_dict and lights_sdf_dict dictionaries.
 
-        :param models_sdf_dict: A dictionary containing pairs (model_name: model_sdf)
+        :param models_sdf_dict: A dictionary containing pairs
+            (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf})
         :param lights_sdf_dict: A dictionary containing pairs (light_name: light_sdf)
         """
 
@@ -124,9 +174,14 @@ class GazeboHelper(object):
             self.load_sdf_entity(light_name, light_sdf)
 
         # Load models
-        for model_name, models_sdf in models_sdf_dict.items():
-            logger.info("Loading model \"%s\".", model_name)
-            self.load_sdf_entity(model_name, models_sdf)
+        for curr_model_name, curr_model_sdf in models_sdf_dict.items():
+            logger.info("Loading model \"%s\".", curr_model_name)
+
+            model_state_sdf = curr_model_sdf['model_state_sdf']
+            model_sdf = curr_model_sdf['model_sdf']
+
+            self.load_sdf_entity(curr_model_name, model_sdf)
+            self.set_model_state(model_state_sdf)
 
         logger.debug("World successfully loaded in Gazebo.")
 
@@ -175,18 +230,48 @@ class GazeboHelper(object):
         :param model_name: The model to reposition.
         :param pose: The new pose of the model, if None, it will be set to origin w/o rotation.
         """
+        msg = self.make_model_state_msg(model_name, pose)
+        self.set_model_state_proxy(msg)
+
+    def set_model_state(self, model_state_sdf):
+        """
+        Set a model state described by the model state sdf element string
+        :param model_state_sdf A string serialization of the model state sdf element
+        describing the model state to be set
+        """
+
+        msg = GazeboHelper.parse_model_state_sdf(model_state_sdf)
+
+        if msg is not None:
+            self.set_model_state_proxy(msg)
+
+    @staticmethod
+    def make_model_state_msg(model_name=None, pose=None, scale=None, twist=None,
+                             reference_frame=None):
+        """
+        ModelState messages factory
+        """
+
+        msg = ModelState()
+
+        msg.model_name = model_name if (model_name is not None) else 'model_name'
 
         if pose is None:
             pose = Pose()
             pose.position = Point(0, 0, 0)
             pose.orientation = Quaternion(0, 0, 0, 1)
-
-        msg = ModelState()
-        msg.model_name = model_name
         msg.pose = pose
-        msg.twist = Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
-        msg.reference_frame = "world"
-        self.set_model_state_proxy(msg)
+
+        msg.scale = scale if (scale is not None) else Vector3(1, 1, 1)
+
+        msg.twist = twist if (twist is not None) else Twist(Vector3(0, 0, 0), Vector3(0, 0, 0))
+
+        if reference_frame is None or reference_frame == '':
+            msg.reference_frame = 'world'
+        else:
+            msg.reference_frame = reference_frame
+
+        return msg
 
     def empty_gazebo_world(self):
         """

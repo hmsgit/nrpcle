@@ -107,16 +107,16 @@ class TestGazeboHelper(unittest.TestCase):
         normalised_sun2_sdf = file_to_normalized_xml_string('sun2.sdf')
         normalised_ground_plane_sdf = file_to_normalized_xml_string('ground_plane.sdf')
 
-        self.assertEquals(normalize_xml(models['ground_plane']), normalised_ground_plane_sdf)
+        self.assertEquals(normalize_xml(models['ground_plane']['model_sdf']), normalised_ground_plane_sdf)
         self.assertEquals(normalize_xml(lights['sun1']), normalised_sun1_sdf)
         self.assertEquals(normalize_xml(lights['sun2']), normalised_sun2_sdf)
 
     def test_load_gazebo_world(self):
         self.gazebo_helper.load_sdf_entity = MagicMock()
 
-        fake_sdf = '<sdf></sdf>'
-        fake_models = {'ground_plane': fake_sdf}
-        fake_lights = {'sun1': '<sdf></sdf>', 'sun2': fake_sdf}
+        fake_sdf = '<sdf/>'
+        fake_models = {'ground_plane': {'model_sdf': fake_sdf, 'model_state_sdf': fake_sdf}}
+        fake_lights = {'sun1': fake_sdf, 'sun2': fake_sdf}
 
         self.gazebo_helper.load_gazebo_world(fake_models, fake_lights)
 
@@ -130,7 +130,7 @@ class TestGazeboHelper(unittest.TestCase):
 
         wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_world.sdf")
 
-        # models = {'ground_plane': sdfGP }
+        # models = {'ground_plane': {'model_sdf': sdfGP, 'model_state_sdf': None} }
         # lights = {'sun1': sdf1, 'sun2': sdf1}
         models, lights = self.gazebo_helper.load_gazebo_world_file(wpath)
 
