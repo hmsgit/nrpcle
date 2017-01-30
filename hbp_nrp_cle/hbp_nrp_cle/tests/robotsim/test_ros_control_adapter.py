@@ -24,7 +24,8 @@ class TestRosControlAdapter(unittest.TestCase):
             '/gazebo/delete_model': self.__delete_model,
             '/gazebo/delete_light': self.__delete_light,
             '/gazebo/delete_lights': self.__delete_lights,
-            '/gazebo/get_lights_name': self.__get_lights_name
+            '/gazebo/get_lights_name': self.__get_lights_name,
+            '/gazebo/wait_for_rendering': self.__wait_for_rendering
         }[args[0]]
 
         for key, value in kwargs.items():
@@ -51,6 +52,7 @@ class TestRosControlAdapter(unittest.TestCase):
         self.__delete_model = MagicMock()
         self.__delete_lights = MagicMock()
         self.__get_lights_name = MagicMock()
+        self.__wait_for_rendering = MagicMock()
 
         async_proxy_mock.return_value = self.__advance_simulation
 

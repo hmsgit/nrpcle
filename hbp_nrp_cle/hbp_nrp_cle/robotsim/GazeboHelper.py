@@ -3,7 +3,7 @@ Helper class for gazebo loading operations
 """
 from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_ENTITY, GZROS_S_GET_WORLD_PROPERTIES, \
     GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, \
-    GZROS_S_GET_LIGHTS_NAME
+    GZROS_S_GET_LIGHTS_NAME, GZROS_S_WAIT_FOR_RENDERING
 
 __author__ = "Stefan Deser, Georg Hinkel, Luc Guyot"
 
@@ -37,6 +37,7 @@ class GazeboHelper(object):
         rospy.wait_for_service(GZROS_S_DELETE_LIGHT, TIMEOUT)
         rospy.wait_for_service(GZROS_S_DELETE_LIGHTS, TIMEOUT)
         rospy.wait_for_service(GZROS_S_GET_LIGHTS_NAME, TIMEOUT)
+        rospy.wait_for_service(GZROS_S_WAIT_FOR_RENDERING, TIMEOUT)
 
         self.spawn_entity_proxy = rospy.ServiceProxy(GZROS_S_SPAWN_SDF_ENTITY, SpawnEntity)
         self.get_world_properties_proxy = rospy.ServiceProxy(GZROS_S_GET_WORLD_PROPERTIES,
@@ -46,6 +47,7 @@ class GazeboHelper(object):
         self.delete_light_proxy = rospy.ServiceProxy(GZROS_S_DELETE_LIGHT, DeleteLight)
         self.delete_lights_proxy = rospy.ServiceProxy(GZROS_S_DELETE_LIGHTS, Empty)
         self.get_lights_name_proxy = rospy.ServiceProxy(GZROS_S_GET_LIGHTS_NAME, GetLightsName)
+        self.wait_for_rendering_proxy = rospy.ServiceProxy(GZROS_S_WAIT_FOR_RENDERING, Empty)
 
     def load_gazebo_world_file(self, world_file):
         """
@@ -287,3 +289,16 @@ class GazeboHelper(object):
 
         logger.info("Cleaning lights")
         self.delete_lights_proxy()
+
+    def wait_for_backend_rendering(self):
+        """
+        Wait for the backend rendering environment to be ready. Blocks until all world models and
+        lights are loaded in the rendering scene (only if needed, if there are no sensors or
+        cameras then a scene will not exist and this will not block).
+
+        This is necessary for sensors (e.g. cameras) that depend on the rendering environment to be
+        imeediately usable. The simulation will otherwise run, but the cameras and sensors will not
+        publish data until they are fully loaded.
+        """
+
+        self.wait_for_rendering_proxy()

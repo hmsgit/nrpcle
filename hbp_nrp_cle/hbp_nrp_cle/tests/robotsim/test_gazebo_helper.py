@@ -9,7 +9,7 @@ from lxml import etree, objectify
 from mock import patch, call, MagicMock
 from hbp_nrp_cle.robotsim import GZROS_S_SPAWN_SDF_ENTITY, GZROS_S_GET_WORLD_PROPERTIES, \
     GZROS_S_SET_MODEL_STATE, GZROS_S_DELETE_MODEL, GZROS_S_DELETE_LIGHT, GZROS_S_DELETE_LIGHTS, \
-    GZROS_S_GET_LIGHTS_NAME
+    GZROS_S_GET_LIGHTS_NAME, GZROS_S_WAIT_FOR_RENDERING
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
 from testfixtures import LogCapture
 
@@ -40,7 +40,8 @@ class TestGazeboHelper(unittest.TestCase):
             GZROS_S_DELETE_MODEL,
             GZROS_S_DELETE_LIGHT,
             GZROS_S_DELETE_LIGHTS,
-            GZROS_S_GET_LIGHTS_NAME
+            GZROS_S_GET_LIGHTS_NAME,
+            GZROS_S_WAIT_FOR_RENDERING
         ])
 
         self.assertEquals(services, waited)
