@@ -60,6 +60,15 @@ class IBrainDevice(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def _disconnect(self):
+        """
+        INTERNAL USE ONLY: this should never be directly invoked by a user.
+
+        Disconnects the brain device from any output neuron populations. This device will no longer
+        interact with the brain after disconnect is called.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class IDeviceGroup(IBrainDevice):  # pragma: no cover
     """
@@ -304,6 +313,14 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def unregister_spike_source(self, device):
+        """
+        Disconnects and unregisters the given spike generator device.
+
+        :param device: The spike generator device to deregister.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
     def register_spike_sink(self, neurons, spike_detector_type, **kwargs):  # -> ISpikeDetector:
         """
         Requests a communication object with the given spike detector type for the given set of
@@ -313,6 +330,14 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         :param spike_detector_type: A spike detector type (see :doc:`brain_adapter`)
         :param kwargs: A dictionary of configuration parameters
         :return: A Communication object
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def unregister_spike_sink(self, device):
+        """
+        Disconnects and unregisters the given spike detector device.
+
+        :param device: The spike detector device to deregister.
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

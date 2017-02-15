@@ -4,13 +4,14 @@ devices.
 '''
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
+from hbp_nrp_cle.brainsim.BrainInterface import IBrainDevice
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
 
 __author__ = 'Dimitri Probst, Sebastian Krach, Georg Hinkel'
 
 
-class PyNNLeakyIntegrator(AbstractBrainDevice):
+class PyNNLeakyIntegrator(AbstractBrainDevice, IBrainDevice):
     """
     Abstract super class of brain devices that represent neuronal spike activity by reading out
     the membrane potential of additional integrate and fire neurons. The concrete type of neuron
@@ -96,7 +97,13 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
         """
         Records the voltage of the neuron
         """
-        self._cell.record_v()
+        self._cell.record('v')
+
+    def stop_record_voltage(self):
+        """
+        Stops recording the voltage of the neuron
+        """
+        self._cell.record(None)
 
     def _update_parameters(self, params):
         """
@@ -165,6 +172,13 @@ class PyNNLeakyIntegrator(AbstractBrainDevice):
                                                     "receptor_type",
                                                     "synapse_type",
                                                     "label"))
+
+    def _disconnect(self):
+        """
+        Disconnects the leaky integrator by disabling recording, no new values
+        will be produced.
+        """
+        self.stop_record_voltage()
 
     # simulation time not necessary for this device
     # pylint: disable=W0613

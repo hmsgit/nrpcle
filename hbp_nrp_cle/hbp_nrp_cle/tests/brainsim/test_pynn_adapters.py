@@ -313,6 +313,32 @@ requested (device)'),
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device group)'))
 
+    def test_unregister_spike_source(self):
+        """
+        Tests the deregistration of the generator __devices
+        """
+        poisson = self.communicator.register_spike_source(self.neurons_cond,
+                                                          IPoissonSpikeGenerator)
+        self.communicator.unregister_spike_source(poisson)
+        self.assertEquals(poisson._generator, None)
+
+        dc = self.communicator.register_spike_source(self.neurons_cond, IDCSource)
+        self.communicator.unregister_spike_source(dc)
+        self.assertEquals(dc._generator, None)
+
+        ac = self.communicator.register_spike_source(self.neurons_cond, IACSource)
+        self.communicator.unregister_spike_source(ac)
+        self.assertEquals(ac._generator, None)
+
+        nc = self.communicator.register_spike_source(self.neurons_cond, INCSource)
+        self.communicator.unregister_spike_source(nc)
+        self.assertEquals(nc._generator, None)
+
+        fixed = self.communicator.register_spike_source(self.neurons_cond, IFixedSpikeGenerator)
+        self.communicator.unregister_spike_source(fixed)
+        self.assertEquals(fixed._generator, None)
+        self.assertEquals(fixed._currentsource, None)
+
     @log_capture('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
                  'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
                  'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')

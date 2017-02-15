@@ -67,7 +67,9 @@ def transform_camera(t, camera, camera_device):
     def test_tf_set(self):
         nrp.start_new_tf_manager()
         brain = MockBrainCommunicationAdapter()
+        robot = MockRobotCommunicationAdapter()
         config.active_node.brain_adapter = brain
+        config.active_node.robot_adapter = robot
         config.active_node.initialize_tf = MagicMock(return_value=None)
 
         @nrp.MapSpikeSink("neuron0", nrp.brain.actors[slice(0, 2, 1)], nrp.leaky_integrator_alpha,

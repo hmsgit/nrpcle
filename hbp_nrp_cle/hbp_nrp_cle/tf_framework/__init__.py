@@ -267,17 +267,28 @@ def delete_transfer_function(name):
     result = True
     tf = get_transfer_function(name)
     if tf in config.active_node.n2r:
+
+        config.active_node.n2r.remove(tf)
+        tf.unregister()
+
         for i in range(1, len(tf.params)):
             if tf.params[i] in config.active_node.brain_adapter.detector_devices:
-                config.active_node.brain_adapter.detector_devices.remove(tf.params[i])
+                config.active_node.brain_adapter.unregister_spike_sink(tf.params[i])
+            elif tf.params[i] in config.active_node.robot_adapter.published_topics:
+                config.active_node.robot_adapter.unregister_publish_topic(tf.params[i])
             if isinstance(tf.params[i], ICleanableTransferFunctionParameter):
                 tf.params[i].cleanup()
-        config.active_node.n2r.remove(tf)
+
     elif tf in config.active_node.r2n:
+
         config.active_node.r2n.remove(tf)
+        tf.unregister()
+
         for i in range(1, len(tf.params)):
             if tf.params[i] in config.active_node.brain_adapter.generator_devices:
-                config.active_node.brain_adapter.generator_devices.remove(tf.params[i])
+                config.active_node.brain_adapter.unregister_spike_source(tf.params[i])
+            elif tf.params[i] in config.active_node.robot_adapter.subscribed_topics:
+                config.active_node.robot_adapter.unregister_subscribe_topic(tf.params[i])
             if isinstance(tf.params[i], ICleanableTransferFunctionParameter):
                 tf.params[i].cleanup()
     else:

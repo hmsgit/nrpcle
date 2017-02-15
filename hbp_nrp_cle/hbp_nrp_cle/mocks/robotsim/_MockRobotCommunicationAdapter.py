@@ -123,7 +123,7 @@ class MockPublishedTopic(IRobotPublishedTopic):
         """
         return self.__sent
 
-    def unregister(self):
+    def _unregister(self):
         """
         Unregister the Topic. Meaningless for mocks
         """
@@ -166,3 +166,9 @@ class MockSubscribedTopic(IRobotSubscribedTopic):
         """
         self.__changed = (value != self.__value)
         self.__value = value
+
+    def _unregister(self):
+        """
+        Unregister the Topic. Meaningless for mocks
+        """
+        pass

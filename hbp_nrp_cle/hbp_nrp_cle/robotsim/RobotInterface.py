@@ -64,6 +64,14 @@ class PreprocessedTopic(Topic):
         """
         return self.__pre_processing
 
+    def _unregister(self):
+        """
+        INTERNAL USE ONLY: this should never be directly invoked by a user.
+
+        Unregister the Topic. After this call, nobody can publish or receive messages anymore.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class IRobotPublishedTopic(object):  # pragma: no cover
     """
@@ -87,12 +95,13 @@ class IRobotPublishedTopic(object):  # pragma: no cover
         """
         return self
 
-    def unregister(self):
+    def _unregister(self):
         """
-        Unregister the Topic. After this call, nobody can publish
-        anymore.
+        INTERNAL USE ONLY: this should never be directly invoked by a user.
+
+        Unregister the Topic. After this call, nobody can publish.
         """
-        pass
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
 class IRobotSubscribedTopic(object):  # pragma: no cover
@@ -123,6 +132,14 @@ class IRobotSubscribedTopic(object):  # pragma: no cover
         :return: The reset adapter
         """
         return self
+
+    def _unregister(self):
+        """
+        INTERNAL USE ONLY: this should never be directly invoked by a user.
+
+        Unregister the Topic. After this call, nobody can receive messages anymore.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
 class IRobotCommunicationAdapter(object):  # pragma: no cover
@@ -165,6 +182,16 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         self.__subscribed_topics.append(subscriber)
         return subscriber
 
+    def unregister_subscribe_topic(self, topic):
+        """
+        Unregisters and removes the given subscriber topic object.
+
+        :param topic The IRobotSubscribedTopic to unregister.
+        """
+        topic._unregister() # pylint: disable=protected-access
+        if topic in self.__subscribed_topics:
+            self.__subscribed_topics.remove(topic)
+
     def register_publish_topic(self, topic, **kwargs):  # -> IRobotPublishedTopic:
         """
         Requests a publisher object for the given topic
@@ -176,6 +203,16 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         publisher = self.create_topic_publisher(topic, kwargs)
         self.__published_topics.append(publisher)
         return publisher
+
+    def unregister_publish_topic(self, topic):
+        """
+        Unregisters and removes the given publisher topic object.
+
+        :param topic The IRobotPublishedTopic to unregister.
+        """
+        topic._unregister() # pylint: disable=protected-access
+        if topic in self.__published_topics:
+            self.__published_topics.remove(topic)
 
     def create_topic_subscriber(self, topic, config):  # -> IRobotSubscribedTopic:
         """

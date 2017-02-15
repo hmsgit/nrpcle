@@ -78,9 +78,9 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         Closes any connections created by the adapter
         """
         for publisher in self.published_topics:
-            publisher.unregister()
+            publisher._unregister()  # pylint: disable=protected-access
         for subscriber in self.subscribed_topics:
-            subscriber.unregister()
+            subscriber._unregister() # pylint: disable=protected-access
 
 
 class RosPublishedTopic(IRobotPublishedTopic):
@@ -114,13 +114,14 @@ class RosPublishedTopic(IRobotPublishedTopic):
         else:
             logger.error("Trying to publish messages on an unregistered topic")
 
-    def unregister(self):
+    def _unregister(self):
         """
         Unregister the Topic. After this call, nobody can publish
         anymore.
         """
-        self.__pub.unregister()
-        self.__pub = None
+        if self.__pub:
+            self.__pub.unregister()
+            self.__pub = None
 
 
 class RosPublishedPreprocessedTopic(RosPublishedTopic):
@@ -207,12 +208,13 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         self.__value = None
         return self
 
-    def unregister(self):
+    def _unregister(self):
         """
         Detaches the subscribed topic from ROS
         """
-        self.__subscriber.unregister()
-        self.__subscriber = None
+        if self.__subscriber:
+            self.__subscriber.unregister()
+            self.__subscriber = None
 
 
 class RosSubscribedPreprocessedTopic(RosSubscribedTopic):

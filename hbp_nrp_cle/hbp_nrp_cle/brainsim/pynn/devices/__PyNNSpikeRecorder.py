@@ -67,6 +67,12 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
 
         self._neurons.record('spikes', to_file=False)
 
+    def _stop_record_spikes(self):
+        """
+        Stops recording the spikes of "neurons"
+        """
+        self._neurons.record(None)
+
     def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
@@ -77,6 +83,15 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         """
         self._neurons = neurons
         self._start_record_spikes()
+
+    def _disconnect(self):
+        """
+        Stops recording spikes from neurons. This device cannot be used to record again
+        after this call.
+        """
+        if self._neurons:
+            self._stop_record_spikes()
+            self._neurons = None
 
     @property
     def neurons(self):

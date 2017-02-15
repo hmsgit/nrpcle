@@ -95,3 +95,6 @@ class Robot2Neuron(TransferFunction):
 
     def __repr__(self):  # pragma: no cover
         return "{0} transfers to neurons {1}".format(self.name, self._params)
+
+    def unregister(self):
+        pass

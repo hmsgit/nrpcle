@@ -125,6 +125,15 @@ class DeviceGroup(IDeviceGroup):
         for pop_index, (pop, dev) in enumerate(zip(neurons, self.devices)):
             dev.connect(pop, **self._create_device_config(params, pop_index))
 
+    def _disconnect(self):
+        """
+        Disconnects all of the underlying devices and clears the device list, this
+        device group will be unusable after this call.
+        """
+        for device in self.devices:
+            device._disconnect() # pylint: disable=protected-access
+        self.devices[:] = []
+
     def reset(self, transfer_function_manager):
         """
         Resets the nested devices

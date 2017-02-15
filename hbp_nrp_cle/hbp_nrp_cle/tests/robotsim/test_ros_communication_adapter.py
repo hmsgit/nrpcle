@@ -115,7 +115,7 @@ class TestRosCommunicationAdapter(unittest.TestCase):
         rpt.send_message('message')
         self.assertEquals(pub.publish.call_count, 1)
         self.assertEquals(pub.publish.call_args_list[0][0][0], 'message')
-        rpt.unregister()
+        rpt._unregister()
         rpt.send_message('message')
         self.assertEquals(pub.publish.call_count, 1)
 
@@ -123,7 +123,7 @@ class TestRosCommunicationAdapter(unittest.TestCase):
     def test_rpt_unregister(self, mock_rospy_publisher):
         rpt = RosPublishedTopic(Topic('topic_name', 'topic_type'))
         pub = mock_rospy_publisher.return_value
-        rpt.unregister()
+        rpt._unregister()
         self.assertEquals(pub.unregister.call_count, 1)
 
     # Tests for RosPublishedPreprocessedTopic

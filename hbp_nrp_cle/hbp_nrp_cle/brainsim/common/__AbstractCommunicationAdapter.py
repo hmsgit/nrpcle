@@ -85,6 +85,18 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
         self.__generator_devices.append(device)
         return device
 
+    def unregister_spike_source(self, device):
+        """
+        Disconnects and unregisters the given spike generator device.
+
+        :param device: The spike generator device to deregister.
+        """
+        device._disconnect() # pylint: disable=protected-access
+        try:
+            self.__generator_devices.remove(device)
+        except ValueError:
+            logger.warn('Attempting to unregister untracked generator device.')
+
     def register_spike_sink(self, populations, spike_detector_type, **params):
         """
         Requests a communication object with the given spike detector type
@@ -104,6 +116,28 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
         if hasattr(device, "finalize_refresh"):
             self.__finalizable_devices.append(device)
         return device
+
+    def unregister_spike_sink(self, device):
+        """
+        Disconnects and unregisters the given spike detector device.
+
+        :param device: The spike detector device to deregister.
+        """
+        device._disconnect() # pylint: disable=protected-access
+        try:
+            self.__detector_devices.remove(device)
+        except ValueError:
+            logger.warn('Attempting to unregister untracked detector device.')
+
+        # optional registractions based on device type
+        try:
+            self.__refreshable_devices.remove(device)
+        except ValueError:
+            pass
+        try:
+            self.__finalizable_devices.remove(device)
+        except ValueError:
+            pass
 
     def refresh_buffers(self, t):
         """

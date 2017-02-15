@@ -193,3 +193,10 @@ class TransferFunction(object):
         :param rca_changed: True, if the robot communication adapter has changed
         """
         pass
+
+    @abstractmethod
+    def unregister(self):
+        """
+        Unregister any devices specific to this transfer function implementation.
+        """
+        raise Exception("Must be implemented by concrete realization of transfer function.")

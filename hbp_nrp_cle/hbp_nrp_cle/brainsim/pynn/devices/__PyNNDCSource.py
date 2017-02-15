@@ -69,3 +69,12 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
             Assembly object
         """
         self._generator.inject_into(neurons)
+
+    def _disconnect(self):
+        """
+        Disconnects the device by setting amplitude to 0 since we cannot delete the device or
+        connection directly via PyNN.
+        """
+        if self._generator:
+            self.amplitude = 0.0
+            self._generator = None

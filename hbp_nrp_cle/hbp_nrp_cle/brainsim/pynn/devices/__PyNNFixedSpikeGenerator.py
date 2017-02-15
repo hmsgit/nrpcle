@@ -165,6 +165,16 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
                                                     "synapse_type",
                                                     "label"))
 
+    def _disconnect(self):
+        """
+        Disconnects the device by setting rate to 0 since we cannot delete the device or
+        connection directly via PyNN.
+        """
+        if self._currentsource:
+            self.rate = 0.0
+            self._generator = None
+            self._currentsource = None
+
     def _update_parameters(self, params):
         """
         This method updates the device parameter dictionary with the provided parameter

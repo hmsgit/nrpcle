@@ -183,3 +183,14 @@ class Neuron2Robot(TransferFunction):
             topic_publisher = self.__main_topic
             if topic_publisher is not None:
                 topic_publisher.send_message(return_value)
+
+    def unregister(self):
+        """
+        Unregister the main robot topic publisher, this TF will no longer
+        be able to publish messages to the robot.
+        """
+        topic_publisher = self.__main_topic
+        if topic_publisher is not None:
+            self.__main_topic = None
+            if hasattr(topic_publisher, "unregister"):
+                topic_publisher.unregister()

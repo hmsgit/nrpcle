@@ -49,6 +49,9 @@ class AbstractMockBrainDevice(AbstractBrainDevice):
     def connect(self, neurons, **params):
         pass
 
+    def _disconnect(self):
+        pass
+
     @classmethod
     def create_new_device_group(cls, length, params):
         return MockDeviceGroup.create_new_device_group(cls, length, params)

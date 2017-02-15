@@ -36,7 +36,6 @@ class NeuronMonitor(TransferFunction):
         :param monitor_type: The type of monitor that should be injected
         """
         super(NeuronMonitor, self).__init__()
-        self.__publisher_spec = MapRobotPublisher
         self.__count = 0
 
         _topic = None
@@ -146,3 +145,15 @@ class NeuronMonitor(TransferFunction):
                 self.__handler(t)
         except Exception, e:
             self._handle_error(e)
+
+    def unregister(self):
+        """
+        Unregisters the device for this transfer function. It will no longer produce
+        messages.
+
+        Leave the publisher alone otherwise the console fills with many warnings about
+        the topic not being published, without a device it won't be usable anyway.
+        """
+        if self.device:
+            self.device._disconnect() # pylint: disable=protected-access
+            self.device = None

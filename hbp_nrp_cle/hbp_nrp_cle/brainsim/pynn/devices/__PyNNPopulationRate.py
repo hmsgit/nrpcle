@@ -120,6 +120,16 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
                               connector=connector, receptor_type='excitatory',
                               synapse_type=synapse_type)
 
+    def _disconnect(self):
+        """
+        Disconnects the rate recorder by disabling voltage recording and setting
+        rate to 0 since we cannot delete the neuron or synapses via PyNN.
+        """
+        if self._cell:
+            self._cell.record(None)
+            self._cell = None
+            self._rate = 0
+
     # simulation time not necessary for this device
     # pylint: disable=unused-argument
     def refresh(self, time):

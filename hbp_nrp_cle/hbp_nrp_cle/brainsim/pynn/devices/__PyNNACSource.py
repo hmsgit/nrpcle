@@ -126,3 +126,15 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
             Assembly object
         """
         self._generator.inject_into(neurons)
+
+    def _disconnect(self):
+        """
+        Disconnects the device by setting all output to 0 since we cannot delete the device or
+        connection directly via PyNN.
+        """
+        if self._generator:
+            self.amplitude = 0.0
+            self.offset = 0.0
+            self.frequency = 0.0
+            self.phase = 0.0
+            self._generator = None

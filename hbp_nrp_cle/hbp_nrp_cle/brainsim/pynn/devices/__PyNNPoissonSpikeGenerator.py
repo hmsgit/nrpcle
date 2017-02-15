@@ -163,3 +163,12 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
                                                     "connector",
                                                     "synapse_type",
                                                     "label"))
+
+    def _disconnect(self):
+        """
+        Disconnects the device by setting rate to 0 since we cannot delete the device or
+        connection directly via PyNN.
+        """
+        if self._generator:
+            self.rate = 0.0
+            self._generator = None
