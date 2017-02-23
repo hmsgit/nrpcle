@@ -613,6 +613,7 @@ requested (device)'))
         self.assertEquals(len(self.communicator.refreshable_devices), 0)
         self.assertEquals(len(self.communicator.finalizable_devices), 0)
 
+        self.assertFalse(self.control.is_initialized)
         self.assertFalse(self.communicator.is_initialized)
 
     def tearDown(self):

@@ -42,6 +42,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         import hbp_nrp_cle.tf_framework.config as tf_config
         tf_config.brain_populations = self.populations_using_json_slice(populations)
         extension = path.splitext(network_file)[1]
+
         if extension == ".py":
             self.__load_python_brain(
                 network_file,
@@ -124,6 +125,13 @@ class PyNNControlAdapter(IBrainControlAdapter):
                 populations.append(PyNNPopulationInfo(candidate, member))
         return populations
 
+    @property
+    def is_initialized(self):
+        """
+        Gets a value indicating whether initialize has been called
+        """
+        return self.__is_initialized
+
     def is_alive(self):  # -> bool:
         """
         Gets a status whether the neuronal simulator is still alive
@@ -145,6 +153,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         Shuts down the neuronal simulator
         """
         self.__is_alive = False
+        self.__is_initialized = False
         sim.end()
         logger.info("neuronal simulator ended")
 
