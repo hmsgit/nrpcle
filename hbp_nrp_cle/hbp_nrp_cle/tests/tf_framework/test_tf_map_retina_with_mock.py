@@ -26,6 +26,7 @@ import unittest
 import hbp_nrp_cle.tf_framework as nrp
 from hbp_nrp_cle.tf_framework import config
 from mock import patch
+import pyretina
 
 __author__ = 'jacqueskaiser'
 
@@ -44,12 +45,16 @@ class TestTransferFunctionRetina(unittest.TestCase):
         config.brain_root = brain
 
     @patch('pyretina.Retina')
-    def test_tf_map_retina(self, mock_retina_interface_nest):
-        mock_retina_interface_nest.return_value = nrp.PyRetinaWrapper('fakeretina')
-        @nrp.MapRetina("retina", "someConfig.py")
+    @patch('hbp_nrp_cle.tf_framework._GlobalData.MapRetina.create_adapter')
+    @patch('hbp_nrp_cle.tf_framework.Neuron2Robot.run')
+    def test_tf_map_retina(self, mock_retina_interface_nest, create_adapter_mock, run_mock):
+        create_adapter_mock.return_value = pyretina.Retina()
+        # The file is existing, though it's not a valid configuration, this is not a problem because
+        # we're not executing it
+        @nrp.MapRetina("retina", __file__)
         @nrp.Neuron2Robot(Topic("/vars/shared1", list))
         def echo_shared_var(t, retina):
-            ret = [ isinstance(retina, nrp.PyRetinaWrapper),
+            ret = [ isinstance(retina, pyretina.Retina),
                     hasattr(retina, 'update'),
                     hasattr(retina, 'reset'),
                     hasattr(retina, 'getValue') ]
@@ -62,15 +67,8 @@ class TestTransferFunctionRetina(unittest.TestCase):
         for assertion in topic1.sent:
             self.assertTrue(assertion)
 
-    @patch('pyretina.Retina')
-    def test_tf_map_retina_not_found(self, mock_retina_interface_nest):
-        mock_retina_interface_nest.side_effect = ValueError('no such file')
-        @nrp.MapRetina("retina", "dontexist.py")
-        @nrp.Neuron2Robot(Topic("/vars/shared1", list))
-        def echo_shared_var(t, retina):
-            return 1
-
-        self.assertRaises(ValueError, nrp.initialize, "MyTransferFunctions")
+    def test_tf_map_retina_not_found(self):
+        self.assertRaises(AttributeError, nrp.MapRetina, "retina", "not_existing_file.py")
 
 
 if __name__ == "__main__":

@@ -26,50 +26,12 @@ from ._MappingSpecification import ParameterMappingSpecification
 import abc
 import logging
 import pyretina
+import os.path
 
 logger = logging.getLogger(__name__)
 
 GLOBAL = "global_scope"
 TRANSFER_FUNCTION_LOCAL = "transfer_function_scope"
-
-
-class PyRetinaWrapper(object):
-    """
-    Class to wrap a retina object
-    """
-
-    def __init__(self, retina):
-        """
-        Wraps a retina object
-
-        :param retina: a retina object
-        """
-        self.__retina = retina
-
-    # pylint: disable=unused-argument
-    def reset(self, transfer_function_manager):
-        """
-        Reset a retina
-        """
-        return self
-
-    def update(self, image):
-        """
-        Update a retina with respect to an image
-
-        :param image: a cv2 image
-        """
-        return self.__retina.update(image)
-
-    def getValue(self, x, y, layer_name):
-        """
-        Read activation of a retina neuron
-
-        :param x: the x coordinate of the retina neuron
-        :param y: the y coordinate of the retina neuron
-        :param layer_name: the name of the layer of the retina neuron
-        """
-        return self.__retina.getValue(x, y, layer_name)
 
 
 class MapVariable(ParameterMappingSpecification):
@@ -131,7 +93,10 @@ class MapRetina(ParameterMappingSpecification):
         :param parameter_name: the name of the parameter
         :param config: the selected config file
         """
-        self.retina_config_file = config
+        if os.path.isfile(config):
+            self.retina_config_file = config
+        else:
+            raise AttributeError("The specified path for the retina configuration file is invalid.")
         super(MapRetina, self).__init__(parameter_name)
 
     # pylint: disable=unused-argument
@@ -139,8 +104,9 @@ class MapRetina(ParameterMappingSpecification):
         """
         Replaces the current mapping operator with the mapping result
         """
-        retina = pyretina.Retina(self.retina_config_file)
-        return PyRetinaWrapper(retina)
+        retina = pyretina.Retina()
+        execfile(self.retina_config_file)
+        return retina
 
 
 class DataReference(object):

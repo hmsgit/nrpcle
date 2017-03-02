@@ -43,8 +43,6 @@ class MapRobotPublisher(ParameterMappingSpecification):
 
         :param key: the name of the parameter
         :param value: the value for the parameter
-        :param subscribe: A boolean value indicating whether the topic should be subscribed
-         or published to
         :param kwargs: Additional configuration parameters
         """
         super(MapRobotPublisher, self).__init__(key)
