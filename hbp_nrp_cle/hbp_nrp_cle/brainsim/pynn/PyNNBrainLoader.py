@@ -211,10 +211,10 @@ def load_py_network(path, **populations):
     __brainIndex += 1
     try:
         circuit = brain_module.circuit
-        logger.info("Found circuit")
+        logger.debug("Found circuit")
         for p in populations:
             neurons = circuit[populations[p]]
-            logger.info("Population '%s': %s", p, neurons)
+            logger.debug("Population '%s': %s", p, neurons)
             brain_module.__dict__[p] = neurons
     except AttributeError:
         if len(populations) > 0:
