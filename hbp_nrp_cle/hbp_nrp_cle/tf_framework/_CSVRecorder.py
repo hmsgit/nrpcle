@@ -44,8 +44,8 @@ class MapCSVRecorder(ParameterMappingSpecification):
         when the simulation is reset
         """
         super(MapCSVRecorder, self).__init__(parameter_name)
-        self.__filename = filename
-        self.__headers = headers
+        self.filename = filename
+        self.headers = headers
         self.__erase_on_reset = erase_on_reset
 
     def create_adapter(self, transfer_function_manager): # pylint: disable=unused-argument
@@ -54,7 +54,7 @@ class MapCSVRecorder(ParameterMappingSpecification):
 
         :return: A ready to use CSVRecorder object
         """
-        return CSVRecorder(self.__filename, self.__headers, self.__erase_on_reset)
+        return CSVRecorder(self.filename, self.headers, self.__erase_on_reset)
 
 
 class CSVRecorder(ICleanableTransferFunctionParameter):
