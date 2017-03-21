@@ -47,14 +47,15 @@ class NeuronMonitor(TransferFunction):
         elif monitor_type is ILeakyIntegratorExp:
             self.__handler = self.__send_leaky_integrator
             _topic = LEAKY_INTEGRATOR_EXP_TOPIC
-        elif type is ILeakyIntegratorAlpha:
+        elif monitor_type is ILeakyIntegratorAlpha:
             self.__handler = self.__send_leaky_integrator
             _topic = LEAKY_INTEGRATOR_ALPHA_TOPIC
         elif monitor_type is IPopulationRate:
             self.__handler = self.__send_population_rate
             _topic = POPULATION_RATE_TOPIC
         else:
-            raise Exception("Type {0} is not a supported monitor type".format(type))
+            raise Exception("Type {0} is not a supported monitor type"
+                            .format(monitor_type.__name__))
 
         self.__publisher_spec = MapRobotPublisher("publisher", Topic(_topic, _type))
         self.__device_spec = MapSpikeSink("device", neurons, monitor_type)
