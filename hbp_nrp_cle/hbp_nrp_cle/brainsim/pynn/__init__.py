@@ -58,3 +58,10 @@ class PyNNPopulationInfo(PopulationInfo):
         Gets the global unique identifiers for this population
         """
         return [long(i) for i in self.__population.all()]
+
+    @property
+    def indices(self):
+        """
+        Gets the population info indices
+        """
+        return [i.parent.id_to_index(i) for i in self.__population.all()]

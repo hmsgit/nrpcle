@@ -38,6 +38,13 @@ class PopulationInfo(object): # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    @property
+    def indices(self):
+        """
+        Gets the population indices
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class IBrainDevice(object):  # pragma: no cover
     """
