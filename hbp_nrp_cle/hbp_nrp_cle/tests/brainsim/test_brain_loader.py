@@ -48,6 +48,14 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertEqual(1, len(first))
         self.assertEqual(2, len(second))
 
+    def test_load_population_slice_out_of_bounds(self):
+        """
+        Tests loading a population with a slice out of bounds
+        """
+        directory = os.path.split(__file__)[0]
+        filename = os.path.join(directory, 'DummyBrainModel.py')
+        self.assertRaises(Exception, BrainLoader.load_py_network, filename, first=slice(0, 4))
+
     def test_load_python_network_exception(self):
         """
         Tests loading a Python brain model

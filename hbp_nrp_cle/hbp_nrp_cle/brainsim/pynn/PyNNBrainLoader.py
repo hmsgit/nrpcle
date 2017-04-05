@@ -213,8 +213,13 @@ def load_py_network(path, **populations):
         circuit = brain_module.circuit
         logger.debug("Found circuit")
         for p in populations:
-            neurons = circuit[populations[p]]
+            population = populations[p]
+            neurons = circuit[population]
             logger.debug("Population '%s': %s", p, neurons)
+            if isinstance(population, slice):
+                expected_size = abs((population.start - population.stop) / (population.step or 1))
+                if neurons.size != expected_size:
+                    raise Exception("Population '%s' out of bounds" % p)
             brain_module.__dict__[p] = neurons
     except AttributeError:
         if len(populations) > 0:
