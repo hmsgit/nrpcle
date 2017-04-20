@@ -34,7 +34,7 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
     """
 
     default_parameters = {
-        "amplitude": 1.0,
+        "amplitude": 0.0,
         "offset": 0.0,
         "frequency": 10.0,
         "phase": 0.0,

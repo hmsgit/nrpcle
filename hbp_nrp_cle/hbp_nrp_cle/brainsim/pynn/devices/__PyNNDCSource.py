@@ -34,7 +34,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
     """
 
     default_parameters = {
-        "amplitude": 1.0,
+        "amplitude": 0.0,
         "start": 0.0,
         "stop": float("inf")
     }
