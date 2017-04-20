@@ -79,7 +79,7 @@ import sensor_msgs.msg
 import gazebo_msgs.msg
 import hbp_nrp_cle.tf_framework.monitoring
 import hbp_nrp_cle.tf_framework.tf_lib
-from hbp_nrp_cle.logs import clientLogger
+from hbp_nrp_excontrol.logs import clientLogger
 from geometry_msgs.msg import Point, Pose, Quaternion
 from std_msgs.msg import Float32, Int32, String
 from cv_bridge import CvBridge

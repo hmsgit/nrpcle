@@ -51,7 +51,6 @@ config = {
                  'hbp_nrp_cle.brainsim.pynn_nest',
                  'hbp_nrp_cle.brainsim.pynn_nest.devices',
                  'hbp_nrp_cle.cle',
-                 'hbp_nrp_cle.logs',
                  'hbp_nrp_cle.mocks',
                  'hbp_nrp_cle.mocks.brainsim',
                  'hbp_nrp_cle.mocks.brainsim.__devices',

@@ -1,3 +1,6 @@
+# HBP requirements
+hbp-nrp-excontrol==1.2.0
+
 # other requirements
 cython==0.23.4
 numpy==1.11.0
