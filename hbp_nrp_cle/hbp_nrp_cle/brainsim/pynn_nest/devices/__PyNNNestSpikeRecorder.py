@@ -35,6 +35,14 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
     neurons has spiked, otherwise a "0"
     """
 
+    def __init__(self, **params):
+        """
+        Represents a device which returns a "1" whenever one of the recorded
+        neurons has spiked, otherwise a "0"
+        """
+        super(PyNNNestSpikeRecorder, self).__init__(**params)
+        self.__use_ids = self.get_parameters().get("use_ids")
+
     # pylint: disable=protected-access
     def _start_record_spikes(self):
         """
@@ -67,6 +75,13 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
         nest_info = nest.GetStatus(nest_device, 'events')[0]
         times_nest = nest_info['times']
         spikes_nest = nest_info['senders']
+        if not self.__use_ids:
+            for i in range(len(spikes_nest) - 1, -1, -1):
+                try:
+                    spikes_nest[i] = self._neurons.id_to_index(int(spikes_nest[i]))
+                except IndexError:
+                    del spikes_nest[i]
+                    del times_nest[i]
         self._spikes = np.array([spikes_nest, times_nest]).T
 
     # simulation time not necessary for this device
