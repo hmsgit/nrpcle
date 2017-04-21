@@ -20,10 +20,11 @@
 Tests for the PropertyPath module
 """
 
-__author__ = 'GeorgHinkel'
+__author__ = 'Georg Hinkel'
 
 import unittest
 import hbp_nrp_cle.tf_framework as nrp
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
 
 
 class Dummy(object):
@@ -45,33 +46,36 @@ class PropertyPathTests(unittest.TestCase):
 
     def setUp(self):
         self.dummy = Dummy([0, 8, 15])
+        self.bca = MockBrainCommunicationAdapter()
 
     def test_root(self):
         root = nrp.brain
 
         self.assertEqual("(root)", root.__repr__())
-        self.assertIs(self.dummy, root.select(self.dummy))
+        self.assertIs(self.dummy, root.select(self.dummy, self.bca))
 
     def test_item(self):
         root = nrp.brain
         item = root.item
 
         self.assertEqual("(root).item", item.__repr__())
-        self.assertIs(self.dummy.item, item.select(self.dummy))
+        self.assertIs(self.dummy.item, item.select(self.dummy, self.bca))
 
     def test_index_slice(self):
         root = nrp.brain
         index = root[0:2]
 
         self.assertEqual("(root)[slice(0, 2, None)]", index.__repr__())
-        self.assertEqual(self.dummy.item[0:2], index.select(self.dummy.item))
+        self.assertEqual(self.dummy.item[0:2], index.select(self.dummy.item, self.bca))
 
     def test_index_int(self):
         root = nrp.brain
         index = root[0]
 
-        self.assertEqual("(root)[slice(0, 1, None)]", index.__repr__())
-        self.assertEqual(self.dummy.item[0:1], index.select(self.dummy.item))
+        self.bca.create_view = lambda p, sl: p[sl:(sl+1)]
+
+        self.assertEqual("(root)[0]", index.__repr__())
+        self.assertEqual(self.dummy.item[0:1], index.select(self.dummy.item, self.bca))
 
 
 if __name__ == "__main__":

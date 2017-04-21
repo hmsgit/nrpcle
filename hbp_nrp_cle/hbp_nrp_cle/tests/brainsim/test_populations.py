@@ -33,11 +33,14 @@ class TestPyNNControlAdapter(unittest.TestCase):
         directory = os.path.dirname(__file__)
         adapter.load_brain(os.path.join(directory, "example_pynn_brain.py"))
         populations = adapter.get_populations()
-        self.assertEqual(3, len(populations))
+        self.assertEqual(6, len(populations))
         # Populations may be in any order, so we have to crawl the collection
         population = next(p for p in populations if p.name == "population")
         view = next(p for p in populations if p.name == "view")
         assembly = next(p for p in populations if p.name == "assembly")
+        list_0 = next(p for p in populations if p.name == "list[0]")
+        list_1 = next(p for p in populations if p.name == "list[1]")
+        list_2 = next(p for p in populations if p.name == "list[2][0]")
         # check population
         self.assertEqual("population", population.name)
         self.assertEqual("IF_curr_alpha", population.celltype)
@@ -53,3 +56,15 @@ class TestPyNNControlAdapter(unittest.TestCase):
         self.assertEqual("PopulationAssembly", assembly.celltype)
         self.assertEqual(0, len(assembly.parameters))
         self.assertEqual(3, len(assembly.gids))
+        # check population
+        self.assertEqual("IF_curr_alpha", list_0.celltype)
+        self.assertNotEqual(0, len(list_0.parameters))
+        self.assertEqual(3, len(list_0.gids))
+        # check view
+        self.assertEqual("IF_curr_alpha", list_1.celltype)
+        self.assertNotEqual(0, len(list_1.parameters))
+        self.assertEqual(1, len(list_1.gids))
+        # check assembly
+        self.assertEqual("PopulationAssembly", list_2.celltype)
+        self.assertEqual(0, len(list_2.parameters))
+        self.assertEqual(3, len(list_2.gids))

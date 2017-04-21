@@ -380,6 +380,23 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def is_population(self, population):  # -> Boolean:
+        """
+        Determines whether the given object is a population
+
+        :param population: The object that may be a population
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def create_view(self, population, sl):  # -> Object:
+        """
+        Creates a view of the given population
+
+        :param population: The base population
+        :param sl: The slice of the population that represents the view
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
 
 class IBrainControlAdapter(object):  # pragma: no cover
     """

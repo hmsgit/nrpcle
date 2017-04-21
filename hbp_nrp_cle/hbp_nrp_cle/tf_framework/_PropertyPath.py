@@ -53,11 +53,13 @@ class PropertyPath(object):
         """
         return "(root)"
 
-    def select(self, root):
+    # pylint: disable=unused-argument
+    def select(self, root, bca):
         """
         Selects the path represented by this instance started from the given root object
 
         :param root: The specified root object
+        :param bca: The brain info
         """
         return root
 
@@ -111,13 +113,14 @@ class AttributePathSegment(PropertyPath):
         """
         return repr(self.__parent) + "." + self.name
 
-    def select(self, root):
+    def select(self, root, bca):
         """
         Selects the path represented by this instance started from the given root object
 
         :param root: The specified root object
+        :param bca: The brain info
         """
-        parent = self.__parent.select(root)
+        parent = self.__parent.select(root, bca)
         if parent is None:
             return None
         return getattr(parent, self.name)
@@ -137,10 +140,7 @@ class IndexPathSegment(PropertyPath):
         :param parent: The parent path
         """
         assert isinstance(parent, PropertyPath)
-        if isinstance(index, int):
-            self.__index = slice(index, index + 1)
-        else:
-            self.__index = index
+        self.__index = index
         self.__parent = parent
 
     @property
@@ -156,16 +156,20 @@ class IndexPathSegment(PropertyPath):
         """
         return self.__parent.__repr__() + "[" + self.__index.__repr__() + "]"
 
-    def select(self, root):
+    def select(self, root, bca):
         """
         Selects the path represented by this instance started from the given root object
 
         :param root: The specified root object
+        :param bca: The brain info
         """
-        parent = self.__parent.select(root)
+        parent = self.__parent.select(root, bca)
         if parent is None:
             return None
-        return parent[self.__index]
+        if bca.is_population(parent):
+            return bca.create_view(parent, self.__index)
+        else:
+            return parent[self.__index]
 
     @property
     def parent(self):

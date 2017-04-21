@@ -36,6 +36,9 @@ logger = logging.getLogger(__name__)
 __author__ = 'Dimitri Probst, Sebastian Krach'
 
 
+# Pylint for some reason does not see that the methods is_population and create_view are already
+# overridden
+# pylint: disable=abstract-method
 class PyNNNestCommunicationAdapter(PyNNCommunicationAdapter):
     """
     Represents the communication adapter to the neuronal simulator

@@ -34,10 +34,11 @@ class NeuronSelector(object):
         """
         pass
 
-    def select(self, root):
+    def select(self, root, bca):
         """
         Selects the neurons based on the given brain root
         :param root: The brain root element
+        :param bca: The brain control adapter
         :return: A list of neurons based on the mapper
         """
         raise NotImplementedError("This method must be overridden")
@@ -80,15 +81,16 @@ class MapNeuronSelector(NeuronSelector):
         """
         return "mapping " + repr(self.mapping)
 
-    def select(self, root):
+    def select(self, root, bca):
         """
         Selects the neurons based on the given brain root
         :param root: The brain root element
+        :param bca: The brain info
         :return: A list of neurons based on the mapper
         """
         result = []
         for item in self.neuron_range:
-            neurons = self.mapping(item).select(root)
+            neurons = self.mapping(item).select(root, bca)
             if isinstance(neurons, list):
                 result = result + neurons
             else:
@@ -122,14 +124,15 @@ class ChainNeuronSelector(NeuronSelector):
         """
         return '[%s]' % (','.join(repr(s) for s in self.selectors),)
 
-    def select(self, root):
+    def select(self, root, bca):
         """
         Selects the neurons based on the given brain root
         :param root: The brain root element
+        :param bca: The brain info
         """
         result = []
         for selector in self.selectors:
-            selected = selector.select(root)
+            selected = selector.select(root, bca)
             if isinstance(selected, list):
                 result = result + selected
             else:

@@ -25,15 +25,15 @@ from hbp_nrp_cle.brainsim import IBrainControlAdapter
 from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
 from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
+from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population
 
 import logging
 from os import path
 import copy
-from pyNN.common import BasePopulation, Assembly
 
 logger = logging.getLogger(__name__)
 
-__author__ = 'DimitriProbst', 'DanielPeppicelli', 'LucGuyot'
+__author__ = 'Dimitri Probst', 'Daniel Peppicelli', 'Luc Guyot'
 
 
 class PyNNControlAdapter(IBrainControlAdapter):
@@ -129,6 +129,23 @@ class PyNNControlAdapter(IBrainControlAdapter):
             logger.warn("trying to initialize an already initialized controller")
         return self.__is_initialized
 
+    @staticmethod
+    def __find_all_populations(candidate, member_name, populations):
+        """
+        Finds all populations under the given object and adds them to the list of populations
+
+        :param candidate: The object tree
+        :param member_name: The base member name
+        :param populations: The list of populations
+        """
+        if is_population(candidate):
+            populations.append(PyNNPopulationInfo(candidate, member_name))
+        elif isinstance(candidate, list):
+            for index in range(len(candidate)):
+                PyNNControlAdapter.__find_all_populations(candidate[index],
+                                                          member_name + "[" + str(index) + "]",
+                                                          populations)
+
     def get_populations(self):
         """
         Gets an information about the populations currently available
@@ -139,8 +156,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         populations = []
         for member in dir(config.brain_root):
             candidate = getattr(config.brain_root, member)
-            if isinstance(candidate, BasePopulation) or isinstance(candidate, Assembly):
-                populations.append(PyNNPopulationInfo(candidate, member))
+            PyNNControlAdapter.__find_all_populations(candidate, member, populations)
         return populations
 
     @property

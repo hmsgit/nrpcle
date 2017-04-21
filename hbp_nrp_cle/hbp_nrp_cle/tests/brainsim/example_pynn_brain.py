@@ -27,3 +27,6 @@ import pyNN.nest as sim
 population = sim.Population(3, sim.IF_curr_alpha())
 view = population[1:2]
 assembly = population + view
+
+# A list of populations is also possible
+list = [population, view, [assembly]]

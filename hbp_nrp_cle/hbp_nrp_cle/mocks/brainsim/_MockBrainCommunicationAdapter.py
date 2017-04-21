@@ -129,3 +129,20 @@ class MockBrainCommunicationAdapter(AbstractCommunicationAdapter):
 
     def shutdown(self):
         pass
+
+    def is_population(self, population):  # pragma: no cover
+        """
+        Determines whether the given object is a population
+
+        :param population: The object that may be a population
+        """
+        return True
+
+    def create_view(self, population, sl):  # -pragma: no cover
+        """
+        Creates a view of the given population
+
+        :param population: The base population
+        :param sl: The slice of the population that represents the view
+        """
+        return population[sl]

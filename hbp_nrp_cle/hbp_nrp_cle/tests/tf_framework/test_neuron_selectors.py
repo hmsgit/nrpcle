@@ -20,11 +20,12 @@
 Tests the neuron selectors
 """
 
-__author__ = 'GeorgHinkel'
+__author__ = 'Georg Hinkel'
 
 import unittest
 from hbp_nrp_cle.tests.tf_framework.test_property_path import Dummy
 import hbp_nrp_cle.tf_framework as nrp
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
 
 
 class NeuronSelectorTests(unittest.TestCase):
@@ -33,15 +34,16 @@ class NeuronSelectorTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.dummy = Dummy([0, 8, 15])
+        self.dummy = Dummy([0, 8, 15, 23, 42])
+        self.bca = MockBrainCommunicationAdapter()
 
     def test_mapping(self):
         root = nrp.brain
         mapping = nrp.map_neurons(range(1, 4), lambda i: root.item[i])
 
         assert mapping.__repr__().startswith("mapping ")
-        result = mapping.select(self.dummy)
-        self.assertEqual(2, len(result))
+        result = mapping.select(self.dummy, self.bca)
+        self.assertEqual(3, len(result))
         self.assertEqual(8, result[0])
         self.assertEqual(15, result[1])
 
@@ -51,8 +53,8 @@ class NeuronSelectorTests(unittest.TestCase):
                                   lambda x: nrp.map_neurons(range(1, 4), lambda i: root.item[i]))
 
         assert mapping.__repr__().startswith("mapping ")
-        result = mapping.select(self.dummy)
-        self.assertEqual(2, len(result))
+        result = mapping.select(self.dummy, self.bca)
+        self.assertEqual(3, len(result))
         self.assertEqual(8, result[0])
         self.assertEqual(15, result[1])
 
@@ -60,7 +62,7 @@ class NeuronSelectorTests(unittest.TestCase):
         root = nrp.brain
         chain = nrp.chain_neurons(nrp.map_neurons(range(0,2), lambda i: root.item[i]), root.item[2])
 
-        result = chain.select(self.dummy)
+        result = chain.select(self.dummy, self.bca)
         self.assertEqual(3, len(result))
         self.assertEqual(0, result[0])
         self.assertEqual(8, result[1])
@@ -70,9 +72,9 @@ class NeuronSelectorTests(unittest.TestCase):
         root = nrp.brain
         chain = nrp.chain_neurons(root.item[1], root.item[2])
 
-        self.assertEqual("[(root).item[slice(1, 2, None)],(root).item[slice(2, 3, None)]]",
+        self.assertEqual("[(root).item[1],(root).item[2]]",
                          chain.__repr__())
-        result = chain.select(self.dummy)
+        result = chain.select(self.dummy, self.bca)
         self.assertEqual(2, len(result))
         self.assertEqual(8, result[0])
         self.assertEqual(15, result[1])

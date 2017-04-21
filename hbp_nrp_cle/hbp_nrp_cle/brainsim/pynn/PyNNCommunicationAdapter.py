@@ -16,10 +16,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-'''
-PyNNCommunicationAdapter.py
-moduleauthor: probst@fzi.de
-'''
+"""
+PyNNCommunicationAdapter
+"""
 
 import logging
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonSpikeGenerator, \
@@ -27,6 +26,7 @@ from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, IPoissonS
     IFixedSpikeGenerator, ISpikeRecorder
 
 from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter
+from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population, create_view
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate, PyNNACSource, PyNNDCSource, \
     PyNNFixedSpikeGenerator, PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp, PyNNNCSource, \
     PyNNPoissonSpikeGenerator, PyNNSpikeRecorder
@@ -69,3 +69,20 @@ class PyNNCommunicationAdapter(AbstractCommunicationAdapter):
         if device_type in self.__device_dict:
             return self.__device_dict[device_type]
         return super(PyNNCommunicationAdapter, self)._get_device_type(device_type)
+
+    def is_population(self, population):  # -> Boolean:
+        """
+        Determines whether the given object is a population
+
+        :param population: The object that may be a population
+        """
+        return is_population(population)
+
+    def create_view(self, population, sl):  # -> Object:
+        """
+        Creates a view of the given population
+
+        :param population: The base population
+        :param sl: The slice of the population that represents the view
+        """
+        return create_view(population, sl)
