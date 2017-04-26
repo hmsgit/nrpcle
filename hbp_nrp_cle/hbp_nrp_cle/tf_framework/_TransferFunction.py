@@ -25,6 +25,7 @@ import textwrap
 import logging
 from . import TFException
 from abc import abstractmethod
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +37,15 @@ class TransferFunction(object):
     Represents the base class for a transfer function
     """
 
+    # pylint: disable=unused-argument
     @staticmethod
-    def __default_excepthook(tf, error):
+    def __default_excepthook(tf, error, tb):
         """
         The default exception handler for transfer functions
 
         :param tf: The transfer function that raised the exception
         :param error: The exception object that was raised
+        :param tb: The original traceback
         """
         raise TFException(tf.name, str(error), "Runtime")
 
@@ -191,15 +194,16 @@ class TransferFunction(object):
             self._params[0] = t
             return self._func(*self._params)
         except Exception, e:
-            self._handle_error(e)
+            self._handle_error(e, sys.exc_info()[2])
 
-    def _handle_error(self, e):
+    def _handle_error(self, e, tb):
         """
         Handles the given exception
 
         :param e: The exception that occurred
+        :param tb: The traceback of the error
         """
-        TransferFunction.excepthook(self, e)
+        TransferFunction.excepthook(self, e, tb)
         self.__updated_since_last_error = False
 
     def initialize(self, tfm, bca_changed, rca_changed):
