@@ -21,6 +21,7 @@ Defines a neuron monitor
 """
 
 import logging
+import sys
 from ._TransferFunction import TransferFunction
 from ._Neuron2Robot import MapSpikeSink
 from ._Robot2Neuron import MapRobotPublisher
@@ -163,7 +164,7 @@ class NeuronMonitor(TransferFunction):
             if return_value:
                 self.__handler(t)
         except Exception, e:
-            self._handle_error(e)
+            self._handle_error(e, sys.exc_info()[2])
 
     def unregister(self):
         """
