@@ -36,6 +36,10 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
     neurons has spiked, otherwise a "0"
     """
 
+    default_parameters = {
+        "use_ids": True
+    }
+
     # No connection parameters necessary for this device
     # pylint: disable=W0613
     # pylint: disable=W0221
