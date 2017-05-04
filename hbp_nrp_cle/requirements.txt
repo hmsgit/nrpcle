@@ -1,5 +1,5 @@
 # HBP requirements
-hbp-nrp-excontrol==1.2.0
+hbp-nrp-excontrol==1.2.1.dev0
 
 # other requirements
 cython==0.23.4
