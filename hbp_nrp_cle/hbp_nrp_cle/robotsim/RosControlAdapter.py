@@ -143,7 +143,12 @@ class RosControlAdapter(IRobotControlAdapter):
 
         :param dt: The CLE time step in seconds
         """
-        if math.fmod(dt, self.__time_step) < 1e-10:
+
+        # implement modulo to avoid floating point precision quirks in math.fmod or from direct %
+        # without this explicit fix, values such as 0.999 % 0.001 != 0.0 due to float accuracy
+        # https://en.wikipedia.org/wiki/Modulo_operation : a - (n * int(a/n))
+        r = dt - (self.__time_step * math.floor(dt / self.__time_step))
+        if r == 0.0:
             steps = dt / self.__time_step
             logger.debug("Advancing simulation")
 
