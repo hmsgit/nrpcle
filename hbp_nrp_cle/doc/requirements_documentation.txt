@@ -1,4 +1,5 @@
 #the following is required for the unit testing
+docutils==0.13.1
 sphinx==1.2
 sphinxcontrib-napoleon==0.2.7
 sphinx_numfig
