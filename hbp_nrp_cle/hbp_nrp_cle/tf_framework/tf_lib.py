@@ -445,3 +445,32 @@ def get_color_values(image, width=40, height=30):
 
     return __results(red_left_rate, green_left_rate, blue_left_rate, red_right_rate,
                      green_right_rate, blue_right_rate)
+
+
+def getValueFromFloat64MultiArray(message, row, column, channel=0):
+    """
+    Gets the value at position (row, column, channel)
+    from a std_msgs/Float64MultiArray message containing a
+    bidimensional image.
+
+    :param message: The message containing the data
+    :param row: Row coordinate
+    :param column: Column coordinate
+    :param channel: Channel coordinate. Defaults to zero, it can be omitted.
+    :returns: The value at the specified coordinates.
+
+    """
+
+    #[std_msgs/Float64MultiArray]:
+    #std_msgs/MultiArrayLayout layout
+    #  std_msgs/MultiArrayDimension[] dim
+    #    string label
+    #    uint32 size
+    #    uint32 stride
+    #  uint32 data_offset
+    #float64[] data
+
+    layout = message.layout
+
+    return message.data[layout.data_offset + (layout.dim[1].stride * row) +
+                        (layout.dim[2].stride * column) + channel]

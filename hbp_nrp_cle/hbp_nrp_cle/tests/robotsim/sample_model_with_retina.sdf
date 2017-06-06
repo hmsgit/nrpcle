@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name='vr_poster'>
+    <pose>0 0 0 0 0 0</pose>
+    <static>1</static>
+    <link name='body'>
+      <visual name='vr_poster'>
+        <cast_shadows>1</cast_shadows>
+        <geometry>
+          <mesh>
+            <uri>model://viz_poster/meshes/viz_poster.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <sensor name='camera' type='camera'>
+       <camera name='retina'>
+       </camera>
+       <plugin name="RetinaCameraPlugin" filename="libgazebo_ros_retina_camera.so">
+	     <!--retinaScriptPath>RETINA CONFIG FILE TO BE SPECIFIED IN BIBI</retinaScriptPath-->
+       </plugin>
+     </sensor>
+    </link>
+  </model>
+</sdf>

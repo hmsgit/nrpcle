@@ -30,11 +30,9 @@ from ._MappingSpecification import ParameterMappingSpecification
 
 import abc
 import logging
-import pyretina
 from hbp_nrp_cle.tf_framework._PropertyPath import PropertyPath
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
 from hbp_nrp_cle.tf_framework.config import brain_root
-import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -99,36 +97,6 @@ class MapVariable(ParameterMappingSpecification):
             return LocalDataReference(self.name, value)
         else:
             raise AttributeError("The specified parameter scope is not valid.")
-
-
-class MapRetina(ParameterMappingSpecification):
-    """
-    Class to map transfer function local or global retina config file
-    to transfer function parameters
-    """
-
-    def __init__(self, parameter_name, config=None):
-        """
-        Maps a parameter to a retina in the transfer function scope
-        and if the variable does not yet exist initializes it with the provided config file.
-
-        :param parameter_name: the name of the parameter
-        :param config: the selected config file
-        """
-        if os.path.isfile(config):
-            self.retina_config_file = config
-        else:
-            raise AttributeError("The specified path for the retina configuration file is invalid.")
-        super(MapRetina, self).__init__(parameter_name)
-
-    # pylint: disable=unused-argument
-    def create_adapter(self, transfer_function_manager):
-        """
-        Replaces the current mapping operator with the mapping result
-        """
-        retina = pyretina.Retina()
-        execfile(self.retina_config_file)
-        return retina
 
 
 class DataReference(object):

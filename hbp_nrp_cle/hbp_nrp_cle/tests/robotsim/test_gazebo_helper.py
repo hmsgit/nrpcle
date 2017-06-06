@@ -110,6 +110,21 @@ class TestGazeboHelper(unittest.TestCase):
             logcapture.check(('hbp_nrp_cle.user_notifications', 'DEBUG',
                               '%s successfully loaded in Gazebo' % wpath))
 
+    def test_load_gazebo_model_file_with_retina(self):
+        self.gazebo_helper.load_sdf_entity = MagicMock()
+
+        wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_model_with_retina.sdf")
+        test_retina_config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_retina_script.py")
+
+        self.gazebo_helper.load_gazebo_model_file("toto", wpath, None, test_retina_config_path)
+        self.assertEqual(self.gazebo_helper.load_sdf_entity.call_args_list[0][0][0], "toto")
+
+        actual_XML = etree.fromstring(self.gazebo_helper.load_sdf_entity.call_args_list[0][0][1])
+
+        retina_script_path_elem = actual_XML.xpath("//sensor/plugin[@name='RetinaCameraPlugin']/retinaScriptPath")[-1]
+
+        self.assertEqual(retina_script_path_elem.text, test_retina_config_path)
+
     def test_parse_world_file(self):
 
         def file_to_normalized_xml_string(file_name):

@@ -75,12 +75,11 @@ from operator import getitem
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, \
     MapRobotSubscriber
-from ._TransferFunction import TransferFunction
-from ._CSVRecorder import MapCSVRecorder, CSVRecorder
-from ._NeuronMonitor import NeuronMonitor
-from ._GlobalData \
-    import MapVariable, MapRetina, GLOBAL, TRANSFER_FUNCTION_LOCAL
-from ._CleanableTransferFunctionParameter \
+from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction
+from hbp_nrp_cle.tf_framework._CSVRecorder import MapCSVRecorder, CSVRecorder
+from hbp_nrp_cle.tf_framework._NeuronMonitor import NeuronMonitor
+from hbp_nrp_cle.tf_framework._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
+from hbp_nrp_cle.tf_framework._CleanableTransferFunctionParameter \
     import ICleanableTransferFunctionParameter
 from . import _TransferFunctionManager, _NeuronSelectors
 from ._TransferFunctionInterface import ITransferFunctionManager

@@ -210,7 +210,8 @@ class GazeboHelper(object):
 
         logger.debug("World successfully loaded in Gazebo.")
 
-    def load_gazebo_model_file(self, model_name, model_file, initial_pose=None):
+    def load_gazebo_model_file(self, model_name, model_file, initial_pose=None,
+                               retina_config_path=None):
         """
         Load a sdf model file into the ROS connected running gazebo instance.
 
@@ -221,12 +222,29 @@ class GazeboHelper(object):
             the model in its own folder.\
         :param initial_pose: Initial pose of the model. Uses the Gazebo \
             "Pose" type.
+        :param retina_config_path: Configuration script for the Retina Camera Plugin
         """
         model_file_path = os.path.join(os.environ.get('NRP_MODELS_DIRECTORY'), model_file)
         with open(model_file_path, 'r') as model_file_sdf:
-            model_sdf = model_file_sdf.read()
+
+            model_sdf_str = model_file_sdf.read()
+
+            # append retina_script_path to retina camera plugin element
+            if retina_config_path is not None:
+
+                model_root_elem = etree.fromstring(model_sdf_str)
+
+                plugin_elem = \
+                    model_root_elem.xpath("//sensor/plugin[@name='RetinaCameraPlugin']")[0]
+                if plugin_elem is not None:
+                    etree.SubElement(plugin_elem, "retinaScriptPath").text = retina_config_path
+                    # get updated string serialization
+                    model_sdf_str = etree.tostring(model_root_elem)
+                else:
+                    logger.error("Retina plugin element not found in model sdf file!")
+
             # spawn model
-            self.load_sdf_entity(model_name, model_sdf, initial_pose)
+            self.load_sdf_entity(model_name, model_sdf_str, initial_pose)
             logger.debug("%s successfully loaded in Gazebo", model_file)
 
     def load_sdf_entity(self, model_name, model_sdf, initial_pose=None):
