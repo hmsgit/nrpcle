@@ -117,12 +117,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
             timestep = params.get('timestep', 0.1)
             min_delay = params.get('min_delay', "auto")
             max_delay = params.get('max_delay', 20.0)
-            threads = params.get('threads', 1)
-            rng_seeds = params.get('rng_seeds', [1234])
-            spike_precision = params.get('spike_precision', 'on_grid')
-            self.__rank = sim.setup(timestep=timestep, min_delay=min_delay,
-                                    max_delay=max_delay, threads=threads,
-                                    grng_seeds=rng_seeds, spike_precision=spike_precision)
+            self.__rank = sim.setup(timestep=timestep, min_delay=min_delay, max_delay=max_delay)
             self.__is_initialized = True
             logger.info("neuronal simulator initialized")
         else:

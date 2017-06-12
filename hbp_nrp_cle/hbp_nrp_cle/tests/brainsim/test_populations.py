@@ -25,8 +25,12 @@ __author__ = 'Georg Hinkel'
 import unittest
 import os
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
+import hbp_nrp_cle.brainsim.config as brainconfig
 
 class TestPyNNControlAdapter(unittest.TestCase):
+
+    def setUp(self):
+        brainconfig.rng_seed = 123456
 
     def test_populations(self):
         adapter = PyNNControlAdapter()

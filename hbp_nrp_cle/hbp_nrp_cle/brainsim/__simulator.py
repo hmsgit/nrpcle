@@ -23,6 +23,43 @@ package for the neuronal simulator.
 
 __author__ = 'Sebastian Krach'
 
-import pyNN.nest as sim
+from hbp_nrp_cle.brainsim import config
 
+import pyNN.nest as sim
+from pyNN.common.control import DEFAULT_TIMESTEP, DEFAULT_MIN_DELAY
+
+# store the pynNN.setup(...) function before patching with NRP specific behavior
+pynn_setup = sim.setup
+
+
+def nrp_pynn_setup(timestep=DEFAULT_TIMESTEP, min_delay=DEFAULT_MIN_DELAY, **extra_params):
+    """
+    Override the default Nest setup function for NRP specific behavior, this ensures consistent
+    behavior even if a brain file contains a call to pyNN.setup(...).
+
+    See PyNN documentation for parameter information.
+    """
+
+    # if an RNG seed has not been specified, the platform is not properly initialized
+    if config.rng_seed is None:
+        raise Exception('RNG seed has not been set for CLE brain adapter!')
+
+    # force Nest to use one thread - currently required for the NRP to function
+    extra_params['threads'] = 1
+
+    # force Nest to generate spikes on grid (otherwise we get a Nest crash when
+    # retrieving spikes natively from Nest within the NRP)
+    extra_params['spike_precision'] = 'on_grid'
+
+    # override the RNG seed with experiment specific parameters
+    extra_params['grng_seed'] = config.rng_seed
+    extra_params['rng_seeds'] = [config.rng_seed] * extra_params['threads']
+
+    # call the actual PyNN setup with our overridden parameters, return rank
+    return pynn_setup(timestep, min_delay, **extra_params)
+
+# override the setup call
+sim.setup = nrp_pynn_setup
+
+# simulator accessible for import after being patched above
 simulator = sim

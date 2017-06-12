@@ -37,6 +37,7 @@ from hbp_nrp_cle.brainsim.pynn_nest.PyNNNestCommunicationAdapter import \
 from mock import mock_open, patch
 from testfixtures import log_capture, LogCapture
 import hbp_nrp_cle.tf_framework as tf_framework
+import hbp_nrp_cle.brainsim.config as brainconfig
 
 __author__ = 'DimitriProbst'
 
@@ -50,6 +51,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         """
         Instantiates the PyNN communication and control adapter
         """
+        brainconfig.rng_seed = 123456
         with LogCapture(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
                         'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
                         'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')) as l:
