@@ -125,6 +125,25 @@ spike_recorder = ISpikeRecorder
 brain = _PropertyPath.PropertyPath()
 
 
+def nrange(start, stop, step=None):
+    """
+    Defines a range of neurons
+
+    :param start: The start of the range
+    :param stop: The stop of the range
+    :param step: The step of the range
+    """
+    return _PropertyPath.RangeSegment(start, stop, step)
+
+
+def resolve(fun):
+    """
+    Resolves the given function when the neural network is available
+    :param fun: The function that selects the item from the network
+    """
+    return _PropertyPath.CustomSegment(fun)
+
+
 def map_neurons(neuron_range, mapping):
     """
     Maps the given range to neurons using the provided mapping
@@ -315,10 +334,11 @@ def set_transfer_function(new_source, new_code, new_name):
             raise Exception("Transfer function has no decorator specifying its type")
         config.active_node.initialize_tf(tf)
     except Exception as e:
+        tb = sys.exc_info()[2]
         logger.error("Error while loading new transfer function")
         logger.error(e)
         delete_transfer_function(new_name) # prevents runtime error
-        raise TFLoadingException(new_name, str(e))
+        raise TFLoadingException(new_name, str(e)), None, tb
 
     # we set the new source in an attribute because inspect.getsource won't work after exec
     # indeed inspect.getsource is based on a source file object

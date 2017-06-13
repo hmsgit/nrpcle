@@ -26,6 +26,9 @@ from ._MappingSpecification import ParameterMappingSpecification
 import abc
 import logging
 import pyretina
+from hbp_nrp_cle.tf_framework._PropertyPath import PropertyPath
+from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
+from hbp_nrp_cle.tf_framework.config import brain_root
 import os.path
 
 logger = logging.getLogger(__name__)
@@ -66,15 +69,29 @@ class MapVariable(ParameterMappingSpecification):
         """
         return self.__initial_value
 
+    def is_brain_connection(self):
+        """
+        Returns whether the the parameter is connected to the neuronal network
+
+        :return: True, if the parameter is mapped to the neuronal network, otherwise False
+        """
+        return isinstance(self.__initial_value, PropertyPath)
+
     def create_adapter(self, transfer_function_manager):
         """
         Replaces the current mapping operator with the mapping result
         """
+        value = self.__initial_value
+        if isinstance(value, PropertyPath):
+            adapter = transfer_function_manager.brain_adapter
+            assert isinstance(adapter, IBrainCommunicationAdapter)
+            value = value.select(brain_root, adapter)
+
         if self.__scope == GLOBAL:
             return GlobalDataReference(self.name, self.__global_key,
-                                       self.__initial_value, transfer_function_manager.global_data)
+                                       value, transfer_function_manager.global_data)
         elif self.__scope == TRANSFER_FUNCTION_LOCAL:
-            return LocalDataReference(self.name, self.__initial_value)
+            return LocalDataReference(self.name, value)
         else:
             raise AttributeError("The specified parameter scope is not valid.")
 

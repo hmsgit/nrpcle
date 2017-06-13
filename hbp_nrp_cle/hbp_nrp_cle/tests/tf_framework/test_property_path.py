@@ -77,6 +77,204 @@ class PropertyPathTests(unittest.TestCase):
         self.assertEqual("(root)[0]", index.__repr__())
         self.assertEqual(self.dummy.item[0:1], index.select(self.dummy.item, self.bca))
 
+    def test_sum_path_path(self):
+        root = nrp.brain
+        sum = root.item[0] + root.item[1]
+
+        self.assertEqual("(root).item[0].__add__((root).item[1])", repr(sum))
+        self.assertEqual(8, sum.select(self.dummy, self.bca))
+
+    def test_sum_path_val(self):
+        root = nrp.brain
+        sum = root.item[0] + 1
+
+        self.assertEqual("(root).item[0].__add__(1)", repr(sum))
+        self.assertEqual(1, sum.select(self.dummy, self.bca))
+
+    def test_sum_val_path(self):
+        root = nrp.brain
+        sum = 1 + root.item[0]
+
+        self.assertEqual("1.__add__((root).item[0])", repr(sum))
+        self.assertEqual(1, sum.select(self.dummy, self.bca))
+
+    def test_mul_path_path(self):
+        root = nrp.brain
+        prod = root.item[1] * root.item[2]
+
+        self.assertEqual("(root).item[1].__mul__((root).item[2])", repr(prod))
+        self.assertEqual(120, prod.select(self.dummy, self.bca))
+
+    def test_mul_path_val(self):
+        root = nrp.brain
+        prod = root.item[1] * 2
+
+        self.assertEqual("(root).item[1].__mul__(2)", repr(prod))
+        self.assertEqual(16, prod.select(self.dummy, self.bca))
+
+    def test_mul_val_path(self):
+        root = nrp.brain
+        prod = 2 * root.item[1]
+
+        self.assertEqual("2.__mul__((root).item[1])", repr(prod))
+        self.assertEqual(16, prod.select(self.dummy, self.bca))
+
+    def test_sub_path_path(self):
+        root = nrp.brain
+        diff = root.item[1] - root.item[0]
+
+        self.assertEqual("(root).item[1].__sub__((root).item[0])", repr(diff))
+        self.assertEqual(8, diff.select(self.dummy, self.bca))
+
+    def test_sub_path_val(self):
+        root = nrp.brain
+        diff = root.item[1] - 1
+
+        self.assertEqual("(root).item[1].__sub__(1)", repr(diff))
+        self.assertEqual(7, diff.select(self.dummy, self.bca))
+
+    def test_sub_val_path(self):
+        root = nrp.brain
+        diff = 1 - root.item[1]
+
+        self.assertEqual("1.__sub__((root).item[1])", repr(diff))
+        self.assertEqual(-7, diff.select(self.dummy, self.bca))
+
+    def test_div_path_path(self):
+        root = nrp.brain
+        div = root.item[2] / root.item[1]
+
+        self.assertEqual("(root).item[2].__div__((root).item[1])", repr(div))
+        self.assertEqual(15 / 8, div.select(self.dummy, self.bca))
+
+    def test_div_path_val(self):
+        root = nrp.brain
+        div = root.item[1] / 2
+
+        self.assertEqual("(root).item[1].__div__(2)", repr(div))
+        self.assertEqual(4, div.select(self.dummy, self.bca))
+
+    def test_div_val_path(self):
+        root = nrp.brain
+        div = 16 / root.item[1]
+
+        self.assertEqual("16.__div__((root).item[1])", repr(div))
+        self.assertEqual(2, div.select(self.dummy, self.bca))
+
+    def test_eq_val(self):
+        root = nrp.brain
+        equals = root.item[1] == 8
+
+        self.assertEqual("(root).item[1]==8", repr(equals))
+        self.assertTrue(equals.select(self.dummy, self.bca))
+
+    def test_eq_path(self):
+        root = nrp.brain
+        equals = root.item[1] == root.item[0]
+
+        self.assertEqual("(root).item[1]==(root).item[0]", repr(equals))
+        self.assertFalse(equals.select(self.dummy, self.bca))
+
+    def test_ne_val(self):
+        root = nrp.brain
+        equals = root.item[1] != 8
+
+        self.assertEqual("(root).item[1]!=8", repr(equals))
+        self.assertFalse(equals.select(self.dummy, self.bca))
+
+    def test_ne_path(self):
+        root = nrp.brain
+        equals = root.item[1] != root.item[0]
+
+        self.assertEqual("(root).item[1]!=(root).item[0]", repr(equals))
+        self.assertTrue(equals.select(self.dummy, self.bca))
+
+    def test_and_path_val(self):
+        root = nrp.brain
+        _and = root.item[1] & 5
+
+        self.assertEqual("(root).item[1].__and__(5)", repr(_and))
+        self.assertEqual(0, _and.select(self.dummy, self.bca))
+
+    def test_and_val_path(self):
+        root = nrp.brain
+        _and = 5 & root.item[1]
+
+        self.assertEqual("5.__and__((root).item[1])", repr(_and))
+        self.assertEqual(0, _and.select(self.dummy, self.bca))
+
+    def test_and_path_path(self):
+        root = nrp.brain
+        _and = root.item[1] & root.item[2]
+
+        self.assertEqual("(root).item[1].__and__((root).item[2])", repr(_and))
+        self.assertEqual(8, _and.select(self.dummy, self.bca))
+
+    def test_or_path_val(self):
+        root = nrp.brain
+        _and = root.item[1] | 5
+
+        self.assertEqual("(root).item[1].__or__(5)", repr(_and))
+        self.assertEqual(13, _and.select(self.dummy, self.bca))
+
+    def test_or_val_path(self):
+        root = nrp.brain
+        _and = 5 | root.item[1]
+
+        self.assertEqual("5.__or__((root).item[1])", repr(_and))
+        self.assertEqual(13, _and.select(self.dummy, self.bca))
+
+    def test_or_path_path(self):
+        root = nrp.brain
+        _and = root.item[1] | root.item[2]
+
+        self.assertEqual("(root).item[1].__or__((root).item[2])", repr(_and))
+        self.assertEqual(15, _and.select(self.dummy, self.bca))
+
+    def test_xor_path_val(self):
+        root = nrp.brain
+        _and = root.item[1] ^ 5
+
+        self.assertEqual("(root).item[1].__xor__(5)", repr(_and))
+        self.assertEqual(13, _and.select(self.dummy, self.bca))
+
+    def test_xor_val_path(self):
+        root = nrp.brain
+        _and = 5 ^ root.item[1]
+
+        self.assertEqual("5.__xor__((root).item[1])", repr(_and))
+        self.assertEqual(13, _and.select(self.dummy, self.bca))
+
+    def test_xor_path_path(self):
+        root = nrp.brain
+        _and = root.item[1] ^ root.item[2]
+
+        self.assertEqual("(root).item[1].__xor__((root).item[2])", repr(_and))
+        self.assertEqual(7, _and.select(self.dummy, self.bca))
+
+    def test_range(self):
+        root = nrp.brain
+        nrange1 = nrp.nrange(0, 15, 8)
+        nrange2 = nrp.nrange(0, root.item[2], root.item[1])
+
+        self.assertEqual("range(0,15,step=8)", repr(nrange1))
+        self.assertEqual("range(0,(root).item[2],step=(root).item[1])", repr(nrange2))
+        self.assertEqual(range(0, 15, 8), nrange1.select(self.dummy, self.bca))
+        self.assertEqual(range(0, 15, 8), nrange2.select(self.dummy, self.bca))
+
+    def test_resolve(self):
+        resolved = nrp.resolve(lambda root: root.item[2])
+
+        self.assertEqual("(custom)", repr(resolved))
+        self.assertEqual(15, resolved.select(self.dummy, self.bca))
+
+        resolved2 = nrp.resolve(lambda root, bca: root.item[1])
+        self.assertEqual("(custom)", repr(resolved2))
+        self.assertEqual(8, resolved2.select(self.dummy, self.bca))
+
+        self.assertRaises(Exception, nrp.resolve, 0)
+        self.assertRaises(Exception, nrp.resolve, lambda a,b,c: None)
+
 
 if __name__ == "__main__":
     unittest.main()

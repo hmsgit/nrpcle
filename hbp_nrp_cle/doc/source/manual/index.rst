@@ -9,3 +9,4 @@ User Manual
    running
    transfer_functions
    hard_reset
+   access_neuron_parameters

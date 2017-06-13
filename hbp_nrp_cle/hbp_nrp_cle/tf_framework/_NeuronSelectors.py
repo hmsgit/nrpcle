@@ -22,33 +22,16 @@ This module contains the supported neuron selectors
 
 __author__ = 'GeorgHinkel'
 
+from hbp_nrp_cle.tf_framework._PropertyPath import PropertyPath
 
-class NeuronSelector(object):
+
+class MapNeuronSelector(PropertyPath):
     """
-    The base class for neuron selectors
-    """
-
-    def __init__(self):
-        """
-        Creates a new neuron selector
-        """
-        pass
-
-    def select(self, root, bca):
-        """
-        Selects the neurons based on the given brain root
-        :param root: The brain root element
-        :param bca: The brain control adapter
-        :return: A list of neurons based on the mapper
-        """
-        raise NotImplementedError("This method must be overridden")
-
-
-class MapNeuronSelector(NeuronSelector):
-    """
-    The mapping operator to map a
+    The mapping operator to map a sequence of neurons
     """
 
+    # The following is a bug in pylint
+    # pylint: disable=incomplete-protocol
     def __init__(self, neuron_range, mapping):
         """
         Creates a new neuron mapping
@@ -56,8 +39,6 @@ class MapNeuronSelector(NeuronSelector):
         :param mapping: The mapping function
         """
         super(MapNeuronSelector, self).__init__()
-        if isinstance(neuron_range, int):
-            neuron_range = range(0, neuron_range)
         self.__neuron_range = neuron_range
         self.__mapping = mapping
 
@@ -89,7 +70,12 @@ class MapNeuronSelector(NeuronSelector):
         :return: A list of neurons based on the mapper
         """
         result = []
-        for item in self.neuron_range:
+        nrange = self.neuron_range
+        if isinstance(nrange, PropertyPath):
+            nrange = nrange.select(root, bca)
+        if isinstance(nrange, int):
+            nrange = range(0, nrange)
+        for item in nrange:
             neurons = self.mapping(item).select(root, bca)
             if isinstance(neurons, list):
                 result = result + neurons
@@ -98,11 +84,13 @@ class MapNeuronSelector(NeuronSelector):
         return result
 
 
-class ChainNeuronSelector(NeuronSelector):
+class ChainNeuronSelector(PropertyPath):
     """
     Represents a chain of neuron selectors
     """
 
+    # The following is a bug in pylint
+    # pylint: disable=incomplete-protocol
     def __init__(self, selectors):
         """
         Creates a new chain selector
@@ -131,7 +119,10 @@ class ChainNeuronSelector(NeuronSelector):
         :param bca: The brain info
         """
         result = []
-        for selector in self.selectors:
+        selectors = self.selectors
+        if isinstance(selectors, PropertyPath):
+            selectors = selectors.select(root, bca)
+        for selector in selectors:
             selected = selector.select(root, bca)
             if isinstance(selected, list):
                 result = result + selected
