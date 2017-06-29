@@ -29,6 +29,7 @@ __author__ = "Sebastian Krach"
 
 from .__DeviceGroup import DeviceGroup
 from collections import OrderedDict
+from hbp_nrp_cle.tf_framework import resolve_brain_variable
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainDevice
 
 
@@ -131,18 +132,20 @@ class AbstractBrainDevice(IBrainDevice):
         :return: a dictionary containing the desired configuration parameters
         """
         if not params:
-            return self._parameters
-
-        result = OrderedDict()
-        for p in params:
-            if isinstance(p, dict):
-                for (k, v) in p.items():
+            result = dict(self._parameters)
+        else:
+            result = OrderedDict()
+            for p in params:
+                if isinstance(p, dict):
+                    for (k, v) in p.items():
+                        result[k] = self._parameters[v]
+                if isinstance(p, tuple):
+                    (k, v) = p
                     result[k] = self._parameters[v]
-            if isinstance(p, tuple):
-                (k, v) = p
-                result[k] = self._parameters[v]
-            else:
-                result[p] = self._parameters[p]
+                else:
+                    result[p] = self._parameters[p]
+        for k in result:
+            result[k] = resolve_brain_variable(result[k])
         return result
 
     @classmethod

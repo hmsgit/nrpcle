@@ -29,6 +29,8 @@ as a parameter. The reason for this is that this allows to make it transparent f
 whether some of the parsing functionality has been extracted here.
 """
 
+from hbp_nrp_cle.tf_framework import resolve_brain_variable
+
 __author__ = 'Georg Hinkel'
 
 
@@ -40,8 +42,8 @@ def set_synapse_type(device_parameters, sim):
     :param device_parameters: The device parameters of the given device
     :param sim: The simulator module
     """
-    weights = device_parameters["weight"]
-    delays = device_parameters["delay"]
+    weights = resolve_brain_variable(device_parameters["weight"])
+    delays = resolve_brain_variable(device_parameters["delay"])
     if not device_parameters["synapse_type"]:
         device_parameters["synapse_type"] = sim.StaticSynapse(weight=weights, delay=delays)
     elif isinstance(device_parameters["synapse_type"], dict):

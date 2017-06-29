@@ -144,7 +144,7 @@ class PyNNLeakyIntegrator(AbstractBrainDevice, IBrainDevice):
             conn = self._parameters["connector"]
             if isinstance(conn, dict):
                 self.__apply_connector(conn, params)
-        if not self._parameters["weight"]:
+        if self._parameters["weight"] is None:
             self._parameters["weight"] = self._get_connector_weight()
 
         set_synapse_type(self._parameters, sim)

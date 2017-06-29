@@ -24,8 +24,15 @@
 from hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegratorTypes import PyNNLeakyIntegratorAlpha as LeakyIntegrator
 import unittest
 from mock import patch
+from hbp_nrp_cle.tf_framework import config, brain, start_new_tf_manager
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
 
 __author__ = 'Georg Hinkel'
+
+
+class FooBrain(object):
+    def __init__(self):
+        self.foo = 1.0
 
 
 class TestLeakyIntegrator(unittest.TestCase):
@@ -35,7 +42,7 @@ class TestLeakyIntegrator(unittest.TestCase):
         dev = LeakyIntegrator()
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
-        self.assertDictEqual(dev._parameters, {
+        self.assertDictEqual(dev.get_parameters(), {
             'v_thresh': float('inf'),
             'cm': 1.0,
             'tau_m': 10.0,
@@ -56,11 +63,39 @@ class TestLeakyIntegrator(unittest.TestCase):
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegrator.sim")
+    def test_brain_variable_weight(self, sim_mock):
+        dev = LeakyIntegrator(weight=brain.foo)
+        config.brain_root = FooBrain()
+        start_new_tf_manager()
+        config.active_node.brain_adapter = MockBrainCommunicationAdapter()
+        self.assertTrue(sim_mock.Population.called)
+        self.assertTrue(sim_mock.initialize.called)
+        self.assertDictEqual(dev.get_parameters(), {
+            'v_thresh': float('inf'),
+            'cm': 1.0,
+            'tau_m': 10.0,
+            'tau_syn_E': 2.,
+            'tau_syn_I': 2.,
+            'v_rest': 0.0,
+            'v_reset': 0.0,
+            'tau_refrac': 0.1,
+            'i_offset': 0.0,
+            'connector': sim_mock.AllToAllConnector(),
+            'weight': 1.0,
+            'delay': 0.1,
+            'source': None,
+            'receptor_type': 'excitatory',
+            'synapse_type': sim_mock.StaticSynapse(),
+            'label': None,
+            'rng': None
+        })
+
+    @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegrator.sim")
     def test_connector(self, sim_mock):
         dev = LeakyIntegrator(connector={'weight': 2, 'delay': 4, 'mode': 'OneToOne'})
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
-        self.assertDictEqual(dev._parameters, {
+        self.assertDictEqual(dev.get_parameters(), {
             'v_thresh': float('inf'),
             'cm': 1.0,
             'tau_m': 10.0,
@@ -110,7 +145,7 @@ class TestLeakyIntegrator(unittest.TestCase):
         dev = LeakyIntegrator(connector={'weight': 2, 'delay': 4, 'mode': 'AllToAll'}, weight=42)
         self.assertTrue(sim_mock.Population.called)
         self.assertTrue(sim_mock.initialize.called)
-        self.assertDictEqual(dev._parameters, {
+        self.assertDictEqual(dev.get_parameters(), {
             'v_thresh': float('inf'),
             'cm': 1.0,
             'tau_m': 10.0,

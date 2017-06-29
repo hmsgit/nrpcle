@@ -26,6 +26,7 @@ This module contains the mock implementation of the transfer functions manager
 """
 
 from hbp_nrp_cle.tf_framework._TransferFunctionInterface import ITransferFunctionManager
+from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
 import time
 
 __author__ = 'GeorgHinkel'
@@ -45,6 +46,7 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         self.__n2rTimes = []
         self.__sleepTime = 1
         self.__publish_error_callback = None
+        self.__bca = MockBrainCommunicationAdapter()
 
     def initialize(self, name):
         """
@@ -158,3 +160,10 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         Performs a hard reset for the devices that connect with the neuronal simulation
         """
         pass
+
+    @property
+    def brain_adapter(self):
+        """
+        Gets the brain adapter of this mock
+        """
+        return self.__bca

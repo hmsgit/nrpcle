@@ -39,6 +39,20 @@ class TFLoadingException(TFException):
     def __init__(self, tf_name, message):
         super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
 from . import config
+from ._PropertyPath import PropertyPath, RangeSegment, CustomSegment
+
+
+def resolve_brain_variable(var):
+    """
+    Resolves the given brain variable for the current brain
+
+    :param var: The brain variable
+    :return: If the variable does not depend on the neural network, it is returned unchanged.
+    Otherwise, it is resolved for the current neural network
+    """
+    if isinstance(var, PropertyPath):
+        return var.select(config.brain_root, config.active_node.brain_adapter)
+    return var
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
@@ -61,16 +75,14 @@ from operator import getitem
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, \
     MapRobotSubscriber
-from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction
-from hbp_nrp_cle.tf_framework._CSVRecorder import MapCSVRecorder, CSVRecorder
-from hbp_nrp_cle.tf_framework._NeuronMonitor import NeuronMonitor
-from hbp_nrp_cle.tf_framework._GlobalData \
+from ._TransferFunction import TransferFunction
+from ._CSVRecorder import MapCSVRecorder, CSVRecorder
+from ._NeuronMonitor import NeuronMonitor
+from ._GlobalData \
     import MapVariable, MapRetina, GLOBAL, TRANSFER_FUNCTION_LOCAL
-from hbp_nrp_cle.tf_framework._CleanableTransferFunctionParameter \
+from ._CleanableTransferFunctionParameter \
     import ICleanableTransferFunctionParameter
-from . import _TransferFunctionManager
-from . import _PropertyPath
-from . import _NeuronSelectors
+from . import _TransferFunctionManager, _NeuronSelectors
 from ._TransferFunctionInterface import ITransferFunctionManager
 from hbp_nrp_cle.robotsim.RobotInterface import Topic, IRobotCommunicationAdapter
 import std_msgs.msg
@@ -122,7 +134,7 @@ nc_source = INCSource
 population_rate = IPopulationRate
 spike_recorder = ISpikeRecorder
 
-brain = _PropertyPath.PropertyPath()
+brain = PropertyPath()
 
 
 def nrange(start, stop, step=None):
@@ -133,7 +145,7 @@ def nrange(start, stop, step=None):
     :param stop: The stop of the range
     :param step: The step of the range
     """
-    return _PropertyPath.RangeSegment(start, stop, step)
+    return RangeSegment(start, stop, step)
 
 
 def resolve(fun):
@@ -141,7 +153,7 @@ def resolve(fun):
     Resolves the given function when the neural network is available
     :param fun: The function that selects the item from the network
     """
-    return _PropertyPath.CustomSegment(fun)
+    return CustomSegment(fun)
 
 
 def map_neurons(neuron_range, mapping):
@@ -336,7 +348,7 @@ def set_transfer_function(new_source, new_code, new_name):
     except Exception as e:
         tb = sys.exc_info()[2]
         logger.error("Error while loading new transfer function")
-        logger.error(e)
+        logger.exception(e)
         delete_transfer_function(new_name) # prevents runtime error
         raise TFLoadingException(new_name, str(e)), None, tb
 

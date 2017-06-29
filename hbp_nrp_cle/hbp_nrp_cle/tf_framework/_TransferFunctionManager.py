@@ -161,6 +161,8 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         return self.__nestAdapter
 
+    # Pylint has a problem because the setter is not specified in the interface
+    # pylint: disable=arguments-differ
     @brain_adapter.setter
     def brain_adapter(self, nest_adapter):  # -> None:
         """

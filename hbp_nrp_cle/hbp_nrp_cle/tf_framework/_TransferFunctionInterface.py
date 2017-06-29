@@ -99,3 +99,10 @@ class ITransferFunctionManager(object):  # pragma: no cover
         Performs a hard reset for the devices that connect with the neuronal simulation
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @property
+    def brain_adapter(self):
+        """
+        Gets or sets the adapter to the brain simulation
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
