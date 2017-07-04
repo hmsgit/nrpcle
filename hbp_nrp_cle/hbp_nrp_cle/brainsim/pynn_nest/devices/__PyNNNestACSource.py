@@ -41,62 +41,90 @@ class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
         "phase": create_transformation("phase")
     }
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def amplitude(self):
+        """
+        Returns the amplitude of the current
+        """
+        return self._parameters["amplitude"]
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNACSource.amplitude.setter
+    @amplitude.setter
     def amplitude(self, value):
         """
         Sets the amplitude of the current
 
         :param value: float
         """
-        if value != self._generator.amplitude:
-            self._generator.amplitude = value
+        if value != self.amplitude:
+            self._parameters["amplitude"] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
             nest.SetStatus(self._generator._device, {'amplitude': 1000.0 * value})
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def offset(self):
+        """
+        Returns the offset of the current
+        """
+        return self._parameters['offset']
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNACSource.offset.setter
+    @offset.setter
     def offset(self, value):
         """
         Sets the offset of the current
 
         :param value: float
         """
-        if self._generator.offset != value:
-            self._generator.offset = value
+        if self.offset != value:
+            self._parameters["offset"] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
             nest.SetStatus(self._generator._device, {'offset': 1000.0 * value})
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def frequency(self):
+        """
+        Returns the frequency of the current
+        """
+        return self._parameters['frequency']
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNACSource.frequency.setter
+    @frequency.setter
     def frequency(self, value):
         """
         Sets the frequency of the current
 
         :param value: float
         """
-        if self._generator.frequency != value:
-            self._generator.frequency = value
+        if self.frequency != value:
+            self._parameters['frequency'] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
             nest.SetStatus(self._generator._device, {'frequency': float(value)})
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def phase(self):
+        """
+        Returns the phase of the current
+        """
+        return self._parameters['phase']
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNACSource.phase.setter
+    @phase.setter
     def phase(self, value):
         """
         Sets the phase of the current
 
         :param value: float
         """
-        if self._generator.phase != value:
-            self._generator.phase = value
+        if self.phase != value:
+            self._parameters['phase'] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
             nest.SetStatus(self._generator._device, {'phase': float(value)})
