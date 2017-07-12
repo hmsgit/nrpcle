@@ -1,6 +1,11 @@
 # ---LICENSE-BEGIN - DO NOT CHANGE OR MOVE THIS HEADER
 # This file is part of the Neurorobotics Platform software
 # Copyright (C) 2014,2015,2016,2017 Human Brain Project
+# https://www.humanbrainproject.eu
+#
+# The Human Brain Project is a European Commission funded project
+# in the frame of the Horizon2020 FET Flagship plan.
+# http://ec.europa.eu/programmes/horizon2020/en/h2020-section/fet-flagships
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
