@@ -21,10 +21,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-'''
-Implementation of PyNNDCSource
-moduleauthor: probst@fzi.de
-'''
+"""
+This module contains the nest implementation of the DC source for nest
+"""
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNDCSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
@@ -43,17 +42,24 @@ class PyNNNestDCSource(PyNNNestDevice, PyNNDCSource):
         "amplitude": create_transformation("amplitude", 1000.0)
     }
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def amplitude(self):
+        """
+        Returns the amplitude of the current
+        """
+        return self._parameters["amplitude"]
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNDCSource.amplitude.setter
+    @amplitude.setter
     def amplitude(self, value):
         """
         Sets the amplitude of the current
 
         :param value: float
         """
-        if self._generator.amplitude != value:
-            self._generator.amplitude = value
+        if self.amplitude != value:
+            self._parameters["amplitude"] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
             nest.SetStatus(self._generator._device, {"amplitude": 1000.0 * value})

@@ -43,15 +43,23 @@ class PyNNNestPoissonSpikeGenerator(PyNNNestDevice, PyNNPoissonSpikeGenerator):
         "rate": create_transformation("rate")
     }
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def rate(self):
+        """
+        Returns the frequency of the Poisson spike generator
+        """
+        return self._parameters["rate"]
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNPoissonSpikeGenerator.rate.setter
+    @rate.setter
     def rate(self, value):
         """
         Sets the amplitude of the current
 
         :param value: float
         """
+        self._parameters["rate"] = value
         # The nest device is only available as protected property of the PyNN device
         # pylint: disable=protected-access, no-member
         nest.SetStatus(self._generator._device, {'rate': value})

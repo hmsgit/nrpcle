@@ -38,9 +38,16 @@ class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator):
     spike times at a given frequency
     """
 
-    # PyLint does not correctly recognize the overriding of the property setter
+    @property
+    def rate(self):
+        """
+        Returns the frequency of the Fixed spike generator
+        """
+        return self._rate
+
+    # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
-    @PyNNFixedSpikeGenerator.rate.setter
+    @rate.setter
     def rate(self, value):
         """
         Sets the frequency of the Fixed spike generator
