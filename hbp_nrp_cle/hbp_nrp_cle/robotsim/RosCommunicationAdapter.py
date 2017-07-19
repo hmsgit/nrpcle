@@ -52,9 +52,9 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         try:
             rospy.init_node(name)
-            logger.info("Robot comunication adapter initialized")
+            logger.info("Robot communication adapter initialized")
         except rospy.exceptions.ROSException:
-            logger.warn("ROS node already initialized")
+            logger.warn("ROS node already initialized with another name")
 
     def create_topic_publisher(self, topic, config):
         """
@@ -103,7 +103,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         for publisher in self.published_topics:
             publisher._unregister()  # pylint: disable=protected-access
         for subscriber in self.subscribed_topics:
-            subscriber._unregister() # pylint: disable=protected-access
+            subscriber._unregister()  # pylint: disable=protected-access
 
 
 class RosPublishedTopic(IRobotPublishedTopic):

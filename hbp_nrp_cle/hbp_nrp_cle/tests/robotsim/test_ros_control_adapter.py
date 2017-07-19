@@ -267,7 +267,9 @@ class TestRosControlAdapter(unittest.TestCase):
         with LogCapture('hbp_nrp_cle.robotsim.RosControlAdapter') as logcapture:
             self._rca.shutdown()
             logcapture.check(('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
-                              'Shutting down the world simulation'))
+                              'Shutting down the world simulation'),
+                             ('hbp_nrp_cle.robotsim.RosControlAdapter', 'INFO',
+                              'Robot control adapter stopped'))
 
 
 if __name__ == '__main__':
