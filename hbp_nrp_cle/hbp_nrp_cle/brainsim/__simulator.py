@@ -33,13 +33,15 @@ from hbp_nrp_cle.brainsim import config
 import pyNN.nest as sim
 from pyNN.common.control import DEFAULT_TIMESTEP, DEFAULT_MIN_DELAY
 
+import nest
+
 # store the pynNN.setup(...) function before patching with NRP specific behavior
 pynn_setup = sim.setup
 
 
 def nrp_pynn_setup(timestep=DEFAULT_TIMESTEP, min_delay=DEFAULT_MIN_DELAY, **extra_params):
     """
-    Override the default Nest setup function for NRP specific behavior, this ensures consistent
+    Override the default PyNN setup function for NRP specific behavior, this ensures consistent
     behavior even if a brain file contains a call to pyNN.setup(...).
 
     See PyNN documentation for parameter information.
@@ -56,9 +58,12 @@ def nrp_pynn_setup(timestep=DEFAULT_TIMESTEP, min_delay=DEFAULT_MIN_DELAY, **ext
     # retrieving spikes natively from Nest within the NRP)
     extra_params['spike_precision'] = 'on_grid'
 
+    # determine the total number of threads/processes needed for RNG seeds
+    rng_seed_count = nest.GetKernelStatus(['total_num_virtual_procs'])[0]
+
     # override the RNG seed with experiment specific parameters
     extra_params['grng_seed'] = config.rng_seed
-    extra_params['rng_seeds'] = [config.rng_seed] * extra_params['threads']
+    extra_params['rng_seeds'] = [config.rng_seed] * rng_seed_count
 
     # call the actual PyNN setup with our overridden parameters, return rank
     return pynn_setup(timestep, min_delay, **extra_params)
