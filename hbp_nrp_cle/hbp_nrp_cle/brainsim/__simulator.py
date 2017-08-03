@@ -34,6 +34,10 @@ import pyNN.nest as sim
 from pyNN.common.control import DEFAULT_TIMESTEP, DEFAULT_MIN_DELAY
 
 import nest
+import multiprocessing
+import logging
+
+logger = logging.getLogger(__name__)
 
 # store the pynNN.setup(...) function before patching with NRP specific behavior
 pynn_setup = sim.setup
@@ -51,15 +55,25 @@ def nrp_pynn_setup(timestep=DEFAULT_TIMESTEP, min_delay=DEFAULT_MIN_DELAY, **ext
     if config.rng_seed is None:
         raise Exception('RNG seed has not been set for CLE brain adapter!')
 
-    # force Nest to use one thread - currently required for the NRP to function
-    extra_params['threads'] = 1
+    # default to a single thread if not specified in the setup call
+    if 'threads' not in extra_params:
+        extra_params['threads'] = 1
+
+    # ensure we leave a single core/thread for the NRP backend, oversubscribing actually hurts
+    # performance and we can't guarantee number of host CPU cores for local installs
+    if extra_params['threads'] >= multiprocessing.cpu_count():
+        extra_params['threads'] = max(1, multiprocessing.cpu_count() - 1)
+        logger.warn('Limiting number of Nest threads to %i!', extra_params['threads'])
 
     # force Nest to generate spikes on grid (otherwise we get a Nest crash when
     # retrieving spikes natively from Nest within the NRP)
     extra_params['spike_precision'] = 'on_grid'
 
+    # reset the Nest kernel threads/processes/RNG seeds before interacting with it
+    nest.ResetKernel()
+
     # determine the total number of threads/processes needed for RNG seeds
-    rng_seed_count = nest.GetKernelStatus(['total_num_virtual_procs'])[0]
+    rng_seed_count = nest.GetKernelStatus(['total_num_virtual_procs'])[0] * extra_params['threads']
 
     # override the RNG seed with experiment specific parameters
     extra_params['grng_seed'] = config.rng_seed
