@@ -50,24 +50,39 @@ class RosControlAdapter(IRobotControlAdapter):
     """
 
     def __init__(self):
+        self.__persistent_services = []
         rospy.wait_for_service('/gazebo/get_physics_properties')
         self.__get_physics_properties = rospy.ServiceProxy(
             '/gazebo/get_physics_properties', GetPhysicsProperties, persistent=True)
+        self.__persistent_services.append(self.__get_physics_properties)
+
         rospy.wait_for_service('/gazebo/get_world_properties')
         self.__get_world_properties = rospy.ServiceProxy(
             '/gazebo/get_world_properties', GetWorldProperties, persistent=True)
+        self.__persistent_services.append(self.__get_world_properties)
+
         rospy.wait_for_service('/gazebo/set_physics_properties')
         self.__set_physics_properties = rospy.ServiceProxy(
             '/gazebo/set_physics_properties', SetPhysicsProperties, persistent=True)
+        self.__persistent_services.append(self.__set_physics_properties)
+
         rospy.wait_for_service('/gazebo/pause_physics')
         self.__pause_client = rospy.ServiceProxy('/gazebo/pause_physics', Empty, persistent=True)
+        self.__persistent_services.append(self.__pause_client)
+
         rospy.wait_for_service('/gazebo/reset_sim')
         self.__reset = rospy.ServiceProxy('/gazebo/reset_sim', Empty, persistent=True)
+        self.__persistent_services.append(self.__reset)
+
         rospy.wait_for_service('/gazebo/end_world')
         self.__endWorld = rospy.ServiceProxy('/gazebo/end_world', Empty, persistent=True)
+        self.__persistent_services.append(self.__endWorld)
+
         rospy.wait_for_service('/gazebo/advance_simulation')
         self.__advance_simulation = AsynchonousRospyServiceProxy(
             '/gazebo/advance_simulation', AdvanceSimulation, persistent=True)
+        self.__persistent_services.append(self.__advance_simulation)
+
         self.__time_step = 0.0
         self.__is_initialized = False
 
@@ -177,6 +192,12 @@ class RosControlAdapter(IRobotControlAdapter):
         Shuts down the world simulation
         """
         logger.info("Shutting down the world simulation")
+
+        for service in self.__persistent_services:
+            service.close()
+
+        logger.info("Robot control adapter stopped")
+
         # Do not call endWorld here, it makes Gazebo Stop !
 
     def reset(self):

@@ -54,9 +54,9 @@ class TestRosCommunicationAdapter(unittest.TestCase):
             rca.initialize("test_node")
             self.assertEquals(mock_init_node.call_count, 2)
             logcapture.check(('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'INFO',
-                              'Robot comunication adapter initialized'),
+                              'Robot communication adapter initialized'),
                              ('hbp_nrp_cle.robotsim.RosCommunicationAdapter', 'WARNING',
-                              'ROS node already initialized')
+                              'ROS node already initialized with another name')
             )
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.init_node')
