@@ -49,6 +49,9 @@ class ClosedLoopEngine(IClosedLoopControl):
     and the brain simulation.
     """
 
+    # default simulation timestep in seconds (20 ms)
+    DEFAULT_TIMESTEP = 0.02
+
     def __init__(self,
                  robot_control_adapter,
                  robot_comm_adapter,
