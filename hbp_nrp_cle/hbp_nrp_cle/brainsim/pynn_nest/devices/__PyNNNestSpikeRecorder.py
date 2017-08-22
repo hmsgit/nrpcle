@@ -27,6 +27,7 @@ Implementation of PyNNSpikeDetector
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNSpikeRecorder
 import nest
+from pyNN.common import Assembly
 import numpy as np
 import logging
 
@@ -47,6 +48,7 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
         """
         super(PyNNNestSpikeRecorder, self).__init__(**params)
         self.__use_ids = self.get_parameters().get("use_ids")
+        self.__recorders = None
 
     # pylint: disable=protected-access
     def _start_record_spikes(self):
@@ -59,11 +61,27 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
         # Meanwhile, we are interacting with NEST directly.
 
         # Population recorders need to be reset before being reused
-        self._neurons.recorder.reset()
+        self.__recorders = []
+        self._add_all_recorders(self._neurons, self.__recorders)
+        for rec in self.__recorders:
+            rec.reset()
         self._neurons.record("spikes", to_file=False)
-        recorder_device = self._neurons.recorder._spike_detector.device
-        nest.SetStatus(recorder_device, "to_memory", True)
-        nest.SetStatus(recorder_device, "to_file", False)
+        for rec in self.__recorders:
+            recorder_device = rec._spike_detector.device
+            nest.SetStatus(recorder_device, "to_memory", True)
+            nest.SetStatus(recorder_device, "to_file", False)
+
+    def _add_all_recorders(self, population, recorder_list):
+        """
+        Adds all recorders contained in the given population to the list of recorders
+        :param population: The population to start with
+        :param recorder_list: The list of recorders
+        """
+        if isinstance(population, Assembly):
+            for p in population.populations:
+                self._add_all_recorders(p, recorder_list)
+        else:
+            recorder_list.append(population.recorder)
 
     # simulation time not necessary for this device
     # pylint: disable=unused-argument
@@ -73,11 +91,29 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
 
         :param time: The current simulation time
         """
+        recorders = self.__recorders
+        if len(recorders) == 1:
+            spikes_nest, times_nest = self.__read_recorder_data(self._neurons.recorder)
+        else:
+            spikes_nest = []
+            times_nest = []
+            for rec in recorders:
+                sp, ti = self.__read_recorder_data(rec)
+                spikes_nest.append(sp)
+                times_nest.append(ti)
+            spikes_nest = np.concatenate(spikes_nest)
+            times_nest = np.concatenate(times_nest)
+        self._spikes = np.array([spikes_nest, times_nest]).T
+
+    def __read_recorder_data(self, recorder):
+        """
+        Reads the recorded data of the given recorder
+        :param nest_device:
+        :return:
+        """
         # Get the spikes directly from NEST (It let use use memory instead of files)
         # pylint: disable=protected-access
-        nest_device = self._neurons.recorder._spike_detector.device
-
-        nest_info = nest.GetStatus(nest_device, 'events')[0]
+        nest_info = nest.GetStatus(recorder._spike_detector.device, 'events')[0]
         times_nest = nest_info['times']
         spikes_nest = nest_info['senders']
         if not self.__use_ids:
@@ -87,7 +123,7 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
                 except IndexError:
                     del spikes_nest[i]
                     del times_nest[i]
-        self._spikes = np.array([spikes_nest, times_nest]).T
+        return spikes_nest, times_nest
 
     # simulation time not necessary for this device
     # pylint: disable=W0613
@@ -98,5 +134,6 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
 
         :param time: The current simulation time
         """
-        nest_device = self._neurons.recorder._spike_detector.device
-        nest.SetStatus(nest_device, 'n_events', 0)
+        for rec in self.__recorders:
+            nest_device = rec._spike_detector.device
+            nest.SetStatus(nest_device, 'n_events', 0)
