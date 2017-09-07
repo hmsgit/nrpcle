@@ -97,7 +97,6 @@ class RosControlAdapter(IRobotControlAdapter):
             paused = physics.pause
             if not paused:
                 self.__pause_client()
-            self.__reset()
             self.__time_step = physics.time_step
             self.__is_initialized = True
 

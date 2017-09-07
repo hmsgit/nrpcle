@@ -74,7 +74,7 @@ class GazeboHelper(object):
 
     def load_gazebo_world_file(self, world_file):
         """
-        Load a SDF world file into the ROS connected gazebo running instance.
+        Load an SDF world file into the ROS connected gazebo running instance.
 
         :param world_file: The absolute path of the SDF world file.
         :return A pair of dictionaries:
@@ -85,22 +85,38 @@ class GazeboHelper(object):
         with open(world_file, 'r') as world_file_sdf:
             world_sdf_string = world_file_sdf.read()
 
-        world_models_sdf, world_lights_sdf = GazeboHelper.parse_world_file(world_sdf_string)
+        world_models_sdf, world_lights_sdf = GazeboHelper.parse_world_string(world_sdf_string)
 
         self.load_gazebo_world(world_models_sdf, world_lights_sdf)
 
         return world_models_sdf, world_lights_sdf
 
     @staticmethod
-    def parse_world_file(world_string):
+    def parse_gazebo_world_file(world_file):
         """
-        Parse an SDF world file producing a pair of dictionaries:
+        Parse an SDF world file.
+
+        :param world_file: The absolute path of the SDF world file.
+        :return A pair of dictionaries:
+            1st containing pairs (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf}),
+            2nd second pairs (light_name: light_sdf)
+        """
+
+        with open(world_file, 'r') as world_file_sdf:
+            world_sdf_string = world_file_sdf.read()
+
+        return GazeboHelper.parse_world_string(world_sdf_string)
+
+    @staticmethod
+    def parse_world_string(world_string):
+        """
+        Parse an SDF world string producing a pair of dictionaries:
         - (model_name: (model_sdf, model_state_sdf))
         - (light_name: light_sdf)
 
         :param world_string: A string containing the SDF world.
         :return A pair of dictionaries,
-            the 1st containing pairs (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf},
+            the 1st containing pairs (model_name: {'model_sdf': sdf, 'model_staet_sdf': sdf},
             the 2nd pairs (light_name: light_sdf)
         """
         world_file_sdf = etree.fromstring(world_string)
@@ -338,7 +354,7 @@ class GazeboHelper(object):
         cameras then a scene will not exist and this will not block).
 
         This is necessary for sensors (e.g. cameras) that depend on the rendering environment to be
-        imeediately usable. The simulation will otherwise run, but the cameras and sensors will not
+        immediately usable. The simulation will otherwise run, but the cameras and sensors will not
         publish data until they are fully loaded.
         """
 
