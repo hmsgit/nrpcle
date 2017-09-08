@@ -42,6 +42,9 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     """
 
     def __init__(self):
+        """
+        Create a new RosCommunicationAdapter
+        """
         IRobotCommunicationAdapter.__init__(self)
 
     def initialize(self, name):
@@ -65,8 +68,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         :return: A publisher object
         """
         if isinstance(topic, PreprocessedTopic):
-            return RosPublishedPreprocessedTopic(topic)
-        return RosPublishedTopic(topic)
+            return RosPublishedPreprocessedTopic(topic, config.get('queue_size', 10))
+        return RosPublishedTopic(topic, config.get('queue_size', 10))
 
     def create_topic_subscriber(self, topic, config):
         """
@@ -77,8 +80,8 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         :return: A subscription object
         """
         if isinstance(topic, PreprocessedTopic):
-            return RosSubscribedPreprocessedTopic(topic)
-        return RosSubscribedTopic(topic)
+            return RosSubscribedPreprocessedTopic(topic, config.get('initial_value', None))
+        return RosSubscribedTopic(topic, config.get('initial_value', None))
 
     @property
     def is_alive(self):  # pylint: disable=R0201
@@ -110,17 +113,18 @@ class RosPublishedTopic(IRobotPublishedTopic):
     """
     Represents a robot topic publisher actually using ROS
     """
-    def __init__(self, topic):
+    def __init__(self, topic, queue_size):
         """
         Creates a new robot topic publisher
 
         :param topic: The topic where data should be sent to
+        :param queue_size: The queue size for the publisher
         """
         self.__lastSent = None
         assert isinstance(topic, Topic)
         logger.info("ROS publisher created: topic name = %s, topic type = %s",
                     topic.name, topic.topic_type)
-        self.__pub = rospy.Publisher(topic.name, topic.topic_type, queue_size=10)
+        self.__pub = rospy.Publisher(topic.name, topic.topic_type, queue_size=queue_size)
 
     def send_message(self, value):
         """
@@ -151,13 +155,14 @@ class RosPublishedPreprocessedTopic(RosPublishedTopic):
     """
     Represents a robot topic publisher actually using ROS
     """
-    def __init__(self, topic):
+    def __init__(self, topic, queue_size):
         """
         Creates a new robot topic publisher
 
         :param topic: The topic where data should be sent to
+        :param queue_size: The queue size for the publisher
         """
-        super(RosPublishedPreprocessedTopic, self).__init__(topic)
+        super(RosPublishedPreprocessedTopic, self).__init__(topic, queue_size)
         assert isinstance(topic, PreprocessedTopic)
         self.__pre_processor = topic.pre_processor
 
@@ -175,14 +180,15 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
     Represents a robot topic subscriber actually using ROS
     """
 
-    def __init__(self, topic):
+    def __init__(self, topic, initial_value):
         """
         Initializes a new subscriber for the given topic
 
         :param topic: The topic that is subscribed
+        :initial_value: The initial value for the subscriber
         """
         self.__changed = False
-        self.__value = None
+        self.__value = initial_value
         assert isinstance(topic, Topic)
         self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
                                              self._callback)
@@ -245,13 +251,14 @@ class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
     Represents a robot topic subscriber with a preprocessor
     """
 
-    def __init__(self, topic):
+    def __init__(self, topic, initial_value):
         """
         Creates a new preprocessing topic subscriber
 
         :param topic: The topic that is subscribed
+        :param initial_value: The initial value for the subscriber
         """
-        super(RosSubscribedPreprocessedTopic, self).__init__(topic)
+        super(RosSubscribedPreprocessedTopic, self).__init__(topic, initial_value)
         assert isinstance(topic, PreprocessedTopic)
         self.__pre_processor = topic.pre_processor
 

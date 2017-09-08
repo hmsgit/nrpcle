@@ -67,10 +67,10 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
         r = rca.create_topic_publisher(PreprocessedTopic(
             'preprocessed_topic', 'topic_type', lambda x: ()
-        ), '')
+        ), {})
         self.assertIsInstance(r, RosPublishedPreprocessedTopic)
 
-        r = rca.create_topic_publisher(Topic('topic', 'topic_type'), '')
+        r = rca.create_topic_publisher(Topic('topic', 'topic_type'), {})
         self.assertIsInstance(r, RosPublishedTopic)
 
         self.assertEquals(mock_init_node.call_count, 1)
@@ -84,10 +84,10 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
         r = rca.create_topic_subscriber(PreprocessedTopic(
             'preprocessed_topic', 'topic_type', lambda x: ()
-        ), '')
+        ), {})
         self.assertIsInstance(r, RosSubscribedPreprocessedTopic)
 
-        r = rca.create_topic_subscriber(Topic('topic', 'topic_type'), '')
+        r = rca.create_topic_subscriber(Topic('topic', 'topic_type'), {})
         self.assertIsInstance(r, RosSubscribedTopic)
 
         self.assertEquals(mock_init_node.call_count, 1)
@@ -125,15 +125,15 @@ class TestRosCommunicationAdapter(unittest.TestCase):
     # Tests for RosPublishedTopic
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
     def test_rpt_init(self, mock_rospy_publisher):
-        RosPublishedTopic(Topic('topic_name', 'topic_type'))
+        RosPublishedTopic(Topic('topic_name', 'topic_type'), 10)
         self.assertEquals(mock_rospy_publisher.call_count, 1)
         self.assertEquals(mock_rospy_publisher.call_args_list[0][0][0], 'topic_name')
         self.assertEquals(mock_rospy_publisher.call_args_list[0][0][1], 'topic_type')
-        self.assertRaises(AssertionError, RosPublishedTopic, None)
+        self.assertRaises(AssertionError, RosPublishedTopic, None, None)
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
     def test_rpt_send_message(self, mock_rospy_publisher):
-        rpt = RosPublishedTopic(Topic('topic_name', 'topic_type'))
+        rpt = RosPublishedTopic(Topic('topic_name', 'topic_type'), 10)
         pub = mock_rospy_publisher.return_value
         rpt.send_message('message')
         self.assertEquals(pub.publish.call_count, 1)
@@ -144,7 +144,7 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
     def test_rpt_unregister(self, mock_rospy_publisher):
-        rpt = RosPublishedTopic(Topic('topic_name', 'topic_type'))
+        rpt = RosPublishedTopic(Topic('topic_name', 'topic_type'), 10)
         pub = mock_rospy_publisher.return_value
         rpt._unregister()
         self.assertEquals(pub.unregister.call_count, 1)
@@ -152,16 +152,16 @@ class TestRosCommunicationAdapter(unittest.TestCase):
     # Tests for RosPublishedPreprocessedTopic
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
     def test_rppt_init(self, mock_rospy_publisher):
-        self.assertRaises(AssertionError, RosPublishedPreprocessedTopic, None)
+        self.assertRaises(AssertionError, RosPublishedPreprocessedTopic, None, None)
         t = PreprocessedTopic('a', 'b', lambda x: ())
-        rppt = RosPublishedPreprocessedTopic(t)
+        rppt = RosPublishedPreprocessedTopic(t, 10)
         self.assertEquals(t.pre_processor, rppt._RosPublishedPreprocessedTopic__pre_processor)
         self.assertEquals(mock_rospy_publisher.call_count, 1)
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
     def test_rppt_send_message(self, mock_rospy_publisher):
         with LogCapture('hbp_nrp_cle.robotsim.RosCommunicationAdapter') as logcapture:
-            rppt = RosPublishedPreprocessedTopic(PreprocessedTopic('a', 'b', lambda x: x))
+            rppt = RosPublishedPreprocessedTopic(PreprocessedTopic('a', 'b', lambda x: x), 10)
             oldp = rppt._RosPublishedTopic__pub
             rppt._RosPublishedTopic__pub = None
             rppt.send_message('message')
@@ -178,15 +178,15 @@ class TestRosCommunicationAdapter(unittest.TestCase):
     # Tests for RosSubscribedTopic
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
     def test_rst_init(self, mock_rospy_subscriber):
-        RosSubscribedTopic(Topic('topic_name', 'topic_type'))
+        RosSubscribedTopic(Topic('topic_name', 'topic_type'), None)
         self.assertEquals(mock_rospy_subscriber.call_count, 1)
         self.assertEquals(mock_rospy_subscriber.call_args_list[0][0][0], 'topic_name')
         self.assertEquals(mock_rospy_subscriber.call_args_list[0][0][1], 'topic_type')
-        self.assertRaises(AssertionError, RosSubscribedTopic, None)
+        self.assertRaises(AssertionError, RosSubscribedTopic, None, None)
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
     def test_rst_callback(self, mock_rospy_subscriber):
-        rst = RosSubscribedTopic(Topic('topic_name', 'topic_type'))
+        rst = RosSubscribedTopic(Topic('topic_name', 'topic_type'), 10)
         rst._callback('data')
         self.assertTrue(rst.changed)
         self.assertEquals(rst.value, 'data')
@@ -194,14 +194,14 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
     def test_rst_reset_changed(self, mock_rospy_subscriber):
-        rst = RosSubscribedTopic(Topic('topic_name', 'topic_type'))
+        rst = RosSubscribedTopic(Topic('topic_name', 'topic_type'), None)
         rst.reset_changed()
         self.assertFalse(rst.changed)
         self.assertEquals(mock_rospy_subscriber.call_count, 1)
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
     def test_rst_reset(self, mock_rospy_subscriber):
-        rst = RosSubscribedTopic(Topic('topic_name', 'topic_type'))
+        rst = RosSubscribedTopic(Topic('topic_name', 'topic_type'), None)
         res = rst.reset(None)
         self.assertFalse(rst.changed)
         self.assertFalse(res.changed)
@@ -210,15 +210,15 @@ class TestRosCommunicationAdapter(unittest.TestCase):
     # Tests for RosSubscribedPreprocessedTopic
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
     def test_rspt_init(self, mock_rospy_subscriber):
-        self.assertRaises(AssertionError, RosSubscribedPreprocessedTopic, None)
+        self.assertRaises(AssertionError, RosSubscribedPreprocessedTopic, None, None)
         t = PreprocessedTopic('a', 'b', lambda x: ())
-        rppt = RosSubscribedPreprocessedTopic(t)
+        rppt = RosSubscribedPreprocessedTopic(t, None)
         self.assertEquals(t.pre_processor, rppt._RosSubscribedPreprocessedTopic__pre_processor)
         self.assertEquals(mock_rospy_subscriber.call_count, 1)
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
     def test_rspt_callback(self, mock_rospy_subscriber):
-        rst = RosSubscribedPreprocessedTopic(PreprocessedTopic('topic_name', 'topic_type', lambda x: x))
+        rst = RosSubscribedPreprocessedTopic(PreprocessedTopic('topic_name', 'topic_type', lambda x: x), None)
         rst._callback('data')
         self.assertTrue(rst.changed)
         self.assertEquals(rst.value, 'data')
