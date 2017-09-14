@@ -10,7 +10,7 @@ PyNN==0.8.2
 PyYAML==3.11
 rospkg==1.0.38
 catkin_pkg==0.2.10
-progressbar==2.3
+progressbar2==3.34.0
 psutil==2.0.0
 mock==1.0.1
 testfixtures==3.0.2
