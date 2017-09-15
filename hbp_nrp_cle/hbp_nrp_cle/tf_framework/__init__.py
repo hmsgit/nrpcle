@@ -3,9 +3,19 @@ This package contains the classes to specify transfer functions and connect them
 adapters of both the neuronal simulator and the world simulator
 """
 
-
 from hbp_nrp_cle.common import UserCodeException
 from hbp_nrp_excontrol.restricted_python import _inplacevar_
+
+
+class BrainParameterException(Exception):
+    """
+    Exception raised when a brain connection parameter fails to create the underlying adapter
+
+    :param source: the exception source
+    :param message: the brain
+    """
+    def __init__(self, message):
+        super(BrainParameterException, self).__init__(message)
 
 
 class TFException(UserCodeException):

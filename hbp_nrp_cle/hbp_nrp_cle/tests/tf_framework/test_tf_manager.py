@@ -109,3 +109,28 @@ class TestTransferFunctionManager(unittest.TestCase):
         self.tfm.initialize("tfnode")
         self.assertEqual(1, len(self.rcm.subscribed_topics))
         self.tfm.hard_reset_brain_devices()
+
+    def test_hard_reset_brain_devices_wrong_mapping(self):
+        """
+        Any exception thrown reseting brain connection mappings should raise an
+        explicit BrainParameterException
+        """
+
+        self.tfm.robot_adapter = self.rcm
+        self.tfm.hard_reset_brain_devices()
+        self.tfm.brain_adapter = self.bcm
+
+        @nrp.MapSpikeSink("device", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
+        @nrp.Robot2Neuron()
+        def camera_trans(t, device):
+            pass
+
+        self.tfm.initialize("tfnode")
+
+        camera_trans.device.spec.create_adapter = lambda: Exception()
+
+        with self.assertRaises(nrp.BrainParameterException) as cm:
+          self.tfm.hard_reset_brain_devices()
+
+        self.assertEqual(cm.exception.message, "Cannot map parameter 'device' in transfer function 'camera_trans'")
+

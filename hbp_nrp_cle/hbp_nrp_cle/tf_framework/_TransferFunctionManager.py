@@ -31,7 +31,7 @@ from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
 from ._TransferFunctionInterface import ITransferFunctionManager
 from ._PropertyPath import PropertyPath
-from . import config
+from . import config, BrainParameterException
 import itertools
 import logging
 import time
@@ -284,11 +284,15 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         for tf in itertools.chain(self.__r2n, self.__n2r):
             for i in range(1, len(tf.params)):
-                spec = tf.params[i].spec
-                if spec.is_brain_connection:
-                    tf.params[i] = spec.create_adapter(self)
-                    tf.params[i].spec = spec
-                    tf.__dict__[spec.name] = tf.params[i]
+                try:
+                    spec = tf.params[i].spec
+                    if spec.is_brain_connection:
+                        tf.params[i] = spec.create_adapter(self)
+                        tf.params[i].spec = spec
+                        tf.__dict__[spec.name] = tf.params[i]
+                except Exception:
+                    raise BrainParameterException("Cannot map parameter '{0}' in transfer "
+                                                  "function '{1}'".format(spec.name, tf.name))
             tf.initialize(self, True, False)
 
     def hard_reset_robot_devices(self):
