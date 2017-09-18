@@ -338,6 +338,12 @@ requested (device)'),
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
 requested (device group)'))
 
+        self.communicator.shutdown()
+        self.assertEqual(0, len(self.communicator.detector_devices))
+        self.assertEqual(0, len(self.communicator.generator_devices))
+        self.assertEqual(0, len(self.communicator.refreshable_devices))
+        self.assertEqual(0, len(self.communicator.finalizable_devices))
+
     def test_unregister_spike_source(self):
         """
         Tests the deregistration of the generator __devices
@@ -363,6 +369,9 @@ requested (device group)'))
         self.communicator.unregister_spike_source(fixed)
         self.assertEquals(fixed._generator, None)
         self.assertEquals(fixed._currentsource, None)
+
+        # test that double remove does not cause a failure
+        self.communicator.unregister_spike_source(fixed)
 
     @log_capture('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
                  'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
@@ -521,6 +530,12 @@ requested (device)'),
                           'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPopulationRate\'>" \
 requested (device)'))
+
+        self.communicator.shutdown()
+        self.assertEqual(0, len(self.communicator.detector_devices))
+        self.assertEqual(0, len(self.communicator.generator_devices))
+        self.assertEqual(0, len(self.communicator.refreshable_devices))
+        self.assertEqual(0, len(self.communicator.finalizable_devices))
 
     def test_refresh_buffers(self):
         """

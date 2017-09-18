@@ -49,7 +49,7 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
         self.__finalizable_devices = []
         self.__is_initialized = False
 
-    def _get_device_type(self, device_type):
+    def _get_device_type(self, device_type):  # pragma: no cover
         """
         Method that allows implementing classes to define supported device types. The
         implementing class has to return the concrete type for the device interface passed as a

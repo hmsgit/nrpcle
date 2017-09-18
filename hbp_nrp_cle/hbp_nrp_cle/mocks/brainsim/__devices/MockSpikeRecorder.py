@@ -56,37 +56,43 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
         """
         super(MockSpikeRecorder, self).__init__(**params)
 
-        self.__spiked = False
+        self.__spikes = None
+        self.neurons = None
         self.__update = self._parameters["updates"]
+
+    def connect(self, neurons, **params):
+        """
+        Connects the device to the given neurons
+        :param neurons: The neurons
+        :param params: Configuration parameters (ignored)
+        """
+        self.neurons = neurons
 
     @property
     def spiked(self):
         """
         Returns the membrane voltage of the cell
         """
-        return self.__spiked
+        return self.__spikes is not None
 
     @property
     def times(self):
         """
         Returns the times and neuron IDs of the recorded spikes within the last time step.
         """
-        if self.__spiked:
-            return numpy.array([[0.0], [1]])
-        else:
-            return numpy.array([[], []])
+        return self.__spikes or numpy.array([[], []])
 
-    def refresh(self, time):
+    def refresh(self, time):  # pragma: no cover
         """
         Refreshes the voltage value
 
         :param time: The current simulation time
         """
-        self.__spiked = False
+        self.__spikes = None
         if hasattr(self.__update, '__getitem__'):
             while len(self.__update) > 0 and isinstance(self.__update[0], float)\
                     and time >= self.__update[0]:
-                self.__spiked = True
+                self.__spikes = numpy.array([[self.__update[0]], [0.0]])
                 self.__update = self.__update[1:]
         else:
             warnings.warn("Updates schedules must be sorted lists of tuples")

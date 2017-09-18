@@ -30,6 +30,7 @@ from hbp_nrp_cle.mocks.robotsim import MockRobotControlAdapter, MockRobotCommuni
 from hbp_nrp_cle.mocks.brainsim import MockBrainControlAdapter, MockBrainCommunicationAdapter
 from hbp_nrp_cle.mocks.tf_framework import MockTransferFunctionManager
 from geometry_msgs.msg import Point, Pose, Quaternion
+from concurrent.futures import Future
 
 import unittest
 import threading
@@ -63,16 +64,19 @@ class TestClosedLoopEngine(unittest.TestCase):
 
     def test_run_step(self):
         self.__cle.initialize("foo")
+        self.assertTrue(self.__cle.is_initialized)
         self.assertEqual(self.__cle.run_step(0.01), 0.01)
 
     def test_get_time(self):
         self.__cle.initialize("foo")
+        self.assertTrue(self.__cle.is_initialized)
         self.__cle.run_step(0.05)
         self.__cle.wait_step()
         self.assertEqual(self.__cle.simulation_time, 0.05)
 
     def test_start_stop(self):
         self.__cle.initialize("foo")
+        self.assertTrue(self.__cle.is_initialized)
 
         def stopcle(*args, **kwargs):
             args[0].stop()
@@ -81,9 +85,11 @@ class TestClosedLoopEngine(unittest.TestCase):
         t.start()
         self.__cle.start()
         self.assertGreater(self.__cle.real_time, 0.0)
+        t.join()
 
     def test_reset(self):
         self.__cle.initialize("foo")
+        self.assertTrue(self.__cle.is_initialized)
         self.__cle.run_step(0.05)
         self.__cle.wait_step()
         self.__cle.reset()
@@ -122,6 +128,21 @@ class TestClosedLoopEngine(unittest.TestCase):
     def test_shutdown(self):
         self.__cle.initialize("foo")
         self.__cle.shutdown()
+
+    def test_load_network(self):
+        self.__cle.initialize("foo")
+        self.__cle.load_network_from_file("brain.py")
+        self.__tfm.hard_reset_brain_devices.assert_called_once_with()
+
+    def test_forced_stop(self):
+        self.__cle.initialize("foo")
+        deadlock = Future()
+        deadlock.set_running_or_notify_cancel()
+        self.__cle.rca_future = deadlock
+        self.__cle.stop(forced=False)
+        self.assertTrue(deadlock.running())
+        self.__cle.stop(forced=True)
+        self.assertFalse(deadlock.running())
 
     def test_reset_robot_pose(self):
         self.__cle.gazebo_helper.set_model_pose = Mock()

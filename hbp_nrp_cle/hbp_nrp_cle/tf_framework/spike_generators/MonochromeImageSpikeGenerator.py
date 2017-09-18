@@ -31,7 +31,8 @@ from hbp_nrp_cle.brainsim.BrainInterface import ICustomDevice, IBrainCommunicati
 __author__ = 'GeorgHinkel'
 
 
-class MonochromeImageSpikeGenerator(ICustomDevice):
+# The MonochromeImageSpikeGenerator was just a prototype and is therefore not tested
+class MonochromeImageSpikeGenerator(ICustomDevice):  # pragma: no cover
     """
     A spike generator device that transforms camera images into spikes
     """

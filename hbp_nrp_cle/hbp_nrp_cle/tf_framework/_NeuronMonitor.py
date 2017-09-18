@@ -179,6 +179,6 @@ class NeuronMonitor(TransferFunction):
         Leave the publisher alone otherwise the console fills with many warnings about
         the topic not being published, without a device it won't be usable anyway.
         """
-        if self.device:
+        if self.device is not None:
             self.device._disconnect() # pylint: disable=protected-access
             self.device = None

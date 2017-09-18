@@ -91,7 +91,7 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         """
         Records the spikes of "neurons"
         """
-
+        self._neurons.recorder.reset()
         self._neurons.record('spikes', to_file=False)
 
     def _stop_record_spikes(self):
@@ -156,9 +156,9 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
                 continue
 
             neuron_id = larray(spiketrain.annotations['source_index'])
-            neuron_id.shape([end - begin, ])
+            #neuron_id.shape([end - begin, ])
 
             spikedata[0][begin:end] = neuron_id.evaluate()
-            spikedata[1][begin:end] = spikedata
+            #spikedata[1][begin:end] = spikedata
 
         self._spikes = spikedata.T
