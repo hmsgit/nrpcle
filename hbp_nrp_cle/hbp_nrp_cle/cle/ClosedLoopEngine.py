@@ -189,10 +189,8 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         # robot simulation
         logger.debug("Run step: Robot simulation.")
-        start = time.time()
         self.rca_future = self.rca.run_step_async(timestep)
         self.rcm.refresh_buffers(clk)
-        self.__rca_elapsed_time += time.time() - start
 
         # brain simulation
         logger.debug("Run step: Brain simulation")
@@ -212,7 +210,9 @@ class ClosedLoopEngine(IClosedLoopControl):
         # wait for all thread to finish
         logger.debug("Run_step: waiting on Control thread")
         try:
-            self.rca_future.result()
+            f = self.rca_future
+            f.result()
+            self.__rca_elapsed_time += f.end - f.start
         except ForcedStopException:
             logger.warn("Simulation was brutally stopped.")
 

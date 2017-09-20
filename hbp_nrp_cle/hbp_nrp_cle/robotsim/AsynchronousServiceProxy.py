@@ -36,6 +36,7 @@ from threading import Event, Thread
 from concurrent.futures import Future
 from sys import exc_info
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -110,10 +111,13 @@ class AsynchonousRospyServiceProxy(object):
 
         self.__call_future = Future()
         self.__call_future.set_running_or_notify_cancel()
+        self.__call_future.start = time.time()
 
         # initialize transport
         if self.__proxy.transport is None:
-            self.__call_future.set_result(self.__proxy.call(*args, **kwds))
+            result = self.__proxy.call(*args, **kwds)
+            self.__call_future.end = time.time()
+            self.__call_future.set_result(result)
 
         else:
             if not self.__await_finish_thread.is_alive():
@@ -172,6 +176,7 @@ class AsynchonousRospyServiceProxy(object):
                 ## The code is copied and adapted from rospy.ServiceProxy until here
 
                 self.__retrieve_result.clear()
+                self.__call_future.end = time.time()
                 self.__call_future.set_result(*responses)
 
             # pylint: disable=broad-except
@@ -180,4 +185,5 @@ class AsynchonousRospyServiceProxy(object):
                 exept_info = exc_info()[1:3]
                 old_future = self.__call_future
                 self.__retrieve_result.clear()
+                old_future.end = time.time()
                 old_future.set_exception_info(*exept_info)
