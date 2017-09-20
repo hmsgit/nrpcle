@@ -110,6 +110,8 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         """
         future = Future()
         future.set_result(self.run_step(dt))
+        future.start = 0
+        future.end = 42
         return future
 
     def shutdown(self):
