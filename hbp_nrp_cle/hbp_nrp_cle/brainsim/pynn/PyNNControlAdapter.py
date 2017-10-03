@@ -233,7 +233,12 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         result = copy.deepcopy(populations)
         for key, value in populations.iteritems():
-            if (isinstance(value, dict) and 'from' in value and 'to' in value):
-                step = value.get('step')
-                result[key] = slice(value['from'], value['to'], step)
+            if isinstance(value, dict):
+                if 'from' in value and 'to' in value:
+                    step = value.get('step')
+                    result[key] = slice(value['from'], value['to'], step)
+                elif 'list' in value:
+                    value_list = value.get('list')
+                    result[key] = list(value_list)
+
         return result
