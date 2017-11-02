@@ -33,7 +33,7 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 from concurrent.futures import Future
 
 import unittest
-import threading
+import time
 from mock import Mock, patch, MagicMock
 
 __author__ = 'Nino Cauli'
@@ -77,15 +77,13 @@ class TestClosedLoopEngine(unittest.TestCase):
     def test_start_stop(self):
         self.__cle.initialize("foo")
         self.assertTrue(self.__cle.is_initialized)
-
-        def stopcle(*args, **kwargs):
-            args[0].stop()
-
-        t = threading.Timer(2.0, stopcle, [self.__cle])
-        t.start()
+        self.__cle.start_cb = Mock()
         self.__cle.start()
+        self.assertTrue(self.__cle.start_cb.called)
+        time.sleep(2)
+        self.__cle.stop()
+        self.__cle.wait_step()
         self.assertGreater(self.__cle.real_time, 0.0)
-        t.join()
 
     def test_reset(self):
         self.__cle.initialize("foo")

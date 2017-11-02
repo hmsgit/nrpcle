@@ -30,6 +30,7 @@ __author__ = 'LorenzoVannucci'
 import time
 import logging
 import threading
+from concurrent.futures import Future
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl, ForcedStopException
 from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
@@ -79,10 +80,8 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.rca = robot_control_adapter
         self.rca_future = None
         self.rcm = robot_comm_adapter
-
         self.bca = brain_control_adapter
         self.bcm = brain_comm_adapter
-
         self.tfm = transfer_function_manager
 
         # default timestep
@@ -112,7 +111,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         # incremented with (stop time - start_time). Thus, the real time is
         # elapsed_time                               if paused
         # elapsed_time + (current time - start_time) if running
-        self.running = False
         self.start_time = 0.0
         self.elapsed_time = 0.0
 
@@ -127,6 +125,9 @@ class ClosedLoopEngine(IClosedLoopControl):
         # be done from inside the RosControlAdapter
         self.gazebo_helper = GazeboHelper()
 
+        self.__start_thread = None
+        self.__start_future = None
+        self.start_cb = lambda f: None
         self.initial_models = None
         self.initial_lights = None
 
@@ -144,7 +145,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.bca.load_brain(network_file, **configuration)
         self.tfm.initialize('tfnode')
         self.clock = 0.0
-        self.running = False
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.initialized = True
@@ -233,18 +233,37 @@ class ClosedLoopEngine(IClosedLoopControl):
 
     def start(self):
         """
+        Starts the orchestrated simulations and returns a future to notify suspensions
+        """
+        if self.__start_future is None:
+            self.__start_future = Future()
+            if self.start_cb is not None:
+                self.start_cb(self.__start_future)
+            self.__start_thread = threading.Thread(target=self.__loop)
+            self.__start_thread.setDaemon(True)
+            self.__start_thread.start()
+
+    def __loop(self):
+        """
         Starts the orchestrated simulations.
         This function does not return (starts an infinite loop).
         """
-        self.stop_flag.clear()
-        self.stopped_flag.clear()
-        self.start_time = time.time()
-        self.running = True
-        while not self.stop_flag.isSet():
-            self.run_step(self.timestep)
-        self.running = False
-        self.elapsed_time += time.time() - self.start_time
-        self.stopped_flag.set()
+        self.__start_future.set_running_or_notify_cancel()
+        try:
+            self.stop_flag.clear()
+            self.stopped_flag.clear()
+            self.start_time = time.time()
+            while not self.stop_flag.isSet():
+                self.run_step(self.timestep)
+            self.__start_future.set_result(None)
+        # pylint: disable=broad-except
+        except Exception as e:
+            self.__start_future.set_exception(e)
+        finally:
+            self.elapsed_time += time.time() - self.start_time
+            self.__start_future = None
+            self.__start_thread = None
+            self.stopped_flag.set()
 
     def stop(self, forced=False):
         """
@@ -280,7 +299,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.clock = 0.0
         self.start_time = 0.0
         self.elapsed_time = 0.0
-        self.running = False
         self.__rca_elapsed_time = 0.0
         self.__bca_elapsed_time = 0.0
         logger.info("CLE reset")
@@ -302,7 +320,6 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         self.stop()
         self.rca.reset_world(models, lights)
-        self.running = False
         logger.info("CLE world reset")
 
     def reset_brain(self, network_file=None, network_configuration=None):
@@ -325,6 +342,13 @@ class ClosedLoopEngine(IClosedLoopControl):
         Get the current simulation time.
         """
         return self.clock
+
+    @property
+    def running(self):
+        """
+        Gets a flag indicating whether the simulation is running
+        """
+        return self.__start_thread is not None
 
     @property
     def real_time(self):  # -> float64
