@@ -28,7 +28,6 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import INCSource
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
 __author__ = 'Dimitri Probst, Georg Hinkel'
 
@@ -42,7 +41,6 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
     default_parameters = {
         'mean': 0.0,
         'stdev': 1.0,
-        "dt": sim.state.dt,
         "start": 0.0,
         "stop": float("inf")
     }
@@ -99,15 +97,20 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
 
         self._generator.set(stdev=value)
 
+    def sim(self):  # pragma: no cover
+        """
+        Gets the simulator module to use
+        """
+        raise NotImplementedError("This method must be overridden in a derived class")
+
     def create_device(self):
         """
         Create a noisy current source
 
         """
-        self._generator = sim.NoisyCurrentSource(
+        self._generator = self.sim().NoisyCurrentSource(
                 **self.get_parameters("mean",
                                       "stdev",
-                                      "dt",
                                       "start",
                                       "stop"))
 

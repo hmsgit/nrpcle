@@ -40,7 +40,6 @@ parameters are directly forwarded to the created NEST devices.
 
 __author__ = 'Georg Hinkel'
 
-from .BrainInterface import IBrainCommunicationAdapter, IBrainControlAdapter
-from .__Facade import initialize_defaults, instantiate_communication_adapter, \
-    instantiate_control_adapter
-from hbp_nrp_cle.brainsim.__simulator import simulator
+from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IBrainControlAdapter
+
+simulator = None

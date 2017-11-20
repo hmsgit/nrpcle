@@ -27,11 +27,9 @@ Load a brain network
 
 __author__ = "Lorenzo Vannucci"
 
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 import numpy as np
 import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
-from .__simulator import simulator as sim
 import logging
 
 logger = logging.getLogger("BrainLoader")
@@ -40,7 +38,7 @@ __brainIndex = 0
 
 # pylint: disable=R0914
 # the variables are reasonable in this case
-def load_pointneuron_circuit(h5_filename, neuron_ids=None,
+def load_pointneuron_circuit(h5_filename, sim, neuron_ids=None,
                              synapse_model='TsodyksMarkramMechanism'):
     """Loads the h5 point-neuron circuit into PyNN. The result dictionary will
     contain a set of PyNN neurons that are correctly connected together.
@@ -63,6 +61,7 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
         and bluepy neurons might be different.
 
     :param str h5_filename: Name of the h5 datafile.
+    :param sim: The simulator module
     :param neuron_ids: The list of neurons ids for which connection will be
         done (inbetween them and also from them to the others. This can be
         feed for example with the results of the :func:`get_target`
@@ -179,15 +178,16 @@ def load_pointneuron_circuit(h5_filename, neuron_ids=None,
     return circuit
 
 
-def load_h5_network(path, **populations):
+def load_h5_network(path, sim, **populations):
     """
     Load a h5 brain network file.
 
     :param path: path to the .h5 file.
+    :param sim: The simulator module
     :param populations: A dictionary of the populations and their ids
     """
     # Load point neuron circuit
-    circuit = load_pointneuron_circuit(path)
+    circuit = load_pointneuron_circuit(path, sim)
     population = circuit['population']
 
     # AdEx parameters are set

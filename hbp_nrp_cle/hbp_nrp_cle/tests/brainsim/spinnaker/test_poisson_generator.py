@@ -21,43 +21,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-'''
-Implementation of PyNNPopulationRate
-moduleauthor: probst@fzi.de
-'''
 
-from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate
-import nest
-import pyNN.nest as nestsim
-
-__author__ = 'DimitriProbst'
+import unittest
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPoissonSpikeGenerator import PyNNSpiNNakerPoissonSpikeGenerator
+from mock import patch
 
 
-class PyNNNestPopulationRate(PyNNPopulationRate):
-    """
-    Represents the rate of a population of LIF neurons by
-    measuring and normalizing the membrane potential of a
-    leaky integrator with decaying-exponential post-synaptic currents
-    """
-
-    def sim(self):
-        """
-        Gets the simulator module to use
-        """
-        return nestsim
-
-    def _start_record_rate(self):
-        # Since we get the data directly from Nest and Nest supports reading of just the latest
-        # value we don't need to record the entire voltage trace.
-        pass
-
-    # simulation time not necessary for this device
-    # pylint: disable=W0613
-    def refresh(self, time):
-        """
-        Refreshes the rate value
-
-        :param time: The current simulation time
-        """
-
-        self._rate = nest.GetStatus([self._cell[0]])[0]['V_m']
+class TestPoissonGenerator(unittest.TestCase):
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPoissonSpikeGenerator.sim")
+    def test_poisson_generator_supported(self, sim_mock):
+        dev = PyNNSpiNNakerPoissonSpikeGenerator()
+        self.assertTrue(sim_mock.Population.called)
+        self.assertEqual(dev.sim(), sim_mock)

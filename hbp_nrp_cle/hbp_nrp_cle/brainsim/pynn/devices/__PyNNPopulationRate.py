@@ -28,7 +28,6 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPopulationRate
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 # pylint: disable=no-name-in-module
 from scipy.integrate import simps
 import numpy as np
@@ -84,6 +83,12 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         """
         return self._rate
 
+    def sim(self):  # pragma: no cover
+        """
+        Gets the simulator module to use
+        """
+        raise NotImplementedError("This method must be overridden in a derived class")
+
     def _update_parameters(self, params):
         super(PyNNPopulationRate, self)._update_parameters(params)
         self._parameters["tau_rise"], self._parameters["tau_fall"] = \
@@ -95,13 +100,13 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         and current-based synapses.
         """
 
-        self._cell = sim.Population(1, sim.IF_curr_exp(**self.get_parameters(("tau_m", "tau_fall"),
-                                                                             ("tau_syn_E",
-                                                                              "tau_rise"),
-                                                                             "v_thresh",
-                                                                             "cm",
-                                                                             "v_rest")))
-        sim.initialize(self._cell, v=self._cell[0].v_rest)
+        self._cell = self.sim().Population(1, self.sim().IF_curr_exp(
+            **self.get_parameters(("tau_m", "tau_fall"),
+                                  ("tau_syn_E", "tau_rise"),
+                                  "v_thresh",
+                                  "cm",
+                                  "v_rest")))
+        self.sim().initialize(self._cell, v=self._cell[0].v_rest)
 
     def _calculate_weight(self):
         """
@@ -115,7 +120,7 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         y_new = tau_c / self._cell[0].cm * (np.exp(
                 -x_new / self._cell[0].tau_m) - np.exp(
                 -x_new / self._cell[0].tau_syn_E))
-        self._weight = 1.0 / simps(y_new, dx=sim.state.dt)
+        self._weight = 1.0 / simps(y_new, dx=self.sim().state.dt)
 
     def _start_record_rate(self):
         """
@@ -134,14 +139,14 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
             Assembly object
         """
 
-        connector = sim.AllToAllConnector()
-        synapse_type = sim.StaticSynapse(weight=self._weight * 1000,
-                                         delay=sim.state.dt)
+        connector = self.sim().AllToAllConnector()
+        synapse_type = self.sim().StaticSynapse(weight=self._weight * 1000,
+                                                delay=self.sim().state.dt)
 
-        return sim.Projection(presynaptic_population=neurons,
-                              postsynaptic_population=self._cell,
-                              connector=connector, receptor_type='excitatory',
-                              synapse_type=synapse_type)
+        return self.sim().Projection(presynaptic_population=neurons,
+                                     postsynaptic_population=self._cell,
+                                     connector=connector, receptor_type='excitatory',
+                                     synapse_type=synapse_type)
 
     def _disconnect(self):
         """
@@ -161,5 +166,4 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
 
         :param time: The current simulation time
         """
-
         self._rate = self._cell.get_data('v', clear=True)[-1, -1]

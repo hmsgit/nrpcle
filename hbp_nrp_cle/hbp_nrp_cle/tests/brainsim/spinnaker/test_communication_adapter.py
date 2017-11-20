@@ -1,0 +1,47 @@
+# ---LICENSE-BEGIN - DO NOT CHANGE OR MOVE THIS HEADER
+# This file is part of the Neurorobotics Platform software
+# Copyright (C) 2014,2015,2016,2017 Human Brain Project
+# https://www.humanbrainproject.eu
+#
+# The Human Brain Project is a European Commission funded project
+# in the frame of the Horizon2020 FET Flagship plan.
+# http://ec.europa.eu/programmes/horizon2020/en/h2020-section/fet-flagships
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# ---LICENSE-END
+
+import unittest
+from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, \
+    IDCSource, IACSource, INCSource, ILeakyIntegratorExp, \
+    IFixedSpikeGenerator, ISpikeRecorder, IPoissonSpikeGenerator, IPopulationRate
+
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.PyNNSpiNNakerCommunicationAdapter import PyNNSpiNNakerCommunicationAdapter
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.devices import PyNNSpiNNakerACSource, PyNNSpiNNakerDCSource, \
+    PyNNSpiNNakerLeakyIntegratorAlpha, PyNNSpiNNakerNCSource, PyNNSpiNNakerFixedSpikeGenerator, \
+    PyNNSpiNNakerSpikeRecorder, PyNNSpiNNakerPoissonSpikeGenerator, PyNNSpiNNakerLeakyIntegratorExp, PyNNSpiNNakerPopulationRate
+
+class TestSpinnakerAdapter(unittest.TestCase):
+    def test_adapter(self):
+        adapter = PyNNSpiNNakerCommunicationAdapter()
+        adapter.initialize()
+        self.assertEqual(adapter._get_device_type(ILeakyIntegratorAlpha), PyNNSpiNNakerLeakyIntegratorAlpha)
+        self.assertEqual(adapter._get_device_type(ILeakyIntegratorExp), PyNNSpiNNakerLeakyIntegratorExp)
+        self.assertEqual(adapter._get_device_type(IACSource), PyNNSpiNNakerACSource)
+        self.assertEqual(adapter._get_device_type(IDCSource), PyNNSpiNNakerDCSource)
+        self.assertEqual(adapter._get_device_type(INCSource), PyNNSpiNNakerNCSource)
+        self.assertEqual(adapter._get_device_type(IPoissonSpikeGenerator), PyNNSpiNNakerPoissonSpikeGenerator)
+        self.assertEqual(adapter._get_device_type(IFixedSpikeGenerator), PyNNSpiNNakerFixedSpikeGenerator)
+        self.assertEqual(adapter._get_device_type(ISpikeRecorder), PyNNSpiNNakerSpikeRecorder)
+        self.assertEqual(adapter._get_device_type(IPopulationRate), PyNNSpiNNakerPopulationRate)

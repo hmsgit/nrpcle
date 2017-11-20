@@ -36,10 +36,10 @@ class TestNestDeviceGroup(unittest.TestCase):
         m._device = [i]
         return m
 
-    @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNACSource.sim")
+    @patch("hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestACSource.PyNNNestACSource.sim")
     def setUp(self, mocked_sim):
         self.neurons = [self.__create_mock_with_id(i) for i in range(0,5)]
-        mocked_sim.ACSource.side_effect = self.neurons
+        mocked_sim().ACSource.side_effect = self.neurons
         self.device = PyNNNestACSource.create_new_device_group(len(self.neurons), {})
         self.device_ids = self.device._device_ids
 

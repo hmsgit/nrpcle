@@ -21,16 +21,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-"""
-Module only used to represent the BrainLoader and bypass importing pyNN.nest
-"""
 
-__author__ = 'GeorgHinkel'
-
-import mock, sys
-sys.modules['pyNN'] = mock.Mock()
-sys.modules['pyNN.nest'] = mock.Mock()
-import hbp_nrp_cle.brainsim.pynn.PyNNBrainLoader as BrainLoader
-sys.modules[__name__] = BrainLoader
+import unittest
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp import PyNNSpiNNakerLeakyIntegratorExp
+from mock import patch
+import numpy
 
 
+class TestLeakyIntegratorExp(unittest.TestCase):
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp.sim")
+    def test_leaky_interator_exp_refreshes_correct(self, sim_mock):
+        dev = PyNNSpiNNakerLeakyIntegratorExp()
+        self.assertTrue(sim_mock.Population.called)
+        sim_mock.Population().spinnaker_get_data.return_value = numpy.array([[0.0, 0.1, -60.0],[0.0, 0.2, -61.0]])
+        dev.refresh(42.0)
+        self.assertEqual(dev.voltage, -61.0)

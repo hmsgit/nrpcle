@@ -21,16 +21,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-"""
-Module only used to represent the PyNNControlAdapter and bypass importing pyNN.nest
-"""
+'''
+PyNNSpiNNaker devices
+'''
+__author__ = 'Felix Schneider'
 
-__author__ = 'GeorgHinkel'
-
-import mock
-import sys
-
-sys.modules['pyNN'] = mock.Mock()
-sys.modules['pyNN.nest'] = mock.Mock()
-import hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter as PCA
-sys.modules[__name__] = PCA
+from .__PyNNSpiNNakerACSource import PyNNSpiNNakerACSource
+from .__PyNNSpiNNakerDCSource import PyNNSpiNNakerDCSource
+from .__PyNNSpiNNakerFixedSpikeGenerator import PyNNSpiNNakerFixedSpikeGenerator
+from .__PyNNSpiNNakerLeakyIntegratorAlpha import PyNNSpiNNakerLeakyIntegratorAlpha
+from .__PyNNSpiNNakerLeakyIntegratorExp import PyNNSpiNNakerLeakyIntegratorExp
+from .__PyNNSpiNNakerNCSource import PyNNSpiNNakerNCSource
+from .__PyNNSpiNNakerPopulationRate import PyNNSpiNNakerPopulationRate
+from .__PyNNSpiNNakerPoissonSpikeGenerator import PyNNSpiNNakerPoissonSpikeGenerator
+from .__PyNNSpiNNakerSpikeRecorder import PyNNSpiNNakerSpikeRecorder

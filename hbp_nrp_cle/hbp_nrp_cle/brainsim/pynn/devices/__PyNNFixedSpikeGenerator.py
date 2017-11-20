@@ -28,7 +28,6 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
 from pyNN.random import RandomDistribution
 import numpy as np
@@ -46,7 +45,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         'initial_rate': 0.0,
         'cm': 1.0,
         'tau_m': 1000.0,
-        'tau_refrac': sim.state.dt,
+        'tau_refrac': 0.2,
         'v_thresh': -50.0,
         'v_reset': -100.0,
         'v_rest': -100.0,
@@ -109,19 +108,26 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
             self._current = current
             self._currentsource.set(amplitude=current)
 
+    def sim(self):  # pragma: no cover
+        """
+        Gets the simulator module to use
+        """
+        raise NotImplementedError("This method must be overridden in a derived class")
+
     def create_device(self):
         """
         Create a fixed spike-distance device
         """
 
-        self._generator = sim.Population(1, sim.IF_curr_exp(**self.get_parameters("cm",
-                                                                                  "tau_m",
-                                                                                  "v_thresh",
-                                                                                  "v_reset",
-                                                                                  "v_rest")))
-        sim.initialize(self._generator, v=self._generator[0].v_rest)
+        self._generator = self.sim().Population(1, self.sim().IF_curr_exp(
+            **self.get_parameters("cm",
+                                  "tau_m",
+                                  "v_thresh",
+                                  "v_reset",
+                                  "v_rest")))
+        self.sim().initialize(self._generator, v=self._generator[0].v_rest)
 
-        self._currentsource = sim.DCSource(amplitude=self._current)
+        self._currentsource = self.sim().DCSource(amplitude=self._current)
         self._currentsource.inject_into(self._generator)
 
     def _setup_rate_and_current_calculation(self):
@@ -178,15 +184,15 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
             weight = self._get_default_weights(neurons.conductance_based)
             self._parameters["weight"] = weight
 
-        set_synapse_type(self._parameters, sim)
+        set_synapse_type(self._parameters, self.sim())
 
-        return sim.Projection(presynaptic_population=self._generator,
-                              postsynaptic_population=neurons,
-                              **self.get_parameters("connector",
-                                                    "source",
-                                                    "receptor_type",
-                                                    "synapse_type",
-                                                    "label"))
+        return self.sim().Projection(presynaptic_population=self._generator,
+                                     postsynaptic_population=neurons,
+                                     **self.get_parameters("connector",
+                                                           "source",
+                                                           "receptor_type",
+                                                           "synapse_type",
+                                                           "label"))
 
     def _disconnect(self):
         """
@@ -212,7 +218,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         super(PyNNFixedSpikeGenerator, self)._update_parameters(params)
 
         if "connector" not in self._parameters or not self._parameters["connector"]:
-            self._parameters["connector"] = sim.AllToAllConnector()
+            self._parameters["connector"] = self.sim().AllToAllConnector()
         else:
             conn = self._parameters["connector"]
             if isinstance(conn, dict):
@@ -222,13 +228,13 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
                     self._parameters["delay"] = conn.get("delay")
                 if conn.get("mode") == "OneToOne":
                     self._parameters["connector"] = \
-                        sim.OneToOneConnector()
+                        self.sim().OneToOneConnector()
                 elif conn.get("mode") == "AllToAll":
                     self._parameters["connector"] = \
-                        sim.AllToAllConnector()
+                        self.sim().AllToAllConnector()
                 elif conn.get("mode") == "Fixed":
                     self._parameters["connector"] = \
-                        sim.FixedNumberPreConnector(conn.get("n", 1))
+                        self.sim().FixedNumberPreConnector(conn.get("n", 1))
                 else:
                     raise Exception("Invalid connector mode")
 

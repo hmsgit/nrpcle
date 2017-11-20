@@ -21,43 +21,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-'''
-Implementation of PyNNPopulationRate
-moduleauthor: probst@fzi.de
-'''
 
-from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate
-import nest
-import pyNN.nest as nestsim
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.PyNNSpiNNakerControlAdapter import PySpiNNakerControlAdapter
+import unittest
+from mock import Mock
 
-__author__ = 'DimitriProbst'
-
-
-class PyNNNestPopulationRate(PyNNPopulationRate):
-    """
-    Represents the rate of a population of LIF neurons by
-    measuring and normalizing the membrane potential of a
-    leaky integrator with decaying-exponential post-synaptic currents
-    """
-
-    def sim(self):
-        """
-        Gets the simulator module to use
-        """
-        return nestsim
-
-    def _start_record_rate(self):
-        # Since we get the data directly from Nest and Nest supports reading of just the latest
-        # value we don't need to record the entire voltage trace.
-        pass
-
-    # simulation time not necessary for this device
-    # pylint: disable=W0613
-    def refresh(self, time):
-        """
-        Refreshes the rate value
-
-        :param time: The current simulation time
-        """
-
-        self._rate = nest.GetStatus([self._cell[0]])[0]['V_m']
+class TestSpinnakerController(unittest.TestCase):
+    def test_spinnaker_controller_init(self):
+        sim = Mock()
+        controller = PySpiNNakerControlAdapter(sim)
+        controller.initialize()
+        sim.setup.assert_called_once_with(timestep=1.0, min_delay=1.0, max_delay=20.0)
+        sim.setup.reset_mock()
+        controller._PyNNControlAdapter__is_initialized = False
+        controller.initialize(timestep=0.5, min_delay=2.0)
+        sim.setup.assert_called_once_with(timestep=0.5, min_delay=2.0, max_delay=20.0)

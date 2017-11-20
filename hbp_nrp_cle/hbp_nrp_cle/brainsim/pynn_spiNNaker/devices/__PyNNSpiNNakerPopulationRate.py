@@ -22,49 +22,43 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
 '''
-Implementation of PyNNFixedSpikeGenerator
-moduleauthor: probst@fzi.de
+Implementation of PyNNPopulationRate
 '''
 
-from hbp_nrp_cle.brainsim.pynn.devices import PyNNFixedSpikeGenerator
-import nest
-import pyNN.nest as nestsim
+from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate
+from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker as sim
 
-__author__ = 'DimitriProbst, Sebastian Krach'
+__author__ = 'Felix Schneider'
 
 
-class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator):
+class PyNNSpiNNakerPopulationRate(PyNNPopulationRate):
     """
-    Represents a spike generator which generated equidistant
-    spike times at a given frequency
+    Represents the rate of a population of LIF neurons by
+    measuring and normalizing the membrane potential of a
+    leaky integrator with decaying-exponential post-synaptic currents
     """
 
-    @property
-    def rate(self):
-        """
-        Returns the frequency of the Fixed spike generator
-        """
-        return self._rate
+    fixed_parameters = {
+        'v_thresh': 32767.0,
+        'cm': 1.0,
+        'v_rest': 0.0
+    }
 
     def sim(self):
         """
         Gets the simulator module to use
         """
-        return nestsim
+        return sim
 
-    # Pylint does not really recognize property overrides
-    # pylint: disable=arguments-differ
-    @rate.setter
-    def rate(self, value):
+    def _create_device(self):
         """
-        Sets the frequency of the Fixed spike generator
-
-        :param value: float
+        Creates a LIF neuron with decaying-exponential post-synaptic currents
+        and current-based synapses.
         """
-        self._rate, current = self._calculate_rate_and_current(value)
-
-        if current != self._current:
-            self._current = current
-            # The nest device is only available as protected property of the PyNN device
-            # pylint: disable=protected-access
-            nest.SetStatus(self._currentsource._device, {"amplitude": 1000.0 * current})
+        self._cell = self.sim().Population(1, self.sim().IF_curr_exp(
+            **self.get_parameters(("tau_m", "tau_fall"),
+                                  ("tau_syn_E", "tau_rise"),
+                                  "v_thresh",
+                                  "cm",
+                                  "v_rest")))
+        self._cell.set(v=self._cell.get('v_rest'))

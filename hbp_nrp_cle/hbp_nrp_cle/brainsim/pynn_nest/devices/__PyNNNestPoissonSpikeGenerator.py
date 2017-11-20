@@ -30,6 +30,7 @@ from hbp_nrp_cle.brainsim.pynn.devices import PyNNPoissonSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation
 import nest
+import pyNN.nest as nestsim
 
 __author__ = 'Georg Hinkel, Dimitri Probst'
 
@@ -49,6 +50,12 @@ class PyNNNestPoissonSpikeGenerator(PyNNNestDevice, PyNNPoissonSpikeGenerator):
         Returns the frequency of the Poisson spike generator
         """
         return self._parameters["rate"]
+
+    def sim(self):
+        """
+        Gets the simulator module to use
+        """
+        return nestsim
 
     # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
@@ -70,4 +77,6 @@ class PyNNNestPoissonSpikeGenerator(PyNNNestDevice, PyNNPoissonSpikeGenerator):
         Returns the internal device id
         """
         # pylint: disable=protected-access, no-member
+        # PyNN creates a parrot neuron which is stored in the population
+        # therefore, we have to subtract 1 to get the poisson generator
         return self._generator[0] - 1

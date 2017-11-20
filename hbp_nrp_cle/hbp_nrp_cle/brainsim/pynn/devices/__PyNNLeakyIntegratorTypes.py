@@ -28,10 +28,11 @@ ILeakyIntegratorExp device.
 
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, ILeakyIntegratorExp
 from .__PyNNLeakyIntegrator import PyNNLeakyIntegrator
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from pyNN.random import RandomDistribution
 
 __author__ = "Sebastian Krach"
+
+# pylint: disable=abstract-method
 
 
 class PyNNLeakyIntegratorAlpha(PyNNLeakyIntegrator, ILeakyIntegratorAlpha):
@@ -94,7 +95,7 @@ class PyNNLeakyIntegratorAlpha(PyNNLeakyIntegrator, ILeakyIntegratorAlpha):
         super(PyNNLeakyIntegratorAlpha, self).__init__(**params)
 
     @staticmethod
-    def _get_cell_type(**params):
+    def _get_cell_type(sim, **params):
         """
         Returns the cell type of the neuron to be created by this device. In this case the neuron
         to be created adheres to PyNN's "Leaky integrate and fire model with fixed threshold and
@@ -178,7 +179,7 @@ class PyNNLeakyIntegratorExp(PyNNLeakyIntegrator, ILeakyIntegratorExp):
         super(PyNNLeakyIntegratorExp, self).__init__(**params)
 
     @staticmethod
-    def _get_cell_type(**params):
+    def _get_cell_type(sim, **params):
         """
         Returns the cell type of the neuron to be created by this device. In this case the neuron
         to be created adheres to PyNN's "Leaky integrate and fire model with fixed threshold and

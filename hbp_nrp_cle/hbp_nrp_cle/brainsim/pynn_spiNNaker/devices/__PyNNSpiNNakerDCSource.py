@@ -21,17 +21,27 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-"""
-Module only used to represent the PyNNCommunicationAdapter and bypass importing pyNN.nest
-"""
+'''
+Implementation of PyNNDCSource
+'''
 
-__author__ = 'GeorgHinkel'
+from hbp_nrp_cle.brainsim.pynn.devices import PyNNDCSource
+from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker
 
-import sys
+__author__ = 'Felix Schneider'
 
-import mock
 
-sys.modules['pyNN'] = mock.Mock()
-sys.modules['pyNN.nest'] = mock.Mock()
-import hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter as PCA
-sys.modules[__name__] = PCA
+class PyNNSpiNNakerDCSource(PyNNDCSource):
+    """
+    Represents a direct current generator
+    """
+
+    def __init__(self, **params):
+        super(PyNNSpiNNakerDCSource, self).__init__(**params)
+        raise NotImplementedError()
+
+    def sim(self):
+        """
+        Gets the simulator module to use
+        """
+        return spynnaker

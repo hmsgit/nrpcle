@@ -30,6 +30,7 @@ from hbp_nrp_cle.brainsim.pynn.devices import PyNNNCSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation
 import nest
+import pyNN.nest as nestsim
 
 __author__ = 'Georg Hinkel, Dimitri Probst'
 
@@ -58,6 +59,12 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
         # The nest device is only available as protected property of the PyNN device
         # pylint: disable=protected-access
         nest.SetStatus(self._generator._device, {'mean': 1000.0 * value})
+
+    def sim(self):
+        """
+        Gets the simulator module to use
+        """
+        return nestsim
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ

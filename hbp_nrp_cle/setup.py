@@ -50,6 +50,8 @@ config = {
                  'hbp_nrp_cle.brainsim.common.devices',
                  'hbp_nrp_cle.brainsim.pynn_nest',
                  'hbp_nrp_cle.brainsim.pynn_nest.devices',
+                 'hbp_nrp_cle.brainsim.pynn_spiNNaker',
+                 'hbp_nrp_cle.brainsim.pynn_spiNNaker.devices',
                  'hbp_nrp_cle.cle',
                  'hbp_nrp_cle.mocks',
                  'hbp_nrp_cle.mocks.brainsim',

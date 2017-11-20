@@ -27,5 +27,4 @@ This module stores the reference to the currently active simulator backend of Py
 __author__ = "Sebastian Krach"
 
 import pyNN.nest as sim
-
 simulator = sim

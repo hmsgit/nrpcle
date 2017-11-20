@@ -28,7 +28,6 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IDCSource
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
 __author__ = 'DimitriProbst'
 
@@ -75,14 +74,20 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
 
         self._generator.set(amplitude=value)
 
+    def sim(self):  # pragma: no cover
+        """
+        Gets the simulator module to use
+        """
+        raise NotImplementedError("This method must be overridden in a derived class")
+
     def create_device(self):
         """
         Create a direct current source
         """
 
-        self._generator = sim.DCSource(**self.get_parameters("amplitude",
-                                                             "start",
-                                                             "stop"))
+        self._generator = self.sim().DCSource(**self.get_parameters("amplitude",
+                                                                    "start",
+                                                                    "stop"))
 
     def connect(self, neurons):
         """

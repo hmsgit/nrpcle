@@ -5,7 +5,6 @@ abstraction layer.
 
 __author__ = "Sebastian Krach, Georg Hinkel"
 
-from .__simulator import simulator
 from hbp_nrp_cle.brainsim.BrainInterface import PopulationInfo
 
 

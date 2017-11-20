@@ -28,9 +28,9 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim import IBrainControlAdapter
 from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
 from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population
+import hbp_nrp_cle.brainsim as brainsim
 
 import logging
 from os import path
@@ -46,13 +46,16 @@ class PyNNControlAdapter(IBrainControlAdapter):
     Represents a controller object for the neuronal simulator
     """
 
-    def __init__(self):
+    def __init__(self, sim):
         """
         Initializes the PyNN control adapter
+
+        :param sim: The simulator module
         """
         self.__is_initialized = False
         self.__is_alive = False
         self.__rank = None
+        self.__sim = sim
 
     def load_brain(self, network_file, **populations):
         """
@@ -65,6 +68,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         import hbp_nrp_cle.tf_framework.config as tf_config
         tf_config.brain_populations = self.populations_using_json_slice(populations)
         extension = path.splitext(network_file)[1]
+        brainsim.simulator = self.__sim
 
         if extension == ".py":
             self.__load_python_brain(
@@ -122,7 +126,8 @@ class PyNNControlAdapter(IBrainControlAdapter):
             timestep = params.get('timestep', 0.1)
             min_delay = params.get('min_delay', "auto")
             max_delay = params.get('max_delay', 20.0)
-            self.__rank = sim.setup(timestep=timestep, min_delay=min_delay, max_delay=max_delay)
+            self.__rank = self.__sim.setup(timestep=timestep, min_delay=min_delay,
+                                           max_delay=max_delay)
             self.__is_initialized = True
             logger.info("neuronal simulator initialized")
         else:
@@ -180,7 +185,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
 
         :param dt: the simulated time in milliseconds
         """
-        sim.run(dt)
+        self.__sim.run(dt)
 
     def shutdown(self):  # -> None:
         """
@@ -188,7 +193,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         self.__is_alive = False
         self.__is_initialized = False
-        sim.end()
+        self.__sim.end()
         logger.info("neuronal simulator ended")
 
     def reset(self):  # -> None:

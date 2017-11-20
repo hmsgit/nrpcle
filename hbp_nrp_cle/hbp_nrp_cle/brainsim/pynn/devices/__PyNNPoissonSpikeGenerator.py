@@ -27,7 +27,6 @@ Implementation of PyNNPoissonSpikeGenerator
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IPoissonSpikeGenerator
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
 
 __author__ = 'Dimitri Probst, Georg Hinkel'
@@ -84,7 +83,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         Returns the frequency of the Poisson spike generator
         """
-        return self._generator.get('rate')
+        return self._generator.get('rate')[0]
 
     @rate.setter
     def rate(self, value):
@@ -95,11 +94,17 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         """
         self._generator.set(rate=value)
 
+    def sim(self):  # pragma: no cover
+        """
+        Gets the simulator module to use
+        """
+        raise NotImplementedError("This method must be overridden in a derived class")
+
     def create_device(self):
         """
         Create Poisson spike generator device
         """
-        self._generator = sim.Population(1, sim.SpikeSourcePoisson(
+        self._generator = self.sim().Population(1, self.sim().SpikeSourcePoisson(
                 **self.get_parameters("duration",
                                       "start",
                                       "rate")))
@@ -125,13 +130,13 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             if isinstance(conn, dict):
                 delays, weights = self.__apply_connector(conn, delays, weights)
         else:
-            self._parameters["connector"] = sim.AllToAllConnector()
+            self._parameters["connector"] = self.sim().AllToAllConnector()
         if weights:
             self._parameters["weight"] = weights
         if delays:
             self._parameters["delay"] = delays
 
-        set_synapse_type(self._parameters, sim)
+        set_synapse_type(self._parameters, self.sim())
 
     def __apply_connector(self, conn, delays, weights):
         """
@@ -149,13 +154,13 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         conn_mode = conn.get("mode")
         if conn_mode == "OneToOne":
             self._parameters["connector"] = \
-                sim.OneToOneConnector()
+                self.sim().OneToOneConnector()
         elif conn_mode == "AllToAll":
             self._parameters["connector"] = \
-                sim.AllToAllConnector()
+                self.sim().AllToAllConnector()
         elif conn_mode == "Fixed":
             self._parameters["connector"] = \
-                sim.FixedNumberPreConnector(conn.get("n", 1))
+                self.sim().FixedNumberPreConnector(conn.get("n", 1))
         else:
             raise Exception("Invalid connector mode")
         return delays, weights
@@ -176,16 +181,16 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
             if not (self._parameters["receptor_type"] == 'excitatory' or neurons.conductance_based):
                 self._parameters["weight"] = -abs(self._parameters["weight"])
 
-            self._parameters["synapse_type"] = sim.StaticSynapse(**self.get_parameters("weight",
-                                                                                       "delay"))
+            self._parameters["synapse_type"] = self.sim().StaticSynapse(
+                **self.get_parameters("weight", "delay"))
 
-        return sim.Projection(presynaptic_population=self._generator,
-                              postsynaptic_population=neurons,
-                              **self.get_parameters("source",
-                                                    "receptor_type",
-                                                    "connector",
-                                                    "synapse_type",
-                                                    "label"))
+        return self.sim().Projection(presynaptic_population=self._generator,
+                                     postsynaptic_population=neurons,
+                                     **self.get_parameters("source",
+                                                           "receptor_type",
+                                                           "connector",
+                                                           "synapse_type",
+                                                           "label"))
 
     def _disconnect(self):
         """

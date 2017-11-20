@@ -28,7 +28,6 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IACSource
-from hbp_nrp_cle.brainsim.pynn import simulator as sim
 
 __author__ = 'DimitriProbst, Sebastian Krach'
 
@@ -129,17 +128,22 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         """
         self._generator.set(phase=value)
 
+    def sim(self):  # pragma: no cover
+        """
+        Gets the simulator module to use
+        """
+        raise NotImplementedError("This method must be overridden in a derived class")
+
     def create_device(self):
         """
         Creates an alternating current source
         """
-
-        self._generator = sim.ACSource(**self.get_parameters("amplitude",
-                                                             "offset",
-                                                             "frequency",
-                                                             "phase",
-                                                             "start",
-                                                             "stop"))
+        self._generator = self.sim().ACSource(**self.get_parameters("amplitude",
+                                                                    "offset",
+                                                                    "frequency",
+                                                                    "phase",
+                                                                    "start",
+                                                                    "stop"))
 
     def connect(self, neurons):
         """

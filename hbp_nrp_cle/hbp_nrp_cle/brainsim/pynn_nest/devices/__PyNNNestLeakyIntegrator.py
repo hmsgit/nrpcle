@@ -29,6 +29,7 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNLeakyIntegrator
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp
 import nest
+import pyNN.nest as nestsim
 
 __author__ = 'DimitriProbst'
 
@@ -46,6 +47,12 @@ class PyNNNestLeakyIntegrator(PyNNLeakyIntegrator):
         # Since we get the data directly from Nest and Nest supports reading of just the latest
         # value we don't need to record the entire voltage trace.
         pass
+
+    def sim(self):
+        """
+        Gets the simulator module to use
+        """
+        return nestsim
 
     # simulation time not necessary for this device
     # pylint: disable=W0613

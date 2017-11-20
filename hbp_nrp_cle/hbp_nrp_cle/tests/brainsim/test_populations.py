@@ -31,6 +31,7 @@ import unittest
 import os
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
 import hbp_nrp_cle.brainsim.config as brainconfig
+from mock import Mock
 
 class TestPyNNControlAdapter(unittest.TestCase):
 
@@ -38,7 +39,8 @@ class TestPyNNControlAdapter(unittest.TestCase):
         brainconfig.rng_seed = 123456
 
     def test_populations(self):
-        adapter = PyNNControlAdapter()
+        sim = Mock()
+        adapter = PyNNControlAdapter(sim)
         directory = os.path.dirname(__file__)
         adapter.load_brain(os.path.join(directory, "example_pynn_brain.py"))
         populations = adapter.get_populations()

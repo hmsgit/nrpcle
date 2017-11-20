@@ -60,7 +60,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         with LogCapture(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
                         'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
                         'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')) as l:
-            self.control = PyNNControlAdapter()
+            self.control = PyNNControlAdapter(sim)
             self.assertEqual(self.control.is_alive(), False)
             self.control.initialize(timestep=0.1,
                                     min_delay=0.1,

@@ -29,6 +29,7 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNACSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation
+import pyNN.nest as nestsim
 import nest
 
 __author__ = 'Georg Hinkel, Dimitri Probst'
@@ -52,6 +53,12 @@ class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
         Returns the amplitude of the current
         """
         return self._parameters["amplitude"]
+
+    def sim(self):
+        """
+        Gets the simulator module to use
+        """
+        return nestsim
 
     # Pylint does not really recognize property overrides
     # pylint: disable=arguments-differ
