@@ -29,12 +29,12 @@ moduleauthor: probst@fzi.de
 import logging
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, \
     IDCSource, IACSource, INCSource, ILeakyIntegratorExp, IPopulationRate, \
-    IFixedSpikeGenerator, ISpikeRecorder
+    IFixedSpikeGenerator, ISpikeRecorder, IPoissonSpikeGenerator
 
 from hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter import PyNNCommunicationAdapter
 from .devices import PyNNNestACSource, PyNNNestDCSource, PyNNNestNCSource, \
     PyNNNestLeakyIntegratorAlpha, PyNNNestLeakyIntegratorExp, PyNNNestFixedSpikeGenerator, \
-    PyNNNestPopulationRate, PyNNNestSpikeRecorder
+    PyNNNestPopulationRate, PyNNNestSpikeRecorder, PyNNNestPoissonSpikeGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,8 @@ class PyNNNestCommunicationAdapter(PyNNCommunicationAdapter):
                      ILeakyIntegratorAlpha: PyNNNestLeakyIntegratorAlpha,
                      ILeakyIntegratorExp: PyNNNestLeakyIntegratorExp,
                      IPopulationRate: PyNNNestPopulationRate,
-                     ISpikeRecorder: PyNNNestSpikeRecorder}
+                     ISpikeRecorder: PyNNNestSpikeRecorder,
+                     IPoissonSpikeGenerator: PyNNNestPoissonSpikeGenerator}
 
     def initialize(self):
         """

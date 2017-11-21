@@ -269,9 +269,9 @@ class PyNNAdaptersTest(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             print group['test'].rate
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(KeyError):
             print group.voltage
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(KeyError):
             print group[0:3].voltage
         logcapture.check(('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
                           'Communication object with type \

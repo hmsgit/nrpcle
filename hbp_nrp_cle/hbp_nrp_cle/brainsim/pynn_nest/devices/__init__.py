@@ -11,3 +11,4 @@ from .__PyNNNestFixedSpikeGenerator import PyNNNestFixedSpikeGenerator
 from .__PyNNNestLeakyIntegrator import PyNNNestLeakyIntegratorAlpha, PyNNNestLeakyIntegratorExp
 from .__PyNNNestPopulationRate import PyNNNestPopulationRate
 from .__PyNNNestSpikeRecorder import PyNNNestSpikeRecorder
+from .__PyNNNestPoissonSpikeGenerator import PyNNNestPoissonSpikeGenerator
