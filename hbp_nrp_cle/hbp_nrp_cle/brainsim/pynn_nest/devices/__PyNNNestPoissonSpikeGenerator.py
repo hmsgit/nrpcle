@@ -62,7 +62,7 @@ class PyNNNestPoissonSpikeGenerator(PyNNNestDevice, PyNNPoissonSpikeGenerator):
         self._parameters["rate"] = value
         # The nest device is only available as protected property of the PyNN device
         # pylint: disable=protected-access, no-member
-        nest.SetStatus([self.device_id], {'rate': value})
+        nest.SetStatus([self.device_id], {'rate': float(value)})
 
     @property
     def device_id(self):
