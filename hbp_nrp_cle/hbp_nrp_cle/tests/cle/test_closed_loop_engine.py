@@ -57,10 +57,14 @@ class TestClosedLoopEngine(unittest.TestCase):
         # These patches are to avoid timeouts during the GazeboHelper instantiations in the ClosedLoopEngine.
         # They won't be necessary as soon as the ClosedLoopEngine won't embed a GazeboHelper anymore
         # (see related comments there)
-        patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.wait_for_service').start()
-        patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.ServiceProxy').start()
+        self.mock_wait_for_service = patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.wait_for_service').start()
+        self.mock_service_proxy = patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.ServiceProxy').start()
 
         self.__cle = ClosedLoopEngine(rca, rcm, self.__bca, bcm, self.__tfm, 0.01)
+
+    def tearDown(self):
+        self.mock_wait_for_service.stop()
+        self.mock_service_proxy.stop()
 
     def test_run_step(self):
         self.__cle.initialize("foo")
@@ -101,6 +105,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.__cle.reset_world()
         self.__cle.rca.reset_world.assert_called_with(self.__cle.initial_models, self.__cle.initial_lights)
 
+
     def test_reset_world(self):
 
         mock_sdf = "<sdf></sdf>"
@@ -108,7 +113,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         mock_models_dict = {'box_0': mock_sdf}
         mock_lights_dict = {'light1': mock_sdf}
 
-        self.__cle.gazebo_helper.parse_world_file = Mock(return_value=(mock_models_dict, mock_lights_dict))
+        self.__cle.gazebo_helper.parse_world_string = Mock(return_value=(mock_models_dict, mock_lights_dict))
 
         self.__cle.rca = Mock()
 
@@ -116,6 +121,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.__cle.reset_world(mock_sdf_world)
 
         self.__cle.rca.reset_world.assert_called_with(mock_models_dict, mock_lights_dict)
+
+
 
     def test_reset_brain(self):
         self.__cle.load_network_from_file = Mock()

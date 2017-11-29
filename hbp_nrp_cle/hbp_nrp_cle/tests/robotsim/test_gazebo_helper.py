@@ -125,22 +125,26 @@ class TestGazeboHelper(unittest.TestCase):
 
         self.assertEqual(retina_script_path_elem.text, test_retina_config_path)
 
-    def test_parse_world_file(self):
+    def test_parse_gazebo_world_file(self):
+
+        def abs_path(file_name):
+            return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
         def file_to_normalized_xml_string(file_name):
-            file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
+            file_path = abs_path(file_name)
             with open(file_path, 'r') as file:
                 sdf_string = file.read()
             return normalize_xml(sdf_string)
 
         def normalize_xml(xml_string):
             sdf_XML = objectify.fromstring(xml_string)
-            return etree.tostring(sdf_XML) # normalised sdf
+            return etree.tostring(sdf_XML)  # normalised sdf
 
-        sample_world_sdf = file_to_normalized_xml_string("sample_world.sdf")
+        sample_world_sdf_filename = abs_path("sample_world.sdf")
 
         # call target function
-        models, lights = GazeboHelper.parse_world_file(sample_world_sdf)
+
+        models, lights = self.gazebo_helper.parse_gazebo_world_file(sample_world_sdf_filename)
 
         normalised_sun1_sdf = file_to_normalized_xml_string('sun1.sdf')
         normalised_sun2_sdf = file_to_normalized_xml_string('sun2.sdf')

@@ -311,7 +311,7 @@ class ClosedLoopEngine(IClosedLoopControl):
             (default value is the empty string for compatibility with the ROS message).
         """
         if len(sdf_world_string) > 0:
-            models, lights = self.gazebo_helper.parse_world_file(sdf_world_string)
+            models, lights = self.gazebo_helper.parse_world_string(sdf_world_string)
         else:
             # backward compatibility
             # when working without collab, reset to the initial state
