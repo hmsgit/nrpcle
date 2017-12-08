@@ -27,13 +27,14 @@ moduleauthor: probst@fzi.de
 '''
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNFixedSpikeGenerator
-import nest
+from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
+
 import pyNN.nest as nestsim
 
 __author__ = 'DimitriProbst, Sebastian Krach'
 
 
-class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator):
+class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator, PyNNNestDevice):
     """
     Represents a spike generator which generated equidistant
     spike times at a given frequency
@@ -67,4 +68,4 @@ class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator):
             self._current = current
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
-            nest.SetStatus(self._currentsource._device, {"amplitude": 1000.0 * current})
+            self.SetStatus(self._currentsource._device, {"amplitude": 1000.0 * current})

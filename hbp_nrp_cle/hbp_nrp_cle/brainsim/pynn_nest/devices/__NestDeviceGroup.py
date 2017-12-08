@@ -28,6 +28,7 @@ improved performance when updating device parameters of multiple devices
 """
 
 from hbp_nrp_cle.brainsim.common.devices import DeviceGroup
+from mpi4py import MPI
 import nest
 import numpy
 
@@ -134,8 +135,12 @@ class PyNNNestDeviceGroup(DeviceGroup):
 
 class PyNNNestDevice(object):
     """
-    This class provides the base functionality of a device with optimized device group behavior
+    This class provides the base functionality of a device with optimized device group behavior and
+    also provides the base functionality of an MPI aware Nest device.
     """
+
+    # default attribute for MPI awareness set to false
+    mpi_aware = False
 
     @classmethod
     def create_new_device_group(cls, length, params):
@@ -157,3 +162,28 @@ class PyNNNestDevice(object):
         """
         # pylint: disable=protected-access, no-member
         return self._generator._device[0]
+
+    def SetStatus(self, neuron_ids, params):
+        """
+        MPI-aware instance of Nest SetStatus, notifies the remote brain processes to call
+        SetStatus with the same parameters if the simulation is being run in a supported
+        configuration. Otherwise, only runs the command in this process.
+
+        This emulates PyNN-like behavior as SetStatus must be invoked in all processes to
+        have an impact on the simulation as we cannot guarantee the location of each neuron.
+        """
+
+        # default single-process or non MPI-aware (e.g. MUSIC) instance
+        if self.mpi_aware:
+            for rank in xrange(MPI.COMM_WORLD.Get_size()):
+                if rank == MPI.COMM_WORLD.Get_rank():
+                    continue
+
+                # send the data required to call SetStatus on each process
+                MPI.COMM_WORLD.send({'command': 'SetStatus', 'ids': neuron_ids, 'params': params},
+                                    dest=rank, tag=100)
+
+        # perform the nest command in this process regardless of configuration
+        # The nest device is only available as protected property of the PyNN device
+        # pylint: disable=protected-access, no-member
+        nest.SetStatus(neuron_ids, params)

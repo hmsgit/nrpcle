@@ -30,7 +30,6 @@ from hbp_nrp_cle.brainsim.pynn.devices import PyNNACSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation
 import pyNN.nest as nestsim
-import nest
 
 __author__ = 'Georg Hinkel, Dimitri Probst'
 
@@ -73,7 +72,7 @@ class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
             self._parameters["amplitude"] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
-            nest.SetStatus(self._generator._device, {'amplitude': 1000.0 * value})
+            self.SetStatus(self._generator._device, {'amplitude': 1000.0 * value})
 
     @property
     def offset(self):
@@ -95,7 +94,7 @@ class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
             self._parameters["offset"] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
-            nest.SetStatus(self._generator._device, {'offset': 1000.0 * value})
+            self.SetStatus(self._generator._device, {'offset': 1000.0 * value})
 
     @property
     def frequency(self):
@@ -117,7 +116,7 @@ class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
             self._parameters['frequency'] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
-            nest.SetStatus(self._generator._device, {'frequency': float(value)})
+            self.SetStatus(self._generator._device, {'frequency': float(value)})
 
     @property
     def phase(self):
@@ -139,4 +138,4 @@ class PyNNNestACSource(PyNNNestDevice, PyNNACSource):
             self._parameters['phase'] = value
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
-            nest.SetStatus(self._generator._device, {'phase': float(value)})
+            self.SetStatus(self._generator._device, {'phase': float(value)})

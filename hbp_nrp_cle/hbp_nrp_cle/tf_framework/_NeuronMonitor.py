@@ -174,11 +174,12 @@ class NeuronMonitor(TransferFunction):
     def unregister(self):
         """
         Unregisters the device for this transfer function. It will no longer produce
-        messages.
+        messages. Use the full brain adapter unregistration to allow custom adapters
+        to properly handle the event.
 
         Leave the publisher alone otherwise the console fills with many warnings about
         the topic not being published, without a device it won't be usable anyway.
         """
         if self.device is not None:
-            self.device._disconnect() # pylint: disable=protected-access
+            config.active_node.brain_adapter.unregister_spike_sink(self.device)
             self.device = None

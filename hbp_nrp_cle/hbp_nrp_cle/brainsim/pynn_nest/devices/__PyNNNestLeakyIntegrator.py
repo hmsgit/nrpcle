@@ -28,8 +28,12 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNLeakyIntegrator
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNLeakyIntegratorAlpha, PyNNLeakyIntegratorExp
+
+from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
+
 import nest
 import pyNN.nest as nestsim
+from mpi4py import MPI
 
 __author__ = 'DimitriProbst'
 
@@ -37,7 +41,7 @@ __author__ = 'DimitriProbst'
 # PyLint does not recognize the following class as abstract as it does not define new methods
 # raising NotImplementedException
 # pylint: disable=abstract-method
-class PyNNNestLeakyIntegrator(PyNNLeakyIntegrator):
+class PyNNNestLeakyIntegrator(PyNNLeakyIntegrator, PyNNNestDevice):
     """
     Represents the membrane potential of a current-based LIF neuron
     with alpha-shaped post synaptic currents
@@ -63,9 +67,24 @@ class PyNNNestLeakyIntegrator(PyNNLeakyIntegrator):
         :param time: The current simulation time
         """
 
-        self._voltage = nest.GetStatus([self._cell[0]])[0]['V_m']
+        # single process, direct access to voltage
+        if not self.mpi_aware:
+            self._voltage = nest.GetStatus([self._cell[0]])[0]['V_m']
+
+        # multi-process, gather the voltage from all nodes, CLE is guaranteed to be rank 0
+        else:
+            data = nest.GetStatus([self._cell[0]])[0]
+            values = MPI.COMM_WORLD.gather(data['V_m'] if 'V_m' in data else 0.0, root=0)
+
+            # only let the CLE continue processing
+            if MPI.COMM_WORLD.Get_rank() > 0:
+                return
+
+            # only one process will have the neuron and voltage accessible
+            self._voltage = sum(values)
 
 
+# pylint: disable=too-many-ancestors
 class PyNNNestLeakyIntegratorAlpha(PyNNNestLeakyIntegrator, PyNNLeakyIntegratorAlpha):
     """
     The Nest-specific adaption of the PyNN leaky Integrator using a current-based LIF neuron with
@@ -73,6 +92,7 @@ class PyNNNestLeakyIntegratorAlpha(PyNNNestLeakyIntegrator, PyNNLeakyIntegratorA
     """
 
 
+# pylint: disable=too-many-ancestors
 class PyNNNestLeakyIntegratorExp(PyNNNestLeakyIntegrator, PyNNLeakyIntegratorExp):
     """
     The Nest-specific adaption of the PyNN leaky Integrator using a current-based LIF neuron with

@@ -29,7 +29,6 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNPoissonSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation
-import nest
 import pyNN.nest as nestsim
 
 __author__ = 'Georg Hinkel, Dimitri Probst'
@@ -68,8 +67,8 @@ class PyNNNestPoissonSpikeGenerator(PyNNNestDevice, PyNNPoissonSpikeGenerator):
         """
         self._parameters["rate"] = value
         # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access, no-member
-        nest.SetStatus([self.device_id], {'rate': float(value)})
+        # pylint: disable=protected-access
+        self.SetStatus([self.device_id], {'rate': float(value)})
 
     @property
     def device_id(self):

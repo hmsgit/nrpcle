@@ -214,6 +214,7 @@ def load_h5_network(path, sim, **populations):
 
     for p in populations:
         neurons = sim.PopulationView(population, populations[p])
+        neurons.label = p
         brain.__dict__[p] = neurons
 
     import hbp_nrp_cle.tf_framework.config as tf_config
@@ -238,6 +239,7 @@ def load_py_network(path, **populations):
         for p in populations:
             population = populations[p]
             neurons = circuit[population]
+            neurons.label = p
             logger.debug("Population '%s': %s", p, neurons)
             if isinstance(population, slice):
                 expected_size = abs((population.start - population.stop) / (population.step or 1))

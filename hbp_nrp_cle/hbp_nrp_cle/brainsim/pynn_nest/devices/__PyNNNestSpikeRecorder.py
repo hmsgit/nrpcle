@@ -26,16 +26,19 @@ Implementation of PyNNSpikeDetector
 '''
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNSpikeRecorder
+from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
+
 import nest
 from pyNN.common import Assembly
 import numpy as np
 import logging
+from mpi4py import MPI
 
 __author__ = 'GeorgHinkel, Igor Peric, Alina Roitberg, Sebastian Krach'
 logger = logging.getLogger(__name__)
 
 
-class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
+class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
     """
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"
@@ -68,8 +71,8 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
         self._neurons.record("spikes", to_file=False)
         for rec in self.__recorders:
             recorder_device = rec._spike_detector.device
-            nest.SetStatus(recorder_device, "to_memory", True)
-            nest.SetStatus(recorder_device, "to_file", False)
+            self.SetStatus(recorder_device, {"to_memory": True})
+            self.SetStatus(recorder_device, {"to_file": False})
 
     def _add_all_recorders(self, population, recorder_list):
         """
@@ -114,6 +117,22 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
         # Get the spikes directly from NEST (It let use use memory instead of files)
         # pylint: disable=protected-access
         nest_info = nest.GetStatus(recorder._spike_detector.device, 'events')[0]
+
+        # for distrbuted Nest experiments, this direct access requires us to gather data
+        # from all processes for assemble, CLE is guaranteed to be MPI process 0
+        if self.mpi_aware:
+            updated_info = MPI.COMM_WORLD.gather(nest_info, root=0)
+
+            # only let the CLE continue processing
+            if MPI.COMM_WORLD.Get_rank() > 0:
+                return [], []
+
+            # concatenate all of the dictionaries
+            nest_info = {'times': [], 'senders': []}
+            for other in updated_info:
+                nest_info['times'].extend(other['times'])
+                nest_info['senders'].extend(other['senders'])
+
         times_nest = nest_info['times']
         spikes_nest = nest_info['senders']
         if not self.__use_ids:
@@ -130,10 +149,10 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder):
     # pylint: disable=protected-access
     def finalize_refresh(self, time):
         """
-        Resets the number of spikes for the connected spike recorder
+        Resets the number of spikes for the connected spike recorder, this is a PyNN-Nest specific
+        command that clears all memory used by a recorder.
 
         :param time: The current simulation time
         """
         for rec in self.__recorders:
-            nest_device = rec._spike_detector.device
-            nest.SetStatus(nest_device, 'n_events', 0)
+            rec._clear_simulator()

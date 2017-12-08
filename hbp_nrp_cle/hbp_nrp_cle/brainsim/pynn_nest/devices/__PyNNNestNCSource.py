@@ -29,7 +29,6 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNNCSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation
-import nest
 import pyNN.nest as nestsim
 
 __author__ = 'Georg Hinkel, Dimitri Probst'
@@ -58,7 +57,7 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
         self._generator.mean = value
         # The nest device is only available as protected property of the PyNN device
         # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'mean': 1000.0 * value})
+        self.SetStatus(self._generator._device, {'mean': 1000.0 * value})
 
     def sim(self):
         """
@@ -78,4 +77,4 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
         self._generator.stdev = value
         # The nest device is only available as protected property of the PyNN device
         # pylint: disable=protected-access
-        nest.SetStatus(self._generator._device, {'std': 1000.0 * value})
+        self.SetStatus(self._generator._device, {'std': 1000.0 * value})

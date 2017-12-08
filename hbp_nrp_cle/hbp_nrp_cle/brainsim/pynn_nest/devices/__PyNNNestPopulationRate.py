@@ -27,13 +27,16 @@ moduleauthor: probst@fzi.de
 '''
 
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate
+from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
+
 import nest
 import pyNN.nest as nestsim
+from mpi4py import MPI
 
 __author__ = 'DimitriProbst'
 
 
-class PyNNNestPopulationRate(PyNNPopulationRate):
+class PyNNNestPopulationRate(PyNNPopulationRate, PyNNNestDevice):
     """
     Represents the rate of a population of LIF neurons by
     measuring and normalizing the membrane potential of a
@@ -60,4 +63,18 @@ class PyNNNestPopulationRate(PyNNPopulationRate):
         :param time: The current simulation time
         """
 
-        self._rate = nest.GetStatus([self._cell[0]])[0]['V_m']
+        # single process, direct access to voltage
+        if not self.mpi_aware:
+            self._rate = nest.GetStatus([self._cell[0]])[0]['V_m']
+
+        # multi-process, gather the voltage from all nodes, CLE is guaranteed to be rank 0
+        else:
+            data = nest.GetStatus([self._cell[0]])[0]
+            values = MPI.COMM_WORLD.gather(data['V_m'] if 'V_m' in data else 0.0, root=0)
+
+            # only let the CLE continue processing
+            if MPI.COMM_WORLD.Get_rank() > 0:
+                return
+
+            # only one process will have the neuron and voltage accessible
+            self._rate = sum(values)

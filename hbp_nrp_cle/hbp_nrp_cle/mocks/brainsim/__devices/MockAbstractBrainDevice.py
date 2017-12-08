@@ -67,7 +67,7 @@ class AbstractMockBrainDevice(AbstractBrainDevice):
     """
 
     def reset(self, transfer_function_manager):
-        pass
+        return self
 
     def connect(self, neurons, **params):
         pass
