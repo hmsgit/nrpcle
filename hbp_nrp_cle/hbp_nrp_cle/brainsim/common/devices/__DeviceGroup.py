@@ -44,9 +44,9 @@ class DeviceGroup(IDeviceGroup):
         Initializes a device group
         """
         # use this form since __setattr__ is overridden
+        self.__dict__['_spec'] = None
         self.__dict__['device_type'] = cls
         self.__dict__['devices'] = devices
-        self.__dict__['_spec'] = None
 
     @classmethod
     def create_new_device_group(cls, nested_device_type, length, params):
@@ -103,11 +103,11 @@ class DeviceGroup(IDeviceGroup):
         return array
 
     def __setattr__(self, attrname, value):
-        if attrname in self.__dict__:
-            self.__dict__[attrname] = value
         # This is needed to enable a device group reset.
-        elif attrname == 'spec':
+        if attrname == 'spec':
             self.__dict__['_spec'] = value
+        elif attrname in self.__dict__:
+            self.__dict__[attrname] = value
         else:
             self.set(attrname, value)
 
@@ -165,8 +165,13 @@ class DeviceGroup(IDeviceGroup):
         :return: The reset device group
         """
         reset_devices = list()
+        changes = False
         for device in self.devices:
-            reset_devices.append(device.reset(transfer_function_manager))
+            reset_device = device.reset(transfer_function_manager)
+            reset_devices.append(reset_device)
+            changes = changes or (reset_device is not device)
+        if not changes:
+            return self
         return type(self)(self.device_type, reset_devices)
 
     @classmethod

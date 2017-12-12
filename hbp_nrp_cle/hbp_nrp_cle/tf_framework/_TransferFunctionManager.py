@@ -252,6 +252,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                 for k in tf.__dict__:
                     if tf.__dict__[k] is param:
                         tf.__dict__[k] = reset_value
+                reset_value.spec = param.spec
 
     def reset(self):  # -> None:
         """
@@ -290,7 +291,8 @@ class TransferFunctionManager(ITransferFunctionManager):
                         tf.params[i] = spec.create_adapter(self)
                         tf.params[i].spec = spec
                         tf.__dict__[spec.name] = tf.params[i]
-                except Exception:
+                except Exception as e:
+                    logger.exception(e)
                     raise BrainParameterException("Cannot map parameter '{0}' in transfer "
                                                   "function '{1}'".format(spec.name, tf.name))
             tf.initialize(self, True, False)
