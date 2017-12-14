@@ -95,10 +95,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.stopped_flag = threading.Event()
         self.stopped_flag.set()
 
-        # step wait
-        self.running_flag = threading.Event()
-        self.running_flag.set()
-
         # global clock
         self.clock = 0.0
 
@@ -184,7 +180,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         :param timestep: simulation time, in seconds
         :return: Updated simulation time, otherwise -1
         """
-        self.running_flag.clear()
         clk = self.clock
 
         # robot simulation
@@ -216,7 +211,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         except ForcedStopException:
             logger.warn("Simulation was brutally stopped.")
 
-        self.running_flag.set()
         logger.debug("Run_step: done !")
         return self.clock
 
@@ -233,7 +227,7 @@ class ClosedLoopEngine(IClosedLoopControl):
 
     def start(self):
         """
-        Starts the orchestrated simulations and returns a future to notify suspensions
+        Starts the orchestrated simulations
         """
         if self.__start_future is None:
             self.__start_future = Future()
@@ -242,12 +236,15 @@ class ClosedLoopEngine(IClosedLoopControl):
             self.__start_thread = threading.Thread(target=self.__loop)
             self.__start_thread.setDaemon(True)
             self.__start_thread.start()
+        else:
+            logger.warning("CLE is already running")
 
     def __loop(self):
         """
         Starts the orchestrated simulations.
         This function does not return (starts an infinite loop).
         """
+        logger.info("Simulation loop started")
         self.__start_future.set_running_or_notify_cancel()
         try:
             self.stop_flag.clear()
@@ -258,8 +255,10 @@ class ClosedLoopEngine(IClosedLoopControl):
             self.__start_future.set_result(None)
         # pylint: disable=broad-except
         except Exception as e:
+            logger.exception(e)
             self.__start_future.set_exception(e)
         finally:
+            logger.info("Simulation loop ended")
             self.elapsed_time += time.time() - self.start_time
             self.__start_future = None
             self.__start_thread = None
@@ -279,11 +278,11 @@ class ClosedLoopEngine(IClosedLoopControl):
         self.stop_flag.set()
         if forced:
             if self.rca_future is not None and self.rca_future.running():
-                self.running_flag.wait(5)
+                self.stopped_flag.wait(5)
                 if self.rca_future.running():
                     self.rca_future.set_exception(ForcedStopException())
             self.wait_step(timeout=5)
-            if not self.running_flag.isSet():
+            if not self.stopped_flag.isSet():
                 raise Exception("The simulation loop could not be completed")
         else:
             self.wait_step()
@@ -348,7 +347,7 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         Gets a flag indicating whether the simulation is running
         """
-        return self.__start_thread is not None
+        return self.__start_thread is not None and self.__start_future.running()
 
     @property
     def real_time(self):  # -> float64
@@ -405,4 +404,4 @@ class ClosedLoopEngine(IClosedLoopControl):
 
         :param timeout: The maximum amount of time (in seconds) to wait for the end of this step
         """
-        self.running_flag.wait(timeout)
+        self.stopped_flag.wait(timeout)

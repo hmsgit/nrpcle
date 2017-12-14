@@ -75,7 +75,6 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.__cle.initialize("foo")
         self.assertTrue(self.__cle.is_initialized)
         self.__cle.run_step(0.05)
-        self.__cle.wait_step()
         self.assertEqual(self.__cle.simulation_time, 0.05)
 
     def test_start_stop(self):
@@ -86,14 +85,12 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertTrue(self.__cle.start_cb.called)
         time.sleep(2)
         self.__cle.stop()
-        self.__cle.wait_step()
         self.assertGreater(self.__cle.real_time, 0.0)
 
     def test_reset(self):
         self.__cle.initialize("foo")
         self.assertTrue(self.__cle.is_initialized)
         self.__cle.run_step(0.05)
-        self.__cle.wait_step()
         self.__cle.reset()
         self.assertEqual(self.__cle.simulation_time, 0.0)
         self.assertEqual(self.__cle.real_time, 0.0)
