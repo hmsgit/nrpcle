@@ -40,6 +40,9 @@ parameters are directly forwarded to the created NEST devices.
 
 __author__ = 'Georg Hinkel'
 
+# We need to import nest here, otherwise we get a segfaults in tests
+import pyNN.nest
+
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IBrainControlAdapter
 
 simulator = None
