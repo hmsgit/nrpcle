@@ -108,6 +108,18 @@ class GazeboHelper(object):
         return GazeboHelper.parse_world_string(world_sdf_string)
 
     @staticmethod
+    def try_remove_pose(model):
+        """
+        Remove pose from the model object if it exists
+
+        :param: A model object
+        """
+
+        pose = model.find("pose")
+        if pose:
+            model.remove(pose)  # remove model pose
+
+    @staticmethod
     def parse_world_string(world_string):
         """
         Parse an SDF world string producing a pair of dictionaries:
@@ -141,7 +153,7 @@ class GazeboHelper(object):
             state = [x for x in models_state if x.xpath("@name")[0] == model_name]
             if len(state) != 0:
                 model_state_sdf = etree.tostring(state[0])
-                model.remove(model.find("pose"))  # remove model pose
+                GazeboHelper.try_remove_pose(model)
                 model.append(state[0].find("pose"))  # apply state pose
             else:
                 model_state_sdf = None
