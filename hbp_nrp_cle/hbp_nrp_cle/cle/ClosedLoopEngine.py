@@ -235,6 +235,7 @@ class ClosedLoopEngine(IClosedLoopControl):
                 self.start_cb(self.__start_future)
             self.__start_thread = threading.Thread(target=self.__loop)
             self.__start_thread.setDaemon(True)
+            self.__start_future.set_running_or_notify_cancel()
             self.__start_thread.start()
         else:
             logger.warning("CLE is already running")
@@ -245,7 +246,6 @@ class ClosedLoopEngine(IClosedLoopControl):
         This function does not return (starts an infinite loop).
         """
         logger.info("Simulation loop started")
-        self.__start_future.set_running_or_notify_cancel()
         try:
             self.stop_flag.clear()
             self.stopped_flag.clear()
@@ -347,7 +347,7 @@ class ClosedLoopEngine(IClosedLoopControl):
         """
         Gets a flag indicating whether the simulation is running
         """
-        return self.__start_thread is not None and self.__start_future.running()
+        return self.__start_future is not None and self.__start_future.running()
 
     @property
     def real_time(self):  # -> float64
