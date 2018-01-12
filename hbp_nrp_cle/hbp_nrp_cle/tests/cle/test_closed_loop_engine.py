@@ -25,6 +25,7 @@
 CLE unit test
 """
 
+from hbp_nrp_cle.cle.DeterministicClosedLoopEngine import DeterministicClosedLoopEngine
 from hbp_nrp_cle.cle.ClosedLoopEngine import ClosedLoopEngine
 from hbp_nrp_cle.mocks.robotsim import MockRobotControlAdapter, MockRobotCommunicationAdapter
 from hbp_nrp_cle.mocks.brainsim import MockBrainControlAdapter, MockBrainCommunicationAdapter
@@ -36,12 +37,11 @@ import unittest
 import time
 from mock import Mock, patch, MagicMock
 
-__author__ = 'Nino Cauli'
-
-
 
 # all the methods are inherited from unittest.TestCase
-class TestClosedLoopEngine(unittest.TestCase):
+class TestDeterministicClosedLoopEngine(unittest.TestCase):
+    
+    CLE_Class = DeterministicClosedLoopEngine
 
     def setUp(self):
         # Sets up the cle and the mocks for the adapters.
@@ -60,7 +60,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.mock_wait_for_service = patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.wait_for_service').start()
         self.mock_service_proxy = patch('hbp_nrp_cle.robotsim.GazeboHelper.rospy.ServiceProxy').start()
 
-        self.__cle = ClosedLoopEngine(rca, rcm, self.__bca, bcm, self.__tfm, 0.01)
+        self.__cle = self.CLE_Class(rca, rcm, self.__bca, bcm, self.__tfm, 0.01)
 
     def tearDown(self):
         self.mock_wait_for_service.stop()
@@ -123,7 +123,7 @@ class TestClosedLoopEngine(unittest.TestCase):
 
     def test_reset_brain(self):
         self.__cle.load_network_from_file = Mock()
-        self.__cle._ClosedLoopEngine__network_configuration = {}
+        self.__cle._DeterministicClosedLoopEngine__network_configuration = {}
         self.__cle.reset_brain()
         self.assertEquals(1, self.__cle.load_network_from_file.call_count)
 
@@ -178,6 +178,14 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.__bca.load_network_from_file.assert_called_with("brain.py", populations)
         self.assertEqual(self.bca.is_alive(), False)
         self.__tfm.hard_reset_brain_devices.assert_called()
+        
+        
+class TestClosedLoopEngine(TestDeterministicClosedLoopEngine):
+    CLE_Class = ClosedLoopEngine
+    
+    def setUp(self):
+        with patch("hbp_nrp_cle.cle.ClosedLoopEngine.threading"):
+            super(TestClosedLoopEngine, self).setUp()
 
 
 if __name__ == '__main__':

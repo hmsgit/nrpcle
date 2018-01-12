@@ -120,7 +120,9 @@ class PyNNLeakyIntegrator(AbstractBrainDevice, IBrainDevice):
                                   'v_reset',
                                   'tau_refrac',
                                   'i_offset')))
-        self.sim().initialize(self._cell, v=self._parameters["v_rest"])
+        v = self._parameters["v_rest"]
+        self.sim().initialize(self._cell, v=v)
+        self._voltage = v
 
     def start_record_voltage(self):
         """
