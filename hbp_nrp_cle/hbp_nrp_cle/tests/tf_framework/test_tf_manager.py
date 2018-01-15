@@ -112,7 +112,7 @@ class TestTransferFunctionManager(unittest.TestCase):
 
     def test_hard_reset_brain_devices_wrong_mapping(self):
         """
-        Any exception thrown reseting brain connection mappings should raise an
+        Any exception thrown resetting brain connection mappings should raise an
         explicit BrainParameterException
         """
 
@@ -130,7 +130,64 @@ class TestTransferFunctionManager(unittest.TestCase):
         camera_trans.device.spec.create_adapter = lambda: Exception()
 
         with self.assertRaises(nrp.BrainParameterException) as cm:
-          self.tfm.hard_reset_brain_devices()
+            self.tfm.hard_reset_brain_devices()
 
         self.assertEqual(cm.exception.message, "Cannot map parameter 'device' in transfer function 'camera_trans'")
 
+    def test_activate_transfer_function(self):
+
+        self.tfm.robot_adapter = self.rcm
+        self.tfm.hard_reset_brain_devices()
+        self.tfm.brain_adapter = self.bcm
+
+        @nrp.MapSpikeSink("device", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
+        @nrp.Neuron2Robot()
+        def camera_trans(t, device):
+            pass
+
+        @nrp.MapSpikeSource("spike_source", nrp.brain.sensors[0], nrp.poisson)
+        @nrp.Robot2Neuron()
+        def robot_2_neuron_tf(t, spike_source):
+            pass
+
+        #robot_2_neuron_tf.spike_source.spec.activate
+        self.tfm.initialize("tfnode")
+
+        camera_tf = self.tfm.n2r[0]
+        n_2_r_tf = self.tfm.r2n[0]
+
+        # tf is initialized as active
+        self.assertTrue(camera_tf.active)
+        self.assertTrue(n_2_r_tf.active)
+
+        # wrong parameter type
+        self.tfm.activate_tf(camera_tf, "False")
+        self.assertTrue(camera_tf.active)  # no change
+
+        # deactivate tf
+        self.tfm.activate_tf(camera_tf, False)
+        self.assertFalse(camera_tf.active)
+
+        self.tfm.activate_tf(n_2_r_tf, False)
+        self.assertFalse(n_2_r_tf.active)
+
+        # double deactivation
+        self.tfm.activate_tf(camera_tf, False)
+        self.assertFalse(camera_tf.active)
+
+        self.tfm.activate_tf(n_2_r_tf, False)
+        self.assertFalse(n_2_r_tf.active)
+
+        # activate tf
+        self.tfm.activate_tf(camera_tf, True)
+        self.assertTrue(camera_tf.active)
+
+        self.tfm.activate_tf(n_2_r_tf, True)
+        self.assertTrue(n_2_r_tf.active)
+
+        # double activation
+        self.tfm.activate_tf(camera_tf, True)
+        self.assertTrue(camera_tf.active)
+
+        self.tfm.activate_tf(n_2_r_tf, True)
+        self.assertTrue(n_2_r_tf.active)

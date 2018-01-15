@@ -141,3 +141,16 @@ class TestFixedSpikeGenerator(unittest.TestCase):
         self.assertRaises(Exception, FixedSpikeGenerator, connector=connector)
         del connector['mode']
         self.assertRaises(Exception, FixedSpikeGenerator, connector=connector)
+
+    @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNFixedSpikeGenerator.PyNNFixedSpikeGenerator.sim")
+    def test_activation(self, sim_mock):
+        dev = FixedSpikeGenerator()
+        dev.connect(Mock())
+
+        self.assertTrue(dev.active)
+
+        dev.active = False
+        self.assertFalse(dev.active)
+
+        dev.active = True
+        self.assertTrue(dev.active)

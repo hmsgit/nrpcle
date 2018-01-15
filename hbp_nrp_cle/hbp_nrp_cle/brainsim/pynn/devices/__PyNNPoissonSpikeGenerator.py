@@ -75,7 +75,7 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         super(PyNNPoissonSpikeGenerator, self).__init__(**params)
 
         self._generator = None
-
+        self._last_rate_before_deactivation = None
         self.create_device()
 
     @property
@@ -93,6 +93,17 @@ class PyNNPoissonSpikeGenerator(AbstractBrainDevice, IPoissonSpikeGenerator):
         :param value: float
         """
         self._generator.set(rate=value)
+
+    def _activate(self):
+        """Activate this source, if inactive, restoring the previous rate value"""
+        if not self.active:
+            self.rate = self._last_rate_before_deactivation
+
+    def _deactivate(self):
+        """Deactivate this source, if active, setting the rate to zero"""
+        if self.active:
+            self._last_rate_before_deactivation = self.rate
+            self.rate = 0.0
 
     def sim(self):  # pragma: no cover
         """

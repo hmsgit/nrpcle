@@ -28,7 +28,7 @@ This module contains the implementation of a transfer functions manager
 __author__ = 'GeorgHinkel'
 
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
-from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter
+from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IBrainDevice
 from ._TransferFunctionInterface import ITransferFunctionManager
 from ._PropertyPath import PropertyPath
 from . import config, BrainParameterException
@@ -88,9 +88,10 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param t: The simulation time
         """
 
-        start = time.time()
-        tf.run(t)
-        tf.elapsed_time += time.time() - start
+        if tf.active:
+            start = time.time()
+            tf.run(t)
+            tf.elapsed_time += time.time() - start
 
     def run_neuron_to_robot(self, t):  # -> None:
         """
@@ -210,6 +211,42 @@ class TransferFunctionManager(ITransferFunctionManager):
             tf.__dict__[param.name] = tf.params[i]
 
         tf.initialize(self, True, True)
+
+    def activate_tf(self, tf, activate):
+        """
+        Change the activation state of tf
+
+        :param tf: the tf on which to apply the change
+        :param activate: a boolean value denoting the new activation state
+        """
+
+        if activate is None or type(activate) != bool:
+            return
+
+        if activate is True:
+            if not tf.active:
+                self._activate_tf(tf, True)
+        else:
+            if tf.active:
+                self._activate_tf(tf, False)
+
+    def _activate_tf(self, tf, activate):
+        """
+        Change the activation state of tf.
+
+        It (de-)activates tf and its brain devices.
+
+        :param tf: the tf on which to apply the change
+        :param activate: a boolean value denoting the new activation state
+        """
+
+        # change TF activation state
+        tf.active = activate
+
+        # change TF's devices activation state
+        for i in range(1, len(tf.params)):
+            if isinstance(tf.params[i], IBrainDevice):
+                self.brain_adapter.activate_device(tf.params[i], activate)
 
     def initialize(self, name):
         """

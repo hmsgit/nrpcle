@@ -28,7 +28,7 @@ This module represents the interfaces for the brain communication and control ad
 __author__ = 'GeorgHinkel, Sebastian Krach'
 
 
-class PopulationInfo(object): # pragma: no cover
+class PopulationInfo(object):  # pragma: no cover
     """
     Gathers information about neuron populations
     """
@@ -96,6 +96,20 @@ class IBrainDevice(object):  # pragma: no cover
 
         Disconnects the brain device from any output neuron populations. This device will no longer
         interact with the brain after disconnect is called.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @property
+    def active(self):
+        """
+        Returns the activation state of this device
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @active.setter
+    def active(self, bool_value):
+        """
+        Sets the activation state of this device
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
@@ -348,6 +362,15 @@ class IBrainCommunicationAdapter(object):  # pragma: no cover
         Disconnects and unregisters the given spike generator device.
 
         :param device: The spike generator device to deregister.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def activate_device(self, device, activate):
+        """
+        Change the activation status of the device.
+        :param device: the device on which to apply the change
+        :param activate: a boolean value denoting the new activation state
+        :raises AttributeError the device doesn't support activation
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

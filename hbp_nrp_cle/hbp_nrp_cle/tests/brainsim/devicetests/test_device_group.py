@@ -94,3 +94,11 @@ class TestNestDeviceGroup(unittest.TestCase):
         self.assertEqual(5, len(call_args[1]))
         for i in range(0,5):
             self.assertDictEqual({"amplitude": val[i] * 1000.0}, call_args[1][i])
+
+    def test_active_set(self, _):
+
+        self.device.active = False
+        self.assertFalse(self.device.active)
+
+        self.device.active = True
+        self.assertTrue(self.device.active)

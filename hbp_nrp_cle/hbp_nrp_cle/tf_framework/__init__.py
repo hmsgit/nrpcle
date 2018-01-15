@@ -14,6 +14,7 @@ class BrainParameterException(Exception):
     :param source: the exception source
     :param message: the brain
     """
+
     def __init__(self, message):
         super(BrainParameterException, self).__init__(message)
 
@@ -48,6 +49,8 @@ class TFLoadingException(TFException):
 
     def __init__(self, tf_name, message):
         super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
+
+
 from . import config
 from ._PropertyPath import PropertyPath, RangeSegment, CustomSegment
 
@@ -64,17 +67,19 @@ def resolve_brain_variable(var):
         return var.select(config.brain_root, config.active_node.brain_adapter)
     return var
 
+
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 # alias _Facade module needed by set_transfer_function
 import sys
-nrp = sys.modules[__name__]
 
+nrp = sys.modules[__name__]
 
 # CLE restricted python environment
 # TODO(Luc): create a module for it
@@ -242,6 +247,17 @@ def get_transfer_function(name):
     return next((tf for tf in get_transfer_functions() if tf.name == name), None)
 
 
+def activate_transfer_function(tf, activate):
+    """
+    Set the activation state of the transfer function
+    In case of errors the change is not applied.
+
+    :param tf: the tf to (de-)activate
+    :param activate: a boolean value denoting the new activation state
+    """
+    config.active_node.activate_tf(tf, activate)
+
+
 def get_brain_source():
     """
     Get the source of the brain (if loaded from a python file). Otherwise, returns
@@ -254,14 +270,14 @@ def get_brain_source():
 
 def get_brain_populations():
     """
-    Get the brain populations as a dictionnary
+    Get the brain populations as a dictionary
     If the brain model is not loaded,
     the function returns None.
 
-    :return: A dictionnary containing the brain populations
-    The dictionnary keys are population names
+    :return: A dictionary containing the brain populations
+    The dictionary keys are population names
     and its values are one of the following types:
-    list, or a 'slice' dictionnary of the following form
+    list, or a 'slice' dictionary of the following form
     {'from': 1, 'to': 10, 'step': 1}.
     """
     return config.brain_populations
@@ -357,12 +373,13 @@ def set_transfer_function(new_source, new_code, new_name):
         tb = sys.exc_info()[2]
         logger.error("Error while loading new transfer function")
         logger.exception(e)
-        delete_transfer_function(new_name) # prevents runtime error
+        delete_transfer_function(new_name)  # prevents runtime error
         raise TFLoadingException(new_name, str(e)), None, tb
 
     # we set the new source in an attribute because inspect.getsource won't work after exec
     # indeed inspect.getsource is based on a source file object
     # see findsource in http://www.opensource.apple.com/source/python/python-3/python/Lib/inspect.py
     tf.source = new_source
+
 
 start_new_tf_manager()

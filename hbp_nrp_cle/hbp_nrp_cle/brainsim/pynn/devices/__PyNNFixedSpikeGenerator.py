@@ -81,10 +81,13 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
 
         self._generator = None
         self._currentsource = None
+
         self._calculate_rate_and_current = self._setup_rate_and_current_calculation()
 
         (self._rate,
          self._current) = self._calculate_rate_and_current(self._parameters["initial_rate"])
+
+        self._last_rate_before_deactivation = None
 
         self.create_device()
 
@@ -107,6 +110,21 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         if current != self._current:
             self._current = current
             self._currentsource.set(amplitude=current)
+
+    def _activate(self):
+        """
+        Activates the Fixed spike generator restoring the last value of the rate
+        """
+        if not self.active:
+            self.rate = self._last_rate_before_deactivation
+
+    def _deactivate(self):
+        """
+        Deactivates the Fixed spike generator setting the rate to zero
+        """
+        if self.active:
+            self._last_rate_before_deactivation = self.rate
+            self.rate = 0.0
 
     def sim(self):  # pragma: no cover
         """

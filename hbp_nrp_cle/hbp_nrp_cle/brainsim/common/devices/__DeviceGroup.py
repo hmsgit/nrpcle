@@ -108,6 +108,8 @@ class DeviceGroup(IDeviceGroup):
         # This is needed to enable a device group reset.
         if attrname == 'spec':
             self.__dict__['_spec'] = value
+        elif attrname == 'active':
+            super(DeviceGroup, self).__setattr__(attrname, value)
         elif attrname in self.__dict__:
             self.__dict__[attrname] = value
         else:
@@ -139,6 +141,42 @@ class DeviceGroup(IDeviceGroup):
         for device in self.devices:
             if hasattr(device, 'refresh'):
                 device.refresh(t)
+
+    @property
+    def active(self):
+        """
+        Returns the activation status of all devices
+        """
+        active_list = [d.active for d in self.devices]
+
+        return reduce(lambda d1, d2: d1 and d2, active_list, True)
+
+    # pylint: disable=arguments-differ
+    @active.setter
+    def active(self, bool_value):
+        """
+        Sets the activation status of all devices
+        """
+        if bool_value is True:
+            self._activate()
+        else:
+            self._deactivate()
+
+    def _activate(self):
+        """
+        Activate all devices
+        """
+        if not self.active:
+            for d in self.devices:
+                d.active = True
+
+    def _deactivate(self):
+        """
+        Deactivate all devices
+        """
+        if self.active:
+            for d in self.devices:
+                d.active = False
 
     def connect(self, neurons, **params):
         """

@@ -55,6 +55,7 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
 
         super(PyNNDCSource, self).__init__(**params)
         self._generator = None
+        self._last_amplitude_before_deactivation = None
         self.create_device()
 
     @property
@@ -73,6 +74,17 @@ class PyNNDCSource(AbstractBrainDevice, IDCSource):
         """
 
         self._generator.set(amplitude=value)
+
+    def _activate(self):
+        """Activate this source, if inactive, restoring the previous amplitude value"""
+        if not self.active:
+            self.amplitude = self._last_amplitude_before_deactivation
+
+    def _deactivate(self):
+        """Deactivate this source, if active, setting the amplitude to zero"""
+        if self.active:
+            self._last_amplitude_before_deactivation = self.amplitude
+            self.amplitude = 0.0
 
     def sim(self):  # pragma: no cover
         """

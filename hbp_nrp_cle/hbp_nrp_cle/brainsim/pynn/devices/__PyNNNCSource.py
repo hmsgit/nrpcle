@@ -60,7 +60,10 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         super(PyNNNCSource, self).__init__(**params)
 
         self._generator = None
-
+        self._last_params_before_deactivation = {
+            'mean': None,
+            'stdev': None,
+        }
         self.create_device()
 
     @property
@@ -96,6 +99,20 @@ class PyNNNCSource(AbstractBrainDevice, INCSource):
         """
 
         self._generator.set(stdev=value)
+
+    def _activate(self):
+        """Activate this source, if inactive, restoring the previous stdev and mean values"""
+        if not self.active:
+            self.stdev = self._last_params_before_deactivation['stdev']
+            self.mean = self._last_params_before_deactivation['mean']
+
+    def _deactivate(self):
+        """Activate this source, if inactive, setting  stdev and mean to zero"""
+        if self.active:
+            self._last_params_before_deactivation['stdev'] = self.stdev
+            self._last_params_before_deactivation['mean'] = self.mean
+            self.stdev = 0.0
+            self.mean = 0.0
 
     def sim(self):  # pragma: no cover
         """

@@ -27,7 +27,8 @@ implementations of the brain simulator adapter.
 """
 
 import logging
-from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, ICustomDevice
+from hbp_nrp_cle.brainsim.BrainInterface \
+    import IBrainCommunicationAdapter, ICustomDevice
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,15 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
                         device_type)
         device.connect(populations)
         return device
+
+    def activate_device(self, device, activate=True):
+        """
+        Change the activation status of the device.
+        :param device: the device on which to apply the change
+        :param activate: a boolean value denoting the new activation state
+        :raises AttributeError the device doesn't support activation
+        """
+        device.active = activate
 
     def register_spike_source(self, populations, spike_generator_type, **params):
         """

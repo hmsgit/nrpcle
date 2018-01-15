@@ -145,3 +145,16 @@ class TestPoissonGenerator(unittest.TestCase):
         self.assertRaises(Exception, PoissonGenerator, connector=connector)
         del connector['mode']
         self.assertRaises(Exception, PoissonGenerator, connector=connector)
+
+    @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator.PyNNPoissonSpikeGenerator.sim")
+    def test_activation(self, sim_mock):
+        dev = PoissonGenerator()
+        dev.connect(Mock())
+
+        self.assertTrue(dev.active)
+
+        dev.active = False
+        self.assertFalse(dev.active)
+
+        dev.active = True
+        self.assertTrue(dev.active)

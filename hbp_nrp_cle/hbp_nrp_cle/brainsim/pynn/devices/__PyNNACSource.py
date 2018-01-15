@@ -62,6 +62,9 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         super(PyNNACSource, self).__init__(**params)
 
         self._generator = None
+
+        self._last_amplitude_before_deactivation = None
+
         self.create_device()
 
     @property
@@ -79,6 +82,20 @@ class PyNNACSource(AbstractBrainDevice, IACSource):
         :param value: float
         """
         self._generator.set(amplitude=value)
+
+    def _activate(self):
+        """Activate this source, if inactive,
+        restoring the previous amplitude"""
+        if not self.active:
+            self.amplitude = self._last_amplitude_before_deactivation
+
+    def _deactivate(self):
+        """Deactivate this source, if inactive,
+        setting amplitude to zero"""
+        if self.active:
+            self._last_amplitude_before_deactivation = self.amplitude
+
+            self.amplitude = 0.0
 
     @property
     def offset(self):

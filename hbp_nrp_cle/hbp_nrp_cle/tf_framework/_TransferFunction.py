@@ -59,6 +59,7 @@ class TransferFunction(object):
     def __init__(self):
         self._params = []
         self._func = None
+        self.__active = False
         self.__local_data = {}
         self.__source = None
         self.__elapsed_time = 0.0
@@ -148,6 +149,27 @@ class TransferFunction(object):
         self.__source = source
         self.__updated_since_last_error = True
 
+    @property
+    def active(self):
+        """
+        Gets the activation state of this transfer function
+
+        :return: the activation state of this transfer function
+
+        """
+        return self.__active
+
+    @active.setter
+    def active(self, bool_value):
+        """
+        Sets the activation state of this transfer function.
+
+        :param bool_value: bool denoting the activation state of this transfer function
+
+        """
+        if bool_value is not None and type(bool_value) == bool:
+            self.__active = bool_value
+
     @abstractmethod
     def __call__(self, func):
         """
@@ -174,6 +196,7 @@ class TransferFunction(object):
             if args[0] != "t":
                 raise Exception("The first parameter of a transfer function must be the time!")
             self._params = list(args)
+            self.active = True
         else:
             raise Exception("It is not allowed to change the underlying function of a Transfer "
                             "Function after it has been initially set.")

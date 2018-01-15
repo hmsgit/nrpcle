@@ -64,6 +64,7 @@ class AbstractBrainDevice(IBrainDevice):
         self._parameters.update(self.get_parameter_defaults())
         self.verify_parameters(params)
         self._update_parameters(params)
+        self.__active = True
 
     # pylint: disable=unused-argument
     @classmethod
@@ -185,3 +186,37 @@ class AbstractBrainDevice(IBrainDevice):
         :param params: The validated parameter dictionary
         """
         self._parameters.update(params)
+
+    @property
+    def active(self):
+        """
+        Returns the device's activation state
+        """
+        return self.__active
+
+    # pylint: disable=arguments-differ
+    @active.setter
+    def active(self, bool_value):
+        """
+        Sets the spike generator's activation state
+        """
+        if bool_value is True:
+            self._activate()
+            self.__active = True
+        else:
+            self._deactivate()
+            self.__active = False
+
+    def _activate(self):
+        """
+        Activates the Spike Generator
+        To be implemented by subclasses
+        """
+        pass
+
+    def _deactivate(self):
+        """
+        Deactivates the Spike Generator.
+        To be implemented by subclasses
+        """
+        pass

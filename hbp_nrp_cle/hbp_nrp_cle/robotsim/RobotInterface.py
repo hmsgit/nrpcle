@@ -211,7 +211,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
 
         :param topic The IRobotSubscribedTopic to unregister.
         """
-        topic._unregister() # pylint: disable=protected-access
+        topic._unregister()  # pylint: disable=protected-access
         if topic in self.__subscribed_topics:
             self.__subscribed_topics.remove(topic)
 
