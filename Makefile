@@ -9,6 +9,7 @@ COVER_PACKAGES=hbp_nrp_cle
 
 #documentation to build
 DOC_MODULES=hbp_nrp_cle/doc
+DOC_REPO=--doc-repo ssh://bbpcode.epfl.ch/infra/jekylltest
 
 ##### DO NOT MODIFY BELOW #####################
 
