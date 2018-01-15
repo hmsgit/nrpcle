@@ -143,7 +143,7 @@ class PyNNNestDevice(object):
     mpi_aware = False
 
     @classmethod
-    def create_new_device_group(cls, length, params):
+    def create_new_device_group(cls, populations, params):
         """
         Returns a new device group instance for the concrete implementation of this brain device.
 
@@ -151,9 +151,10 @@ class PyNNNestDevice(object):
         :param params: additional parameters which are passed to the constructor of the nested
             devices. For each parameter either the value can be supplied, or a list of values,
             one for each nested device.
+        :param populations: The populations for which the device should be created
         :return: a new device group containing the created nested devices
         """
-        return PyNNNestDeviceGroup.create_new_device_group(cls, length, params)
+        return PyNNNestDeviceGroup.create_new_device_group(populations, cls, params)
 
     @property
     def device_id(self):

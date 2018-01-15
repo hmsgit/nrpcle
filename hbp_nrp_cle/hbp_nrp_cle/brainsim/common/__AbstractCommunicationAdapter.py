@@ -82,11 +82,11 @@ class AbstractCommunicationAdapter(IBrainCommunicationAdapter):
 
         concrete_type = self._get_device_type(device_type)
         if not isinstance(populations, list):
-            device = concrete_type.create_new_device(**params)
+            device = concrete_type.create_new_device(populations, **params)
             logger.info("Communication object with type \"%s\" requested (device)",
                         device_type)
         else:
-            device = concrete_type.create_new_device_group(len(populations), params)
+            device = concrete_type.create_new_device_group(populations, params)
             logger.info("Communication object with type \"%s\" requested (device group)",
                         device_type)
         device.connect(populations)

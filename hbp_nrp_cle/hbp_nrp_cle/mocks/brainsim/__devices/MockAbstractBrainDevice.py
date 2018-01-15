@@ -76,5 +76,5 @@ class AbstractMockBrainDevice(AbstractBrainDevice):
         pass
 
     @classmethod
-    def create_new_device_group(cls, length, params):
-        return MockDeviceGroup.create_new_device_group(cls, length, params)
+    def create_new_device_group(cls, populations, params):
+        return MockDeviceGroup.create_new_device_group(populations, cls, params)

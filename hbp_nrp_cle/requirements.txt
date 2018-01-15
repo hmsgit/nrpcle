@@ -6,7 +6,7 @@ lxml==3.4.0
 h5py==2.6.0
 lazyarray==0.2.9
 neo==0.4.0
-PyNN==0.9.1
+PyNN==0.8.3
 PyYAML==3.11
 rospkg==1.0.38
 catkin_pkg==0.2.10
