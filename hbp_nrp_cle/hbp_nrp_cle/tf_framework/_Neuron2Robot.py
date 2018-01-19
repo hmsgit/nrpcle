@@ -36,6 +36,7 @@ from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
 from ._MappingSpecification import ParameterMappingSpecification
 from . import config
 from ._TransferFunction import TransferFunction
+import sys
 
 import logging
 logger = logging.getLogger(__name__)
@@ -216,9 +217,13 @@ class Neuron2Robot(TransferFunction):
         return_value = super(Neuron2Robot, self).run(t)
 
         if return_value is not None:
-            topic_publisher = self.__main_topic
-            if topic_publisher is not None:
-                topic_publisher.send_message(return_value)
+            try:
+                topic_publisher = self.__main_topic
+                if topic_publisher is not None:
+                    topic_publisher.send_message(return_value)
+            # pylint: disable=broad-except
+            except Exception, e:
+                self._handle_error(e, sys.exc_info()[2])
 
     def unregister(self):
         """
