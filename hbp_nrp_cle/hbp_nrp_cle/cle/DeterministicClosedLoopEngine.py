@@ -32,9 +32,6 @@ import logging
 import threading
 from concurrent.futures import Future
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl, ForcedStopException
-from hbp_nrp_cle.tf_framework import ITransferFunctionManager
-from hbp_nrp_cle.brainsim import IBrainCommunicationAdapter, IBrainControlAdapter
-from hbp_nrp_cle.robotsim import IRobotCommunicationAdapter, IRobotControlAdapter
 from hbp_nrp_cle.cle.__helper import get_tf_elapsed_times
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
 
@@ -70,13 +67,6 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         :param transfer_function_manager: an instance of ITransferFunctionManager
         :param dt: The CLE time step in seconds
         """
-
-        assert isinstance(robot_control_adapter, IRobotControlAdapter)
-        assert isinstance(robot_comm_adapter, IRobotCommunicationAdapter)
-        assert isinstance(brain_control_adapter, IBrainControlAdapter)
-        assert isinstance(brain_comm_adapter, IBrainCommunicationAdapter)
-        assert isinstance(transfer_function_manager, ITransferFunctionManager)
-
         self.rca = robot_control_adapter
         self.rca_future = None
         self.rcm = robot_comm_adapter
