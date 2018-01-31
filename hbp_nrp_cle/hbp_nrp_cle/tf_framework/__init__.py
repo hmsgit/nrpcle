@@ -90,7 +90,7 @@ from operator import getitem
 from ._Neuron2Robot import Neuron2Robot, MapSpikeSink, MapSpikeSource
 from ._Robot2Neuron import Robot2Neuron, MapRobotPublisher, \
     MapRobotSubscriber
-from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction
+from hbp_nrp_cle.tf_framework._TransferFunction import TransferFunction, FlawedTransferFunction
 from hbp_nrp_cle.tf_framework._CSVRecorder import MapCSVRecorder, CSVRecorder
 from hbp_nrp_cle.tf_framework._NeuronMonitor import NeuronMonitor
 from hbp_nrp_cle.tf_framework._GlobalData import MapVariable, GLOBAL, TRANSFER_FUNCTION_LOCAL
@@ -227,13 +227,26 @@ def start_new_tf_manager():
     config.csv_recorders = []
 
 
-def get_transfer_functions():
+def get_transfer_functions(flawed=True):
     """
-    Get all the transfer functions
+    Get all the transfer functions if flawed is True, only (R2N, N2R) otherwise
 
-    :return: All the transfer functions (R2N, N2R).
+    :return: All the transfer functions if flawed is True, only (R2N, N2R) otherwise.
     """
-    return config.active_node.n2r + config.active_node.r2n
+
+    proper_tfs = config.active_node.n2r + config.active_node.r2n
+
+    return proper_tfs + config.active_node.flawed if flawed else proper_tfs
+
+
+def get_flawed_transfer_function(name):
+    """
+    Get the flawed transfer function with the given name
+
+    :param name: The name of the flawed transfer function
+    :return: The flawed transfer function with the given name
+    """
+    return next((f_tf for f_tf in config.active_node.flawed if f_tf.name == name), None)
 
 
 def get_transfer_function(name):
@@ -291,7 +304,7 @@ def dump_csv_recorder_to_files():
     filepath to a file containing the values.
     """
     result = []
-    for tf in get_transfer_functions():
+    for tf in get_transfer_functions(flawed=False):
         print tf.params
         for i in range(1, len(tf.params)):
             if isinstance(tf.params[i], CSVRecorder):
@@ -304,7 +317,7 @@ def clean_csv_recorders_files():
     """
     Clean out all CSV recorders generated files.
     """
-    for tf in get_transfer_functions():
+    for tf in get_transfer_functions(flawed=False):
         print tf.params
         for i in range(1, len(tf.params)):
             if isinstance(tf.params[i], CSVRecorder):
@@ -350,6 +363,27 @@ def delete_transfer_function(name):
     return True
 
 
+def delete_flawed_transfer_function(name):
+    """
+    Delete a flawed transfer function. If the transfer function does not exist,
+    nothing will happen.
+
+    :param name: The name of the transfer function
+    :return: True if the transfer function is correctly deleted. False if the transfer function
+             does not exist.
+    """
+    result = True
+
+    tf = get_flawed_transfer_function(name)
+
+    if tf:
+        config.active_node.flawed.remove(tf)
+    else:
+        result = False
+
+    return result
+
+
 def set_transfer_function(new_source, new_code, new_name):
     """
     Apply transfer function changes made by a client
@@ -371,13 +405,26 @@ def set_transfer_function(new_source, new_code, new_name):
         tb = sys.exc_info()[2]
         logger.error("Error while loading new transfer function")
         logger.exception(e)
-        delete_transfer_function(new_name)  # prevents runtime error
+        delete_transfer_function(new_name)
         raise TFLoadingException(new_name, str(e)), None, tb
 
     # we set the new source in an attribute because inspect.getsource won't work after exec
     # indeed inspect.getsource is based on a source file object
     # see findsource in http://www.opensource.apple.com/source/python/python-3/python/Lib/inspect.py
     tf.source = new_source
+
+
+def set_flawed_transfer_function(source, name="NO_NAME", error=None):
+    """
+    Creates a new flawed transfer function,
+    i.e. a TF that is not valid due to some error in the source code.
+    The user will correct it at a later stage (e.g. during an experiment)
+
+    :param source: the source code
+    :param name: The name of the transfer function
+    :param error: the Exception raised during the compilation/loading of the code
+    """
+    config.active_node.flawed.append(FlawedTransferFunction(name, source, error))
 
 
 start_new_tf_manager()

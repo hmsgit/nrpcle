@@ -64,7 +64,7 @@ class ITransferFunctionManager(object):  # pragma: no cover
         This method is used if a transfer function is replaced after initialization of the tf
         manager
 
-        :param name: The transfer function
+        :param tf: The transfer function
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

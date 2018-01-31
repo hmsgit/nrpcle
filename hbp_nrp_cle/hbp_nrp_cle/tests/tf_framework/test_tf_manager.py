@@ -59,6 +59,23 @@ class TestTransferFunctionManager(unittest.TestCase):
         nrp.config.brain_root = TestBrain()
         self.tfm = nrp.config.active_node
 
+    def test_get_transfer_functions(self):
+        tf_name = "tf_name"
+        tf_src = "def tf_name(self): pass"
+        tf_error = Exception()
+
+        nrp.set_flawed_transfer_function(tf_src, tf_name, tf_error)
+
+        # get also flawed tfs
+        tfs = self.tfm.transfer_functions(flawed=True)
+
+        self.assertEqual(tfs[0].name, tf_name)
+
+        # get only proper tfs
+        tfs = self.tfm.transfer_functions(flawed=False)
+
+        self.assertEqual(len(tfs), 0)
+
     def test_setting_brainsim_adapter(self):
         self.tfm.robot_adapter = self.rcm
 
@@ -133,6 +150,33 @@ class TestTransferFunctionManager(unittest.TestCase):
             self.tfm.hard_reset_brain_devices()
 
         self.assertEqual(cm.exception.message, "Cannot map parameter 'device' in transfer function 'camera_trans'")
+
+    def test_shutdown(self):
+
+        self.tfm.robot_adapter = self.rcm
+        self.tfm.brain_adapter = self.bcm
+        # add tf
+        @nrp.MapRobotSubscriber("camera", Husky.Eye.camera)
+        @nrp.MapSpikeSink("device", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
+        @nrp.Robot2Neuron()
+        def camera_trans(t, camera, device):
+            pass
+
+        # add flawed tf
+        tf_name = "tf_name"
+        tf_src = "def tf_name(self): pass"
+        tf_error = Exception()
+        nrp.set_flawed_transfer_function(tf_src, tf_name, tf_error)
+
+        self.tfm.initialize("tfnode")
+
+        self.tfm.shutdown()
+
+        self.assertEqual(len(self.tfm.n2r), 0)
+        self.assertEqual(len(self.tfm.r2n), 0)
+        self.assertEqual(len(self.tfm.flawed), 0)
+        self.assertEqual(len(self.tfm.global_data), 0)
+        self.assertFalse(self.tfm.initialized)
 
     def test_activate_transfer_function(self):
 

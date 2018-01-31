@@ -51,6 +51,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.__n2r = []
         self.__r2n = []
         self.__silent = []
+        self.__flawed = []
         self.__robotAdapter = None
         self.__nestAdapter = None
         self.__initialized = False
@@ -76,6 +77,13 @@ class TransferFunctionManager(ITransferFunctionManager):
         Gets a list of transfer functions not controlled by the orchestration
         """
         return self.__silent
+
+    @property
+    def flawed(self):  # -> list:
+        """
+        Gets a list of faulty transfer functions
+        """
+        return self.__flawed
 
     @property
     def global_data(self):
@@ -170,13 +178,17 @@ class TransferFunctionManager(ITransferFunctionManager):
                 raise Exception("The given object is not a valid brain communication adapter")
             self.__nestAdapter = nest_adapter
 
-    def transfer_functions(self):
+    def transfer_functions(self, flawed=False):
         """
         Gets a list of transfer functions managed by this instance
 
+        :param flawed: if True the list will include also flawed TFs
         :return: A list of transfer functions
         """
-        return self.__n2r + self.__r2n + self.__silent
+
+        proper_tfs = self.__n2r + self.__r2n + self.__silent
+
+        return proper_tfs if not flawed else proper_tfs + self.__flawed
 
     def initialize_tf(self, tf):
         """
@@ -185,7 +197,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         This method is used if a transfer function is replaced after initialization of the tf
         manager
 
-        :param name: The transfer function
+        :param tf: The transfer function
         """
         logger.info("Initialize transfer function " + repr(tf))
         tf.check_params()
@@ -337,7 +349,9 @@ class TransferFunctionManager(ITransferFunctionManager):
         """
         del self.__n2r[:]
         del self.__r2n[:]
-        del self.__global_data[:]
+        del self.__flawed[:]
+        del self.__silent[:]
+        self.__global_data.clear()
         self.__initialized = False
 
     def hard_reset_brain_devices(self):

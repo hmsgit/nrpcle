@@ -43,6 +43,36 @@ __author__ = 'GeorgHinkel'
 
 class TestTransferFunction(unittest.TestCase):
 
+    def test_set_flawed_tf(self):
+        nrp.start_new_tf_manager()
+
+        tf_name = "tf_name"
+        tf_src = "def tf_name(self): pass"
+        tf_error = Exception()
+
+        nrp.set_flawed_transfer_function(tf_src, tf_name, tf_error)
+        #  check if correctly added
+        flawed_tf = nrp.get_flawed_transfer_function(tf_name)
+
+        self.assertEqual(flawed_tf.name, tf_name)
+        self.assertEqual(flawed_tf.source, tf_src)
+        self.assertTrue(flawed_tf.error is tf_error)
+
+    def test_delete_flawed_tf(self):
+        nrp.start_new_tf_manager()
+
+        tf_name = "tf_name"
+        tf_src = "def tf_name(self): pass"
+        tf_error = Exception()
+
+        nrp.set_flawed_transfer_function(tf_src, tf_name, tf_error)
+
+        result = nrp.delete_flawed_transfer_function(tf_name)
+        self.assertTrue(result)
+
+        # can't find it anymore
+        self.assertIsNone(nrp.get_flawed_transfer_function(tf_name))
+
     def test_brain_source(self):
         nrp.start_new_tf_manager()
         config.brain_source = "some source"

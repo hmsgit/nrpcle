@@ -283,6 +283,76 @@ class TransferFunction(object):
     @abstractmethod
     def unregister(self):
         """
-        Unregister any devices specific to this transfer function implementation.
+        Un-register any devices specific to this transfer function implementation.
         """
         raise Exception("Must be implemented by concrete realization of transfer function.")
+
+
+class FlawedTransferFunction(object):
+    """
+    Represents the class for a flawed transfer function, i.e a TF deemed invalid because has failed
+    the checks performed on loading.
+    """
+
+    def __init__(self, name, source, error=None):
+        self.__name = name
+        self.__source = source
+        self.__error = error
+
+    @property
+    def source(self):
+        """
+        Gets the source code of this transfer function.
+
+        :return: A string containing the transfer function source code
+
+        """
+        return self.__source
+
+    @property
+    def name(self):
+        """
+        Gets the name this transfer function.
+
+        :return: A string containing the name of the transfer function
+
+        """
+        return self.__name
+
+    @property
+    def error(self):
+        """
+        Gets the exception object raised by the failed loading of this transfer function.
+
+        :return: the exception raised by the failed loading of this transfer function.
+
+        """
+        return self.__error
+
+    # pylint: disable=no-self-use
+    @property
+    def active(self):
+        """
+        A flawed transfer function can't be active.
+
+        :return: False
+
+        """
+        return False
+
+    # pylint: disable=no-self-use
+    @active.setter
+    def active(self, value):
+        """
+        Since a flawed transfer function can't be active, it doesn't do anything.
+        """
+        pass
+
+    @property
+    def params(self):
+        """
+        A Flawed TF has no adapter
+
+        :return: An empty list
+        """
+        return []
