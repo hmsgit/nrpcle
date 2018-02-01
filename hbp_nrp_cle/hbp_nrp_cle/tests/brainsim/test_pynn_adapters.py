@@ -267,6 +267,18 @@ class PyNNAdaptersTest(unittest.TestCase):
         print "Poisson generator group: change the rates between in slice (0, 2, None) (after)", \
             group.rate
 
+
+
+        self.communicator.register_spike_source(
+            self.neurons_cond, IDCSource, parrot=True)
+        self.assertIsInstance(self.communicator.generator_devices[16], IDCSource)
+
+        print("DC Amplitude (before): ",
+              self.communicator.generator_devices[16].amplitude)
+        self.communicator.generator_devices[16].amplitude = 2.0
+        print("DC Amplitude (after): ",
+              self.communicator.generator_devices[16].amplitude)
+
         with self.assertRaises(TypeError):
             print group['test'].rate
         with self.assertRaises(KeyError):
@@ -336,7 +348,11 @@ requested (device)'),
                          ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
                           'Communication object with type \
 "<class \'hbp_nrp_cle.brainsim.BrainInterface.IPoissonSpikeGenerator\'>" \
-requested (device group)'))
+requested (device group)'),
+                         ('hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter', 'INFO',
+                          'Communication object with type \
+"<class \'hbp_nrp_cle.brainsim.BrainInterface.IDCSource\'>" \
+requested (device)'))
 
         self.communicator.shutdown()
         self.assertEqual(0, len(self.communicator.detector_devices))
@@ -356,6 +372,10 @@ requested (device group)'))
         dc = self.communicator.register_spike_source(self.neurons_cond, IDCSource)
         self.communicator.unregister_spike_source(dc)
         self.assertEquals(dc._generator, None)
+
+        dc2 = self.communicator.register_spike_source(self.neurons_cond, IDCSource, parrot=True)
+        self.communicator.unregister_spike_source(dc2)
+        self.assertEquals(dc2._generator, None)
 
         ac = self.communicator.register_spike_source(self.neurons_cond, IACSource)
         self.communicator.unregister_spike_source(ac)

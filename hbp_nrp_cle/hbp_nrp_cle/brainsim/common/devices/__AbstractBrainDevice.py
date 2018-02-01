@@ -65,28 +65,30 @@ class AbstractBrainDevice(IBrainDevice):
         self.verify_parameters(params)
         self._update_parameters(params)
 
+    # pylint: disable=unused-argument
     @classmethod
-    def create_new_device(cls, **params):
+    def create_new_device(cls, population, **params):
         """
         Returns a new instance of the concrete implementation of the brain device.
 
         :param params: additional parameters which are passed to the device constructor
+        :param population: The population for which the device should be created
         :return: a new instance of the concrete device
         """
         return cls(**params)
 
     @classmethod
-    def create_new_device_group(cls, length, params):
+    def create_new_device_group(cls, populations, params):
         """
         Returns a new device group instance for the concrete implementation of this brain device.
 
-        :param length: the size of the group (the amount of nested devices)
         :param params: additional parameters which are passed to the constructor of the nested
             devices. For each parameter either the value can be supplied, or a list of values,
             one for each nested device.
+        :param populations: The populations for which the device should be created
         :return: a new device group containing the created nested devices
         """
-        return DeviceGroup.create_new_device_group(cls, length, params)
+        return DeviceGroup.create_new_device_group(populations, cls, params)
 
     def reset(self, transfer_function_manager):
         """

@@ -49,23 +49,25 @@ class DeviceGroup(IDeviceGroup):
         self.__dict__['devices'] = devices
 
     @classmethod
-    def create_new_device_group(cls, nested_device_type, length, params):
+    def create_new_device_group(cls, populations, nested_device_type, params):
         """
         Creates a new device group of the specified size consisting of the brainsim devices of
         the specified type.
 
         :param nested_device_type: The concrete type of brain device to instantiate
-        :param length: the amount of devices to create
         :param params: additional parameters which are passed to the constructor of the nested
             devices. For each parameter either the value can be supplied, or a list of values,
             one for each nested device.
+        :param populations: The populations for which the device should be created
         :return: a new device group
         """
         devices = list()
-        for i in range(0, length):
+        i = 0
+        for pop in populations:
             device = nested_device_type.create_new_device(
-                **cls._create_device_config(params, i))
+                pop, **cls._create_device_config(params, i))
             devices.append(device)
+            i += 1
         return cls(nested_device_type, devices)
 
     def __getitem__(self, index):
