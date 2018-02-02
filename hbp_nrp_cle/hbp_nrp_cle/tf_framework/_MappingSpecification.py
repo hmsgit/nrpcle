@@ -49,13 +49,21 @@ class ParameterMappingSpecification(object):
                     parameters[i] = self
                     return transfer_function
         else:
-            raise Exception("Can only map parameters for transfer functions")
+            if callable(transfer_function):
+                return self.__call__(self.create_tf()(transfer_function))
+            raise Exception("Can only map parameters for functions or transfer functions")
         raise Exception(
             "Could not map parameter as no parameter with the name " + self.name + " exists")
 
     def create_adapter(self, tf_manager):
         """
         Creates the adapter for this mapping operator
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

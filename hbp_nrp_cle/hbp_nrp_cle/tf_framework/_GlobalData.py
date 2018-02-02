@@ -98,6 +98,13 @@ class MapVariable(ParameterMappingSpecification):
         else:
             raise AttributeError("The specified parameter scope is not valid.")
 
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
+        """
+        from hbp_nrp_cle.tf_framework._Robot2Neuron import Robot2Neuron
+        return Robot2Neuron()
+
 
 class DataReference(object):
     """

@@ -115,6 +115,12 @@ class MapSpikeSink(ParameterMappingSpecification):
                                            self.device_type,
                                            **self.config)
 
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
+        """
+        return Neuron2Robot()
+
 
 class MapSpikeSource(MapSpikeSink):
     """
@@ -143,6 +149,13 @@ class MapSpikeSource(MapSpikeSink):
         """
         return device_type in MapSpikeSource.supported_device_types
 
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
+        """
+        from hbp_nrp_cle.tf_framework._Robot2Neuron import Robot2Neuron
+        return Robot2Neuron()
+
 
 class Neuron2Robot(TransferFunction):
     """
@@ -158,7 +171,7 @@ class Neuron2Robot(TransferFunction):
         """
         super(Neuron2Robot, self).__init__()
         if robot_topic is not None:
-            assert isinstance(robot_topic, Topic)
+            assert isinstance(robot_topic, (Topic, str))
         self.__main_topic = robot_topic
 
     @property

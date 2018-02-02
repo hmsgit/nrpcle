@@ -30,6 +30,7 @@ from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, \
     Topic, PreprocessedTopic, IRobotSubscribedTopic, IRobotPublishedTopic
 import rospy
 import logging
+import rosgraph.masterapi as master
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +42,45 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
     Represents a robot communication adapter actually using ROS
     """
 
+    def get_topic_type(self, topic_name, update_when_miss=True):
+        """
+        Gets the type for the given ROS topic
+
+        :param topic_name: The name of the topic
+        :param update_when_miss: If set, the function will try to update the cached topic
+        types if the topic cannot be found
+        """
+        for name, type_str in self.__topic_types:
+            if name == topic_name:
+                t = "?"
+                mod = "?"
+                try:
+                    mod, t = type_str.split('/')
+                    return getattr(__import__(mod).msg, t)
+                except AttributeError:
+                    raise Exception("The type {0} is not present in package {1}".format(t, mod))
+                except ValueError:
+                    raise Exception("The format of the topic type {0} is not supported"
+                                    .format(type_str))
+        if update_when_miss:
+            self.__refresh_topic_types()
+            return self.get_topic_type(topic_name, False)
+        return None
+
     def __init__(self):
         """
         Create a new RosCommunicationAdapter
         """
         IRobotCommunicationAdapter.__init__(self)
+        self.__topic_types = []
+        self.__refresh_topic_types()
+
+    def __refresh_topic_types(self):
+        """
+        Updates the topic types
+        """
+        m = master.Master('masterapi')
+        self.__topic_types = m.getTopicTypes()
 
     def initialize(self, name):
         """
@@ -69,6 +104,12 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         if isinstance(topic, PreprocessedTopic):
             return RosPublishedPreprocessedTopic(topic, config.get('queue_size', 10))
+        elif isinstance(topic, str):
+            topic_type = self.get_topic_type(topic)
+            if topic_type is None:
+                raise Exception("The type of topic {0} is unknown. Please specify it explicitly"
+                                .format(topic))
+            topic = Topic(topic, topic_type)
         return RosPublishedTopic(topic, config.get('queue_size', 10))
 
     def create_topic_subscriber(self, topic, config):
@@ -81,6 +122,12 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         if isinstance(topic, PreprocessedTopic):
             return RosSubscribedPreprocessedTopic(topic, config.get('initial_value', None))
+        elif isinstance(topic, str):
+            topic_type = self.get_topic_type(topic)
+            if topic_type is None:
+                raise Exception("The type of topic {0} is unknown. Please specify it explicitly"
+                                .format(topic))
+            topic = Topic(topic, topic_type)
         return RosSubscribedTopic(topic, config.get('initial_value', None))
 
     @property

@@ -79,6 +79,13 @@ class MapCSVRecorder(ParameterMappingSpecification):
         """
         return CSVRecorder(self.filename, self.headers, self.__erase_on_reset)
 
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
+        """
+        from hbp_nrp_cle.tf_framework._Neuron2Robot import Neuron2Robot
+        return Neuron2Robot()
+
 
 class CSVRecorder(ICleanableTransferFunctionParameter):
     """

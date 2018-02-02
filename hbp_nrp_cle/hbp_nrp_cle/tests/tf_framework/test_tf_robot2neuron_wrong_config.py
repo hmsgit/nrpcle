@@ -69,6 +69,21 @@ class Robot2NeuronTests(unittest.TestCase):
         self.init_adapters()
         self.assertRaises(Exception, nrp.initialize)
 
+    def test_no_tf_decorator(self):
+        nrp.start_new_tf_manager()
+
+        @nrp.MapSpikeSource("neuron", [1, 2, 3], nrp.poisson)
+        def tf_source_without_decorator(t, neuron):
+            pass
+
+        self.assertIsInstance(tf_source_without_decorator, nrp.Robot2Neuron)
+
+        @nrp.MapRobotSubscriber("topic", "/a/topic")
+        def tf_subscriber_without_decorator(t, topic):
+            pass
+
+        self.assertIsInstance(tf_subscriber_without_decorator, nrp.Robot2Neuron)
+
     def init_adapters(self):
         brain = MockBrainCommunicationAdapter()
         robot = MockRobotCommunicationAdapter()
