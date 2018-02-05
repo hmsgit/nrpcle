@@ -24,12 +24,41 @@
 
 import unittest
 from hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPoissonSpikeGenerator import PyNNSpiNNakerPoissonSpikeGenerator
-from mock import patch
+from mock import patch, Mock
 
 
 class TestPoissonGenerator(unittest.TestCase):
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPoissonSpikeGenerator.live_connection")
     @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPoissonSpikeGenerator.sim")
-    def test_poisson_generator_supported(self, sim_mock):
-        dev = PyNNSpiNNakerPoissonSpikeGenerator()
+    def test_poisson_generator_supported(self, sim_mock, live_connection):
+        dev = PyNNSpiNNakerPoissonSpikeGenerator(rate=42.0)
         self.assertTrue(sim_mock.Population.called)
         self.assertEqual(dev.sim(), sim_mock)
+
+        self.assertEqual(42.0, dev.rate)
+
+        generator = sim_mock.Population.return_value
+        population = Mock()
+        population.label = "population"
+
+        dev.connect(population)
+
+        sim_mock.external_devices.add_poisson_live_rate_control.assert_called_once_with(
+            generator, receive_port=live_connection.POISSON_PORT
+        )
+        self.assertTrue(live_connection.register_poisson.called)
+        call_args = live_connection.register_poisson.call_args[0]
+        self.assertEqual(generator.label, call_args[0])
+        callback = call_args[1]
+
+        self.assertEqual(42.0, dev.rate)
+        dev.rate = 23.0
+        generator.set.assert_called_once_with(rate=23.0)
+        self.assertEqual(23.0, dev.rate)
+
+        connection = Mock()
+        callback(generator.label, connection)
+
+        dev.rate = 42.0
+        generator.set.assert_called_once_with(rate=23.0)
+        connection.set_rates.assert_called_once_with(generator.label, [(0, 42)])

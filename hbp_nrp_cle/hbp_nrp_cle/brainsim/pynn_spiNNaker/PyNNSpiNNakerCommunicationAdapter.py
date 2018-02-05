@@ -28,18 +28,22 @@ moduleauthor: fschneid@fzi.de
 
 import logging
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, \
-    IDCSource, IACSource, INCSource, ILeakyIntegratorExp, \
+    IDCSource, IACSource, INCSource, ILeakyIntegratorExp, ISpikeInjector, \
     IFixedSpikeGenerator, ISpikeRecorder, IPoissonSpikeGenerator, IPopulationRate
 
 from hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter import PyNNCommunicationAdapter
 from .devices import PyNNSpiNNakerACSource, PyNNSpiNNakerDCSource, \
     PyNNSpiNNakerLeakyIntegratorAlpha, PyNNSpiNNakerNCSource, PyNNSpiNNakerFixedSpikeGenerator, \
     PyNNSpiNNakerSpikeRecorder, PyNNSpiNNakerPoissonSpikeGenerator, \
-    PyNNSpiNNakerLeakyIntegratorExp, PyNNSpiNNakerPopulationRate
+    PyNNSpiNNakerLeakyIntegratorExp, PyNNSpiNNakerPopulationRate, SpiNNakerSpikeInjector
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.__EthernetControlConnection import \
+    reset as reset_connection, \
+    shutdown
+import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connections
 
 logger = logging.getLogger(__name__)
 
-__author__ = "Felix Schneider"
+__author__ = "Georg Hinkel"
 
 
 class PyNNSpiNNakerCommunicationAdapter(PyNNCommunicationAdapter):
@@ -56,13 +60,26 @@ class PyNNSpiNNakerCommunicationAdapter(PyNNCommunicationAdapter):
                      ILeakyIntegratorExp: PyNNSpiNNakerLeakyIntegratorExp,
                      ISpikeRecorder: PyNNSpiNNakerSpikeRecorder,
                      IPoissonSpikeGenerator: PyNNSpiNNakerPoissonSpikeGenerator,
-                     IPopulationRate: PyNNSpiNNakerPopulationRate}
+                     IPopulationRate: PyNNSpiNNakerPopulationRate,
+                     ISpikeInjector: SpiNNakerSpikeInjector}
 
     def initialize(self):
         """
         Marks the PyNN adapter as initialized
         """
         super(PyNNSpiNNakerCommunicationAdapter, self).initialize()
+        live_connections.default_sender = None
+        live_connections.default_receiver = None
+        live_connections.default_poisson = None
+        reset_connection()
+
+    def shutdown(self):
+        """
+        Shuts down the brain communication adapter
+        """
+        super(PyNNSpiNNakerCommunicationAdapter, self).shutdown()
+        live_connections.shutdown()
+        shutdown()
 
     def _get_device_type(self, device_type):
         """

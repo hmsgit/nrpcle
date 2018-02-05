@@ -31,6 +31,8 @@ from hbp_nrp_cle.brainsim.pynn_spiNNaker.PyNNSpiNNakerCommunicationAdapter impor
 from hbp_nrp_cle.brainsim.pynn_spiNNaker.devices import PyNNSpiNNakerACSource, PyNNSpiNNakerDCSource, \
     PyNNSpiNNakerLeakyIntegratorAlpha, PyNNSpiNNakerNCSource, PyNNSpiNNakerFixedSpikeGenerator, \
     PyNNSpiNNakerSpikeRecorder, PyNNSpiNNakerPoissonSpikeGenerator, PyNNSpiNNakerLeakyIntegratorExp, PyNNSpiNNakerPopulationRate
+from mock import patch, Mock
+import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connections
 
 class TestSpinnakerAdapter(unittest.TestCase):
     def test_adapter(self):
@@ -45,3 +47,30 @@ class TestSpinnakerAdapter(unittest.TestCase):
         self.assertEqual(adapter._get_device_type(IFixedSpikeGenerator), PyNNSpiNNakerFixedSpikeGenerator)
         self.assertEqual(adapter._get_device_type(ISpikeRecorder), PyNNSpiNNakerSpikeRecorder)
         self.assertEqual(adapter._get_device_type(IPopulationRate), PyNNSpiNNakerPopulationRate)
+
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.PyNNSpiNNakerCommunicationAdapter.reset_connection")
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.PyNNSpiNNakerCommunicationAdapter.shutdown")
+    def test_init_reset(self, shutdown, reset_connection):
+        adapter = PyNNSpiNNakerCommunicationAdapter()
+
+        live_connections.default_receiver = 42
+        live_connections.default_sender = 23
+        live_connections.default_poisson = 0
+
+        adapter.initialize()
+        reset_connection.assert_called_once_with()
+        self.assertIsNone(live_connections.default_receiver)
+        self.assertIsNone(live_connections.default_sender)
+        self.assertIsNone(live_connections.default_poisson)
+
+        sender = Mock()
+        receiver = Mock()
+        poisson = Mock()
+        live_connections.default_sender = sender
+        live_connections.default_receiver = receiver
+        live_connections.default_poisson = poisson
+        adapter.shutdown()
+
+        sender.close.assert_called_once_with()
+        receiver.close.assert_called_once_with()
+        poisson.close.assert_called_once_with()

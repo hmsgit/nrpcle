@@ -31,7 +31,7 @@ __author__ = 'GeorgHinkel'
 from hbp_nrp_cle.robotsim.RobotInterface import Topic
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
-    IDCSource, IACSource, INCSource, IPopulationRate, \
+    IDCSource, IACSource, INCSource, IPopulationRate, ISpikeInjector, \
     ICustomDevice, IBrainCommunicationAdapter, ISpikeRecorder
 from ._MappingSpecification import ParameterMappingSpecification
 from . import config
@@ -63,7 +63,7 @@ class MapSpikeSink(ParameterMappingSpecification):
         self.__value = value
         if not isinstance(device_type, ICustomDevice):
             if not self.is_supported(device_type):
-                raise Exception("Device type is not supported")
+                raise Exception("Device type {} is not supported".format(device_type.__name__))
         self.__device_type = device_type
         self.__config = kwargs
 
@@ -129,7 +129,7 @@ class MapSpikeSource(MapSpikeSink):
     """
 
     supported_device_types = [IPoissonSpikeGenerator, IFixedSpikeGenerator,
-                              IDCSource, IACSource, INCSource]
+                              IDCSource, IACSource, INCSource, ISpikeInjector]
 
     def create_adapter(self, transfer_function_manager):
         """

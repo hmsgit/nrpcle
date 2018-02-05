@@ -56,7 +56,8 @@ class TestTransferFunctionThrottling(unittest.TestCase):
             pass
 
         no_throttling.run(0.0)
-        self.assertTrue(no_throttling.should_run(0.0))
+        self.assertFalse(no_throttling.should_run(0.0))
+        self.assertTrue(no_throttling.should_run(0.0001))
 
     def test_throttled_tf(self):
         @nrp.Neuron2Robot(throttling_rate=10)

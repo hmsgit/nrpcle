@@ -21,16 +21,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
-'''
-Implementation of PyNNSpikeDetector
-'''
+"""
+Implementation of PyNNSpiNNakerSpikeRecorder
+"""
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder
+from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker as sim
+from hbp_nrp_cle.tf_framework._TransferFunctionManager import TransferFunctionManager
+import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connections
 import numpy as np
 import logging
 
-__author__ = 'Felix Schneider'
+__author__ = 'Georg Hinkel'
 logger = logging.getLogger(__name__)
 
 
@@ -40,45 +43,77 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
     neurons has spiked, otherwise a "0"
     """
 
-    # No connection parameters necessary for this device
-    # pylint: disable=W0613
-    # pylint: disable=W0221
+    default_parameters = {
+        "use_ids": False
+    }
+
     def __init__(self, **params):
         """
-        Represents a device which returns a "1" whenever one of the recorded
-        neurons has spiked, otherwise a "0"
+        Creates a new live spike recorder
         """
         super(PyNNSpiNNakerSpikeRecorder, self).__init__(**params)
-        self.__spikes = np.array([[], []])
-        self._neurons = None
-        self.__refresh_count = 0
-
-    @property
-    def spiked(self):
-        """
-        Returns the recorded spikes
-        "1": neuron spiked within the last time step
-        "0": neuron was silent within the last time step
-        """
-        return self.__spikes.shape[0] > 0
+        if params.get("use_ids"):
+            raise Exception("Usage of ids is currently not supported in SpiNNaker")
+        self.__connection = None
+        self.__spike_neurons = []
+        self.__spike_times = []
+        self.__tfs = []
 
     @property
     def times(self):
         """
         Returns the times and neuron IDs of the recorded spikes within the last time step.
-        :return:
         """
-        return self.__spikes
+        spikes = []
+        times = []
 
-    # pylint: disable=protected-access
-    def start_record_spikes(self):
-        """
-        Records the spikes of "neurons"
-        """
-        print "Record spike recorder"
-        self._neurons.record(to_file=None)
+        try:
+            for i, spikes_at_i in enumerate(self.__spike_neurons):
+                spikes += spikes_at_i
+                times += [self.__spike_times[i]] * len(spikes_at_i)
+        # it may happen that the spikes are being cleared from a different thread
+        except IndexError:  # pragma: no cover
+            pass
+        return np.array([spikes, times]).T
 
-    def connect(self, neurons, **params):
+    @property
+    def spiked(self):
+        """
+        Gets a value indicating whether the neuron has spiked since the last iteration
+        """
+        return len(self.__spike_times) > 0
+
+    def register_tf_trigger(self, tf):
+        """
+        Registers to trigger the provided TF in case a new spike appears
+
+        :param tf: The transfer function
+        """
+        if tf not in self.__tfs:
+            self.__tfs.append(tf)
+
+    # pylint: disable=unused-argument
+    def __receive_spike(self, label, time, neuron_ids):
+        """
+        Handles that a new spike is recorded
+
+        :param label: The recorded label (ignored)
+        :param time: The simulation time
+        :param neuron_ids: The neurons that have spiked
+        """
+        t = time / 1000.0
+        self.__spike_times.append(t)
+        self.__spike_neurons.append(list(neuron_ids))
+        for tf in self.__tfs:
+            TransferFunctionManager.run_tf(tf, t)
+        if len(self.__tfs) > 0:
+            del self.__spike_times[:]
+            del self.__spike_neurons[:]
+
+    def _disconnect(self):
+        pass
+
+    def connect(self, neurons):
         """
         Connects the neurons specified by "neurons" to the
         spike recorder
@@ -86,28 +121,35 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
-        self._neurons = neurons
-        self.start_record_spikes()
-
-    def _disconnect(self):
-        """
-        INTERNAL USE ONLY: this should never be directly invoked by a user.
-
-        Disconnects the brain device from any output neuron populations. This device will no longer
-        interact with the brain after disconnect is called.
-        """
-        if self._neurons is not None:
-            self._neurons = None
+        sim.external_devices.activate_live_output_for(
+            neurons,
+            database_notify_host="localhost",
+            database_notify_port_num=live_connections.RECEIVE_PORT
+        )
+        live_connections.register_receiver(neurons.label, self.__receive_spike)
 
     # simulation time not necessary for this device
-    # pylint: disable=W0613
-    # pylint: disable=protected-access
+    # pylint: disable=unused-argument
     def refresh(self, time):
         """
-        Refreshes the voltage value. The current implementation is VERY slow as PyNN 0.8 wrapps
-        the spike data in separate object and in this method we unwrap everything again to be
-        compatible with the representation of this device.
+        Refreshes the voltage value.
 
         :param time: The current simulation time
         """
-        raise NotImplementedError()
+        # Spikes are recorded on the fly
+        pass
+
+    # simulation time not necessary for this device
+    # pylint: disable=unused-argument
+    # pylint: disable=protected-access
+    def finalize_refresh(self, time):
+        """
+        Resets the number of spikes for the connected spike recorder, this is a PyNN-Nest specific
+        command that clears all memory used by a recorder.
+
+        :param time: The current simulation time
+        """
+        if len(self.__tfs) == 0:
+            # We need to access the internals of Spinnaker to clear the recorded values
+            del self.__spike_neurons[:]
+            del self.__spike_times[:]

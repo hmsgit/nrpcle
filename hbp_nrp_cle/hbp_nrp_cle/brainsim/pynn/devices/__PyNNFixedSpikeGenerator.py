@@ -28,7 +28,7 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator
-from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
+from hbp_nrp_cle.brainsim.pynn.devices.__PyNNDictParser import set_synapse_type, set_connector
 from pyNN.random import RandomDistribution
 import numpy as np
 
@@ -234,27 +234,7 @@ class PyNNFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
         :param params: The validated parameter dictionary
         """
         super(PyNNFixedSpikeGenerator, self)._update_parameters(params)
-
-        if "connector" not in self._parameters or not self._parameters["connector"]:
-            self._parameters["connector"] = self.sim().AllToAllConnector()
-        else:
-            conn = self._parameters["connector"]
-            if isinstance(conn, dict):
-                if "weight" not in params:
-                    self._parameters["weight"] = conn.get("weight")
-                if "delay" not in params:
-                    self._parameters["delay"] = conn.get("delay")
-                if conn.get("mode") == "OneToOne":
-                    self._parameters["connector"] = \
-                        self.sim().OneToOneConnector()
-                elif conn.get("mode") == "AllToAll":
-                    self._parameters["connector"] = \
-                        self.sim().AllToAllConnector()
-                elif conn.get("mode") == "Fixed":
-                    self._parameters["connector"] = \
-                        self.sim().FixedNumberPreConnector(conn.get("n", 1))
-                else:
-                    raise Exception("Invalid connector mode")
+        set_connector(self._parameters, self.sim(), params)
 
     def _get_default_weights(self, conductance_based):
         """

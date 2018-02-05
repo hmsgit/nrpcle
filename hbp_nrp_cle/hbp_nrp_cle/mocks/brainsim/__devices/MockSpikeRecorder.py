@@ -42,7 +42,8 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
     """
 
     default_parameters = {
-        "updates": []
+        "updates": [],
+        "use_ids": True
     }
 
     def __init__(self, **params):
@@ -80,7 +81,7 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
         """
         Returns the times and neuron IDs of the recorded spikes within the last time step.
         """
-        return self.__spikes or numpy.array([[], []])
+        return self.__spikes or numpy.array([[], []]).T
 
     def refresh(self, time):  # pragma: no cover
         """
@@ -92,7 +93,7 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
         if hasattr(self.__update, '__getitem__'):
             while len(self.__update) > 0 and isinstance(self.__update[0], float)\
                     and time >= self.__update[0]:
-                self.__spikes = numpy.array([[self.__update[0]], [0.0]])
+                self.__spikes = numpy.array([[self.__update[0]], [0.0]]).T
                 self.__update = self.__update[1:]
         else:
             warnings.warn("Updates schedules must be sorted lists of tuples")

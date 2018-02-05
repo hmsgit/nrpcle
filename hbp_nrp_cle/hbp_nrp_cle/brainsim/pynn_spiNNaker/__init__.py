@@ -26,12 +26,12 @@ This package contains the brain adapter implementation relying on the PyNN neuro
 abstraction layer but contains implementation specifics for the SpiNNaker simulator.
 """
 
-__author__ = "Felix Schneider"
+__author__ = "Felix Schneider, Georg Hinkel"
 
 try:
     # pylint: disable=no-name-in-module,import-error
     import pyNN.spiNNaker as spynnaker
-except ImportError:
+except ImportError:  # pragma: no cover
     import warnings
     warnings.warn("SpiNNaker is not installed. Please install SpiNNaker before you can use the "
                   "SpiNNaker support of the CLE")

@@ -28,7 +28,7 @@ devices.
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainDevice
-from hbp_nrp_cle.brainsim.pynn.devices.__SynapseTypes import set_synapse_type
+from hbp_nrp_cle.brainsim.pynn.devices.__PyNNDictParser import set_synapse_type, set_connector
 
 __author__ = 'Dimitri Probst, Sebastian Krach, Georg Hinkel'
 
@@ -70,7 +70,7 @@ class PyNNLeakyIntegrator(AbstractBrainDevice, IBrainDevice):
         super(PyNNLeakyIntegrator, self).__init__(**params)
 
         self._cell = None
-        self._voltage = None
+        self._voltage = 0.0
 
         self.create_device()
         self.start_record_voltage()
@@ -146,43 +146,10 @@ class PyNNLeakyIntegrator(AbstractBrainDevice, IBrainDevice):
         """
         super(PyNNLeakyIntegrator, self)._update_parameters(params)
 
-        if "connector" not in self._parameters or not self._parameters["connector"]:
-            self._parameters["connector"] = self.sim().AllToAllConnector()
-        else:
-            conn = self._parameters["connector"]
-            if isinstance(conn, dict):
-                self.__apply_connector(conn, params)
+        set_connector(self._parameters, self.sim(), params)
         if self._parameters["weight"] is None:
             self._parameters["weight"] = self._get_connector_weight()
-
         set_synapse_type(self._parameters, self.sim())
-
-    def __apply_connector(self, conn, params):
-        """
-        Applies the given connector respecting the given manual parameters
-
-        :param conn: The connector dict
-        :param params: Manual parameters
-        """
-        weights = conn.get("weight")
-        if weights and "weight" not in params:
-            self._parameters["weight"] = weights
-        delays = conn.get("delay")
-        if delays and "delay" not in params:
-            self._parameters["delay"] = delays
-
-        conn_mode = conn.get("mode")
-        if conn_mode == "OneToOne":
-            self._parameters["connector"] = \
-                self.sim().OneToOneConnector()
-        elif conn_mode == "AllToAll":
-            self._parameters["connector"] = \
-                self.sim().AllToAllConnector()
-        elif conn_mode == "Fixed":
-            self._parameters["connector"] = \
-                self.sim().FixedNumberPreConnector(conn.get("n", 1))
-        else:
-            raise Exception("Invalid connector mode")
 
     def connect(self, neurons):
         """

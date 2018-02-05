@@ -62,12 +62,14 @@ class NeuronMonitor(TransferFunction):
         super(NeuronMonitor, self).__init__()
         self.__count = 0
 
+        cfg = {}
         _topic = None
         _type = SpikeRate
         if monitor_type is ISpikeRecorder:
             self.__handler = self.__send_spike_recorder
             _topic = SPIKE_RECORDER_TOPIC
             _type = SpikeEvent
+            cfg["use_ids"] = False
         elif monitor_type is ILeakyIntegratorExp:
             self.__handler = self.__send_leaky_integrator
             _topic = LEAKY_INTEGRATOR_EXP_TOPIC
@@ -82,7 +84,7 @@ class NeuronMonitor(TransferFunction):
                             .format(monitor_type.__name__))
 
         self.__publisher_spec = MapRobotPublisher("publisher", Topic(_topic, _type))
-        self.__device_spec = MapSpikeSink("device", neurons, monitor_type)
+        self.__device_spec = MapSpikeSink("device", neurons, monitor_type, **cfg)
         self.__neurons = None
 
         self.device = None
@@ -132,10 +134,7 @@ class NeuronMonitor(TransferFunction):
         spikes = self.device.times
         msgs = []
         for spike in spikes:
-            try:
-                msgs.append(SpikeData(self.__neurons.id_to_index(int(spike[0])), spike[1]))
-            except IndexError:
-                pass
+            msgs.append(SpikeData(int(spike[0]), spike[1]))
         self.publisher.send_message(SpikeEvent(t, self.__count, msgs, self.name))
 
     def __send_leaky_integrator(self, t):

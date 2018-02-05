@@ -44,7 +44,7 @@ def set_synapse_type(device_parameters, sim):
     """
     weights = resolve_brain_variable(device_parameters["weight"])
     delays = resolve_brain_variable(device_parameters["delay"])
-    if not device_parameters["synapse_type"]:
+    if device_parameters["synapse_type"] is None:
         device_parameters["synapse_type"] = sim.StaticSynapse(weight=weights, delay=delays)
     elif isinstance(device_parameters["synapse_type"], dict):
         dyn = device_parameters["synapse_type"]
@@ -59,3 +59,31 @@ def set_synapse_type(device_parameters, sim):
         except KeyError as e:
             raise Exception("The synapse definition {0} is missing the required field {1}"
                             .format(device_parameters["synapse_type"], str(e)))
+
+
+def set_connector(device_parameters, sim, updated):
+    """
+    Corrects the connector type for the given device parameters, relative to the given simulator
+    implementation
+
+    :param device_parameters: The device parameters of the given device
+    :param sim: The simulator module
+    :param updated: A dictionary of value updates
+    """
+    if "connector" not in device_parameters or device_parameters["connector"] is None:
+        device_parameters["connector"] = sim.AllToAllConnector()
+    else:
+        conn = device_parameters["connector"]
+        if isinstance(conn, dict):
+            if "weight" not in updated and "weight" in conn:
+                device_parameters["weight"] = conn["weight"]
+            if "delay" not in updated and "delay" in conn:
+                device_parameters["delay"] = conn["delay"]
+            if conn.get("mode") == "OneToOne":
+                device_parameters["connector"] = sim.OneToOneConnector()
+            elif conn.get("mode") == "AllToAll":
+                device_parameters["connector"] = sim.AllToAllConnector()
+            elif conn.get("mode") == "Fixed":
+                device_parameters["connector"] = sim.FixedNumberPreConnector(conn.get("n", 1))
+            else:
+                raise Exception("Invalid connector mode")

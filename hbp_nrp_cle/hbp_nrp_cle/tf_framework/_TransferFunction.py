@@ -75,7 +75,7 @@ class TransferFunction(object):
         if isinstance(throttling_rate, (int, float)) and throttling_rate > 0:
             self.__min_delta_t = 1.0 / throttling_rate
         elif throttling_rate is None:
-            self.__min_delta_t = 0
+            self.__min_delta_t = 0.0001
         else:
             raise Exception("Throttling should be a maximum frequency of TF execution in hertz")
 

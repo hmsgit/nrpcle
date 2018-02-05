@@ -24,15 +24,60 @@
 
 import unittest
 from hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp import PyNNSpiNNakerLeakyIntegratorExp
-from mock import patch
-import numpy
+from mock import patch, Mock
+from hbp_nrp_cle.brainsim.pynn_spiNNaker.__EthernetControlConnection import reset
 
 
 class TestLeakyIntegratorExp(unittest.TestCase):
     @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp.sim")
-    def test_leaky_interator_exp_refreshes_correct(self, sim_mock):
+    def test_leaky_interator_exp_corrects_key(self, sim_mock):
+        dev = PyNNSpiNNakerLeakyIntegratorExp(key=-1)
+        self.assertNotEqual(dev.device_control_key, -1)
+
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp.sim")
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp.register_devices")
+    def test_leaky_integrator_connect(self, register_device_mock, sim_mock):
+        reset()
         dev = PyNNSpiNNakerLeakyIntegratorExp()
-        self.assertTrue(sim_mock.Population.called)
-        sim_mock.Population().spinnaker_get_data.return_value = numpy.array([[0.0, 0.1, -60.0],[0.0, 0.2, -61.0]])
+        population = Mock()
+        population.label = "foo"
+        dev.connect(population)
+        self.assertTrue(register_device_mock.called)
+        self.assertTrue(sim_mock.Projection.called)
+
+        self.assertEqual(dev.device_control_key, 1)
+        self.assertEqual(dev.device_control_min_value, 0)
+        self.assertGreater(dev.device_control_max_value, 30000)
+        self.assertTrue(dev.device_control_uses_payload)
+        self.assertEqual(dev.device_control_partition_id, "foo")
+        self.assertEqual(dev.device_control_timesteps_between_sending, 10)
+
+        dev2 = PyNNSpiNNakerLeakyIntegratorExp(partition="bar", timesteps=100)
+        dev2.connect(population)
+
+        self.assertEqual(dev2.device_control_key, 2)
+        self.assertEqual(dev2.device_control_min_value, 0)
+        self.assertGreater(dev2.device_control_max_value, 30000)
+        self.assertTrue(dev2.device_control_uses_payload)
+        self.assertEqual(dev2.device_control_partition_id, "bar")
+        self.assertEqual(dev2.device_control_timesteps_between_sending, 100)
+
+        dev.stop_record_voltage()
+        dev2.stop_record_voltage()
+
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp.get_simulator")
+    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp.sim")
+    def test_leaky_integrator_tf_run(self, sim_mock, get_simulator):
+        dev = PyNNSpiNNakerLeakyIntegratorExp(timesteps=10)
+        sim = Mock()
+        sim._machine_time_step = 1000
+        get_simulator.return_value = sim
+        tf = Mock()
+        tf.active = True
+        tf.should_run.return_value = True
+        tf.elapsed_time = 0
+        dev.register_tf_trigger(tf)
         dev.refresh(42.0)
-        self.assertEqual(dev.voltage, -61.0)
+        dev.run(0.815)
+        self.assertEqual(dev.voltage, 0.815)
+        tf.run.assert_called_once_with(42.01)

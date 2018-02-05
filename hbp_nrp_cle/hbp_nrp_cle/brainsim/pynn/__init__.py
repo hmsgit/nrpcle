@@ -13,15 +13,17 @@ class PyNNPopulationInfo(PopulationInfo):
     The PyNN implementation of populations
     """
 
-    def __init__(self, population, name):
+    def __init__(self, population, name, parameters):
         """
         Creates a new PyNN population based on the given population and the given name
 
         :param population: The underlying PyNN population
         :param name: The name for the population
+        :param parameters: The population parameters
         """
         self.__population = population
         self.__name = name
+        self.__parameters = parameters
 
     @property
     def name(self):
@@ -45,11 +47,7 @@ class PyNNPopulationInfo(PopulationInfo):
         """
         Gets the parameters of a the population as dict
         """
-        try:
-            celltype = self.__population.celltype.parameter_space
-            return {a: celltype[a].base_value for a in celltype.keys()}
-        except AttributeError:
-            return {}
+        return self.__parameters
 
     @property
     def gids(self):
@@ -63,4 +61,4 @@ class PyNNPopulationInfo(PopulationInfo):
         """
         Gets the population info indices
         """
-        return [i.parent.id_to_index(i) for i in self.__population.all()]
+        return [self.__population.id_to_index(i) for i in self.__population.all()]
