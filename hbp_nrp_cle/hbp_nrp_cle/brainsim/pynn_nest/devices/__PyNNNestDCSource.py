@@ -24,8 +24,6 @@
 """
 This module contains the nest implementation of the DC source for nest
 """
-
-from hbp_nrp_cle.brainsim.common.devices.__AbstractBrainDevice import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNDCSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
     create_transformation

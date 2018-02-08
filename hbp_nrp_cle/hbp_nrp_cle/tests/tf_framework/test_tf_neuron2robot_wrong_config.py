@@ -55,6 +55,21 @@ class Neuron2RobotTests(unittest.TestCase):
             def right_arm(t, neuron1):
                 return neuron1.voltage
 
+    def test_no_tf_decorator_works(self):
+        nrp.start_new_tf_manager()
+
+        @nrp.MapSpikeSink("neuron", [1, 2, 3], nrp.leaky_integrator_alpha)
+        def tf_sink_without_decorator(t, neuron):
+            pass
+
+        self.assertIsInstance(tf_sink_without_decorator, nrp.Neuron2Robot)
+
+        @nrp.MapRobotPublisher("topic", "/a/topic")
+        def tf_publisher_no_decorator(t, topic):
+            pass
+
+        self.assertIsInstance(tf_publisher_no_decorator, nrp.Neuron2Robot)
+
     def init_adapters(self):
         brain = MockBrainCommunicationAdapter()
         robot = MockRobotCommunicationAdapter()

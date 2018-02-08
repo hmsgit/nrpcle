@@ -51,7 +51,7 @@ class MapRobotPublisher(ParameterMappingSpecification):
         :param kwargs: Additional configuration parameters
         """
         super(MapRobotPublisher, self).__init__(key)
-        assert isinstance(value, Topic)
+        assert isinstance(value, (Topic, str))
         self.__value = value
         self.__config = kwargs
 
@@ -85,6 +85,13 @@ class MapRobotPublisher(ParameterMappingSpecification):
         assert isinstance(adapter, IRobotCommunicationAdapter)
         return adapter.register_publish_topic(self.topic, **self.config)
 
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
+        """
+        from hbp_nrp_cle.tf_framework._Neuron2Robot import Neuron2Robot
+        return Neuron2Robot()
+
 
 class MapRobotSubscriber(MapRobotPublisher):
     """
@@ -97,6 +104,12 @@ class MapRobotSubscriber(MapRobotPublisher):
         adapter = transfer_function_manager.robot_adapter
         assert isinstance(adapter, IRobotCommunicationAdapter)
         return adapter.register_subscribe_topic(self.topic, **self.config)
+
+    def create_tf(self):
+        """
+        Creates a TF in case the TF specification has been omitted
+        """
+        return Robot2Neuron()
 
 
 class Robot2Neuron(TransferFunction):
