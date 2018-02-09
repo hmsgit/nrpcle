@@ -28,6 +28,8 @@ using ROS
 
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter, \
     Topic, PreprocessedTopic, IRobotSubscribedTopic, IRobotPublishedTopic
+from hbp_nrp_cle.tf_framework._TransferFunctionManager import TransferFunctionManager
+import rosgraph_msgs.msg
 import rospy
 import logging
 import rosgraph.masterapi as master
@@ -35,6 +37,9 @@ import rosgraph.masterapi as master
 logger = logging.getLogger(__name__)
 
 __author__ = 'GeorgHinkel'
+
+
+sim_time = 0.0
 
 
 class RosCommunicationAdapter(IRobotCommunicationAdapter):
@@ -74,6 +79,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         IRobotCommunicationAdapter.__init__(self)
         self.__topic_types = []
         self.__refresh_topic_types()
+        self.__clock_listener = None
 
     def __refresh_topic_types(self):
         """
@@ -93,6 +99,21 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
             logger.info("Robot communication adapter initialized")
         except rospy.exceptions.ROSException:
             logger.warn("ROS node already initialized with another name")
+        self.__clock_listener = rospy.Subscriber("/clock", rosgraph_msgs.msg.Clock,
+                                                 self.__update_clock)
+
+    @staticmethod
+    def __update_clock(data):
+        """
+        Updates the clock directly from the simulation time
+
+        Using rospy.get_time() does not work, as it uses the walltime even when use_sim_time is set
+
+        :param data: The clock message
+        """
+        # pylint: disable=global-statement
+        global sim_time
+        sim_time = data.clock.secs + data.clock.nsecs / 1.0e9
 
     def create_topic_publisher(self, topic, config):
         """
@@ -236,11 +257,21 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         """
         self.__changed = False
         self.__value = initial_value
+        self.__tfs = []
         assert isinstance(topic, Topic)
         self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
                                              self._callback)
         logger.info("ROS subscriber created: topic name = %s, topic type = %s",
                      topic.name, topic.topic_type)
+
+    def register_tf_trigger(self, tf):
+        """
+        Registers to trigger the provided TF in case a new value appears
+
+        :param tf: The transfer function
+        """
+        if tf not in self.__tfs:
+            self.__tfs.append(tf)
 
     def _callback(self, data):
         """
@@ -251,6 +282,9 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
         logger.debug("ROS subscriber callback")
         self.__changed = True
         self.__value = data
+        t = sim_time
+        for tf in self.__tfs:
+            TransferFunctionManager.run_tf(tf, t)
 
     @property
     def changed(self):

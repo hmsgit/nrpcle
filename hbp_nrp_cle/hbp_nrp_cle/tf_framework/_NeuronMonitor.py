@@ -166,7 +166,7 @@ class NeuronMonitor(TransferFunction):
         try:
             self._params[0] = t
             return_value = self._func(*self._params[:-2])
-            if return_value:
+            if return_value is not None:
                 self.__handler(t)
         except Exception, e:
             self._handle_error(e, sys.exc_info()[2])

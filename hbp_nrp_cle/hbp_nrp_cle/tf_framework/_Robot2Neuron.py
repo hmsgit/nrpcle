@@ -51,7 +51,7 @@ class MapRobotPublisher(ParameterMappingSpecification):
         :param kwargs: Additional configuration parameters
         """
         super(MapRobotPublisher, self).__init__(key)
-        assert isinstance(value, (Topic, str))
+        assert isinstance(value, (Topic, str)), value
         self.__value = value
         self.__config = kwargs
 

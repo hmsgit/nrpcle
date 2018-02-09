@@ -34,6 +34,7 @@ from concurrent.futures import Future
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl, ForcedStopException
 from hbp_nrp_cle.cle.__helper import get_tf_elapsed_times
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
+import hbp_nrp_cle as cle
 
 logger = logging.getLogger('hbp_nrp_cle')
 
@@ -86,7 +87,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.stopped_flag.set()
 
         # global clock
-        self.clock = 0.0
+        cle.clock = 0.0
 
         self.initialized = False
 
@@ -130,7 +131,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.__network_configuration = configuration
         self.bca.load_brain(network_file, **configuration)
         self.tfm.initialize('tfnode')
-        self.clock = 0.0
+        cle.clock = 0.0
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.initialized = True
@@ -170,7 +171,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         :param timestep: simulation time, in seconds
         :return: Updated simulation time, otherwise -1
         """
-        clk = self.clock
+        clk = cle.clock
 
         # robot simulation
         logger.debug("Run step: Robot simulation.")
@@ -199,10 +200,10 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.tfm.run_neuron_to_robot(clk)
 
         # update clock
-        self.clock += timestep
+        cle.clock += timestep
 
         logger.debug("Run_step: done !")
-        return self.clock
+        return cle.clock
 
     def shutdown(self):
         """
@@ -287,7 +288,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.rca.reset()
         self.bca.reset()
         self.tfm.reset()
-        self.clock = 0.0
+        cle.clock = 0.0
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self._rca_elapsed_time = 0.0
@@ -332,7 +333,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         """
         Get the current simulation time.
         """
-        return self.clock
+        return cle.clock
 
     @property
     def running(self):

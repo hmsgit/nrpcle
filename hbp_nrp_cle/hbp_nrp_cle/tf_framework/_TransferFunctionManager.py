@@ -30,8 +30,7 @@ __author__ = 'GeorgHinkel'
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IBrainDevice
 from ._TransferFunctionInterface import ITransferFunctionManager
-from ._PropertyPath import PropertyPath
-from . import config, BrainParameterException
+from . import BrainParameterException
 import itertools
 import logging
 import time
@@ -51,6 +50,7 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         self.__n2r = []
         self.__r2n = []
+        self.__silent = []
         self.__robotAdapter = None
         self.__nestAdapter = None
         self.__initialized = False
@@ -71,6 +71,13 @@ class TransferFunctionManager(ITransferFunctionManager):
         return self.__r2n
 
     @property
+    def silent(self):  # -> list
+        """
+        Gets a list of transfer functions not controlled by the orchestration
+        """
+        return self.__silent
+
+    @property
     def global_data(self):
         """
         Gets the global variable storage dictionary for the transfer functions
@@ -80,15 +87,14 @@ class TransferFunctionManager(ITransferFunctionManager):
         return self.__global_data
 
     @staticmethod
-    def _run_tf(tf, t):  # -> None:
+    def run_tf(tf, t):  # -> None:
         """
         Runs the transfer functions for the given point in simulation time
 
         :param tf: the transfer function
         :param t: The simulation time
         """
-
-        if tf.active:
+        if tf.active and tf.should_run(t):
             start = time.time()
             tf.run(t)
             tf.elapsed_time += time.time() - start
@@ -100,7 +106,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param t: The simulation time
         """
         for _n2r in self.__n2r:
-            TransferFunctionManager._run_tf(_n2r, t)
+            TransferFunctionManager.run_tf(_n2r, t)
 
     def run_robot_to_neuron(self, t):  # -> None:
         """
@@ -109,21 +115,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param t:  The simulation time
         """
         for _r2n in self.__r2n:
-            TransferFunctionManager._run_tf(_r2n, t)
-
-    @staticmethod
-    def __select_neurons(neurons):
-        """
-        Selects the neurons represented by the given property path
-
-        :param neurons:
-        """
-        if isinstance(neurons, PropertyPath):
-            return neurons.select(config.brain_root)
-        if isinstance(neurons, list):
-            for i in range(0, len(neurons)):
-                neurons[i] = TransferFunctionManager.__select_neurons(neurons[i])
-        return neurons
+            TransferFunctionManager.run_tf(_r2n, t)
 
     @property
     def robot_adapter(self):  # -> IRobotCommunicationAdapter:
@@ -184,7 +176,7 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         :return: A list of transfer functions
         """
-        return self.__n2r + self.__r2n
+        return self.__n2r + self.__r2n + self.__silent
 
     def initialize_tf(self, tf):
         """
@@ -210,7 +202,44 @@ class TransferFunctionManager(ITransferFunctionManager):
             tf.params[i].spec = param
             tf.__dict__[param.name] = tf.params[i]
 
+        if "t" not in tf.triggers:
+            if tf in self.__n2r:
+                self.__n2r.remove(tf)
+            elif tf in self.__r2n:
+                self.__r2n.remove(tf)
+            self.__silent.append(tf)
+
         tf.initialize(self, True, True)
+        self._update_trigger(tf)
+
+    @staticmethod
+    def _update_trigger(tf):
+        """
+        Reconnects the TF to the specified trigger devices
+
+        :param tf: The transfer function
+        """
+        for i in range(0, len(tf.triggers)):
+            trigger = tf.triggers[i]
+            name = trigger if isinstance(trigger, str) else trigger.spec.name
+
+            if name == "t":
+                continue
+
+            trigger_device = None
+            for dev in tf.params:
+                if isinstance(dev, float):
+                    continue
+                if dev.spec.name == name:
+                    trigger_device = dev
+                    break
+            # trigger device is not None due to previous checks
+            try:
+                trigger_device.register_tf_trigger(tf)
+            except AttributeError:
+                raise Exception("The device connected for {0} does not support triggers"
+                                .format(name))
+            tf.triggers[i] = trigger_device
 
     def activate_tf(self, tf, activate):
         """
@@ -290,6 +319,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                     if tf.__dict__[k] is param:
                         tf.__dict__[k] = reset_value
                 reset_value.spec = param.spec
+        self._update_trigger(tf)
 
     def reset(self):  # -> None:
         """
@@ -320,7 +350,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.brain_adapter.shutdown()
         self.brain_adapter.initialize()
 
-        for tf in itertools.chain(self.__r2n, self.__n2r):
+        for tf in itertools.chain(self.__r2n, self.__n2r, self.__silent):
             for i in range(1, len(tf.params)):
                 try:
                     spec = tf.params[i].spec
@@ -333,6 +363,7 @@ class TransferFunctionManager(ITransferFunctionManager):
                     raise BrainParameterException("Cannot map parameter '{0}' in transfer "
                                                   "function '{1}'".format(spec.name, tf.name))
             tf.initialize(self, True, False)
+            self._update_trigger(tf)
 
     def hard_reset_robot_devices(self):
         """
@@ -344,7 +375,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.robot_adapter.shutdown()
         self.robot_adapter.initialize()
 
-        for tf in itertools.chain(self.__r2n, self.__n2r):
+        for tf in itertools.chain(self.__r2n, self.__n2r, self.__silent):
             for i in range(1, len(tf.params)):
                 spec = tf.params[i].spec
                 if spec.is_robot_connection:
@@ -352,3 +383,4 @@ class TransferFunctionManager(ITransferFunctionManager):
                     tf.params[i].spec = spec
                     tf.__dict__[spec.name] = tf.params[i]
             tf.initialize(self, False, True)
+            self._update_trigger(tf)

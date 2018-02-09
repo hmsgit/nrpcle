@@ -13,3 +13,5 @@ __author__ = 'GeorgHinkel'
 # pylint: disable=no-member
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+clock = 0.0

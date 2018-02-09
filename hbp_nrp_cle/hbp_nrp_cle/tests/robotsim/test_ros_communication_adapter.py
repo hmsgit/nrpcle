@@ -27,10 +27,11 @@ Tests the ROS communication adapter
 
 import unittest
 import rospy
-from mock import patch
+from mock import patch, Mock
 from hbp_nrp_cle.robotsim.RobotInterface import PreprocessedTopic, Topic
 from hbp_nrp_cle.robotsim.RosCommunicationAdapter import RosCommunicationAdapter, RosPublishedPreprocessedTopic, \
     RosPublishedTopic, RosSubscribedPreprocessedTopic, RosSubscribedTopic
+import hbp_nrp_cle.robotsim.RosCommunicationAdapter as tested_module
 from testfixtures import LogCapture
 from rosgraph_msgs.msg import Log
 
@@ -67,7 +68,8 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
     # Tests for ROSCommunicationAdapter
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.init_node')
-    def test_rca_initialize(self, mock_init_node):
+    @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
+    def test_rca_initialize(self, _, mock_init_node):
         with LogCapture('hbp_nrp_cle.robotsim.RosCommunicationAdapter') as logcapture:
             self.rca.initialize("test_node")
             self.assertEquals(mock_init_node.call_count, 1)
@@ -83,7 +85,8 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.init_node')
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
-    def test_rca_create_topic_publisher(self, mock_rospy_publisher, mock_init_node):
+    @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
+    def test_rca_create_topic_publisher(self, _, mock_rospy_publisher, mock_init_node):
         self.rca.initialize("test_node")
 
         r = self.rca.create_topic_publisher(PreprocessedTopic(
@@ -125,9 +128,30 @@ class TestRosCommunicationAdapter(unittest.TestCase):
         self.assertEquals(mock_init_node.call_count, 1)
         self.assertGreater(mock_rospy_subscriber.call_count, 0)
 
+    @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.init_node')
+    @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
+    def test_rca_create_topic_subscriber_triggers_tf(self, mock_rospy_subscriber, mock_init_node):
+        self.rca.initialize("test_node")
+        tf = Mock()
+        tf.active = True
+        tf.elapsed_time = 0
+        tf.should_run.return_value = True
+        tested_module.sim_time = 42.0
+
+        sub = self.rca.create_topic_subscriber(Topic('topic', 'topic_type'), {})
+        self.assertIsInstance(sub, RosSubscribedTopic)
+
+        sub.register_tf_trigger(tf)
+        sub._callback("foo")
+
+        self.assertEqual(sub.value, "foo")
+        tf.should_run.assert_called_once_with(42.0)
+        tf.run.assert_called_once_with(42.0)
+
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.is_shutdown')
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.init_node')
-    def test_rca_is_alive(self, mock_init_node, mock_is_shutdown):
+    @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
+    def test_rca_is_alive(self, _, mock_init_node, mock_is_shutdown):
         self.rca.initialize("test_node")
         mock_is_shutdown.return_value = False
         self.assertTrue(self.rca.is_alive)
@@ -139,7 +163,8 @@ class TestRosCommunicationAdapter(unittest.TestCase):
 
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Publisher')
     @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.init_node')
-    def test_rca_refresh_buffers(self, mock_init_node, mock_publisher):
+    @patch('hbp_nrp_cle.robotsim.RosCommunicationAdapter.rospy.Subscriber')
+    def test_rca_refresh_buffers(self, _, mock_init_node, mock_publisher):
         t1, t2 = Topic('a', 'b'), Topic('c', 'd')
         self.rca.register_publish_topic(t1)
         self.rca.register_publish_topic(t2)

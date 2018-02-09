@@ -27,6 +27,7 @@ Implementation of the closed loop engine.
 
 __author__ = 'Georg Hinkel'
 
+import hbp_nrp_cle as cle
 from hbp_nrp_cle.cle.DeterministicClosedLoopEngine import DeterministicClosedLoopEngine
 import time
 import logging
@@ -76,7 +77,7 @@ class ClosedLoopEngine(DeterministicClosedLoopEngine):
         :param timestep: simulation time, in seconds
         :return: Updated simulation time, otherwise -1
         """
-        clk = self.clock
+        clk = cle.clock
 
         self.__tf_start_event.set()
 
@@ -93,7 +94,7 @@ class ClosedLoopEngine(DeterministicClosedLoopEngine):
         self._bca_elapsed_time += time.time() - start
 
         # update clock
-        self.clock += timestep
+        cle.clock += timestep
 
         # wait for all thread to finish
         logger.debug("Run_step: waiting on Control thread")
@@ -108,13 +109,13 @@ class ClosedLoopEngine(DeterministicClosedLoopEngine):
         self.__tf_done_event.clear()
 
         logger.debug("Run_step: done !")
-        return self.clock
+        return cle.clock
 
     def __run_tfs(self):
         """
         Runs the Transfer Functions. To be executed in a separate thread
         """
-        clk = self.clock
+        clk = cle.clock
         while not self.stopped_flag.isSet():
             self.__tf_start_event.wait()
             self.__tf_start_event.clear()

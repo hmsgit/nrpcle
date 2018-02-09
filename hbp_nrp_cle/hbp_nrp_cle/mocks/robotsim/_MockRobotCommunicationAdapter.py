@@ -164,6 +164,16 @@ class MockSubscribedTopic(IRobotSubscribedTopic):
         """
         self.__changed = False
         self.__value = None
+        self.__tfs = []
+
+    def register_tf_trigger(self, tf):
+        """
+        Registers to trigger the provided TF in case a new value appears
+
+        :param tf: The transfer function
+        """
+        if not tf in self.__tfs:
+            self.__tfs.append(tf)
 
     @property
     def changed(self):
@@ -189,6 +199,9 @@ class MockSubscribedTopic(IRobotSubscribedTopic):
         """
         self.__changed = (value != self.__value)
         self.__value = value
+        for tf in self.__tfs:
+            if tf.active and tf.should_run(42.0):
+                tf.run(42.0)
 
     def _unregister(self):
         """

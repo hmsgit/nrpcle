@@ -56,7 +56,7 @@ class TransferFunction(object):
 
     excepthook = __default_excepthook
 
-    def __init__(self):
+    def __init__(self, triggers=None, throttling_rate=None):
         self._params = []
         self._func = None
         self.__active = False
@@ -65,6 +65,28 @@ class TransferFunction(object):
         self.__elapsed_time = 0.0
         self.__updated_since_last_error = True
         self.__publish_error_callback = None
+        self.__triggers = triggers
+        if triggers is None:
+            self.__triggers = ["t"]
+        elif isinstance(self.__triggers, str):
+            self.__triggers = [self.__triggers]
+        elif not isinstance(triggers, list):
+            raise Exception("The triggers should be a list of parameters that trigger execution")
+        if isinstance(throttling_rate, (int, float)) and throttling_rate > 0:
+            self.__min_delta_t = 1.0 / throttling_rate
+        elif throttling_rate is None:
+            self.__min_delta_t = 0
+        else:
+            raise Exception("Throttling should be a maximum frequency of TF execution in hertz")
+
+    def should_run(self, t):
+        """
+        Steps the simulation time to t and decides whether the TF should be run in this timeslot
+
+        :param t: The simulation time
+        :return: True, if the simulation should be run, otherwise False
+        """
+        return self._params[0] + self.__min_delta_t <= t
 
     @property
     def name(self):
@@ -84,6 +106,15 @@ class TransferFunction(object):
         :return: A list of adapters
         """
         return self._params
+
+    @property
+    def triggers(self):
+        """
+        Gets the triggers of the Transfer Function
+
+        :return: A list of triggers or the simulation time t
+        """
+        return self.__triggers
 
     @property
     def elapsed_time(self):
@@ -196,7 +227,12 @@ class TransferFunction(object):
             if args[0] != "t":
                 raise Exception("The first parameter of a transfer function must be the time!")
             self._params = list(args)
+            for t in self.__triggers:
+                if t not in self._params:
+                    raise Exception("The specified trigger {0} is invalid, "
+                                    "there is no parameter with that name".format(t))
             self.active = True
+            self._params[0] = -float('inf')
         else:
             raise Exception("It is not allowed to change the underlying function of a Transfer "
                             "Function after it has been initially set.")

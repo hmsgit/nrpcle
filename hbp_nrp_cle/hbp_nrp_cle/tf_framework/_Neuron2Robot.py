@@ -163,14 +163,14 @@ class Neuron2Robot(TransferFunction):
     Class to represent a transfer function from neurons to robot
     """
 
-    def __init__(self, robot_topic=None):
+    def __init__(self, robot_topic=None, triggers=None, throttling_rate=None):
         """
         Defines a new transfer function from robots to neurons
 
         :param robot_topic: the robot topic reference
         :param other_topics: other topics required by this transfer function
         """
-        super(Neuron2Robot, self).__init__()
+        super(Neuron2Robot, self).__init__(triggers, throttling_rate)
         if robot_topic is not None:
             assert isinstance(robot_topic, (Topic, str))
         self.__main_topic = robot_topic
