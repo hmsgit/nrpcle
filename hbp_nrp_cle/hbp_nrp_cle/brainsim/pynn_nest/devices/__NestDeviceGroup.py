@@ -101,14 +101,32 @@ class PyNNNestDeviceGroup(DeviceGroup):
     This class provides an optimized device group behavior
     """
 
-    def __init__(self, device_type, devices):
+    def create_subgroup(self, selection):
         """
-        Initializes a device group
-        """
-        super(PyNNNestDeviceGroup, self).__init__(device_type, devices)
+        Creates a sub-devicegroup for the given indices
 
+        :param selection: A selection of devices as slice or list
+        :return: A new device group representing a subset of the devices represented
+        by this device group
+        """
+        devices = self.devices[selection]
+        group = type(self)(self.device_type, devices)
         device_ids = []
         for d in devices:
+            device_ids.append(d.device_id)
+        group.__dict__['_device_ids'] = device_ids
+        return group
+
+    def connect(self, neurons, **params):
+        """
+        Connects the contained devices to the neurons specified as parameter.
+
+        :param neurons: the neuron population
+        :param params: additional parameters for the connection
+        """
+        super(PyNNNestDeviceGroup, self).connect(neurons, **params)
+        device_ids = []
+        for d in self.__dict__['devices']:
             device_ids.append(d.device_id)
         self.__dict__['_device_ids'] = device_ids
 

@@ -72,7 +72,7 @@ class DeviceGroup(IDeviceGroup):
 
     def __getitem__(self, index):
         if isinstance(index, (slice, numpy.ndarray)):
-            return type(self)(self.device_type, self.devices[index])
+            return self.create_subgroup(index)
         elif isinstance(index, int):
             return self.devices[index]
         else:
@@ -88,6 +88,16 @@ class DeviceGroup(IDeviceGroup):
         if hasattr(DeviceGroup, attrname):
             return super(DeviceGroup, self).__getattr__(attrname)
         return self.get(attrname)
+
+    def create_subgroup(self, selection):
+        """
+        Creates a sub-devicegroup for the given indices
+
+        :param selection: A selection of devices as slice or list
+        :return: A new device group representing a subset of the devices represented
+        by this device group
+        """
+        return type(self)(self.device_type, self.devices[selection])
 
     def get(self, attrname):
         """
