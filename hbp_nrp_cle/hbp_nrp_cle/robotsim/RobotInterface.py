@@ -201,7 +201,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         :return: A subscription object that holds the current data
         """
 
-        subscriber = self.create_topic_subscriber(topic, kwargs)
+        subscriber = self.create_topic_subscriber(topic, **kwargs)
         self.__subscribed_topics.append(subscriber)
         return subscriber
 
@@ -223,7 +223,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         :param kwargs: Additional configuration parameters
         :return: A publisher communication object
         """
-        publisher = self.create_topic_publisher(topic, kwargs)
+        publisher = self.create_topic_publisher(topic, **kwargs)
         self.__published_topics.append(publisher)
         return publisher
 
@@ -237,7 +237,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         if topic in self.__published_topics:
             self.__published_topics.remove(topic)
 
-    def create_topic_subscriber(self, topic, config):  # -> IRobotSubscribedTopic:
+    def create_topic_subscriber(self, topic, **config):  # -> IRobotSubscribedTopic:
         """
         Creates the subscription object for the given topic
 
@@ -247,7 +247,7 @@ class IRobotCommunicationAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def create_topic_publisher(self, topic, config):  # -> IRobotPublishedTopic:
+    def create_topic_publisher(self, topic, **config):  # -> IRobotPublishedTopic:
         """
         Creates a publisher object for the given topic
 

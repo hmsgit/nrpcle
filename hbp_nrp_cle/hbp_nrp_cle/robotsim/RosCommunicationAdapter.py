@@ -40,6 +40,14 @@ __author__ = 'GeorgHinkel'
 
 
 sim_time = 0.0
+# Receive buffer size for subscriber topics (in bytes). Same as ROS default.
+DEFAULT_SUB_BUFFER_SIZE = 65536
+# Queue size for subscriber topics.
+# ROS docs suggest either 1 or None, the latter denoting an infinite queue.
+DEFAULT_SUB_QUEUE_SIZE = 1
+
+# Queue size for publisher topics.
+DEFAULT_PUB_QUEUE_SIZE = 10
 
 
 class RosCommunicationAdapter(IRobotCommunicationAdapter):
@@ -107,7 +115,7 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         """
         Updates the clock directly from the simulation time
 
-        Using rospy.get_time() does not work, as it uses the walltime even when use_sim_time is set
+        Using rospy.get_time() does not work, as it uses the wall-time even when use_sim_time is set
 
         :param data: The clock message
         """
@@ -115,41 +123,50 @@ class RosCommunicationAdapter(IRobotCommunicationAdapter):
         global sim_time
         sim_time = data.clock.secs + data.clock.nsecs / 1.0e9
 
-    def create_topic_publisher(self, topic, config):
+    def create_topic_publisher(self, topic, **config):
         """
         Creates a publisher object for the given topic
 
         :param topic: The topic
         :param config: Additional configuration for the publisher
+        :param **queue_size: ROS Publisher queue_size parameter, please refer to ROS documentation
+
         :return: A publisher object
         """
         if isinstance(topic, PreprocessedTopic):
-            return RosPublishedPreprocessedTopic(topic, config.get('queue_size', 10))
+            return RosPublishedPreprocessedTopic(topic, **config)
         elif isinstance(topic, str):
             topic_type = self.get_topic_type(topic)
             if topic_type is None:
                 raise Exception("The type of topic {0} is unknown. Please specify it explicitly"
                                 .format(topic))
             topic = Topic(topic, topic_type)
-        return RosPublishedTopic(topic, config.get('queue_size', 10))
+        return RosPublishedTopic(topic, **config)
 
-    def create_topic_subscriber(self, topic, config):
+    def create_topic_subscriber(self, topic, **config):
         """
         Creates the subscription object for the given topic
 
         :param topic: The topic
         :param config: Additional configuration for the subscriber
+        :param **queue_size: ROS Subscriber queue_size parameter, please refer to ROS documentation
+        :param **buff_size: ROS Subscriber buff_size parameter, please refer to ROS documentation
+
         :return: A subscription object
         """
         if isinstance(topic, PreprocessedTopic):
-            return RosSubscribedPreprocessedTopic(topic, config.get('initial_value', None))
+            return RosSubscribedPreprocessedTopic(topic,
+                                                  config.get('initial_value', None),
+                                                  **config)
         elif isinstance(topic, str):
             topic_type = self.get_topic_type(topic)
             if topic_type is None:
                 raise Exception("The type of topic {0} is unknown. Please specify it explicitly"
                                 .format(topic))
             topic = Topic(topic, topic_type)
-        return RosSubscribedTopic(topic, config.get('initial_value', None))
+        return RosSubscribedTopic(topic,
+                                  config.get('initial_value', None),
+                                  **config)
 
     @property
     def is_alive(self):  # pylint: disable=R0201
@@ -181,18 +198,20 @@ class RosPublishedTopic(IRobotPublishedTopic):
     """
     Represents a robot topic publisher actually using ROS
     """
-    def __init__(self, topic, queue_size):
+    def __init__(self, topic, **config):
         """
         Creates a new robot topic publisher
 
         :param topic: The topic where data should be sent to
-        :param queue_size: The queue size for the publisher
+        :param config: Additional configuration for the publisher
+        :param **queue_size: ROS Publisher queue_size parameter, please refer to ROS documentation
         """
         self.__lastSent = None
         assert isinstance(topic, Topic)
         logger.info("ROS publisher created: topic name = %s, topic type = %s",
                     topic.name, topic.topic_type)
-        self.__pub = rospy.Publisher(topic.name, topic.topic_type, queue_size=queue_size)
+        self.__pub = rospy.Publisher(topic.name, topic.topic_type,
+                                     queue_size=config.get('queue_size', DEFAULT_PUB_QUEUE_SIZE))
 
     def send_message(self, value):
         """
@@ -223,14 +242,14 @@ class RosPublishedPreprocessedTopic(RosPublishedTopic):
     """
     Represents a robot topic publisher actually using ROS
     """
-    def __init__(self, topic, queue_size):
+    def __init__(self, topic, **config):
         """
         Creates a new robot topic publisher
 
         :param topic: The topic where data should be sent to
-        :param queue_size: The queue size for the publisher
+        :param config: Additional configuration for the subscriber
         """
-        super(RosPublishedPreprocessedTopic, self).__init__(topic, queue_size)
+        super(RosPublishedPreprocessedTopic, self).__init__(topic, **config)
         assert isinstance(topic, PreprocessedTopic)
         self.__pre_processor = topic.pre_processor
 
@@ -248,21 +267,28 @@ class RosSubscribedTopic(IRobotSubscribedTopic):
     Represents a robot topic subscriber actually using ROS
     """
 
-    def __init__(self, topic, initial_value):
+    def __init__(self, topic, initial_value, **config):
         """
         Initializes a new subscriber for the given topic
 
         :param topic: The topic that is subscribed
-        :initial_value: The initial value for the subscriber
+        :param initial_value: The initial value for the subscriber
+        :param config: Additional configuration for the subscriber
+        :param **queue_size: ROS Subscriber queue_size parameter, please refer to ROS documentation
+        :param **buff_size: ROS Subscriber buff_size parameter, please refer to ROS documentation
         """
         self.__changed = False
         self.__value = initial_value
         self.__tfs = []
         assert isinstance(topic, Topic)
         self.__subscriber = rospy.Subscriber(topic.name, topic.topic_type,
-                                             self._callback)
+                                             self._callback,
+                                             queue_size=config.get('queue_size',
+                                                                   DEFAULT_SUB_QUEUE_SIZE),
+                                             buff_size=config.get('buff_size',
+                                                                  DEFAULT_SUB_BUFFER_SIZE))
         logger.info("ROS subscriber created: topic name = %s, topic type = %s",
-                     topic.name, topic.topic_type)
+                    topic.name, topic.topic_type)
 
     def register_tf_trigger(self, tf):
         """
@@ -332,14 +358,17 @@ class RosSubscribedPreprocessedTopic(RosSubscribedTopic):
     Represents a robot topic subscriber with a preprocessor
     """
 
-    def __init__(self, topic, initial_value):
+    def __init__(self, topic, initial_value, **config):
         """
         Creates a new preprocessing topic subscriber
 
         :param topic: The topic that is subscribed
         :param initial_value: The initial value for the subscriber
+        :param config: Additional configuration for the subscriber
+
         """
-        super(RosSubscribedPreprocessedTopic, self).__init__(topic, initial_value)
+        super(RosSubscribedPreprocessedTopic, self).__init__(topic, initial_value, **config)
+
         assert isinstance(topic, PreprocessedTopic)
         self.__pre_processor = topic.pre_processor
 

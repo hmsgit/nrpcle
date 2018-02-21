@@ -86,7 +86,7 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
         """
         return self.__name
 
-    def create_topic_publisher(self, topic, config):
+    def create_topic_publisher(self, topic, **config):
         """
         Creates a publisher object for the given topic
 
@@ -96,7 +96,7 @@ class MockRobotCommunicationAdapter(IRobotCommunicationAdapter):
         """
         return MockPublishedTopic()
 
-    def create_topic_subscriber(self, topic, config):
+    def create_topic_subscriber(self, topic, **config):
         """
         Creates the subscription object for the given topic
 
