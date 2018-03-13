@@ -41,6 +41,7 @@ class TestNestDeviceGroup(unittest.TestCase):
         self.neurons = [self.__create_mock_with_id(i) for i in range(0,5)]
         mocked_sim().ACSource.side_effect = self.neurons
         self.device = PyNNNestACSource.create_new_device_group(self.neurons, {})
+        self.device.connect(self.neurons)
         self.device_ids = self.device._device_ids
 
         self.assertEqual(len(self.neurons), len(self.device_ids))
