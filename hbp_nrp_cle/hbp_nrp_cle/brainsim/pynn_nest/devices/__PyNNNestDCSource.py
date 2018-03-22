@@ -26,7 +26,7 @@ This module contains the nest implementation of the DC source for nest
 """
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNDCSource
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice, \
-    create_transformation
+    create_transformation, PyNNNestDeviceGroup
 import pyNN.nest as nestsim
 import nest
 
@@ -70,20 +70,46 @@ class PyNNNestDCSource(PyNNNestDevice, PyNNDCSource):
             # pylint: disable=protected-access
             self.SetStatus(self._generator._device, {"amplitude": 1000.0 * value})
 
+    @staticmethod
+    def _should_use_integrated_dc_gen(population, params):
+        """
+        Predicate used for deciding whether an integrated NEST generator should be used
+
+        :param population: The population for which the device should be created
+        :param params: additional parameters which are passed to the device constructor
+        :return: True if an optimized generator should be used, False otherwise
+        """
+        nest_status = nest.GetStatus([population.all_cells[0]])
+        return 'I_e' in nest_status[0].keys() and \
+               not params.get("parrot", False)
+
     @classmethod
     def create_new_device(cls, population, **params):
         """
-        Returns a new instance of the concrete implementation of the brain device.
+        Returns a new instance of the concrete implementation of the brain device
 
         :param params: additional parameters which are passed to the device constructor
         :param population: The population for which the device should be created
         :return: a new instance of the concrete device
         """
-        if 'I_e' in nest.GetStatus([population.all_cells[0]])[0].keys() and \
-                not params.get("parrot", False):
-            return IntegratedNestDCCurrentGenerator(**params)
+        if cls._should_use_integrated_dc_gen(population, params):
+            new_device = IntegratedNestDCCurrentGenerator(**params)
         else:
-            return PyNNNestDCSource(**params)
+            new_device = PyNNNestDCSource(**params)
+
+        return new_device
+
+    @classmethod
+    def create_new_device_group(cls, populations, params):
+
+        # the populations list is homogeneous,
+        # so just use the first one to decide the type
+        if cls._should_use_integrated_dc_gen(populations[0], params):
+            generator_type = IntegratedNestDCCurrentGenerator
+        else:
+            generator_type = cls
+
+        return PyNNNestDeviceGroup.create_new_device_group(populations, generator_type, params)
 
     @classmethod
     def get_parameter_defaults(cls):

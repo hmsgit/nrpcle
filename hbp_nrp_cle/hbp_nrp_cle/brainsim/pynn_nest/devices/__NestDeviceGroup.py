@@ -68,7 +68,7 @@ def create_transformation(nest_name, transform=None):
                 nest.SetStatus(device_ids, vals)
             else:
                 nest.SetStatus(device_ids, {nest_name: value})
-        return (getter, setter)
+        return {'get': getter, 'set': setter}
     else:
         def getter(device_ids):
             """
@@ -93,7 +93,7 @@ def create_transformation(nest_name, transform=None):
                 nest.SetStatus(device_ids, vals)
             else:
                 nest.SetStatus(device_ids, {nest_name: value * transform})
-        return (getter, setter)
+        return {'get': getter, 'set': setter}
 
 
 class PyNNNestDeviceGroup(DeviceGroup):
@@ -138,7 +138,7 @@ class PyNNNestDeviceGroup(DeviceGroup):
         :return: A numpy array with all the values for the given attribute for all the devices
         in this device group
         """
-        return self.device_type.transformations[attrname][0](self.__dict__['_device_ids'])
+        return self.device_type.transformations[attrname]['get'](self.__dict__['_device_ids'])
 
     def set(self, attrname, value):
         """
@@ -148,7 +148,7 @@ class PyNNNestDeviceGroup(DeviceGroup):
         :param value: The value that should be assigned to the attribute.
         If this value is indexable, each device is assigned the respective index of the value
         """
-        self.device_type.transformations[attrname][1](self.__dict__['_device_ids'], value)
+        self.device_type.transformations[attrname]['set'](self.__dict__['_device_ids'], value)
 
 
 class PyNNNestDevice(object):
@@ -165,11 +165,10 @@ class PyNNNestDevice(object):
         """
         Returns a new device group instance for the concrete implementation of this brain device.
 
-        :param length: the size of the group (the amount of nested devices)
+        :param populations: The populations for which the device should be created
         :param params: additional parameters which are passed to the constructor of the nested
             devices. For each parameter either the value can be supplied, or a list of values,
             one for each nested device.
-        :param populations: The populations for which the device should be created
         :return: a new device group containing the created nested devices
         """
         return PyNNNestDeviceGroup.create_new_device_group(populations, cls, params)
