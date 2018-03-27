@@ -30,7 +30,7 @@ This assumes work on Ubuntu (>= 13.10), otherwise use `ROS Hydro <http://wiki.ro
 
 
 * To add the `Gazebo <http://gazebosim.org/tutorials?tut=install_ubuntu&cat=installation>`_. Ubuntu
-package sources, run the following commands:
+  package sources, run the following commands:
 
   .. code-block:: bash
 

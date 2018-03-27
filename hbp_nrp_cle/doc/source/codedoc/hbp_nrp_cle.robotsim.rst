@@ -6,34 +6,10 @@ robotsim - Adapters for using Gazebo as the Robot simulation with ROS as middlew
     :undoc-members:
     :show-inheritance:
 
-:mod:`GazeboInterface` Module
------------------------------
-
-.. automodule:: hbp_nrp_cle.robotsim.GazeboInterface
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`GazeboHelper` Module
 ---------------------------------
 
 .. automodule:: hbp_nrp_cle.robotsim.GazeboHelper
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`LocalGazebo` Module
--------------------------
-
-.. automodule:: hbp_nrp_cle.robotsim.LocalGazebo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`LuganoVizClusterGazebo` Module
-------------------------------------
-
-.. automodule:: hbp_nrp_cle.robotsim.LuganoVizClusterGazebo
     :members:
     :undoc-members:
     :show-inheritance:

@@ -2,7 +2,7 @@ Tutorial: Writing a BIBI Configuration
 ======================================
 
 A BIBI Configuration contains all the information necessary to couple a brain model with a robot model
-using Transfer Functions and run these simulations in the Closed Loop Engine (CLE). Thus, besides
+using Transfer Functions (TFs) and run these simulations in the Closed Loop Engine (CLE). Thus, besides
 references to brain model and robot model, it contains the specifications of the TFs.
 
 As an XML file, such a specification may be created by tools. We have an XML Schema document to
@@ -23,7 +23,7 @@ To begin, we start with a new BIBI Configuration.
 That is, we simply created a *bibi* element in the BIBI Configuration namespace.
 
 .. note:: The namespace is subject to change. In particular, the XML Schema definition currently
-cannot be obtained via the given URL.
+          cannot be obtained via the given URL.
 
 Specification of the neuronal network
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

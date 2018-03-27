@@ -12,7 +12,6 @@ Contents:
    :maxdepth: 2
 
    architecture/index
-   installing_and_running
    tutorials/index
    manual/index
    codedoc/index

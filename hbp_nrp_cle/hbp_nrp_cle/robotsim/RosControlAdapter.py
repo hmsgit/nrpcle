@@ -210,6 +210,7 @@ class RosControlAdapter(IRobotControlAdapter):
         """
         Resets the world (robot excluded) to the state described by
         models and lights
+
         :param models: A dictionary containing pairs
             (model_name: {'model_sdf': sdf, 'model_state_sdf': sdf}).
         :param lights: A dictionary containing pairs (light_name: light sdf).

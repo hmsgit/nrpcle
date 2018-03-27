@@ -13,5 +13,5 @@ Custom devices are devices with a custom algorithm to bind to a neuronal network
 devices that are connected to a neuronal network through directly by the brain communication adapter,
 custom devices provide their own logic how they connect to a given set of neurons.
 
-.. note:: We have not really used custom devices so far at this stage of the NRP platform. We will
-add more documentation here as soon as we have done so.
+.. note:: We have not really used custom devices so far. We will
+          add more documentation here as soon as we have done so.

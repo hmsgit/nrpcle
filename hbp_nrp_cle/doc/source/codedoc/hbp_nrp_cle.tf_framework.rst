@@ -86,17 +86,6 @@ tf_framework - The implementation of the TF framework
     :undoc-members:
     :show-inheritance:
 
-:mod:`monitoring` Module
-------------------------
-
-.. note::
-    This module is obsolete. Monitoring should be done through the new :mod:`_Neuron2Monitor` module.
-
-.. automodule:: hbp_nrp_cle.tf_framework.monitoring
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`tf_lib` Module
 --------------------
 

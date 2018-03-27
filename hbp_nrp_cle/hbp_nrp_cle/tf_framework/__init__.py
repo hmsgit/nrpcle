@@ -164,6 +164,7 @@ def nrange(start, stop, step=None):
 def resolve(fun):
     """
     Resolves the given function when the neural network is available
+
     :param fun: The function that selects the item from the network
     """
     return CustomSegment(fun)
@@ -288,10 +289,10 @@ def get_brain_populations():
     the function returns None.
 
     :return: A dictionary containing the brain populations
-    The dictionary keys are population names
-    and its values are one of the following types:
-    list, or a 'slice' dictionary of the following form
-    {'from': 1, 'to': 10, 'step': 1}.
+        The dictionary keys are population names
+        and its values are one of the following types:
+        list, or a 'slice' dictionary of the following form
+        {'from': 1, 'to': 10, 'step': 1}.
     """
     return config.brain_populations
 
@@ -301,7 +302,7 @@ def dump_csv_recorder_to_files():
     Find out all CSV recorders and dump their values to CSV files.
 
     :return: an array of pairs containing the filename wanted by the user and a temporary
-    filepath to a file containing the values.
+        filepath to a file containing the values.
     """
     result = []
     for tf in get_transfer_functions(flawed=False):

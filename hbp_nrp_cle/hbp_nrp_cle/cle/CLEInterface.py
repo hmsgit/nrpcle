@@ -46,21 +46,21 @@ class IClosedLoopControl(object):  # pragma: no cover
         Load (or reload) the brain model from a file the neuronal network file
 
         :param network_file: A python PyNN script or an h5 file
-        containing the neural network definition
+          containing the neural network definition
         :param network_configuration: A dictionary indexed by population names and
-        containing neuron indices. Neuron indices could be defined a single integer,
-        list of integers or python slices. Python slices could be replaced by a
-        dictionary containing the 'from', 'to' and 'step' values.
+          containing neuron indices. Neuron indices can be defined by a single integer,
+          list of integers or python slices. Python slices can be replaced by a
+          dictionary containing the 'from', 'to' and 'step' values.
         """
         raise NotImplementedError("Method not implemented")
 
     def initialize(self, network_file, configuration):  # -> None:
         """
         Initializes the closed loop engine.
+
         :param network_file: A python PyNN script or an h5 file
          containing the neural network definition
         :param configuration: A set of populations
-        :return:
         """
         raise NotImplementedError("Method not implemented")
 

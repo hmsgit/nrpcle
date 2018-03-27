@@ -271,7 +271,7 @@ If we want to specify the devices like above, this amounts to the following Pyth
         pass
 
 .. note:: The parameter mapping decorators must appear before the *Neuron2Robot* decorator. Otherwise
-an exception will be thrown.
+          an exception will be thrown.
 
 The rationale behind the naming *MapSpikeSink* is that the generated devices are effectively sinks as
 they consume spikes.

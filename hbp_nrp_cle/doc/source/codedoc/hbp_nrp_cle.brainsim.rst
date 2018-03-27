@@ -40,12 +40,7 @@ AbstractBrainDevice
 :mod:`BrainLoader` Module
 -------------------------
 
-
-.. class:: hbp_nrp_cle.brainsim.pynn.PyNNBrainLoader
-
-    .. note:: For technical reasons, the documentation of this class is moved to the class below.
-
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__doc.__PyNNBrainLoaderDoc
+.. automodule:: hbp_nrp_cle.brainsim.pynn.PyNNBrainLoader
     :members: load_h5_network, load_pointneuron_circuit
     :undoc-members:
     :show-inheritance:
@@ -53,11 +48,7 @@ AbstractBrainDevice
 :mod:`PyNNCommunicationAdapter` Module
 --------------------------------------
 
-.. class:: hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter.PyNNCommunicationAdapter
-
-    .. note:: For technical reasons, the documentation of this class is moved to the class below.
-
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__doc.__PyNNCommAdapterDoc
+.. automodule:: hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter
     :members: PyNNCommunicationAdapter
     :undoc-members:
     :show-inheritance:
@@ -134,7 +125,7 @@ IACSource
     :members:
     :show-inheritance:
 
-INCSource
+IDCSource
 ^^^^^^^^^
 
 .. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestDCSource
@@ -166,9 +157,9 @@ INCSource
 IPoissonSpikeGenerator
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Thy *PyNNNestCommunicationAdapter* does not provide an own poisson spike generator implementation
- but uses the one provided by the *PyNNCommunicationAdapter* (see
- :class:`hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator`).
+.. automodule:: hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestPoissonSpikeGenerator
+    :members:
+    :show-inheritance:
 
 IPopulationRate
 ^^^^^^^^^^^^^^^
@@ -185,15 +176,65 @@ ISpikeRecorder
     :show-inheritance:
 
 
+Devices used by the Spinnaker adapter
+-------------------------------------
+
+The *PyNNSpiNNakerCommunicationAdapter* uses the following modules to implement its mapping:
+
+IACSource
+^^^^^^^^^
+
+The ACSource is curently not supported in Spinnaker.
+
+IDCSource
+^^^^^^^^^
+
+The DCSource is currently not supported in Spinnaker.
+
+IFixedSpikeGenerator
+^^^^^^^^^^^^^^^^^^^^
+
+The fixed spike generator is currently not supported in Spinnaker.
+
+ILeakyIntegratorExp
+^^^^^^^^^^^^^^^^^^^
+
+We only support exponential-shaped leaky integration on Spinnaker.
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerLeakyIntegratorExp
+    :members:
+    :show-inheritance:
+
+INCSource
+^^^^^^^^^
+
+The NCSource is currently not supported in Spinnaker.
+
+
+IPoissonSpikeGenerator
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPoissonSpikeGenerator
+    :members:
+    :show-inheritance:
+
+IPopulationRate
+^^^^^^^^^^^^^^^
+
+The population rate device is not supported in Spinnaker.
+
+ISpikeRecorder
+^^^^^^^^^^^^^^
+
+.. automodule:: hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerSpikeRecorder
+    :members:
+    :show-inheritance:
+
+
 :mod:`PyNNControlAdapter` Module
 --------------------------------
 
-
-.. class:: hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.PyNNControlAdapter
-
-    .. note:: For technical reasons, the documentation of this class is moved to the class below.
-
-.. automodule:: hbp_nrp_cle.brainsim.pynn.__doc.__PyNNControlAdapterDoc
+.. automodule:: hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter
     :members: PyNNControlAdapter
     :undoc-members:
     :show-inheritance:
