@@ -6,33 +6,43 @@ Transfer Functions. These variables may be specified as global variables of the 
 module that is to be loaded. These variables may contain size information of a dynamically sizable
 (typically engineered) neural network.
 
-The problem when accessing variables of the neural network is that the value of these variables
-may change when the neural network is changed.
+There are two conceptually different ways to access neural network variables.
 
-Such a variable access can be implemented in a very similar fashion to the access of neural network
+Accessing neural network variables in the body of a Transfer Function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Accessing neural network parameters in the body of a Transfer Function is quite simple through the
+**nrp.config.brain_root** variable. This variable allows direct access to the Python module used as
+neural network (in case of a Python network) or the generated network object in case a H5 network is
+used.
+
+Accessing neural network variables to configure Transfer Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The problem when accessing variables of the neural network in the specification of a Transfer Function
+(i.e., in the decorators) is that the value of these variables
+may change when the neural network is changed. However, the specification of a Transfer Function is
+cached, i.e. rather than re-executing the code of a Transfer Function for example on a reset, we execute
+required operations on parts of Transfer Functions. This allows us to do partial resets, for example to keep
+recorded csv data when the brain is changed during a simulation.
+
+Therefore, the **nrp.config.brain_root** variable must **not** be used to configure Transfer Function devices.
+The CLE simply would not recognize any changes to the network variable.
+
+Instead, such a variable access can be implemented in a very similar fashion to the access of neural network
 populations, as these also change whenever the brain is reloaded. That is, one simply has to access
-the variable through the provided API **nrp.brain**.
+the variable through the provided API **nrp.brain**. This variable tracks its access and thus allows the NRP
+to track that the configuration depends on the neural network variable and to recompute the current value in case
+the neural network changed during the simulation.
 
 For an example, consider that you have two variables in your network called *ImageNumPixelRows* and
 *ImageNumPixelColumns* that correspond to the resolution of an image. Based on these variables, a
 device group has to be used in a Transfer Function that contains as many devices as there are pixels
-in the converted image. In the body of a Transfer Function, one can query the current value of the
-variables through the **nrp.config.brain_root** variable, but there is no this variable is initialized
-when the Transfer Function is created.
+in the converted image. In this situation, one would typically want to easily change this image
+resolution without having to adjust several magic numbers in all affected Transfer Functions.
 
-One would be able to easily
-change this image resolution without having to adjust several magic numbers in all affected Transfer
-Functions, but changing this number during a running simulation should have an effect to the
-Transfer Functions accessing this parameter.
-
-The problem here is that a change of the neural network implies that all neural network devices are
-recreated, but they are recreated based on the original specification that is kept in memory. This
-way, the Transfer Functions do not lose state that is not affected by the changed neural network
-such as the state of variables or the last recorded images.
-
-To solve this, the supported way is to specify the access to neural network variables in a similar way
-to the access of populations (as the object identity of populations also change when the brain is
-reloaded), namely through the **nrp.brain** variable. You can simply do arithmetic calculations, navigate
+To solve this, the supported way is to specify the access to neural network variables through the
+**nrp.brain** variable. You can simply do arithmetic calculations, navigate
 through the network model using attribute or index accesses or call methods. However, some parts of
 the Python language such as the *in* operator or list comprehension are not supported.
 The usage is exemplified in the following listing.
@@ -53,7 +63,7 @@ and a custom function **nrp.nrange** has to be used that extends the functionali
 by a support of this lazy evaluation API.
 
 If a use case requires a complicated access beyond the currently supported subset of the Python language,
-we offer a way to insert a blackboy in this procedure where you can define a lazy evaluation function yourself.
+we offer a way to insert a blackbox in this procedure where you can define a lazy evaluation function yourself.
 This is done through the **nrp.resolve** method. You have to supply a function to this method that either
 takes no arguments, one argument that is the readily loaded neural network or two arguments consisting of
 the neural network module and the brain communication adapter.
