@@ -5,6 +5,9 @@ adapters of both the neuronal simulator and the world simulator
 
 from hbp_nrp_cle.common import UserCodeException
 from hbp_nrp_excontrol.restricted_python import _inplacevar_
+from hbp_nrp_cle.tf_framework._TfApi import TfApi
+
+TF_API = TfApi()
 
 
 class BrainParameterException(Exception):
