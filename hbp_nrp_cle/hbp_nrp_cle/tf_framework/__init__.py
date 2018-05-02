@@ -73,7 +73,7 @@ def resolve_brain_variable(var):
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
-    IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder
+    IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder, ISpikeInjector
 
 import logging
 
@@ -149,6 +149,7 @@ ac_source = IACSource
 nc_source = INCSource
 population_rate = IPopulationRate
 spike_recorder = ISpikeRecorder
+injector = ISpikeInjector
 
 brain = PropertyPath()
 
@@ -233,12 +234,12 @@ def start_new_tf_manager():
 
 def get_transfer_functions(flawed=True):
     """
-    Get all the transfer functions if flawed is True, only (R2N, N2R) otherwise
+    Get all the transfer functions if flawed is True, only (R2N, N2R, Silent) otherwise
 
-    :return: All the transfer functions if flawed is True, only (R2N, N2R) otherwise.
+    :return: All the transfer functions if flawed is True, only (R2N, N2R, Silent) otherwise.
     """
 
-    proper_tfs = config.active_node.n2r + config.active_node.r2n
+    proper_tfs = config.active_node.n2r + config.active_node.r2n + config.active_node.silent
 
     return proper_tfs + config.active_node.flawed if flawed else proper_tfs
 

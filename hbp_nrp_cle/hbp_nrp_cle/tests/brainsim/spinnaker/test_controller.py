@@ -25,14 +25,48 @@
 from hbp_nrp_cle.brainsim.pynn_spiNNaker.PyNNSpiNNakerControlAdapter import PySpiNNakerControlAdapter
 import unittest
 from mock import Mock
+import sys
+
+
+class CellType(object):
+    def __init__(self):
+        self.default_parameters = ["foo"]
+
+    def get_value(self, parameter):
+        return "bar"
+
+
+class Population(Mock):
+    def __init__(self):
+        super(Population, self).__init__()
+        self._all_ids = [0, 8, 15]
+        self.celltype = CellType()
+
+setup = Mock()
+
 
 class TestSpinnakerController(unittest.TestCase):
+    def setUp(self):
+        mod = sys.modules[__name__]
+        self.sim = mod
+        self.sim.setup.reset_mock()
+        self.controller = PySpiNNakerControlAdapter(mod)
+
     def test_spinnaker_controller_init(self):
-        sim = Mock()
-        controller = PySpiNNakerControlAdapter(sim)
-        controller.initialize()
-        sim.setup.assert_called_once_with(timestep=1.0, min_delay=1.0, max_delay=20.0)
-        sim.setup.reset_mock()
-        controller._PyNNControlAdapter__is_initialized = False
-        controller.initialize(timestep=0.5, min_delay=2.0)
-        sim.setup.assert_called_once_with(timestep=0.5, min_delay=2.0, max_delay=20.0)
+        self.controller.initialize()
+        self.sim.setup.assert_called_once_with(timestep=1.0, min_delay=1.0, max_delay=20.0)
+        self.sim.setup.reset_mock()
+        self.controller._PyNNControlAdapter__is_initialized = False
+        self.controller.initialize(timestep=0.5, min_delay=2.0)
+        self.sim.setup.assert_called_once_with(timestep=0.5, min_delay=2.0, max_delay=20.0)
+
+    def test_population_info(self):
+        p = Population()
+        self.assertSequenceEqual(p.all(), [0, 8, 15])
+        self.assertTrue(self.controller._is_population(p))
+        self.assertFalse(self.controller._is_population("foo"))
+        info = self.controller._create_population_info(p, "foo")
+
+        self.assertEqual("CellType", info.celltype)
+        self.assertEqual("foo", info.name)
+        self.assertDictEqual({"foo": "bar"}, info.parameters)

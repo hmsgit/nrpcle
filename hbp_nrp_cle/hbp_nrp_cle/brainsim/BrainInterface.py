@@ -176,6 +176,18 @@ class IPoissonSpikeGenerator(IBrainDevice):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
+class ISpikeInjector(IBrainDevice):  # pragma: no cover
+    """
+    Represents a spike injector that is able to inject single spikes
+    """
+
+    def inject_spikes(self):
+        """
+        Injects a spike to the connected population
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
 class IDCSource(IBrainDevice):  # pragma: no cover
     """
     Represents a current generator which generates direct current

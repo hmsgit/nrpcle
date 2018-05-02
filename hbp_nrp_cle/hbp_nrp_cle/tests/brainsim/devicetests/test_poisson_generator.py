@@ -47,7 +47,8 @@ class TestPoissonGenerator(unittest.TestCase):
             "receptor_type": "excitatory",
             "synapse_type": sim_mock().StaticSynapse(),
             "label": None,
-            "rng": None
+            "rng": None,
+            "n": 1
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator.PyNNPoissonSpikeGenerator.sim")
@@ -67,7 +68,8 @@ class TestPoissonGenerator(unittest.TestCase):
             "receptor_type": "inhibitory",
             "synapse_type": sim_mock().StaticSynapse(),
             "label": None,
-            "rng": None
+            "rng": None,
+            "n": 1
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator.PyNNPoissonSpikeGenerator.sim")
@@ -87,7 +89,8 @@ class TestPoissonGenerator(unittest.TestCase):
             "receptor_type": "excitatory",
             "synapse_type": sim_mock().StaticSynapse(),
             "label": None,
-            "rng": None
+            "rng": None,
+            "n": 1
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator.PyNNPoissonSpikeGenerator.sim")
@@ -107,7 +110,8 @@ class TestPoissonGenerator(unittest.TestCase):
             "receptor_type": "excitatory",
             "synapse_type": sim_mock().StaticSynapse(),
             "label": None,
-            "rng": None
+            "rng": None,
+            "n": 1
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator.PyNNPoissonSpikeGenerator.sim")
@@ -127,7 +131,8 @@ class TestPoissonGenerator(unittest.TestCase):
             "receptor_type": "excitatory",
             "synapse_type": sim_mock().StaticSynapse(),
             "label": None,
-            "rng": None
+            "rng": None,
+            "n": 1
         })
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNPoissonSpikeGenerator.PyNNPoissonSpikeGenerator.sim")

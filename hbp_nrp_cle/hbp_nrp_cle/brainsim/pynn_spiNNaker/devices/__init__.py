@@ -24,7 +24,7 @@
 '''
 PyNNSpiNNaker devices
 '''
-__author__ = 'Felix Schneider'
+__author__ = 'Georg Hinkel, Felix Schneider'
 
 from .__PyNNSpiNNakerACSource import PyNNSpiNNakerACSource
 from .__PyNNSpiNNakerDCSource import PyNNSpiNNakerDCSource
@@ -35,3 +35,4 @@ from .__PyNNSpiNNakerNCSource import PyNNSpiNNakerNCSource
 from .__PyNNSpiNNakerPopulationRate import PyNNSpiNNakerPopulationRate
 from .__PyNNSpiNNakerPoissonSpikeGenerator import PyNNSpiNNakerPoissonSpikeGenerator
 from .__PyNNSpiNNakerSpikeRecorder import PyNNSpiNNakerSpikeRecorder
+from .__SpikeInjector import SpiNNakerSpikeInjector

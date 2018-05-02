@@ -55,7 +55,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         self.__is_initialized = False
         self.__is_alive = False
         self.__rank = None
-        self.__sim = sim
+        self._sim = sim
 
     def load_brain(self, network_file, **populations):
         """
@@ -68,7 +68,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         import hbp_nrp_cle.tf_framework.config as tf_config
         tf_config.brain_populations = self.populations_using_json_slice(populations)
         extension = path.splitext(network_file)[1]
-        brainsim.simulator = self.__sim
+        brainsim.simulator = self._sim
 
         if extension == ".py":
             self.__load_python_brain(
@@ -126,16 +126,39 @@ class PyNNControlAdapter(IBrainControlAdapter):
             timestep = params.get('timestep', 0.1)
             min_delay = params.get('min_delay', "auto")
             max_delay = params.get('max_delay', 20.0)
-            self.__rank = self.__sim.setup(timestep=timestep, min_delay=min_delay,
-                                           max_delay=max_delay)
+            self.__rank = self._sim.setup(timestep=timestep, min_delay=min_delay,
+                                          max_delay=max_delay)
             self.__is_initialized = True
             logger.info("neuronal simulator initialized")
         else:
             logger.warn("trying to initialize an already initialized controller")
         return self.__is_initialized
 
-    @staticmethod
-    def __find_all_populations(candidate, member_name, populations):
+    # pylint: disable=no-self-use
+    def _is_population(self, candidate):
+        """
+        Determines whether the candidate is a population
+
+        :param candidate: The candidate
+        """
+        return is_population(candidate)
+
+    # pylint: disable=no-self-use
+    def _create_population_info(self, population, name):
+        """
+        Creates a population info object for the given population
+
+        :param population: The population
+        :param name: The name of the population
+        """
+        try:
+            celltype = population.celltype.parameter_space
+            parameters = {a: celltype[a].base_value for a in celltype.keys()}
+        except AttributeError:
+            parameters = {}
+        return PyNNPopulationInfo(population, name, parameters)
+
+    def __find_all_populations(self, candidate, member_name, populations):
         """
         Finds all populations under the given object and adds them to the list of populations
 
@@ -143,13 +166,13 @@ class PyNNControlAdapter(IBrainControlAdapter):
         :param member_name: The base member name
         :param populations: The list of populations
         """
-        if is_population(candidate):
-            populations.append(PyNNPopulationInfo(candidate, member_name))
+        if self._is_population(candidate):
+            populations.append(self._create_population_info(candidate, member_name))
         elif isinstance(candidate, list):
             for index in range(len(candidate)):
-                PyNNControlAdapter.__find_all_populations(candidate[index],
-                                                          member_name + "[" + str(index) + "]",
-                                                          populations)
+                self.__find_all_populations(candidate[index],
+                                            member_name + "[" + str(index) + "]",
+                                            populations)
 
     def get_populations(self):
         """
@@ -161,7 +184,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         populations = []
         for member in dir(config.brain_root):
             candidate = getattr(config.brain_root, member)
-            PyNNControlAdapter.__find_all_populations(candidate, member, populations)
+            self.__find_all_populations(candidate, member, populations)
         return populations
 
     @property
@@ -185,7 +208,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
 
         :param dt: the simulated time in milliseconds
         """
-        self.__sim.run(dt)
+        self._sim.run(dt)
 
     def shutdown(self):  # -> None:
         """
@@ -193,7 +216,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         self.__is_alive = False
         self.__is_initialized = False
-        self.__sim.end()
+        self._sim.end()
         logger.info("neuronal simulator ended")
 
     def reset(self):  # -> None:

@@ -196,6 +196,6 @@ class PyNNLeakyIntegratorExp(PyNNLeakyIntegrator, ILeakyIntegratorExp):
         :return: the weight of the synaptic connection
         """
         if self._parameters["receptor_type"] == 'excitatory':
-            return RandomDistribution('uniform', [0., 0.01])
+            return 0.01
         else:
-            return RandomDistribution('uniform', [-0.01, -0.])
+            return -0.01

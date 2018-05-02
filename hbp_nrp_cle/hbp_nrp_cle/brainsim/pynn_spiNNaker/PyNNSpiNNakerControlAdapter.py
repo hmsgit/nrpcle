@@ -25,13 +25,30 @@
 This module contains an adapted implementation of a neural controller for SpiNNaker
 """
 
-from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
+from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter, PyNNPopulationInfo
+import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connection
+import logging
+logger = logging.getLogger(__name__)
+
+
+def all_ids(population):
+    """
+    Returns all ids of the neurons
+
+    :param population: The population
+    """
+    # pylint: disable=protected-access
+    return population._all_ids
 
 
 class PySpiNNakerControlAdapter(PyNNControlAdapter):
     """
     An implementation to control a SpiNNaker board simulation synchronously
     """
+
+    def __init__(self, sim):
+        super(PySpiNNakerControlAdapter, self).__init__(sim)
+        sim.Population.all = all_ids
 
     def initialize(self, **params):
         """
@@ -48,4 +65,42 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter):
             params['timestep'] = 1.0
         if not 'min_delay' in params:
             params['min_delay'] = 1.0
+        # store logging setup
+        formatter = logging.root.handlers[0].formatter
         super(PySpiNNakerControlAdapter, self).initialize(**params)
+        # restore logging setup
+        for handler in logging.root.handlers:
+            handler.setFormatter(formatter)
+            if len(handler.filters) > 0:
+                handler.removeFilter(handler.filters[-1])
+
+    def run_step(self, dt):
+        live_connection.create_and_start_connections()
+        try:
+            super(PySpiNNakerControlAdapter, self).run_step(dt)
+        # it may happen that the simulation wants to write provenance data even though the temp
+        # directory no longer exists. In that case, the simulation is about to terminate, so
+        # we ignore the error, but log it
+        except IOError, e:
+            logger.exception(e)
+
+    def _is_population(self, candidate):
+        """
+        Determines whether the candidate is a population
+
+        :param candidate: The candidate
+        """
+        return isinstance(candidate, self._sim.Population)
+
+    def _create_population_info(self, population, name):
+        """
+        Creates a population info object for the given population
+
+        :param population: The population
+        :param name: The name of the population
+        """
+        celltype = population.celltype
+        parameters = dict()
+        for parameter_name in celltype.default_parameters:
+            parameters[parameter_name] = celltype.get_value(parameter_name)
+        return PyNNPopulationInfo(population, name, parameters)
