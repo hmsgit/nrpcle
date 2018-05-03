@@ -244,15 +244,17 @@ class GazeboHelper(object):
         Load a sdf model file into the ROS connected running gazebo instance.
 
         :param model_name: Name of the model (can be anything)
-        :param model_file: The name of the model sdf file inside the \
-            NRP_MODELS_DIRECTORY folder. If the NRP_MODELS_DIRECTORY \
-            environment variable is not set, this script will search \
-            the model in its own folder.\
+        :param model_file: The absolute path of the model sdf file inside the \
+            NRP_MODELS_PATH folders.\
         :param initial_pose: Initial pose of the model. Uses the Gazebo \
             "Pose" type.
         :param retina_config_path: Configuration script for the Retina Camera Plugin
         """
-        model_file_path = os.path.join(os.environ.get('NRP_MODELS_DIRECTORY'), model_file)
+        model_file_path = model_file
+        if not os.path.isfile(model_file):
+            raise Exception(
+                "Model file: {0}  not found.".format(model_file))
+
         with open(model_file_path, 'r') as model_file_sdf:
 
             model_sdf_str = model_file_sdf.read()
