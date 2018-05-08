@@ -65,7 +65,7 @@ class TestCSVRecorder(unittest.TestCase):
         recorder.record_entry(1,2)
         result = recorder.dump_to_file()
         self.assertEqual(result,('dummy_file.csv', 'some_temp_file_name'))
-        mocked_csv_writer.writerows.assert_called_with([['header1', 'header2'], (1,2)])
+        mocked_csv_writer.writerows.assert_called_with([['header1', 'header2', 'Simulation_reset'], [1,2, '']])
 
     @patch('os.remove')
     @patch('csv.writer')
@@ -101,14 +101,13 @@ class TestCSVRecorder(unittest.TestCase):
         mocked_csv_writer.writerows = Mock()
         mock_csv_writer.return_value = mocked_csv_writer
 
-        recorder = nrp.CSVRecorder("dummy_file.csv", ['header1', 'header2', 'header3'])
+        recorder = nrp.CSVRecorder("dummy_file.csv", ['header1', 'header2','header3'])
         recorder.record_entry(1, 2, 3)
         reset_recorder = recorder.reset(None)
         recorder.record_entry(3, 4, 5)
         recorder.dump_to_file()
 
         self.assertEqual(recorder, reset_recorder)
-        mocked_csv_writer.writerows.assert_called_with([['header1', 'header2', 'header3'],
-                                                        (1,2, 3),
-                                                        ['(Simulation Reset)', '(Simulation Reset)', '(Simulation Reset)'],
-                                                        (3, 4, 5)])
+        mocked_csv_writer.writerows.assert_called_with([['header1', 'header2', 'header3', 'Simulation_reset'],
+                                                        [1,2, 3,''],
+                                                        [3, 4, 5, 'RESET']])

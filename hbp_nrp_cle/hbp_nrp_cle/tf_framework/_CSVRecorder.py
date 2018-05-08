@@ -101,8 +101,9 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
         when the simulation is reset
         """
         self.__filename = filename
+        self.__reset_since_last_record = False
         self.__generatedFiles = []
-        self.__values = [headers]
+        self.__values = [headers + ['Simulation_reset']]
         self.__erase_on_reset = erase_on_reset
 
     def record_entry(self, *values):
@@ -111,6 +112,8 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
 
         :param values: Values to record
         """
+        values = list(values) + ['RESET' if self.__reset_since_last_record else '']
+        self.__reset_since_last_record = False
         if (len(self.__values[0]) == len(values)):
             self.__values.append(values)
         else:
@@ -136,13 +139,12 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
         """
         Resets the recorder
         """
+        self.__reset_since_last_record = True
         if self.__erase_on_reset:
             header = self.__values[0]
             del self.__values[:]
             self.__values.append(header)
-        else:
-            length = len(self.__values[0])
-            self.__values.append(["(Simulation Reset)"] * length)
+
         return self
 
     def cleanup(self):
