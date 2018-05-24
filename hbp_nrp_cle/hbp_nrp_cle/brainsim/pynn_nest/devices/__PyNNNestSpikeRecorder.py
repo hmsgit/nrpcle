@@ -28,8 +28,10 @@ Implementation of PyNNSpikeDetector
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNSpikeRecorder
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
 
+from collections import defaultdict
+from itertools import chain
 import nest
-from pyNN.common import Assembly
+from pyNN.common import Assembly, Population
 import numpy as np
 import logging
 from mpi4py import MPI
@@ -43,6 +45,9 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"
     """
+
+    # neurons to be recorded per population base, indexed by PyNNNestSpikeRecorder instance
+    _recording_neurons = defaultdict(dict)
 
     def __init__(self, **params):
         """
@@ -58,21 +63,52 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
         """
         Records the spikes of "neurons"
         """
-        # Even though to_file is set to False, an issue in PyNN prevent it to be applied.
-        # PyNN is built in such a way that for the spikes in NEST, only the file storage
-        # is available. This should be investigated.
-        # Meanwhile, we are interacting with NEST directly.
-
-        # Population recorders need to be reset before being reused
         self.__recorders = []
         self._add_all_recorders(self._neurons, self.__recorders)
-        for rec in self.__recorders:
-            rec.reset()
-        self._neurons.record("spikes", to_file=False)
-        for rec in self.__recorders:
-            recorder_device = rec._spike_detector.device
-            self.SetStatus(recorder_device, {"to_memory": True})
-            self.SetStatus(recorder_device, {"to_file": False})
+        population = (self._neurons
+                      if isinstance(self._neurons, Population)
+                      else self._neurons.grandparent)
+        neuron_positions = [population.id_to_index(n_id) for n_id in self._neurons]
+        # adds neurons positions to the list of population neurons to be recorded
+        self._recording_neurons[population.label][id(self)] = neuron_positions
+        self.__update_recording_neurons()
+
+    def __update_recording_neurons(self):
+        """
+        Updates the underlying recorder status with the aggregated neurons
+        to be recorded for the root population
+        """
+        population = (self._neurons
+                      if isinstance(self._neurons, Population)
+                      else self._neurons.grandparent)
+        pop_neurons = list(set(chain(*self._recording_neurons[population.label].itervalues())))
+        if len(pop_neurons) > 0:
+            # Population recorders need to be reset before being reused
+            for rec in self.__recorders:
+                rec.reset()
+
+            population[pop_neurons].record("spikes", to_file=False)
+
+            # Even though to_file is set to False, an issue in PyNN prevent it to be applied.
+            # PyNN is built in such a way that for the spikes in NEST, only the file storage
+            # is available. This should be investigated.
+            # Meanwhile, we are interacting with NEST directly.
+            for rec in self.__recorders:
+                recorder_device = rec._spike_detector.device
+                self.SetStatus(recorder_device, {"to_memory": True})
+                self.SetStatus(recorder_device, {"to_file": False})
+        else:
+            population.record(None)
+
+    def _stop_record_spikes(self):
+        """
+        Stops recording the spikes of "neurons"
+        """
+        population = (self._neurons
+                      if isinstance(self._neurons, Population)
+                      else self._neurons.grandparent)
+        del self._recording_neurons[population.label][id(self)]
+        self.__update_recording_neurons()
 
     def _add_all_recorders(self, population, recorder_list):
         """
