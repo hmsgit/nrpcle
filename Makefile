@@ -11,6 +11,8 @@ COVER_PACKAGES=hbp_nrp_cle
 DOC_MODULES=hbp_nrp_cle/doc
 DOC_REPO=--doc-repo ssh://bbpcode.epfl.ch/infra/jekylltest
 
+PYTHON_PIP_VERSION?=pip==9.0.3
+
 ##### DO NOT MODIFY BELOW #####################
 
 ifeq ($(NRP_INSTALL_MODE),user)

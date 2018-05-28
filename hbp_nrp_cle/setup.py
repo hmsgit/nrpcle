@@ -1,39 +1,51 @@
 '''setup.py'''
 
-# pylint: disable=F0401,E0611,W0142
-
 try:
     from setuptools import setup
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup # pylint:disable=no-name-in-module, import-error
 
 import hbp_nrp_cle
 import pip
-
-from pip.req import parse_requirements
 from optparse import Option
 options = Option("--workaround")
 options.skip_requirements_regex = None
 reqs_file = './requirements.txt'
+
 # Hack for old pip versions
-# Versions greater than 1.x have a required parameter "session" in
-# parse_requirements
-if pip.__version__.startswith('1.'):
+if pip.__version__.startswith('10.'):
+    # Versions greater or equal to 10.x don't rely on pip.req.parse_requirements
+    install_reqs = list(val.strip() for val in open(reqs_file))
+    reqs = install_reqs
+elif pip.__version__.startswith('1.'):
+    # Versions 1.x rely on pip.req.parse_requirements
+    # but don't require a "session" parameter
+    from pip.req import parse_requirements # pylint:disable=no-name-in-module, import-error
     install_reqs = parse_requirements(reqs_file, options=options)
+    reqs = [str(ir.req) for ir in install_reqs]
 else:
-    from pip.download import PipSession  # pylint:disable=no-name-in-module
+    # Versions greater than 1.x but smaller than 10.x rely on pip.req.parse_requirements
+    # and requires a "session" parameter
+    from pip.req import parse_requirements # pylint:disable=no-name-in-module, import-error
+    from pip.download import PipSession  # pylint:disable=no-name-in-module, import-error
     options.isolated_mode = False
     install_reqs = parse_requirements(  # pylint:disable=unexpected-keyword-arg
         reqs_file,
         session=PipSession,
         options=options
     )
-reqs = [str(ir.req) for ir in install_reqs]
+    reqs = [str(ir.req) for ir in install_reqs]
 
 # workaround to avoid compilation of multiple numpy versions - see NRRPLT-4130
 cython_req = next(r for r in reqs if r.startswith('cython'))
 numpy_req = next(r for r in reqs if r.startswith('numpy'))
-pip.main(['install', '--no-clean', cython_req, numpy_req])
+if pip.__version__.startswith('10.'):
+    import subprocess
+    subprocess.check_call(
+        ["python", '-m', 'pip', 'install', "--no-clean", "--user", cython_req, numpy_req]
+    )
+else:
+    pip.main(['install', '--no-clean', cython_req, numpy_req]) # pylint:disable=no-member
 
 config = {
     'description': 'Python Implementation of Closed Loop Engine',
