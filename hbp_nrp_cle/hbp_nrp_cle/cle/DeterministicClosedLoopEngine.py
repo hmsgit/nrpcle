@@ -118,7 +118,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.initial_models = None
         self.initial_lights = None
 
-    def initialize(self, network_file, **configuration):
+    def initialize(self, network_file=None, **configuration):
         """
         Initializes the closed loop engine.
         :param network_file: A python PyNN script or an h5 file
@@ -127,14 +127,15 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         """
         self.rca.initialize()
         self.bca.initialize()
-        self.__network_file = network_file
-        self.__network_configuration = configuration
-        self.bca.load_brain(network_file, **configuration)
         self.tfm.initialize('tfnode')
         cle.clock = 0.0
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.initialized = True
+        if (network_file):
+            self.__network_file = network_file
+            self.__network_configuration = configuration
+            self.bca.load_brain(network_file, **configuration)
 
     @property
     def is_initialized(self):
