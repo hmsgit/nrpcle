@@ -37,9 +37,13 @@ class TestSpikeRecorder(unittest.TestCase):
     def test_default_config(self, nest_mock):
         dev = SpikeRecorder()
         neurons = Mock()
+        neurons.__iter__ = Mock(return_value = iter([1]))
+        neurons.grandparent = Mock()
+        populationView = Mock()
+        neurons.grandparent.__getitem__ = populationView
         dev.connect(neurons)
         neurons.recorder.reset.assert_called_once_with()
-        neurons.record.assert_called_once_with("spikes", to_file=False)
+        populationView().record.assert_called_once_with("spikes", to_file=False)
         nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_memory": True})
         nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_file": False})
         self.assertDictEqual(dev._parameters, {
@@ -50,9 +54,13 @@ class TestSpikeRecorder(unittest.TestCase):
     def test_use_indices_config(self, nest_mock):
         dev = SpikeRecorder(use_ids = False)
         neurons = Mock()
+        neurons.__iter__ = Mock(return_value = iter([1]))
+        neurons.grandparent = Mock()
+        populationView = Mock()
+        neurons.grandparent.__getitem__ = populationView
         dev.connect(neurons)
         neurons.recorder.reset.assert_called_once_with()
-        neurons.record.assert_called_once_with("spikes", to_file=False)
+        populationView().record.assert_called_once_with("spikes", to_file=False)
         nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_memory": True})
         nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_file": False})
         self.assertDictEqual(dev._parameters, {
@@ -73,6 +81,7 @@ class TestSpikeRecorder(unittest.TestCase):
     def test_default_refresh_config(self, nest_mock, other_nest_mock):
         dev = SpikeRecorder()
         neurons = Mock()
+        neurons.__iter__ = Mock(return_value = iter([]))
         dev.connect(neurons)
         nest_mock.GetStatus.return_value = [{
             'times': [0, 8, 15],
@@ -92,6 +101,7 @@ class TestSpikeRecorder(unittest.TestCase):
     def test_use_indices_refresh_config(self, nest_mock, other_nest_mock):
         dev = SpikeRecorder(use_ids = False)
         neurons = Mock()
+        neurons.__iter__ = Mock(return_value = iter([]))
         dev.connect(neurons)
         nest_mock.GetStatus.return_value = [{
             'times': [0, 8, 15],
