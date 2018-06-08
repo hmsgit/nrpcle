@@ -64,8 +64,8 @@ class TestLeakyIntegrator(unittest.TestCase):
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegrator.PyNNLeakyIntegrator.sim")
     def test_brain_variable_weight(self, sim_mock):
-        dev = LeakyIntegrator(weight=brain.foo)
         config.brain_root = FooBrain()
+        dev = LeakyIntegrator(weight=config.brain_root.foo)
         start_new_tf_manager()
         config.active_node.brain_adapter = MockBrainCommunicationAdapter()
         self.assertTrue(sim_mock().Population.called)
