@@ -26,11 +26,11 @@ Load a brain network
 """
 
 __author__ = "Lorenzo Vannucci"
-
 import numpy as np
 import imp
 from progressbar import ProgressBar, Percentage, Bar, ETA
 import logging
+import hbp_nrp_cle.common
 
 logger = logging.getLogger("BrainLoader")
 __brainIndex = 0
@@ -231,6 +231,7 @@ def load_py_network(path, **populations):
     """
     logger.info("Loading brain model from python: " + path)
     global __brainIndex
+    hbp_nrp_cle.common.refresh_resources()
     brain_module = imp.load_source('__brain_model' + str(__brainIndex), path)
     __brainIndex += 1
     try:

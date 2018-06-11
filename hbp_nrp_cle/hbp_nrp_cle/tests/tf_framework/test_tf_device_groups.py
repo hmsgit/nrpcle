@@ -30,13 +30,16 @@ from hbp_nrp_cle.mocks.robotsim._MockRobotCommunicationAdapter import MockRobotC
     MockPublishedTopic
 from hbp_nrp_cle.mocks.brainsim._MockBrainCommunicationAdapter import MockBrainCommunicationAdapter
 from hbp_nrp_cle.tests.tf_framework.MockBrain import MockPopulation
+from mock import patch, Mock
 
 import unittest
 import numpy as np
 
 __author__ = 'GeorgHinkel'
 
-
+MockOs = Mock()
+MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
+@patch("hbp_nrp_cle.common.os", new=MockOs)
 class Test2(unittest.TestCase):
     def test_all_right(self):
 

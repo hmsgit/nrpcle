@@ -24,6 +24,20 @@
 """
 This package contains the python code common to all.
 """
+import sys
+import os
+
+
+def refresh_resources():
+    """
+    It checks if the resources folders has files, if so, the resources path will be added.
+    """
+    __resources_path = os.path.join(
+            os.environ['NRP_SIMULATION_DIR'], "resources")
+    if os.path.exists(__resources_path):
+        if os.listdir(__resources_path) != []:
+            if __resources_path not in sys.path:
+                sys.path.insert(0, __resources_path)
 
 
 class UserCodeException(Exception):

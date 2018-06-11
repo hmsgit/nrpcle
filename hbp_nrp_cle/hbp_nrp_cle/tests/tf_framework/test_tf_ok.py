@@ -40,7 +40,9 @@ from testfixtures import log_capture, replace
 
 __author__ = 'GeorgHinkel'
 
-
+MockOs = Mock()
+MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
+@patch("hbp_nrp_cle.common.os", new=MockOs)
 class TestTransferFunction(unittest.TestCase):
 
     def test_set_flawed_tf(self):

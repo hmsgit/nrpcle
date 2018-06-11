@@ -26,7 +26,7 @@ import unittest
 from mock import patch
 from hbp_nrp_cle.tf_framework import config, brain, start_new_tf_manager
 from hbp_nrp_cle.mocks.brainsim import MockBrainCommunicationAdapter
-
+from mock import patch, Mock
 __author__ = 'Georg Hinkel'
 
 
@@ -34,7 +34,9 @@ class FooBrain(object):
     def __init__(self):
         self.foo = 1.0
 
-
+MockOs = Mock()
+MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
+@patch("hbp_nrp_cle.common.os", new=MockOs)
 class TestLeakyIntegrator(unittest.TestCase):
 
     @patch("hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegrator.PyNNLeakyIntegrator.sim")

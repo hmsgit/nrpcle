@@ -28,6 +28,7 @@ Defines the base class for a transfer function
 import inspect
 import textwrap
 import logging
+import hbp_nrp_cle.common
 from . import TFException
 from abc import abstractmethod
 import sys
@@ -255,6 +256,7 @@ class TransferFunction(object):
         """
         # pylint: disable=broad-except
         try:
+            hbp_nrp_cle.common.refresh_resources()
             self._params[0] = t
             return self._func(*self._params)
         except Exception, e:

@@ -31,12 +31,16 @@ import hbp_nrp_cle.tf_framework as nrp
 import unittest
 import os
 import pyNN.nest as sim
-
+from mock import patch, Mock
 __author__ = 'Lorenzo Vannucci'
 
 
 # pylint: disable=R0904
 # all the methods are inherited from unittest.TestCase
+
+MockOs = Mock()
+MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
+@patch("hbp_nrp_cle.common.os", new=MockOs)
 class TestClosedLoopEngine(unittest.TestCase):
     """
     Tests the brain_loader utility
