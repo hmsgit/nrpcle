@@ -65,49 +65,67 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
         """
         self.__recorders = []
         self._add_all_recorders(self._neurons, self.__recorders)
-        population = (self._neurons
-                      if isinstance(self._neurons, Population)
-                      else self._neurons.grandparent)
-        neuron_positions = [population.id_to_index(n_id) for n_id in self._neurons]
-        # adds neurons positions to the list of population neurons to be recorded
-        self._recording_neurons[population.label][id(self)] = neuron_positions
+        if isinstance(self._neurons, Assembly):
+            populations = self._neurons.populations
+        elif isinstance(self._neurons, Population):
+            populations = [self._neurons]
+        else:
+            populations = [self._neurons.grandparent]
+
+        for population in populations:
+            neuron_positions = [population.id_to_index(n_id)
+                                for n_id in self._neurons
+                                if n_id in population.all_cells]
+
+            # adds neurons positions to the list of population neurons to be recorded
+            self._recording_neurons[population.label][id(self)] = neuron_positions
         self.__update_recording_neurons()
 
     def __update_recording_neurons(self):
         """
         Updates the underlying recorder status with the aggregated neurons
-        to be recorded for the root population
+        to be recorded for the population(s)
         """
-        population = (self._neurons
-                      if isinstance(self._neurons, Population)
-                      else self._neurons.grandparent)
-        pop_neurons = list(set(chain(*self._recording_neurons[population.label].itervalues())))
-        if len(pop_neurons) > 0:
-            # Population recorders need to be reset before being reused
-            for rec in self.__recorders:
-                rec.reset()
-
-            population[pop_neurons].record("spikes", to_file=False)
-
-            # Even though to_file is set to False, an issue in PyNN prevent it to be applied.
-            # PyNN is built in such a way that for the spikes in NEST, only the file storage
-            # is available. This should be investigated.
-            # Meanwhile, we are interacting with NEST directly.
-            for rec in self.__recorders:
-                recorder_device = rec._spike_detector.device
-                self.SetStatus(recorder_device, {"to_memory": True})
-                self.SetStatus(recorder_device, {"to_file": False})
+        if isinstance(self._neurons, Assembly):
+            populations = self._neurons.populations
+        elif isinstance(self._neurons, Population):
+            populations = [self._neurons]
         else:
-            population.record(None)
+            populations = [self._neurons.grandparent]
+
+        for population in populations:
+            pop_neurons = list(set(chain(*self._recording_neurons[population.label].itervalues())))
+            if len(pop_neurons) > 0:
+                # Population recorders need to be reset before being reused
+                for rec in self.__recorders:
+                    rec.reset()
+
+                population[pop_neurons].record("spikes", to_file=False)
+
+                # Even though to_file is set to False, an issue in PyNN prevent it to be applied.
+                # PyNN is built in such a way that for the spikes in NEST, only the file storage
+                # is available. This should be investigated.
+                # Meanwhile, we are interacting with NEST directly.
+                for rec in self.__recorders:
+                    recorder_device = rec._spike_detector.device
+                    self.SetStatus(recorder_device, {"to_memory": True})
+                    self.SetStatus(recorder_device, {"to_file": False})
+            else:
+                population.record(None)
 
     def _stop_record_spikes(self):
         """
         Stops recording the spikes of "neurons"
         """
-        population = (self._neurons
-                      if isinstance(self._neurons, Population)
-                      else self._neurons.grandparent)
-        del self._recording_neurons[population.label][id(self)]
+        if isinstance(self._neurons, Assembly):
+            populations = self._neurons.populations
+        elif isinstance(self._neurons, Population):
+            populations = [self._neurons]
+        else:
+            populations = [self._neurons.grandparent]
+
+        for population in populations:
+            del self._recording_neurons[population.label][id(self)]
         self.__update_recording_neurons()
 
     def _add_all_recorders(self, population, recorder_list):
@@ -132,7 +150,7 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
         """
         recorders = self.__recorders
         if len(recorders) == 1:
-            spikes_nest, times_nest = self.__read_recorder_data(self._neurons.recorder)
+            spikes_nest, times_nest = self.__read_recorder_data(recorders[0])
         else:
             spikes_nest = []
             times_nest = []

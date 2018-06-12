@@ -41,6 +41,7 @@ class TestSpikeRecorder(unittest.TestCase):
         neurons.grandparent = Mock()
         populationView = Mock()
         neurons.grandparent.__getitem__ = populationView
+        neurons.grandparent.all_cells = [1]
         dev.connect(neurons)
         neurons.recorder.reset.assert_called_once_with()
         populationView().record.assert_called_once_with("spikes", to_file=False)
@@ -58,6 +59,7 @@ class TestSpikeRecorder(unittest.TestCase):
         neurons.grandparent = Mock()
         populationView = Mock()
         neurons.grandparent.__getitem__ = populationView
+        neurons.grandparent.all_cells = [1]
         dev.connect(neurons)
         neurons.recorder.reset.assert_called_once_with()
         populationView().record.assert_called_once_with("spikes", to_file=False)
