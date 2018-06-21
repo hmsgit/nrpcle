@@ -40,6 +40,18 @@ class TFException(UserCodeException):
         return "{0}: {1} ({2})".format(self.tf_name, repr(self.message), self.error_type)
 
 
+class TFRunningException(UserCodeException):
+    """
+    Exception class used to communicate the TF with the TransferFunction manager
+
+    :param tf_name: name of the TF updated by the user.
+    :param message: message that needs to be forwarded to the front-end.
+    """
+
+    def __init__(self, message):
+        super(TFRunningException, self).__init__(message, 'TF Running Exception')
+
+
 class TFLoadingException(TFException):
     """
     Exception class used to return a meaningful message
@@ -339,14 +351,19 @@ def delete_transfer_function(name):
              does not exist.
     """
     tf = get_transfer_function(name)
+    is_flawed_deleted = False
+    if delete_flawed_transfer_function(name):
+        is_flawed_deleted = True
+
     if tf in config.active_node.n2r:
         config.active_node.n2r.remove(tf)
     elif tf in config.active_node.r2n:
         config.active_node.r2n.remove(tf)
     elif tf in config.active_node.silent:
         config.active_node.silent.remove(tf)
+
     else:
-        return False
+        return is_flawed_deleted
 
     tf.unregister()
 

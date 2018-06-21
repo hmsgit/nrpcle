@@ -29,7 +29,7 @@ import inspect
 import textwrap
 import logging
 import hbp_nrp_cle.common
-from . import TFException
+from hbp_nrp_cle.tf_framework import TFException, TFRunningException
 from abc import abstractmethod
 import sys
 
@@ -261,6 +261,7 @@ class TransferFunction(object):
             return self._func(*self._params)
         except Exception, e:
             self._handle_error(e, sys.exc_info()[2])
+            raise TFRunningException(str(e))
 
     def _handle_error(self, e, tb):
         """

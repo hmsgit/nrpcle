@@ -29,8 +29,10 @@ __author__ = 'GeorgHinkel'
 
 from hbp_nrp_cle.robotsim.RobotInterface import IRobotCommunicationAdapter
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IBrainDevice
+from hbp_nrp_cle.tf_framework import FlawedTransferFunction
 from ._TransferFunctionInterface import ITransferFunctionManager
 from . import BrainParameterException
+from . import TFRunningException
 import itertools
 import logging
 import time
@@ -114,7 +116,11 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param t: The simulation time
         """
         for _n2r in self.__n2r:
-            TransferFunctionManager.run_tf(_n2r, t)
+            try:
+                TransferFunctionManager.run_tf(_n2r, t)
+            except TFRunningException as tf_exception:
+                self.__flawed.append(FlawedTransferFunction(_n2r.name, _n2r.source, tf_exception))
+                self.__n2r.remove(_n2r)
 
     def run_robot_to_neuron(self, t):  # -> None:
         """
@@ -123,7 +129,11 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param t:  The simulation time
         """
         for _r2n in self.__r2n:
-            TransferFunctionManager.run_tf(_r2n, t)
+            try:
+                TransferFunctionManager.run_tf(_r2n, t)
+            except TFRunningException as tf_exception:
+                self.__flawed.append(FlawedTransferFunction(_r2n.name, _r2n.source, tf_exception))
+                self.__r2n.remove(_r2n)
 
     @property
     def robot_adapter(self):  # -> IRobotCommunicationAdapter:
