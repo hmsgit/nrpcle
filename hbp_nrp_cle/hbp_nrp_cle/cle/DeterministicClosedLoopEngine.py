@@ -275,7 +275,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
                 self.stopped_flag.wait(5)
                 if self.rca_future.running():
                     self.rca_future.set_exception(ForcedStopException())
-            self.wait_step(timeout=5)
+            self.wait_step(timeout=self.bca.get_Timeout())
             if not self.stopped_flag.isSet():
                 raise Exception("The simulation loop could not be completed")
         else:

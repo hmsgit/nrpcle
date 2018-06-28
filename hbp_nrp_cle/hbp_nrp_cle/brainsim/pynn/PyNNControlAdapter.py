@@ -270,3 +270,9 @@ class PyNNControlAdapter(IBrainControlAdapter):
                     result[key] = list(value_list)
 
         return result
+
+    def get_Timeout(self):
+        """
+        returns The maximum amount of time (in seconds) to wait for the end of this step
+        """
+        return 5

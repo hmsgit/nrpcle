@@ -99,3 +99,10 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         :param populations: The populations to create
         """
         self.__is_alive = True
+
+    @staticmethod
+    def get_Timeout():  # -> None:
+        """
+        returns The maximum amount of time (in seconds) to wait for the end of this step
+        """
+        return None
