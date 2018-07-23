@@ -28,6 +28,7 @@ This module contains an adapted implementation of a neural controller for SpiNNa
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter, PyNNPopulationInfo
 import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connection
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,3 +105,9 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter):
         for parameter_name in celltype.default_parameters:
             parameters[parameter_name] = celltype.get_value(parameter_name)
         return PyNNPopulationInfo(population, name, parameters)
+
+    def get_Timeout(self):
+        """
+        returns The maximum amount of time (in seconds) to wait for the end of this step
+        """
+        return None

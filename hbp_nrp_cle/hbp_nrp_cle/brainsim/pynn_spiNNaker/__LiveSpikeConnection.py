@@ -155,13 +155,17 @@ def shutdown():
     receive_callbacks.clear()
     send_callbacks.clear()
     poisson_callbacks.clear()
+    # pylint: disable=protected-access
     if default_sender is not None:
+        default_sender._handle_possible_rerun_state()
         default_sender.close()
         default_sender = None
     if default_receiver is not None:
+        default_receiver._handle_possible_rerun_state()
         default_receiver.close()
         default_receiver = None
     if default_poisson is not None:
+        default_poisson._handle_possible_rerun_state()
         default_poisson.close()
         default_poisson = None
     # pylint: disable=global-statement
