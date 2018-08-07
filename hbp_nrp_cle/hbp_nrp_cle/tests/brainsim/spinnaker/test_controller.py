@@ -30,10 +30,7 @@ import sys
 
 class CellType(object):
     def __init__(self):
-        self.default_parameters = ["foo"]
-
-    def get_value(self, parameter):
-        return "bar"
+        self.default_parameters = {"foo": "bar"}
 
 
 class Population(Mock):

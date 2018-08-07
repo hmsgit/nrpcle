@@ -101,9 +101,7 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter):
         :param name: The name of the population
         """
         celltype = population.celltype
-        parameters = dict()
-        for parameter_name in celltype.default_parameters:
-            parameters[parameter_name] = celltype.get_value(parameter_name)
+        parameters = dict(celltype.default_parameters)
         return PyNNPopulationInfo(population, name, parameters)
 
     def get_Timeout(self):
