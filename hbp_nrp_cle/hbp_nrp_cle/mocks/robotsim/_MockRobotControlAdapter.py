@@ -114,6 +114,12 @@ class MockRobotControlAdapter(IRobotControlAdapter):
         future.end = 42
         return future
 
+    def set_robots(self, robots):
+        """
+        Shuts down the world simulation
+        """
+        pass
+
     def shutdown(self):
         """
         Shuts down the world simulation

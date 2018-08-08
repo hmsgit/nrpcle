@@ -148,11 +148,12 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
 
     def test_reset_robot_pose(self):
         self.__cle.gazebo_helper.set_model_pose = Mock()
+        poses = {}
         pose = Pose()
         pose.position = Point(0, 0, 0)
         pose.orientation = Quaternion(0, 0, 0, 1)
 
-        self.__cle.initial_robot_pose = pose
+        self.__cle.initial_robot_poses= {'robot': pose}
         self.__cle.reset_robot_pose()
         self.__cle.gazebo_helper.set_model_pose.assert_called_with('robot', pose)
 

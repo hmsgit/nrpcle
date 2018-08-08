@@ -187,7 +187,9 @@ class TestRosControlAdapter(unittest.TestCase):
     def test_reset_world(self):
         rca_module_name = 'hbp_nrp_cle.robotsim.RosControlAdapter'
         user_notifications_module_name = 'hbp_nrp_cle.user_notifications'
-
+        robots = {}
+        robots["robot"] = "robot"
+        self._rca.set_robots(robots)
         with LogCapture(rca_module_name) as logcapture:
             with LogCapture(user_notifications_module_name) as logcapture_user_notif:
                 # mock world (which is loaded during simulation startup)

@@ -57,7 +57,8 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
                  brain_control_adapter,
                  brain_comm_adapter,
                  transfer_function_manager,
-                 dt):
+                 dt
+                 ):
         """
         Create an instance of the cle.
 
@@ -74,7 +75,6 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.bca = brain_control_adapter
         self.bcm = brain_comm_adapter
         self.tfm = transfer_function_manager
-
         # default timestep
         self.timestep = dt
 
@@ -106,7 +106,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.__network_file = None
         self.__network_configuration = None
 
-        self.__initial_robot_pose = None
+        self.__initial_robot_poses = None
 
         # This is to be eventually removed, as communications towards gazebo should
         # be done from inside the RosControlAdapter
@@ -353,26 +353,27 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         return self.elapsed_time
 
     @property
-    def initial_robot_pose(self):
+    def initial_robot_poses(self):
         """
         Get the robot pose at the beginning of the simulation.
         """
-        return self.__initial_robot_pose
+        return self.__initial_robot_poses
 
-    @initial_robot_pose.setter
-    def initial_robot_pose(self, value):
+    @initial_robot_poses.setter
+    def initial_robot_poses(self, value):
         """
         Set the robot pose at the beginning of the simulation.
         Usually performed after CLE initialization.
         :param value: The new value for the initial robot pose.
         """
-        self.__initial_robot_pose = value
+        self.__initial_robot_poses = value
 
     def reset_robot_pose(self):
         """
         Set the robot in the simulation to its initial pose.
         """
-        self.gazebo_helper.set_model_pose('robot', self.__initial_robot_pose)
+        for rid, pose in self.__initial_robot_poses.iteritems():
+            self.gazebo_helper.set_model_pose(str(rid), pose)
 
     def tf_elapsed_time(self):
         """

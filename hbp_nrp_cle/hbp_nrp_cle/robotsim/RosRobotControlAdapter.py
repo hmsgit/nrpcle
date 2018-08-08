@@ -51,6 +51,7 @@ class RosRobotControlAdapter(IRobotControlAdapter):
     def __init__(self):
         self.__is_initialized = False
         self.__time = 0.0
+        self.__robots = {}
 
     def initialize(self):
         """
@@ -144,6 +145,12 @@ class RosRobotControlAdapter(IRobotControlAdapter):
         """
         self.__time = 0.0
         logger.info("Please reset the robot")
+
+    def set_robots(self, robots):
+        """
+        Sets the list of robots
+        """
+        self.__robots = robots
 
     def reset_world(self, models, lights):
         """

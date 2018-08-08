@@ -84,6 +84,7 @@ class RosControlAdapter(IRobotControlAdapter):
         self.__persistent_services.append(self.__advance_simulation)
 
         self.__time_step = 0.0
+        self.__robots = {}
         self.__is_initialized = False
 
         self.gazebo_helper = GazeboHelper()
@@ -206,6 +207,12 @@ class RosControlAdapter(IRobotControlAdapter):
         logger.info("Resetting the world simulation")
         self.__reset()
 
+    def set_robots(self, robots):
+        """
+        Sets the list of robots
+        """
+        self.__robots = robots
+
     def reset_world(self, models, lights):
         """
         Resets the world (robot excluded) to the state described by
@@ -224,7 +231,8 @@ class RosControlAdapter(IRobotControlAdapter):
         # robot model doesn't belong to the environment, so discard them from the active set
         # we assume that the robot name contains the 'robot' substring
         active_model_set = \
-            {m_name for m_name in world_properties.model_names if 'robot' not in m_name}
+            {m_name for m_name in world_properties.model_names
+                    if m_name not in self.__robots.keys()}
         original_model_set = frozenset(models.keys())
 
         logger.debug("active_model_set: %s", active_model_set)

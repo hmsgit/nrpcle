@@ -352,6 +352,12 @@ class IRobotControlAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
+    def set_robots(self, robots):
+        """
+        Sets the list of robots
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
     def reset(self):  # -> None:
         """
         Resets the physics simulation
