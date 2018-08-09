@@ -120,6 +120,7 @@ import geometry_msgs.msg
 import sensor_msgs.msg
 import gazebo_msgs.msg
 import dynamic_reconfigure.msg
+import tf2_msgs.msg
 import hbp_nrp_cle.tf_framework.tf_lib
 from hbp_nrp_excontrol.logs import clientLogger
 from geometry_msgs.msg import Point, Pose, Quaternion
