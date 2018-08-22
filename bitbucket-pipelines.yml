@@ -1,0 +1,39 @@
+# This is a sample build configuration for Docker.
+# Check our guides at https://confluence.atlassian.com/x/O1toN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: hbpneurorobotics/nrp:dev
+
+pipelines:
+  default:
+    - step:
+        name: Build
+        script:
+          # Checkout config.ini.sample from user-scripts
+          - git clone https://poupa29:@bitbucket.org/hbpneurorobotics/user-scripts.git user-scripts --depth 1
+          - cd user-scripts && git checkout HEAD config_files/CLE/config.ini.sample
+          - cd .. && cp user-scripts/config_files/CLE/config.ini.sample hbp_nrp_cle/hbp_nrp_cle/config.ini.sample
+          - rm -rf user-scripts/
+
+          # Create config.ini
+          - cp hbp_nrp_cle/hbp_nrp_cle/config.ini.sample hbp_nrp_cle/hbp_nrp_cle/config.ini
+          - echo "Config.ini created"
+
+          - git diff --diff-filter=ACMR --name-only HEAD^
+
+          # Clone repos that this plan depends on
+          - rm -rf $PWD/ExperimentControl
+          - git clone https://poupa29@bitbucket.org/hbpneurorobotics/experimentcontrol.git ExperimentControl --depth=1
+          - export PYTHONPATH=$PWD/ExperimentControl/hbp_nrp_excontrol:$PWD/ExperimentControl/hbp_nrp_scxml:$PYTHONPATH
+
+          # Concatenate all build requirements, ensure newline in between
+          - (echo; cat $PWD/ExperimentControl/hbp_nrp_excontrol/requirements.txt) >> hbp_nrp_cle/requirements.txt
+
+          # Configure build
+          - git clone https://poupa29:@bitbucket.org/hbpneurorobotics/continuousintegration.git ContinuousIntegration
+          - export VIRTUAL_ENV=$VIRTUAL_ENV
+          - export NRP_INSTALL_MODE=dev
+          - export IGNORE_LINT='platform_venv|ExperimentControl|GazeboRosPackages/install|GazeboRosPackage/src|hbp_nrp_cle/hbp_nrp_cle/bibi_config/generated|hbp_nrp_cle/.eggs|nest'
+          - virtualenv build_env && . build_env/bin/activate && pip install mock testfixtures && make verify_base || { cat pylint.txt; exit 1; }
+
