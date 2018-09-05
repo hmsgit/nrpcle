@@ -63,6 +63,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertEquals(nrp.config.brain_source, None)
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModel.py')
+        BrainLoader.is_brain_safely_imported = Mock(return_value=True)
         BrainLoader.load_py_network(filename, **{'first': slice(0, 1), 'second': slice(1, 3)})
         first = nrp.config.brain_root.first
         second = nrp.config.brain_root.second
@@ -96,6 +97,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModelNoCircuit.py')
+        BrainLoader.is_brain_safely_imported = Mock(return_value=True)
         BrainLoader.load_py_network(filename)
         foo = nrp.config.brain_root.foo
         self.assertIsInstance(foo, sim.Population)

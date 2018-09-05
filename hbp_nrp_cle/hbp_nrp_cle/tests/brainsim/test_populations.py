@@ -45,6 +45,7 @@ class TestPyNNControlAdapter(unittest.TestCase):
         sim = Mock()
         adapter = PyNNControlAdapter(sim)
         directory = os.path.dirname(__file__)
+        adapter.is_brain_safely_imported = Mock(return_value=True)
         adapter.load_brain(os.path.join(directory, "example_pynn_brain.py"))
         populations = adapter.get_populations()
         self.assertEqual(6, len(populations))
