@@ -143,7 +143,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
             except BrainTimeoutException:
                 logger.info(
                     "Timeout ocurrs during loading the brain:" + network_file)
-            except SyntaxError:
+            except Exception:
                 logger.info(
                     "Compiling Error during loading the brain:" + network_file)
 
