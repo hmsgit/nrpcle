@@ -32,6 +32,9 @@ import logging
 import threading
 from concurrent.futures import Future
 from hbp_nrp_cle.cle.CLEInterface import IClosedLoopControl, ForcedStopException
+
+from hbp_nrp_cle.cle.CLEInterface import BrainTimeoutException
+
 from hbp_nrp_cle.cle.__helper import get_tf_elapsed_times
 from hbp_nrp_cle.robotsim.GazeboHelper import GazeboHelper
 import hbp_nrp_cle as cle
@@ -135,7 +138,14 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         if (network_file):
             self.__network_file = network_file
             self.__network_configuration = configuration
-            self.bca.load_brain(network_file, **configuration)
+            try:
+                self.bca.load_brain(network_file, **configuration)
+            except BrainTimeoutException:
+                logger.info(
+                    "Timeout ocurrs during loading the brain:" + network_file)
+            except SyntaxError:
+                logger.info(
+                    "Compiling Error during loading the brain:" + network_file)
 
     @property
     def is_initialized(self):

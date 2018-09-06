@@ -36,6 +36,15 @@ class ForcedStopException(Exception):
         super(ForcedStopException, self).__init__("The simulation was forced to stop")
 
 
+class BrainTimeoutException(Exception):
+    """
+    Represents that a brain file could not be loaded due to a Timeout
+    """
+    def __init__(self):
+        super(BrainTimeoutException, self)\
+            .__init__("The brain cannot be imported due to timeout or an error in the brain file")
+
+
 # pylint: disable=R0921
 class IClosedLoopControl(object):  # pragma: no cover
     """
