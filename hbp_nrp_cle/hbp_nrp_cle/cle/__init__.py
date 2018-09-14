@@ -42,8 +42,12 @@ SERVICE_SET_TRANSFER_FUNCTION = lambda sim_id: \
                                  '/%s/%d/set_transfer_function' % (ROS_CLE_NODE_NAME, sim_id)
 SERVICE_DELETE_TRANSFER_FUNCTION = lambda sim_id: \
                                  '/%s/%d/delete_transfer_function' % (ROS_CLE_NODE_NAME, sim_id)
+
 SERVICE_GET_BRAIN = lambda sim_id: '/%s/%d/get_brain' % (ROS_CLE_NODE_NAME, sim_id)
 SERVICE_SET_BRAIN = lambda sim_id: '/%s/%d/set_brain' % (ROS_CLE_NODE_NAME, sim_id)
+
+SERVICE_GET_ROBOTS = lambda sim_id: '/%s/%d/get_robots' % (ROS_CLE_NODE_NAME, sim_id)
+SERVICE_ADD_ROBOT = lambda sim_id: '/%s/%d/add_robot' % (ROS_CLE_NODE_NAME, sim_id)
 
 
 def ros_handler(func):
