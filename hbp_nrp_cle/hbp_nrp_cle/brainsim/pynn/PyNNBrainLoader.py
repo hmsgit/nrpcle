@@ -252,12 +252,13 @@ def is_brain_safely_imported(path):
     brain_import_proc = Process(
         target=check_import_brain, args=(path, is_completed))
     brain_import_proc.start()
-    time.sleep(5.0)
 
-    if not is_completed.value:
-        brain_import_proc.terminate()
-        raise BrainTimeoutException()
-
+    timeout = time.time() + 60*2  # 2 minutes from now
+    while not is_completed.value:
+        if time.time() > timeout:
+            brain_import_proc.terminate()
+            raise BrainTimeoutException()
+        time.sleep(1)
     return True
 
 
@@ -302,6 +303,7 @@ class Brain(object):
     """
     Represents a simple model of a generic brain.
     """
+
     def __init__(self, circuit):
         self.__circuit = circuit
 
