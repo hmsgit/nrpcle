@@ -10,31 +10,26 @@ pipelines:
     - step:
         name: Build
         script:
+          # Branch dependencies (ex-gerrit topic)
+          - git archive --remote=ssh://git@bitbucket.org/hbpneurorobotics/admin-scripts.git refs/heads/master nrp_branch_topic_checkout | tar xf -
+          - . ./nrp_branch_topic_checkout admin-scripts user-scripts ExperimentControl
+          - cd $BITBUCKET_CLONE_DIR
+
           # Checkout config.ini.sample from user-scripts
-          - git archive --remote=ssh://git@bitbucket.org/hbpneurorobotics/user-scripts.git refs/heads/development config_files/CLE/config.ini.sample | tar xf -
-          - cp config_files/CLE/config.ini.sample hbp_nrp_cle/hbp_nrp_cle/config.ini.sample
+          - cp $HBP/user-scripts/config_files/CLE/config.ini.sample hbp_nrp_cle/hbp_nrp_cle/config.ini
 
-          # Create config.ini
-          - cp hbp_nrp_cle/hbp_nrp_cle/config.ini.sample hbp_nrp_cle/hbp_nrp_cle/config.ini
-          - echo "Config.ini created"
-
-          - git diff --diff-filter=ACMR --name-only HEAD^
-
-          # Clone repos that this plan depends on
-          - rm -rf $HBP/CLE $HBP/ExperimentControl
-          - git clone https://poupa29@bitbucket.org/hbpneurorobotics/experimentcontrol.git ExperimentControl --depth=1  ## TODO: Add --branch=development when moved to bitbucket
-          - export PYTHONPATH=hbp_nrp_cle:ExperimentControl/hbp_nrp_excontrol:ExperimentControl/hbp_nrp_scxml:$PYTHONPATH
+          - git diff --diff-filter=ACMR --name-only HEAD^ # no idea what this does
+          - export PYTHONPATH=hbp_nrp_cle:$PYTHONPATH
 
           # Concatenate all build requirements, ensure newline in between
-          - (echo; cat $PWD/ExperimentControl/hbp_nrp_excontrol/requirements.txt) >> hbp_nrp_cle/requirements.txt
+          - (echo; cat $HBP/ExperimentControl/hbp_nrp_excontrol/requirements.txt) >> hbp_nrp_cle/requirements.txt
 
           # Configure build
-          - git clone git@bitbucket.org:hbpneurorobotics/admin-scripts.git admin-scripts --depth=1 --branch=NRRPLT-6828_CI  ## TODO: change this to master
-          - ln -s admin-scripts/ContinuousIntegration
+          - ln -s $HBP/admin-scripts/ContinuousIntegration
           - export VIRTUAL_ENV=$VIRTUAL_ENV
           - export NRP_INSTALL_MODE=dev
-          - export IGNORE_LINT='admin-scripts|platform_venv|ExperimentControl|GazeboRosPackages/install|GazeboRosPackage/src|hbp_nrp_cle/hbp_nrp_cle/bibi_config/generated|hbp_nrp_cle/.eggs|nest'
+          - export IGNORE_LINT='platform_venv|hbp_nrp_cle/hbp_nrp_cle/bibi_config/generated|hbp_nrp_cle/.eggs|nest'
           - virtualenv build_env && . build_env/bin/activate && pip install mock testfixtures && make verify_base || { if [ -f pylint.txt ]; then echo "----------"; echo "PYLINT.TXT"; echo "----------";cat pylint.txt; fi; if [ -f pep8.txt ]; then echo "----------"; echo "PEP8.TXT"; echo "----------";cat pep8.txt; fi; exit 1; }
 
           # Coverage check
-          - admin-scripts/nrp_cobertura_check coverage.xml
+          - $HBP/admin-scripts/nrp_cobertura_check coverage.xml
