@@ -253,7 +253,7 @@ def is_brain_safely_imported(path):
         target=check_import_brain, args=(path, is_completed))
     brain_import_proc.start()
 
-    timeout = time.time() + 60*2  # 2 minutes from now
+    timeout = time.time() + 60 * 2  # 2 minutes from now
     while not is_completed.value:
         if time.time() > timeout:
             brain_import_proc.terminate()
