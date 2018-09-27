@@ -25,7 +25,6 @@ pipelines:
           - (echo; cat $HBP/ExperimentControl/hbp_nrp_excontrol/requirements.txt) >> hbp_nrp_cle/requirements.txt
 
           # Configure build
-          - ln -s $HBP/admin-scripts/ContinuousIntegration
           - export VIRTUAL_ENV=$VIRTUAL_ENV
           - export NRP_INSTALL_MODE=dev
           - export IGNORE_LINT='platform_venv|hbp_nrp_cle/hbp_nrp_cle/bibi_config/generated|hbp_nrp_cle/.eggs|nest'

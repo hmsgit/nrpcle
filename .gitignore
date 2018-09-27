@@ -19,3 +19,4 @@ ContinuousIntegration/
 .idea/
 hbp_nrp_cle/hbp_nrp_cle/config.ini*
 user_makefile
+.Makefile.swp
