@@ -39,14 +39,15 @@ class TestSpikeRecorder(unittest.TestCase):
         neurons = Mock()
         neurons.__iter__ = Mock(return_value = iter([1]))
         neurons.grandparent = Mock()
-        populationView = Mock()
+        populationView = Mock(recorder=Mock())
         neurons.grandparent.__getitem__ = populationView
         neurons.grandparent.all_cells = [1]
         dev.connect(neurons)
-        neurons.recorder.reset.assert_called_once_with()
+        recorder_device = neurons.grandparent.recorder
+        recorder_device.reset.assert_called_once_with()
         populationView().record.assert_called_once_with("spikes", to_file=False)
-        nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_memory": True})
-        nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_file": False})
+        nest_mock.SetStatus.assert_any_call(recorder_device._spike_detector.device, {"to_memory": True})
+        nest_mock.SetStatus.assert_any_call(recorder_device._spike_detector.device, {"to_file": False})
         self.assertDictEqual(dev._parameters, {
             'use_ids': True
         })
@@ -61,10 +62,11 @@ class TestSpikeRecorder(unittest.TestCase):
         neurons.grandparent.__getitem__ = populationView
         neurons.grandparent.all_cells = [1]
         dev.connect(neurons)
-        neurons.recorder.reset.assert_called_once_with()
+        recorder_device = neurons.grandparent.recorder
+        recorder_device.reset.assert_called_once_with()
         populationView().record.assert_called_once_with("spikes", to_file=False)
-        nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_memory": True})
-        nest_mock.SetStatus.assert_any_call(neurons.recorder._spike_detector.device, {"to_file": False})
+        nest_mock.SetStatus.assert_any_call(recorder_device._spike_detector.device, {"to_memory": True})
+        nest_mock.SetStatus.assert_any_call(recorder_device._spike_detector.device, {"to_file": False})
         self.assertDictEqual(dev._parameters, {
             'use_ids': False
         })

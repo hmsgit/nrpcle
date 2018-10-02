@@ -97,19 +97,16 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
             pop_neurons = list(set(chain(*self._recording_neurons[population.label].itervalues())))
             if len(pop_neurons) > 0:
                 # Population recorders need to be reset before being reused
-                for rec in self.__recorders:
-                    rec.reset()
-
+                population.recorder.reset()
                 population[pop_neurons].record("spikes", to_file=False)
 
                 # Even though to_file is set to False, an issue in PyNN prevent it to be applied.
                 # PyNN is built in such a way that for the spikes in NEST, only the file storage
                 # is available. This should be investigated.
                 # Meanwhile, we are interacting with NEST directly.
-                for rec in self.__recorders:
-                    recorder_device = rec._spike_detector.device
-                    self.SetStatus(recorder_device, {"to_memory": True})
-                    self.SetStatus(recorder_device, {"to_file": False})
+                recorder_device = population.recorder._spike_detector.device
+                self.SetStatus(recorder_device, {"to_memory": True})
+                self.SetStatus(recorder_device, {"to_file": False})
             else:
                 population.record(None)
 
