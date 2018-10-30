@@ -29,9 +29,6 @@ import unittest
 from mock import Mock, patch
 from hbp_nrp_cle.robotsim.RobotManager import Robot, RobotManager
 
-# import os
-# PATH = os.path.split(__file__)[0]
-
 __author__ = 'Hossain Mahmud'
 
 class TestRobotManager(unittest.TestCase):
@@ -50,16 +47,16 @@ class TestRobotManager(unittest.TestCase):
         self.assertTrue('_RobotManager__sceneHandler' in dir(self.robotManager), "Could not find attribute __sceneHandler")
         self.assertTrue('_RobotManager__retina_config' in dir(self.robotManager), "Could not find attribute __retina_config")
 
-    def test_get_robot_list(self):
-        self.assertFalse(self.robotManager.get_robot_list(), "Newly created robot manager is not empty")
+    def test_get_robot_dict(self):
+        self.assertFalse(self.robotManager.get_robot_dict(), "Newly created robot manager is not empty")
         self.robotManager.robots = {'key': 'value'}
-        self.assertTrue('key' in self.robotManager.get_robot_list())
-        self.assertTrue(self.robotManager.get_robot_list()['key'] == 'value')
+        self.assertTrue('key' in self.robotManager.get_robot_dict())
+        self.assertTrue(self.robotManager.get_robot_dict()['key'] == 'value')
 
-    def test_get_robot_list_clone(self):
-        self.assertFalse(self.robotManager.get_robot_list(), "Newly created robot manager is not empty")
+    def test_get_robot_dict_clone(self):
+        self.assertFalse(self.robotManager.get_robot_dict(), "Newly created robot manager is not empty")
         self.robotManager.robots = {'key': 'value'}
-        robots = self.robotManager.get_robot_list_clone()
+        robots = self.robotManager.get_robot_dict_clone()
         # robots should not be the same object, but should have same values
         self.assertIsNot(robots, self.robotManager.robots)
         self.assertTrue(robots == self.robotManager.robots)
@@ -95,13 +92,13 @@ class TestRobotManager(unittest.TestCase):
         self.robotManager.load_robot_in_scene('myrobot')
 
         mockedRobot = Mock()
-        mockedRobot.return_value = {'id': 'id', 'SDFFileRelPath': 'sdf', 'pose': 'pose'}
+        mockedRobot.return_value = {'id': 'id', 'SDFFileAbsPath': 'sdf', 'pose': 'pose'}
 
         self.robotManager.robots = {'myrobot': mockedRobot}
 
         self.robotManager.load_robot_in_scene('myrobot', 'retina')
         self.robotManager._RobotManager__sceneHandler\
-            .load_gazebo_model_file.assert_called_once_with(str(mockedRobot.id), mockedRobot.SDFFileRelPath, mockedRobot.pose, 'retina')
+            .load_gazebo_model_file.assert_called_once_with(str(mockedRobot.id), mockedRobot.SDFFileAbsPath, mockedRobot.pose, 'retina')
 
     def test_scene_handler(self):
         self.assertRaises(Exception, self.robotManager.scene_handler)

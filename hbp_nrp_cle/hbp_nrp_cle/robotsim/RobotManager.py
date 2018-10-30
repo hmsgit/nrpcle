@@ -45,11 +45,11 @@ class Robot(object):
     """
     Robot model structure to be used in the CLE
     """
-    def __init__(self, rid, sdf_rel_path, display_name, pose, is_custom=False):
+    def __init__(self, rid, sdf_abs_path, display_name, pose, is_custom=False):
         self.id = rid
-        self.SDFFileRelPath = sdf_rel_path
+        self.SDFFileAbsPath = sdf_abs_path
         self.displayName = display_name
-        self.pose = pose
+        self.pose = pose    # quaternion pose: geometry_msgs.msg.Pose
         self.isCustom = is_custom
 
 
@@ -66,16 +66,16 @@ class RobotManager(object):
         self.__sceneHandler = None
         self.__retina_config = None
 
-    def get_robot_list(self):
+    def get_robot_dict(self):
         """
-        Gets a reference to the robot list
+        Gets a reference to the robot dictionary with robot id as key and Robot object as value
         :return: robot list
         """
         return self.robots
 
-    def get_robot_list_clone(self):
+    def get_robot_dict_clone(self):
         """
-        :return: A copy of the robot list
+        :return: A copy of the robot dictionary with robot id as key and Robot object as value
         """
         return copy.deepcopy(self.robots)
 
@@ -130,11 +130,20 @@ class RobotManager(object):
             self.__sceneHandler = GazeboHelper()
         return self.__sceneHandler
 
+    def scene_handler(self):
+        """
+        Helper function to ensure scene handler is not being accessed before initializing gazebo
+        :return: A scene handler object capable of manipulating the 3D scene, e.g., gazebo scene
+        """
+        if not self.__sceneHandler:
+            raise Exception("Trying to access scene handler without initializing physics engine")
+        return self.__sceneHandler
+
     def load_robot_in_scene(self, robot_id, retina_config=None):
         """
-        Loads a robot in the gazebo scene
+        Loads a robot in the 3D scene
 
-        :param robot_id: Id of the robot to be loaded. Ignores the call if Id is missing
+        :param robot_id: Id of the robot to be loaded. If missing, the function call does nothing
         :param retina_config: Any retina config. Saves it for the later use when spawning robots
         :return: -
         """
@@ -144,18 +153,23 @@ class RobotManager(object):
         robot = self.robots.get(robot_id, None)
         if robot:
             self.scene_handler().load_gazebo_model_file(
-                str(robot.id), robot.SDFFileRelPath, robot.pose, self.__retina_config)
+                str(robot.id), robot.SDFFileAbsPath, robot.pose, self.__retina_config)
         else:
-            logger.info("Robot ID does not exist.")
+            logger.info("Cannot load Robot into scene: id {} does not exist".format(robot_id)
+                        + " or yielded empty Robot object")
 
-    def scene_handler(self):
+    def delete_robot_from_scene(self, robot_id):
         """
-        Helper function to ensure scene handler is not being accessed before initializing gazebo
-        :return: GazeboHelper
+        Deletes a robot from the 3D scene
+
+        :param robot_id: Id of the robot to be deleted. Ignores the call if id is missing
+        :return: -
         """
-        if not self.__sceneHandler:
-            raise Exception("Trying to access scene handler without initializing physics engine")
-        return self.__sceneHandler
+        robot = self.robots.get(robot_id, None)
+        if robot:
+            self.scene_handler().delete_model_proxy(str(robot.id))
+        else:
+            logger.info("Cannot delete from RobotManager: id {} does not exist".format(robot_id))
 
     @staticmethod
     def convertXSDPosetoPyPose(xsd_pose):
@@ -173,22 +187,16 @@ class RobotManager(object):
         rpose.position.y = xsd_pose.y
         rpose.position.z = xsd_pose.z
 
-        if xsd_pose.ux is not None:
+        # REST request has no ux defined. Exc DOM however has one
+        if getattr(xsd_pose, 'ux', None) is not None:
             rpose.orientation.x = xsd_pose.ux
             rpose.orientation.y = xsd_pose.uy
             rpose.orientation.z = xsd_pose.uz
             rpose.orientation.w = xsd_pose.theta
         else:
-            roll = 0
-            pitch = 0
-            yaw = 0
-
-            if xsd_pose.roll is not None:
-                roll = xsd_pose.roll
-            if xsd_pose.pitch is not None:
-                pitch = xsd_pose.pitch
-            if xsd_pose.yaw is not None:
-                yaw = xsd_pose.yaw
+            roll = xsd_pose.roll if xsd_pose.roll is not None else 0
+            pitch = xsd_pose.pitch if xsd_pose.pitch is not None else 0
+            yaw = xsd_pose.yaw if xsd_pose.yaw is not None else 0
 
             quaternion = transformations.quaternion_from_euler(roll, pitch, yaw)
 
