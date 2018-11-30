@@ -232,7 +232,6 @@ class TransferFunction(object):
                 if t not in self._params:
                     raise Exception("The specified trigger {0} is invalid, "
                                     "there is no parameter with that name".format(t))
-            self.active = True
             self._params[0] = -float('inf')
         else:
             raise Exception("It is not allowed to change the underlying function of a Transfer "

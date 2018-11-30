@@ -57,7 +57,7 @@ class ITransferFunctionManager(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def initialize_tf(self, tf):
+    def initialize_tf(self, tf, activation=True):
         """
         Initializes the given transfer function
 
@@ -65,6 +65,7 @@ class ITransferFunctionManager(object):  # pragma: no cover
         manager
 
         :param tf: The transfer function
+        :param activation: The desired activation state; True for activated, False otherwise
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

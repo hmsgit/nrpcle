@@ -56,14 +56,15 @@ class MockTransferFunctionManager(ITransferFunctionManager):
         """
         self.__name = name
 
-    def initialize_tf(self, tf):
+    def initialize_tf(self, tf, activation=True):
         """
         Initializes the given transfer function
 
         This method is used if a transfer function is replaced after initialization of the tf
         manager
 
-        :param name: The transfer function
+        :param tf: The transfer function
+        :param activation: boolean value of the desired activation state
         """
         pass
 

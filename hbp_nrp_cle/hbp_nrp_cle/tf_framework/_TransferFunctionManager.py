@@ -200,7 +200,7 @@ class TransferFunctionManager(ITransferFunctionManager):
 
         return proper_tfs if not flawed else proper_tfs + self.__flawed
 
-    def initialize_tf(self, tf):
+    def initialize_tf(self, tf, activation=True):
         """
         Initializes the given transfer function
 
@@ -208,6 +208,7 @@ class TransferFunctionManager(ITransferFunctionManager):
         manager
 
         :param tf: The transfer function
+        :param activation: desired activation state; True for activated, False otherwise
         """
         logger.info("Initialize transfer function " + repr(tf))
         tf.check_params()
@@ -232,6 +233,7 @@ class TransferFunctionManager(ITransferFunctionManager):
             self.__silent.append(tf)
 
         tf.initialize(self, True, True)
+        self.activate_tf(tf, activation)
         self._update_trigger(tf)
 
     @staticmethod
@@ -270,7 +272,6 @@ class TransferFunctionManager(ITransferFunctionManager):
         :param tf: the tf on which to apply the change
         :param activate: a boolean value denoting the new activation state
         """
-
         if activate is None or type(activate) != bool:
             return
 

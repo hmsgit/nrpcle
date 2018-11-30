@@ -408,7 +408,7 @@ def delete_flawed_transfer_function(name):
     return result
 
 
-def set_transfer_function(new_source, new_code, new_name):
+def set_transfer_function(new_source, new_code, new_name, activation=True):
     """
     Apply transfer function changes made by a client
 
@@ -424,7 +424,7 @@ def set_transfer_function(new_source, new_code, new_name):
         tf = get_transfer_function(new_name)
         if not isinstance(tf, TransferFunction):
             raise Exception("Transfer function has no decorator specifying its type")
-        config.active_node.initialize_tf(tf)
+        config.active_node.initialize_tf(tf, activation)
     except Exception as e:
         tb = sys.exc_info()[2]
         logger.error("Error while loading new transfer function")
