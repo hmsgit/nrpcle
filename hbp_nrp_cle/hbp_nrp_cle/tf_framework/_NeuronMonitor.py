@@ -124,6 +124,18 @@ class NeuronMonitor(TransferFunction):
                 self.__neurons = None
                 self.__count = None
 
+    def get_population_name(self):
+        """
+        it gets the population name inside the neurons object.
+        :return: an string that contains the name of the population.
+        """
+        population_label = None
+        if hasattr(self.device.neurons, 'parent'):
+            population_label = self.device.neurons.parent.label
+        if not population_label:
+            population_label = self.device.neurons.label
+        return str(population_label)
+
     def __send_spike_recorder(self, t):
         """
         Sends spike data to the given spike recorder monitoring topic
@@ -133,9 +145,13 @@ class NeuronMonitor(TransferFunction):
         """
         spikes = self.device.times
         msgs = []
+
         for spike in spikes:
             msgs.append(SpikeData(int(spike[0]), spike[1]))
-        self.publisher.send_message(SpikeEvent(t, self.__count, msgs, self.name))
+
+        self.publisher.send_message(SpikeEvent(
+            t, self.__count, msgs, self.name,
+            self.get_population_name()))
 
     def __send_leaky_integrator(self, t):
         """
