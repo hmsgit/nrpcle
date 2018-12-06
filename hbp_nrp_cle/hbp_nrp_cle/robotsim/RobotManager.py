@@ -31,10 +31,12 @@ CLE Assembly (cleserver) creates an object of this class, and passes around.
 
 import copy
 import logging
-from .GazeboHelper import GazeboHelper
 
 from geometry_msgs.msg import Pose
 import tf.transformations as transformations
+
+from .GazeboHelper import GazeboHelper
+from hbp_nrp_cleserver.server.ROSLaunch import ROSLaunch
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +47,16 @@ class Robot(object):
     """
     Robot model structure to be used in the CLE
     """
-    def __init__(self, rid, sdf_abs_path, display_name, pose, is_custom=False):
+    def __init__(self, rid, sdf_abs_path, display_name, pose,
+                 is_custom=False, roslaunch_abs_path=None):
         self.id = rid
         self.SDFFileAbsPath = sdf_abs_path
         self.displayName = display_name
         self.pose = pose    # quaternion pose: geometry_msgs.msg.Pose
         self.isCustom = is_custom
+        self.rosLaunchAbsPath = roslaunch_abs_path
+
+        self.rosLaunch = None
 
 
 class RobotManager(object):
@@ -98,6 +104,19 @@ class RobotManager(object):
             raise Exception("Robot name already exists.")
         self.robots[robot.id] = robot
 
+        if robot.rosLaunchAbsPath:
+            robot.ROSLaunch = ROSLaunch(robot.rosLaunchAbsPath)
+
+        try:
+            logger.info("Adding robot {id} from {path}: "
+                        .format(id=robot.id, path=robot.SDFFileAbsPath))
+            self.scene_handler().load_gazebo_model_file(
+                str(robot.id), robot.SDFFileAbsPath, robot.pose, self.retina_config)
+        except Exception as e:
+            del self.robots[robot.id]
+            raise Exception("Error loading {robot} into the scene. {err}"
+                            .format(robot=robot.id, err=str(e)))
+
     def remove_robot(self, robot_id):
         """
         Remove robot of the given Id
@@ -134,29 +153,27 @@ class RobotManager(object):
         """
         Helper function to ensure scene handler is not being accessed before initializing gazebo
         :return: A scene handler object capable of manipulating the 3D scene, e.g., gazebo scene
+        :raises Exception is raised if accessed before initializing the physics engine
         """
         if not self.__sceneHandler:
             raise Exception("Trying to access scene handler without initializing physics engine")
         return self.__sceneHandler
 
-    def load_robot_in_scene(self, robot_id, retina_config=None):
+    @property
+    def retina_config(self):
         """
-        Loads a robot in the 3D scene
-
-        :param robot_id: Id of the robot to be loaded. If missing, the function call does nothing
-        :param retina_config: Any retina config. Saves it for the later use when spawning robots
-        :return: -
+        Gets retina config
         """
-        if retina_config:
-            self.__retina_config = retina_config
+        return self.__retina_config
 
-        robot = self.robots.get(robot_id, None)
-        if robot:
-            self.scene_handler().load_gazebo_model_file(
-                str(robot.id), robot.SDFFileAbsPath, robot.pose, self.__retina_config)
-        else:
-            logger.info("Cannot load Robot into scene: id {} does not exist".format(robot_id)
-                        + " or yielded empty Robot object")
+    @retina_config.setter
+    def retina_config(self, config):
+        """
+        Sets retina config
+
+        :param config: retina config to use
+        """
+        self.__retina_config = config
 
     def delete_robot_from_scene(self, robot_id):
         """
@@ -170,6 +187,14 @@ class RobotManager(object):
             self.scene_handler().delete_model_proxy(str(robot.id))
         else:
             logger.info("Cannot delete from RobotManager: id {} does not exist".format(robot_id))
+
+    def shutdown(self):
+        """
+        Cleans up any process or resource used by the manager
+        """
+        for robot in self.robots.itervalues():
+            if robot.rosLaunch:
+                robot.rosLaunch.shutdown()
 
     @staticmethod
     def convertXSDPosetoPyPose(xsd_pose):

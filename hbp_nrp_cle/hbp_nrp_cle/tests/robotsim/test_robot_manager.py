@@ -37,10 +37,14 @@ class TestRobotManager(unittest.TestCase):
         self.mocked_gzhelper = patch("hbp_nrp_cle.robotsim.RobotManager.GazeboHelper").start()
         self.mocked_gzhelper.return_value.load_gazebo_model_file.return_value = ""
 
+        self.mocked_rosLaunch = patch("hbp_nrp_cle.robotsim.RobotManager.ROSLaunch").start()
+        self.mocked_rosLaunch.return_value = 'void'
+
         self.robotManager = RobotManager()
 
     def tearDown(self):
         self.mocked_gzhelper.stop()
+        self.mocked_rosLaunch.stop()
 
     def test_robot_manager_created_correctly(self):
         self.assertTrue('robots' in dir(self.robotManager), "Could not find attribute robots")
@@ -67,10 +71,20 @@ class TestRobotManager(unittest.TestCase):
         self.assertTrue(robot == 'value')
 
     def test_add_robot(self):
-        robot = Robot('id',  '/some/sdf/path', 'some name', None, False)
+        self.robotManager._RobotManager__sceneHandler = self.mocked_gzhelper()
+        self.robotManager._RobotManager__retina_config = 'retina'
+
+        mockedRobot = Mock()
+        mockedRobot.return_value = {'id': 'id', 'SDFFileAbsPath': 'sdf', 'pose': 'pose'}
+        robot = Robot(mockedRobot.id,  mockedRobot.SDFFileAbsPath, 'some name', mockedRobot.pose, False, "ros.launch")
+
         self.robotManager.add_robot(robot)
+
         self.assertTrue(robot is self.robotManager.robots[robot.id])
         self.assertRaises(Exception, self.robotManager.add_robot, robot)
+
+        self.robotManager._RobotManager__sceneHandler\
+            .load_gazebo_model_file.assert_called_once_with(str(mockedRobot.id), mockedRobot.SDFFileAbsPath, mockedRobot.pose, 'retina')
 
     def test_remove_robot(self):
         self.robotManager.robots = {'key': 'value'}
@@ -85,20 +99,6 @@ class TestRobotManager(unittest.TestCase):
     def test_init_scene_handler(self):
         gz = self.robotManager.init_scene_handler()
         self.assertTrue(gz is self.mocked_gzhelper.return_value)
-
-    def test_load_robot_in_scene(self):
-        self.robotManager._RobotManager__sceneHandler = self.mocked_gzhelper()
-
-        self.robotManager.load_robot_in_scene('myrobot')
-
-        mockedRobot = Mock()
-        mockedRobot.return_value = {'id': 'id', 'SDFFileAbsPath': 'sdf', 'pose': 'pose'}
-
-        self.robotManager.robots = {'myrobot': mockedRobot}
-
-        self.robotManager.load_robot_in_scene('myrobot', 'retina')
-        self.robotManager._RobotManager__sceneHandler\
-            .load_gazebo_model_file.assert_called_once_with(str(mockedRobot.id), mockedRobot.SDFFileAbsPath, mockedRobot.pose, 'retina')
 
     def test_scene_handler(self):
         self.assertRaises(Exception, self.robotManager.scene_handler)
