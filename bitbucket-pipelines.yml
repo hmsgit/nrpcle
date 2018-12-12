@@ -6,8 +6,9 @@
 image: hbpneurorobotics/nrp:dev
 
 pipelines:
-  default:
-    - step:
+  branches:
+    development:
+      - step:
         name: Build
         script:
           # Branch dependencies (ex-gerrit topic)
