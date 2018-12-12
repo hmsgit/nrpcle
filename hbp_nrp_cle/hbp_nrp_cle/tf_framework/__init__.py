@@ -49,7 +49,8 @@ class TFRunningException(UserCodeException):
     """
 
     def __init__(self, message):
-        super(TFRunningException, self).__init__(message, 'TF Running Exception')
+        super(TFRunningException, self).__init__(
+            message, 'TF Running Exception')
 
 
 class TFLoadingException(TFException):
@@ -63,7 +64,8 @@ class TFLoadingException(TFException):
     """
 
     def __init__(self, tf_name, message):
-        super(TFLoadingException, self).__init__(tf_name, message, 'TF Loading Exception')
+        super(TFLoadingException, self).__init__(
+            tf_name, message, 'TF Loading Exception')
 
 
 from . import config
@@ -253,7 +255,8 @@ def get_transfer_functions(flawed=True):
     :return: All the transfer functions if flawed is True, only (R2N, N2R, Silent) otherwise.
     """
 
-    proper_tfs = config.active_node.n2r + config.active_node.r2n + config.active_node.silent
+    proper_tfs = config.active_node.n2r + \
+        config.active_node.r2n + config.active_node.silent
 
     return proper_tfs + config.active_node.flawed if flawed else proper_tfs
 
@@ -319,16 +322,18 @@ def dump_csv_recorder_to_files():
     """
     Find out all CSV recorders and dump their values to CSV files.
 
-    :return: an array of pairs containing the filename wanted by the user and a temporary
-        filepath to a file containing the values.
+    :return: an array containing a string with the CSV filename,
+    an array containing the CSV headers separated by a comma
+    and an array containing the CSV values
     """
     result = []
     for tf in get_transfer_functions(flawed=False):
-        print tf.params
-        for i in range(1, len(tf.params)):
-            if isinstance(tf.params[i], CSVRecorder):
-                name, temporary_path = tf.params[i].dump_to_file()
-                result.append([name, temporary_path])
+        for param in tf.params[1:]:
+            if isinstance(param, CSVRecorder):
+                name = param.get_csv_recorder_name()
+                headers = param.get_csv_headers()
+                values = param.cleanup()
+                result.append([name, headers, values])
     return result
 
 
@@ -337,10 +342,9 @@ def clean_csv_recorders_files():
     Clean out all CSV recorders generated files.
     """
     for tf in get_transfer_functions(flawed=False):
-        print tf.params
-        for i in range(1, len(tf.params)):
-            if isinstance(tf.params[i], CSVRecorder):
-                tf.params[i].cleanup()
+        for param in tf.params[1:]:
+            if isinstance(param, CSVRecorder):
+                param.cleanup()
 
 
 def delete_transfer_function(name):
@@ -448,7 +452,8 @@ def set_flawed_transfer_function(source, name="NO_NAME", error=None):
     :param name: The name of the transfer function
     :param error: the Exception raised during the compilation/loading of the code
     """
-    config.active_node.flawed.append(FlawedTransferFunction(name, source, error))
+    config.active_node.flawed.append(
+        FlawedTransferFunction(name, source, error))
 
 
 start_new_tf_manager()

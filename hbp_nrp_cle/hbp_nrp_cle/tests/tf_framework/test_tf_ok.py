@@ -187,33 +187,6 @@ def transform_camera(t, camera, camera_device):
             self.assertIn('line 4', e.message)
             self.assertEqual('it_cant_work', e.tf_name)
 
-
-    @patch('hbp_nrp_cle.tf_framework.CSVRecorder.cleanup')
-    @patch('hbp_nrp_cle.tf_framework.CSVRecorder.dump_to_file')
-    def test_tf_dump(self, mock_dump_to_file, mock_cleanup):
-
-        mock_dump_to_file.return_value = ('filename', 'temp_filepath')
-
-        nrp.start_new_tf_manager()
-
-        brain = MockBrainCommunicationAdapter()
-        robot = MockRobotCommunicationAdapter()
-
-        nrp.set_nest_adapter(brain)
-        nrp.set_robot_adapter(robot)
-
-        @nrp.MapCSVRecorder("recorder", filename = "all_joints_positions.csv", headers=["Name", "time", "Position"])
-        @nrp.Robot2Neuron()
-        def joint_state_monitor(t, recorder):
-            recorder.record_entry("foo", t, "bar")
-
-        nrp.initialize("MyTransferFunctions")
-        self.assertEqual(mock_cleanup.call_count, 0)
-        self.assertEqual([['filename','temp_filepath']], nrp.dump_csv_recorder_to_files())
-        self.assertEqual(mock_cleanup.call_count, 0)
-        nrp.clean_csv_recorders_files()
-        self.assertEqual(mock_cleanup.call_count, 1)
-
     @patch('hbp_nrp_cle.tf_framework.CSVRecorder.cleanup')
     def test_tf_delete(self, mock_cleanup):
 

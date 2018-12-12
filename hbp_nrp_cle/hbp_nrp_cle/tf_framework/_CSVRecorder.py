@@ -30,9 +30,6 @@ from ._MappingSpecification import ParameterMappingSpecification
 from ._CleanableTransferFunctionParameter import ICleanableTransferFunctionParameter
 
 import logging
-import tempfile
-import csv
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +68,7 @@ class MapCSVRecorder(ParameterMappingSpecification):
         self.headers = headers
         self.__erase_on_reset = erase_on_reset
 
-    def create_adapter(self, transfer_function_manager): # pylint: disable=unused-argument
+    def create_adapter(self, transfer_function_manager):  # pylint: disable=unused-argument
         """
         Replaces the current mapping operator with the mapping result
 
@@ -91,48 +88,61 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
     """
     Record value and memory and dump them to a temporary file when asked to.
     """
+
     def __init__(self, filename, headers, erase_on_reset=False):
         """
         Constructor. Pretty straightforward,
 
-        :param filename: the filename to save to.
-        :param headers: the name of the columns.
-        :param erase_on_reset: A value indicating whether the csv recorder should erase its contents
-        when the simulation is reset
+        :param string filename: the filename to save to.
+        :param string[] headers: the name of the columns.
+        :param bool erase_on_reset: A value indicating whether the csv recorder should
+        erase its contents when the simulation is reset
         """
         self.__filename = filename
         self.__reset_since_last_record = False
-        self.__generatedFiles = []
-        self.__values = [headers + ['Simulation_reset']]
+        headers = [str(header) + ',' for header in headers]
+        self.__headers = [headers + ['Simulation_reset\n']]
+        self.__headers = [
+            item for sublist in self.__headers for item in sublist]
+        self.__values = []
         self.__erase_on_reset = erase_on_reset
 
     def record_entry(self, *values):
         """
-        Record the values provided (in memory)
+        Record the values provided (in memory) and creates the appropriate
+        array to add to the values buffer
 
-        :param values: Values to record
+        :param string[] values : Values to record
         """
-        values = list(values) + ['RESET' if self.__reset_since_last_record else '']
+        # listify the values since they are tuples
+        values = list(values)
+        if self.__reset_since_last_record:
+            values.append('RESET')
+
+        # add a comma
+        values = [str(val) + ',' for val in values]
+
+        # in the last value we replace the comma with a newline
+        values[-1] = values[-1].replace(',', '\n') if values[-1] else ""
+
         self.__reset_since_last_record = False
-        if (len(self.__values[0]) == len(values)):
-            self.__values.append(values)
-        else:
-            raise ValueError("Number of arguments not matching the number of headers !")
+        self.__values.append(values)
 
-    def dump_to_file(self):
+    def get_csv_recorder_name(self):
         """
-        Create a CSV file and save the path in a global variable
+        Returns the CSV recorder filename
 
-        :return: filename of the temporary CSV file holding the results and filename
-        specified by the user
+        :return string filename: filename of the CSV file specified by the user
         """
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            writer = csv.writer(f)
-            writer.writerows(self.__values)
-            temporary_path = f.name
-            f.flush()
-            self.__generatedFiles.append(temporary_path)
-        return self.__filename, temporary_path
+        return self.__filename
+
+    def get_csv_headers(self):
+        """
+        Returns the recorder's headers
+
+        :return string[] headers: The headers separated by a comma in an array
+        """
+        return self.__headers
 
     # pylint: disable=unused-argument
     def reset(self, tf_manager):
@@ -141,7 +151,7 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
         """
         self.__reset_since_last_record = True
         if self.__erase_on_reset:
-            header = self.__values[0]
+            header = self.__headers
             del self.__values[:]
             self.__values.append(header)
 
@@ -149,9 +159,17 @@ class CSVRecorder(ICleanableTransferFunctionParameter):
 
     def cleanup(self):
         """
-        Remove all temporary files that could have been generated.
+        Retrieves the csv data recorded values and cleans up the values buffer
+
+        :return string[] values: A string array containing the properly formatted
+        comma separated recorder values
         """
-        for filepath in self.__generatedFiles:
-            if os.path.realpath(filepath).startswith(tempfile.gettempdir()):
-                os.remove(filepath)
-        self.__generatedFiles = []
+        # expand the array of values which is an array of arrays
+        # we have a newline character already appended to the values
+        # in the appropriate place to signal when the current line ends
+        values = [item for sublist in self.__values for item in sublist]
+
+        # flush the buffer which holds the values
+        del self.__values[:]
+
+        return values
