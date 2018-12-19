@@ -39,7 +39,7 @@ from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
 from hbp_nrp_cle.brainsim.pynn_nest.PyNNNestCommunicationAdapter import \
     PyNNNestCommunicationAdapter
-from mock import mock_open, patch
+from mock import mock_open, patch, Mock
 from testfixtures import log_capture, LogCapture
 import hbp_nrp_cle.tf_framework as tf_framework
 import hbp_nrp_cle.brainsim.config as brainconfig
@@ -581,44 +581,49 @@ requested (device)'))
         self.control.run_step(0.1)
         self.communicator.refresh_buffers(time)
 
-    def test_load_brain(self):
-        with patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader") as loader:
-            with patch(
-                'hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
-                mock_open(read_data='some python code'), create=True
-            ) as m:
-                slice1 = { 'from': 1, 'to': 2, 'step': 3}
-                slice2 = { 'from': 4, 'to': 5, 'step': None}
-                populations_mixed = {
-                    'slice_1': slice1, 'slice_2': slice(4, 5),
-                    'list_1': [1, 2, 3]
-                }
-                self.control.load_brain("foo.py", **populations_mixed)
-                populations_slice = {
-                    'slice_1': slice(1, 2, 3), 'slice_2': slice(4, 5),
-                    'list_1': [1, 2, 3]
-                }
-                loader.load_py_network.assert_called_with(
-                    "foo.py",
-                    **populations_slice
-                )
-                self.assertTrue(loader.load_py_network.called)
-                self.assertFalse(loader.load_h5_network.called)
-                self.assertEqual(tf_framework.config.brain_source, 'some python code')
-                populations_json = {
-                    'slice_1': slice1, 'slice_2': slice2,
-                    'list_1': [1, 2, 3]
-                }
-                self.assertEqual(
-                  tf_framework.config.brain_populations,
-                  populations_json
-                )
-                loader.load_py_network.reset_mock()
-                self.control.load_brain("foo.h5")
-                self.assertTrue(loader.load_h5_network.called)
-                self.assertFalse(loader.load_py_network.called)
-                loader.load_h5_network.reset_mock()
-                self.assertRaises(Exception, self.control.load_brain, "foo.not_supported", {})
+    @patch("hbp_nrp_cle.common.refresh_resources")
+    @patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.H5PyNNBrainLoader")
+    @patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader")
+    def test_load_brain(self, loader, h5loader, refreshMock):
+        with patch(
+            'hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
+            mock_open(read_data='some python code'), create=True
+        ) as m:
+            slice1 = { 'from': 1, 'to': 2, 'step': 3}
+            slice2 = { 'from': 4, 'to': 5, 'step': None}
+            populations_mixed = {
+                'slice_1': slice1, 'slice_2': slice(4, 5),
+                'list_1': [1, 2, 3]
+            }
+            self.control.load_brain("foo.py", **populations_mixed)
+            populations_slice = {
+                'slice_1': slice(1, 2, 3), 'slice_2': slice(4, 5),
+                'list_1': [1, 2, 3]
+            }
+            loader.load_py_network.assert_called_with(
+                "foo.py"
+            )
+            loader.setup_access_to_population.assert_called_with(
+                loader.load_py_network.return_value,
+                **populations_slice
+            )
+            self.assertTrue(loader.load_py_network.called)
+            self.assertFalse(loader.load_h5_network.called)
+            self.assertEqual(tf_framework.config.brain_source, 'some python code')
+            populations_json = {
+                'slice_1': slice1, 'slice_2': slice2,
+                'list_1': [1, 2, 3]
+            }
+            self.assertEqual(
+              tf_framework.config.brain_populations,
+              populations_json
+            )
+            loader.load_py_network.reset_mock()
+            self.control.load_brain("foo.h5")
+            self.assertTrue(h5loader.load_h5_network.called)
+            self.assertFalse(loader.load_py_network.called)
+            h5loader.load_h5_network.reset_mock()
+            self.assertRaises(Exception, self.control.load_brain, "foo.not_supported", {})
 
     def test_populations_using_json_slice(self):
         slice1 = { 'from': 1, 'to': 2, 'step': 3}

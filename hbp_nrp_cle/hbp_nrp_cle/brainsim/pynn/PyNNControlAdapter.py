@@ -27,7 +27,8 @@ moduleauthor: probst@fzi.de
 '''
 
 from hbp_nrp_cle.brainsim import IBrainControlAdapter
-from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
+from hbp_nrp_cle.brainsim.common import PythonBrainLoader as BrainLoader
+from hbp_nrp_cle.brainsim.pynn import H5PyNNBrainLoader
 from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
 from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population
 import hbp_nrp_cle.brainsim as brainsim
@@ -93,7 +94,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         if not self.__is_initialized:
             self.initialize()
-        BrainLoader.load_h5_network(network_file, **populations)
+        H5PyNNBrainLoader.load_h5_network(network_file, self._sim, **populations)
 
     def __load_python_brain(self, network_file, **populations):
         """
@@ -104,10 +105,13 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         if not self.__is_initialized:
             self.initialize()
-        BrainLoader.load_py_network(network_file, **populations)
+
+        import hbp_nrp_cle.tf_framework.config as tf_config
+
+        tf_config.brain_root = BrainLoader.load_py_network(network_file)
+        BrainLoader.setup_access_to_population(tf_config.brain_root, **populations)
 
         logger.info("Saving brain source")
-        import hbp_nrp_cle.tf_framework.config as tf_config
         with open(network_file) as source:
             tf_config.brain_source = source.read()
 

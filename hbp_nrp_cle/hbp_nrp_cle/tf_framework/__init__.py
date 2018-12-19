@@ -86,7 +86,7 @@ def resolve_brain_variable(var):
 
 
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
-    ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
+    ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, IRawSignal, \
     IDCSource, IACSource, INCSource, IPopulationRate, ISpikeRecorder, ISpikeInjector
 
 import logging
@@ -166,6 +166,7 @@ nc_source = INCSource
 population_rate = IPopulationRate
 spike_recorder = ISpikeRecorder
 injector = ISpikeInjector
+raw_signal = IRawSignal
 
 brain = PropertyPath()
 

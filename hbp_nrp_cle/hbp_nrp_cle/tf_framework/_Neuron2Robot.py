@@ -32,7 +32,7 @@ from hbp_nrp_cle.robotsim.RobotInterface import Topic
 from hbp_nrp_cle.brainsim.BrainInterface import IFixedSpikeGenerator, \
     ILeakyIntegratorAlpha, ILeakyIntegratorExp, IPoissonSpikeGenerator, \
     IDCSource, IACSource, INCSource, IPopulationRate, ISpikeInjector, \
-    ICustomDevice, IBrainCommunicationAdapter, ISpikeRecorder
+    ICustomDevice, IBrainCommunicationAdapter, ISpikeRecorder, IRawSignal
 from ._MappingSpecification import ParameterMappingSpecification
 from . import config
 from ._TransferFunction import TransferFunction
@@ -48,7 +48,7 @@ class MapSpikeSink(ParameterMappingSpecification):
     """
 
     supported_device_types = [ILeakyIntegratorAlpha, ILeakyIntegratorExp,
-                              IPopulationRate, ISpikeRecorder]
+                              IPopulationRate, ISpikeRecorder, IRawSignal]
 
     def __init__(self, key, value, device_type, **kwargs):  # -> None:
         """
@@ -129,7 +129,7 @@ class MapSpikeSource(MapSpikeSink):
     """
 
     supported_device_types = [IPoissonSpikeGenerator, IFixedSpikeGenerator,
-                              IDCSource, IACSource, INCSource, ISpikeInjector]
+                              IDCSource, IACSource, INCSource, ISpikeInjector, IRawSignal]
 
     def create_adapter(self, transfer_function_manager):
         """

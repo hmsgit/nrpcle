@@ -319,6 +319,28 @@ class IPopulationRate(IBrainDevice):  # pragma: no cover
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
 
+class IRawSignal(IBrainDevice):  # pragma no cover
+    """
+    Represents a device that allows for the exchange of raw data values. There is no direct neural
+    equivalent as the semantics of the device depend on the semantics of the neural simulator.
+    """
+
+    @property
+    def value(self):
+        """
+        Gets the current value.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    @value.setter
+    def value(self, new_value):
+        """
+        Sets the value to new_value
+        :param new_value: the new value
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+
 class ICustomDevice(object):  # pragma: no cover
     """
     Represents device type with an internal logic that can be mapped to existing device types

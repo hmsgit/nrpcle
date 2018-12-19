@@ -135,7 +135,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.initialized = True
-        if (network_file):
+        if network_file:
             self.__network_file = network_file
             self.__network_configuration = configuration
             try:
@@ -143,9 +143,9 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
             except BrainTimeoutException:
                 logger.info(
                     "Timeout ocurrs during loading the brain:" + network_file)
-            except Exception:
+            except Exception as e:
                 logger.info(
-                    "Compiling Error during loading the brain:" + network_file)
+                    "Compiling Error during loading the brain({0}): {1!r}".format(network_file, e))
 
     @property
     def is_initialized(self):

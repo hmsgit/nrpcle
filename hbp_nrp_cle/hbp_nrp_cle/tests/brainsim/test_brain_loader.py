@@ -25,7 +25,8 @@
 brain_loader unit test
 """
 
-from hbp_nrp_cle.brainsim.pynn import PyNNBrainLoader as BrainLoader
+from hbp_nrp_cle.brainsim.common import PythonBrainLoader as BrainLoader
+from hbp_nrp_cle.brainsim.pynn import H5PyNNBrainLoader as H5BrainLoader
 import hbp_nrp_cle.tf_framework as nrp
 
 import unittest
@@ -54,7 +55,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'braitenberg.h5')
-        BrainLoader.load_h5_network(filename, sim, **{'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
+        module = H5BrainLoader.load_h5_network(filename, sim, **{'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
+        self.assertIsInstance(module.circuit, sim.Population)
 
     def test_load_python_network(self):
         """
@@ -64,14 +66,17 @@ class TestClosedLoopEngine(unittest.TestCase):
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModel.py')
         BrainLoader.is_brain_safely_imported = Mock(return_value=True)
-        BrainLoader.load_py_network(filename, **{'first': slice(0, 1), 'second': slice(1, 3)})
-        first = nrp.config.brain_root.first
-        second = nrp.config.brain_root.second
-        circuit = nrp.config.brain_root.circuit
+        module = BrainLoader.load_py_network(filename)
+
+        circuit = module.circuit
         self.assertIsInstance(circuit, sim.Population)
+        self.assertEqual(3, len(circuit))
+
+        BrainLoader.setup_access_to_population(module, **{'first': slice(0, 1), 'second': slice(1, 3)})
+        first = module.first
+        second = module.second
         self.assertIsInstance(first, sim.PopulationView)
         self.assertIsInstance(second, sim.PopulationView)
-        self.assertEqual(3, len(circuit))
         self.assertEqual(1, len(first))
         self.assertEqual(2, len(second))
 
@@ -81,7 +86,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModel.py')
-        self.assertRaises(Exception, BrainLoader.load_py_network, filename, first=slice(0, 4))
+        module = BrainLoader.load_py_network(filename)
+        self.assertRaises(Exception, BrainLoader.setup_access_to_population, module, first=slice(0, 4))
 
     def test_load_python_network_exception(self):
         """
@@ -89,7 +95,8 @@ class TestClosedLoopEngine(unittest.TestCase):
         """
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModelNoCircuit.py')
-        self.assertRaises(Exception, BrainLoader.load_py_network, filename, **{'first': slice(0, 1)})
+        module = BrainLoader.load_py_network(filename)
+        self.assertRaises(Exception, BrainLoader.setup_access_to_population, module, first=slice(0, 1))
 
     def test_load_python_network_no_extra_population(self):
         """
@@ -98,10 +105,29 @@ class TestClosedLoopEngine(unittest.TestCase):
         directory = os.path.split(__file__)[0]
         filename = os.path.join(directory, 'DummyBrainModelNoCircuit.py')
         BrainLoader.is_brain_safely_imported = Mock(return_value=True)
-        BrainLoader.load_py_network(filename)
-        foo = nrp.config.brain_root.foo
-        self.assertIsInstance(foo, sim.Population)
-        self.assertEqual(3, len(foo))
+        module = BrainLoader.load_py_network(filename)
+        self.assertIsInstance(module.foo, sim.Population)
+        self.assertEqual(3, len(module.foo))
+
+    @patch("hbp_nrp_cle.common.refresh_resources")
+    def test_setup_populations(self, refresh_resources_mock):
+        """
+        Tests setting up additional populations
+        """
+        directory = os.path.split(__file__)[0]
+        filename = os.path.join(directory, 'DummyBrainModel.py')
+        module = BrainLoader.load_py_network(filename)
+        self.assertEqual(module.circuit.size, 3)
+        self.assertIsInstance(module.circuit, sim.Population)
+
+        add_pop = {'testPopulation1': slice(0, 1, 1),
+                   'testPopulation2': slice(1, 2, 1)}
+        BrainLoader.setup_access_to_population(module, **add_pop)
+        self.assertIsNotNone(module.testPopulation1)
+        self.assertEquals(module.testPopulation1[0], module.circuit[0])
+        self.assertIsNotNone(module.testPopulation2)
+        self.assertEquals(module.testPopulation2[0], module.circuit[1])
+
 
 if __name__ == '__main__':
     unittest.main()
