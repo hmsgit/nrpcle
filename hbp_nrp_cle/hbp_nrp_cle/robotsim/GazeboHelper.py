@@ -295,7 +295,7 @@ class GazeboHelper(object):
             initial_pose.position = Point(0, 0, 0)
             initial_pose.orientation = Quaternion(0, 0, 0, 1)
         # spawn model
-        self.spawn_entity_proxy(model_name, model_sdf, "", initial_pose, "world")
+        self.spawn_entity_proxy(model_name, model_sdf, model_name, initial_pose, "world")
 
     def set_model_pose(self, model_name, pose):
         """
