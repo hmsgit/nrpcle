@@ -53,9 +53,9 @@ class TestGazeboHelper(unittest.TestCase):
 
     def test_gazebo_helper_init(self):
         waited = sorted([self.mock_wait_for_service.call_args_list[x][0][0]
-            for x in xrange(len(self.mock_wait_for_service.call_args_list))])
+                         for x in xrange(len(self.mock_wait_for_service.call_args_list))])
         proxied = sorted([self.mock_service_proxy.call_args_list[x][0][0]
-            for x in xrange(len(self.mock_service_proxy.call_args_list))])
+                          for x in xrange(len(self.mock_service_proxy.call_args_list))])
         services = sorted([
             GZROS_S_SPAWN_SDF_ENTITY,
             GZROS_S_GET_WORLD_PROPERTIES,
@@ -113,8 +113,10 @@ class TestGazeboHelper(unittest.TestCase):
     def test_load_gazebo_model_file_with_retina(self):
         self.gazebo_helper.load_sdf_entity = MagicMock()
 
-        wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_model_with_retina.sdf")
-        test_retina_config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sample_retina_script.py")
+        wpath = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                             "sample_model_with_retina.sdf")
+        test_retina_config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                               "sample_retina_script.py")
 
         self.gazebo_helper.load_gazebo_model_file("toto", wpath, None, test_retina_config_path)
         self.assertEqual(self.gazebo_helper.load_sdf_entity.call_args_list[0][0][0], "toto")
@@ -126,7 +128,6 @@ class TestGazeboHelper(unittest.TestCase):
         self.assertEqual(retina_script_path_elem.text, test_retina_config_path)
 
     def test_parse_gazebo_world_file(self):
-
         def abs_path(file_name):
             return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
@@ -258,25 +259,39 @@ class TestGazeboHelper(unittest.TestCase):
         self.assertGreater(self.mock_wait_for_service.call_count, 0)
 
     def test_set_model_pose(self):
-      none_pose = Pose()
-      none_pose.position = Point(0, 0, 0)
-      none_pose.orientation = Quaternion(0, 0, 0, 1)
+        none_pose = Pose()
+        none_pose.position = Point(0, 0, 0)
+        none_pose.orientation = Quaternion(0, 0, 0, 1)
 
-      self.gazebo_helper.set_model_pose('robot', None)
+        self.gazebo_helper.set_model_pose('robot', None)
 
-      arg_model_state = self.gazebo_helper.set_model_state_proxy.call_args_list[0][0][0]
-      self.assertEquals(arg_model_state.model_name, 'robot')
-      self.assertEquals(arg_model_state.pose, none_pose)
+        arg_model_state = self.gazebo_helper.set_model_state_proxy.call_args_list[0][0][0]
+        self.assertEquals(arg_model_state.model_name, 'robot')
+        self.assertEquals(arg_model_state.pose, none_pose)
 
-      custom_pose = Pose()
-      custom_pose.position = Point(0, 7, 0)
-      custom_pose.orientation = Quaternion(0, 0, 0, 1)
+        custom_pose = Pose()
+        custom_pose.position = Point(0, 7, 0)
+        custom_pose.orientation = Quaternion(0, 0, 0, 1)
 
-      self.gazebo_helper.set_model_pose('robot', custom_pose)
+        self.gazebo_helper.set_model_pose('robot', custom_pose)
 
-      arg_model_state = self.gazebo_helper.set_model_state_proxy.call_args_list[1][0][0]
-      self.assertEquals(arg_model_state.model_name, 'robot')
-      self.assertEquals(arg_model_state.pose, custom_pose)
+        arg_model_state = self.gazebo_helper.set_model_state_proxy.call_args_list[1][0][0]
+        self.assertEquals(arg_model_state.model_name, 'robot')
+        self.assertEquals(arg_model_state.pose, custom_pose)
+
+    def test_load_textures(self):
+
+        # empty textures list -> noop
+        self.gazebo_helper.load_textures([])
+        self.assertFalse(self.gazebo_helper.spawn_entity_proxy.called)
+        self.assertFalse(self.gazebo_helper.delete_model_proxy.called)
+
+        # valid textures -> check service calls
+        dummy_textures = [{'name': 'dummy_texture_name'}]
+        self.gazebo_helper.load_textures(dummy_textures)
+        self.assertTrue(self.gazebo_helper.spawn_entity_proxy.called)
+        self.assertTrue(self.gazebo_helper.delete_model_proxy.called)
+
 
 if __name__ == "__main__":
     unittest.main()

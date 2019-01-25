@@ -361,6 +361,44 @@ class GazeboHelper(object):
         logger.info("Cleaning lights")
         self.delete_lights_proxy()
 
+    _TEXTURE_MODEL_SDF_TEMPLATE = \
+        '<?xml version="1.0" ?>' \
+        '<sdf version="1.5">' \
+        ' <model name="custom_material">' \
+        '  <link name="link">' \
+        '   <visual name="visual">' \
+        '    <geometry>' \
+        '     <box>' \
+        '      <size>0.001 0.001 0.001</size>' \
+        '     </box>' \
+        '    </geometry>' \
+        '    <material><script>' \
+        '     <uri>file://custom_textures/materials/scripts/custom.material</uri>' \
+        '     <name>{texture_name}</name>' \
+        '    </script></material>' \
+        '    <transparency>1</transparency>' \
+        '   </visual>' \
+        '  </link>' \
+        ' </model>' \
+        '</sdf>'
+
+    def load_textures(self, textures):
+        """
+        Loads the user textures in the simulation
+
+        :param textures: A list of dict describing textures
+        """
+        if textures:
+            t_name = textures[0]['name']
+            # We use a texture (e.g. the first) to dynamically spawn a new box with no collision
+            # and transparent just to trigger the gazebo material addition.
+            # Then materials can be used from a state machine that sets the color.
+            # When done we delete the temp object.
+            texture_model_sdf = GazeboHelper._TEXTURE_MODEL_SDF_TEMPLATE.format(texture_name=t_name)
+
+            self.spawn_entity_proxy(t_name, texture_model_sdf, "", Pose(), 'world')
+            self.delete_model_proxy(t_name)
+
     def wait_for_backend_rendering(self):
         """
         Wait for the backend rendering environment to be ready. Blocks until all world models and
