@@ -56,14 +56,14 @@ class NengoSimulationState(object):
         """
         self._simulator_factory = simulator_factory
 
-    def load_brain(self, network_file):
+    def load_brain(self, brain_file):
         """
         Loads the brain model specified in the given Python script
 
-        :param network_file: The Python file containing the network
+        :param brain_file: The Python file containing the network
         """
         import hbp_nrp_cle.tf_framework.config as tf_config
-        tf_config.brain_root = NengoBrainLoader.load_py_network(network_file)
+        tf_config.brain_root = NengoBrainLoader.load_py_network(brain_file)
 
         self._root_network = nengo.Network()
 
@@ -72,7 +72,7 @@ class NengoSimulationState(object):
 
         logger.info("Saving brain source")
 
-        with open(network_file) as source:
+        with open(brain_file) as source:
             tf_config.brain_source = source.read()
 
         logger.info("Resetting Nengo simulator")

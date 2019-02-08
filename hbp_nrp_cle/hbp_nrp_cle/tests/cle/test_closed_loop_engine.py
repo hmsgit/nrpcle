@@ -49,7 +49,8 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         rca = MockRobotControlAdapter()
         rcm = MockRobotCommunicationAdapter()
         self.__bca = MockBrainControlAdapter()
-        self.__bca.load_network_from_file = MagicMock()
+        self.__bca.load_brain = MagicMock()
+        self.__bca.load_populations = MagicMock()
         bcm = MockBrainCommunicationAdapter()
         self.__tfm = MockTransferFunctionManager()
         self.__tfm.hard_reset_brain_devices = MagicMock()
@@ -122,10 +123,12 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
 
 
     def test_reset_brain(self):
-        self.__cle.load_network_from_file = Mock()
+        self.__cle.load_brain = Mock()
+        self.__cle.load_populations = Mock()
         self.__cle._DeterministicClosedLoopEngine__network_configuration = {}
         self.__cle.reset_brain()
-        self.assertEquals(1, self.__cle.load_network_from_file.call_count)
+        self.assertEquals(1, self.__cle.load_brain.call_count)
+        self.assertEquals(1, self.__cle.load_populations.call_count)
 
     def test_shutdown(self):
         self.__cle.initialize("foo")
@@ -133,7 +136,7 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
 
     def test_load_network(self):
         self.__cle.initialize("foo")
-        self.__cle.load_network_from_file("brain.py")
+        self.__cle.load_brain("brain.py")
         self.__tfm.hard_reset_brain_devices.assert_called_once_with()
 
     def test_forced_stop(self):
@@ -157,7 +160,7 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         self.__cle.reset_robot_pose()
         self.__cle.gazebo_helper.set_model_pose.assert_called_with('robot', pose)
 
-    def load_network_from_file(self):
+    def load_brain_and_populations(self):
 
         populations = {
             'index1': 1,
@@ -167,20 +170,22 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         }
 
         # load brain should not work when CLE is not initialized
-        self.__bca.load_network_from_file.assert_called_with("brain.py", populations)
-        self.assertEqual(self.__bca.load_network_from_file.call_count, 0)
+        self.__bca.load_brain.assert_called_with("brain.py")
+        self.__bca.load_populations.assert_called_with(populations)
+
+        self.assertEqual(self.__bca.load_brain.call_count, 0)
+        self.assertEqual(self.__bca.load_populations.call_count, 0)
 
         # Happy case
         self.__cle.initialize("foo")
         self.__cle.start()
         self.assertEqual(self.__cle.running, True)
-        self.__cle.load_network_from_file("brain.py", populations)
+        self.__cle.load_brain("brain.py")
+        self.__cle.load_populations("brain.py", populations)
         self.assertEqual(self.__cle.running, False)
-        self.__bca.load_network_from_file.assert_called_with("brain.py", populations)
         self.assertEqual(self.bca.is_alive(), False)
         self.__tfm.hard_reset_brain_devices.assert_called()
-        
-        
+
 class TestClosedLoopEngine(TestDeterministicClosedLoopEngine):
     CLE_Class = ClosedLoopEngine
     

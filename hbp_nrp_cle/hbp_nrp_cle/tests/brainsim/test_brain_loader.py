@@ -49,15 +49,6 @@ class TestClosedLoopEngine(unittest.TestCase):
 
     # pylint: disable=R0201
     # method has to be a method in order to be run as part of the test suite
-    def test_load_h5_network(self):
-        """
-        Test loading an .h5 file.
-        """
-        directory = os.path.split(__file__)[0]
-        filename = os.path.join(directory, 'braitenberg.h5')
-        module = H5BrainLoader.load_h5_network(filename, sim, **{'sensors': [0, 1, 2], 'actors': [3, 4, 5]})
-        self.assertIsInstance(module.circuit, sim.Population)
-
     def test_load_python_network(self):
         """
         Tests loading a Python brain model
@@ -71,7 +62,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         circuit = module.circuit
         self.assertIsInstance(circuit, sim.Population)
         self.assertEqual(3, len(circuit))
-
+        module.populations_keys= []
         BrainLoader.setup_access_to_population(module, **{'first': slice(0, 1), 'second': slice(1, 3)})
         first = module.first
         second = module.second
@@ -122,6 +113,7 @@ class TestClosedLoopEngine(unittest.TestCase):
 
         add_pop = {'testPopulation1': slice(0, 1, 1),
                    'testPopulation2': slice(1, 2, 1)}
+        module.populations_keys= []
         BrainLoader.setup_access_to_population(module, **add_pop)
         self.assertIsNotNone(module.testPopulation1)
         self.assertEquals(module.testPopulation1[0], module.circuit[0])

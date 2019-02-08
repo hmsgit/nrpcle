@@ -464,13 +464,22 @@ class IBrainControlAdapter(object):  # pragma: no cover
     """
     Represents a controller object for the neuronal simulator
     """
+    def load_populations(self, **populations):
+        """
+        Load (or reload) populations into the brain
 
-    def load_brain(self, network_file, **populations):
+        :param populations: A dictionary indexed by population names and
+          containing neuron indices. Neuron indices can be defined by a single integer,
+          list of integers or python slices. Python slices can be replaced by a
+          dictionary containing the 'from', 'to' and 'step' values.
+        """
+        raise NotImplementedError("This method was not implemented in the concrete implementation")
+
+    def load_brain(self, brain_file):
         """
         Loads the neuronal network contained in the given file
 
-        :param network_file: The path to the neuronal network file
-        :param populations: Additional populations to create
+        :param brain_file: The path to the neuronal network file
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 

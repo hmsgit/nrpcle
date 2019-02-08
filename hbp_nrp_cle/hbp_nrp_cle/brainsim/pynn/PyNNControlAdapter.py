@@ -28,7 +28,6 @@ moduleauthor: probst@fzi.de
 
 from hbp_nrp_cle.brainsim import IBrainControlAdapter
 from hbp_nrp_cle.brainsim.common import PythonBrainLoader as BrainLoader
-from hbp_nrp_cle.brainsim.pynn import H5PyNNBrainLoader
 from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
 from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population
 import hbp_nrp_cle.brainsim as brainsim
@@ -58,61 +57,55 @@ class PyNNControlAdapter(IBrainControlAdapter):
         self.__rank = None
         self._sim = sim
 
-    def load_brain(self, network_file, **populations):
+    def load_populations(self, **populations):
+        """
+        Load (or reload) populations into the brain
+
+        :param populations: A dictionary indexed by population names and
+          containing neuron indices. Neuron indices can be defined by a single integer,
+          list of integers or python slices. Python slices can be replaced by a
+          dictionary containing the 'from', 'to' and 'step' values.
+        """
+        import hbp_nrp_cle.tf_framework.config as tf_config
+        tf_config.brain_populations = self.populations_using_json_slice(
+            populations)
+
+        if not hasattr(tf_config.brain_root, 'populations_keys'):
+            tf_config.brain_root.populations_keys = []
+        BrainLoader.clear_populations(tf_config.brain_root)
+
+        BrainLoader.setup_access_to_population(
+            tf_config.brain_root, **self.populations_using_python_slice(populations))
+
+    def load_brain(self, brain_file):
         """
         Loads the neuronal network contained in the given file
 
-        :param network_file: The path to the neuronal network file
-        :param populations: The populations to create
+        :param brain_file: The path to the neuronal network file
         """
-        self.__is_alive = True
-        import hbp_nrp_cle.tf_framework.config as tf_config
-        tf_config.brain_populations = self.populations_using_json_slice(populations)
-        extension = path.splitext(network_file)[1]
+        extension = path.splitext(brain_file)[1]
         brainsim.simulator = self._sim
-
         if extension == ".py":
-            self.__load_python_brain(
-                network_file,
-                **self.populations_using_python_slice(populations)
-            )
-        elif extension == ".h5":
-            self.__load_h5_brain(
-                network_file,
-                **self.populations_using_python_slice(populations)
-            )
+            self.__load_py_brain(brain_file)
         else:
             msg = "Neuronal network format {0} not supported".format(extension)
             raise Exception(msg)
 
-    def __load_h5_brain(self, network_file, **populations):
-        """
-        Loads the brain model in the given h5 file
-
-        :param network_file: The path to the .5h file containing the network
-        :param populations: A named list of populations to create
-        """
-        if not self.__is_initialized:
-            self.initialize()
-        H5PyNNBrainLoader.load_h5_network(network_file, self._sim, **populations)
-
-    def __load_python_brain(self, network_file, **populations):
+    def __load_py_brain(self, brain_file):
         """
         Loads the brain model specified in the given Python script
 
-        :param network_file: The Python file containing the network
-        :param populations: A named list of populations to create
+        :param brain_file: The Python file containing the network
         """
         if not self.__is_initialized:
             self.initialize()
 
         import hbp_nrp_cle.tf_framework.config as tf_config
 
-        tf_config.brain_root = BrainLoader.load_py_network(network_file)
-        BrainLoader.setup_access_to_population(tf_config.brain_root, **populations)
+        tf_config.brain_root = BrainLoader.load_py_network(brain_file)
 
         logger.info("Saving brain source")
-        with open(network_file) as source:
+        with open(brain_file) as source:
             tf_config.brain_source = source.read()
 
     def initialize(self, **params):

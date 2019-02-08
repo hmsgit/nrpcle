@@ -91,11 +91,18 @@ class MockBrainControlAdapter(IBrainControlAdapter):
         """
         pass
 
-    def load_brain(self, network_file, **populations):
+    def load_brain(self, brain_file):
         """
         Loads the neuronal network contained in the given file
 
-        :param network_file: The path to the neuronal network file
+        :param brain_file: The path to the neuronal network file
+        """
+        self.__is_alive = True
+
+    def load_populations(self, **populations):
+        """
+        Loads or reload the population into the actual brain
+
         :param populations: The populations to create
         """
         self.__is_alive = True

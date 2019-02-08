@@ -92,6 +92,21 @@ def load_py_network(path):
     return brain_module
 
 
+def clear_populations(brain_module):
+    """
+    clear populations to the population
+
+    :param brain_module: The brain module
+    """
+    try:
+        for population_id in brain_module.populations_keys:
+            print brain_module.__dict__[population_id]
+            del brain_module.__dict__[population_id]
+        brain_module.populations_keys = []
+    except KeyError as e:
+        logger.info("Error while clearing the populations: " + e.__repr__())
+
+
 def setup_access_to_population(brain_module, **populations):
     """
     Sets up the access to the population
@@ -113,6 +128,8 @@ def setup_access_to_population(brain_module, **populations):
             if neurons.size != expected_size:
                 raise Exception("Population '%s' out of bounds" % p)
             brain_module.__dict__[p] = neurons
+            brain_module.populations_keys.append(p)
+
     except AttributeError:
         if len(populations) > 0:
             raise Exception(

@@ -56,23 +56,31 @@ class NengoControlAdapter(IBrainControlAdapter):
         self._nengo_simulation_state = nengo_simulation_state
         self._params = {'dt': 0.001}
 
-    def load_brain(self, network_file, **populations):
+    def load_populations(self, **populations):
         """
-        Loads the neuronal network contained in the given file
+        Load (or reload) populations into the brain
 
-        :param network_file: The path to the neuronal network file
-        :param populations: The populations to create
+        :param populations: A dictionary indexed by population names and
+          containing neuron indices. Neuron indices can be defined by a single integer,
+          list of integers or python slices. Python slices can be replaced by a
+          dictionary containing the 'from', 'to' and 'step' values.
         """
-
         if populations:
             raise NotImplementedError(
                 "The Nengo Brain Adapter currently does not support selecting populations"
                 " based on BIBI file attributes. You can provide named populations by"
                 " having the brain module declare these as attribute.")
-        extension = path.splitext(network_file)[1]
+
+    def load_brain(self, brain_file):
+        """
+        Loads the neuronal network contained in the given file
+
+        :param brain_file: The path to the neuronal network file
+        """
+        extension = path.splitext(brain_file)[1]
 
         if extension == ".py":
-            self._nengo_simulation_state.load_brain(network_file)
+            self._nengo_simulation_state.load_brain(brain_file)
             import hbp_nrp_cle.tf_framework.config as tf_config
             tf_config.brain_populations = {}
             NengoBrainLoader.setup_access_to_population(

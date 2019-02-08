@@ -148,7 +148,6 @@ class NeuronMonitor(TransferFunction):
 
         for spike in spikes:
             msgs.append(SpikeData(int(spike[0]), spike[1]))
-
         self.publisher.send_message(SpikeEvent(
             t, self.__count, msgs, self.name,
             self.get_population_name()))

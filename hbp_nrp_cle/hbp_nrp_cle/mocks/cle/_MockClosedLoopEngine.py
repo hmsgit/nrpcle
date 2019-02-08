@@ -61,19 +61,22 @@ class MockClosedLoopEngine(IClosedLoopControl,
         self.running = False
         self.start_time = 0.0
         self.elapsed_time = 0.0
-
+        self.brain_populations = {}
+        self.brain = None
         self.initialized = False
 
-    def initialize(self, network_file, **configuration):
+    def initialize(self, brain_file, **populations):
         """
         Initializes the closed loop engine.
 
-        :param configuration: A set of populations
-        containing the neural network definition
-        :param network_file: A python PyNN script or an h5 file
+        :param brain_file: A python PyNN script
+        :param populations: A set of populations containing the neural network definition
+
         """
         self.clock = 0.0
         self.initialized = True
+        self.brain_populations = populations
+        self.brain = brain_file
 
     @property
     def is_initialized(self):
@@ -196,16 +199,24 @@ class MockClosedLoopEngine(IClosedLoopControl,
         """
         self.running_flag.wait(timeout=timeout)
 
-    def load_network_from_file(self, network_file, **network_configuration):
+    def load_populations(self, **populations):
+        """
+        Load (or reload) populations into the brain
 
+        :param populations: A dictionary indexed by population names and
+          containing neuron indices. Neuron indices can be defined by a single integer,
+          list of integers or python slices. Python slices can be replaced by a
+          dictionary containing the 'from', 'to' and 'step' values.
+        """
+        self.brain_populations = populations
+        return
+
+    def load_brain(self, brain_file):
         """
         Load (or reload) the brain model from a file the neuronal network file
 
-        :param network_file: A python PyNN script or an h5 file
-        containing the neural network definition
-        :param network_configuration: A dictionary indexed by population names and
-        containing neuron indices. Neuron indices could be defined a single integer,
-        list of integers or python slices. Python slices could be replaced by a
-        dictionary containing the 'from', 'to' and 'step' values.
+        :param brain_file: A python PyNN script or an h5 file
+          containing the neural network definition
         """
+        self.brain = brain_file
         return

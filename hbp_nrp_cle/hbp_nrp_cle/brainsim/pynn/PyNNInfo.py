@@ -30,7 +30,7 @@ from pyNN.common import BasePopulation, Assembly
 __author__ = "Georg Hinkel"
 
 
-def is_population(population):
+def is_population(population): # pragma: no cover
     """
     Determines whether the given object is a population
 
@@ -39,7 +39,7 @@ def is_population(population):
     return isinstance(population, BasePopulation) or isinstance(population, Assembly)
 
 
-def create_view(population, sl):
+def create_view(population, sl): # pragma: no cover
     """
     Creates a view of the given population
 

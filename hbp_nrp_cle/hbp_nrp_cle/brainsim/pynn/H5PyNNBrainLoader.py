@@ -39,7 +39,7 @@ __brain_index = 0
 # pylint: disable=R0914
 # the variables are reasonable in this case
 def load_pointneuron_circuit(h5_filename, sim, neuron_ids=None,
-                             synapse_model='TsodyksMarkramMechanism'):
+                             synapse_model='TsodyksMarkramMechanism'): # pragma: no cover
     """Loads the h5 point-neuron circuit into PyNN. The result dictionary will
     contain a set of PyNN neurons that are correctly connected together.
 
@@ -178,7 +178,7 @@ def load_pointneuron_circuit(h5_filename, sim, neuron_ids=None,
     return circuit
 
 
-def load_h5_network(path, sim, **populations):
+def load_h5_network(path, sim, **populations): # pragma: no cover
     """
     Load a h5 brain network file.
 
@@ -227,7 +227,7 @@ class Brain(object):
         self.__circuit = circuit
 
     @property
-    def circuit(self):
+    def circuit(self): # pragma: no cover
         """
         Gets the circuit brain region
         """

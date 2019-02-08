@@ -32,7 +32,7 @@ import logging
 logger = logging.getLogger("NengoBrainLoader")
 
 
-def setup_access_to_population(brain_module, *populations):
+def setup_access_to_population(brain_module, *populations): # pragma: no cover
     """
     Sets up the access to the population
 

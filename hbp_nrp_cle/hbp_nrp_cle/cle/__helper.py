@@ -31,7 +31,7 @@ from hbp_nrp_cle.tf_framework import ITransferFunctionManager
 __author__ = 'GeorgHinkel'
 
 
-def get_tf_elapsed_times(tfm):
+def get_tf_elapsed_times(tfm): # pragma: no cover
     """
     Gets the Transfer Functions from the given Transfer Function manager in a dictionary
 

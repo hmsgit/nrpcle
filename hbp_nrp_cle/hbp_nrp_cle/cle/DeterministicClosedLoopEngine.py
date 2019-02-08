@@ -121,11 +121,10 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.initial_models = None
         self.initial_lights = None
 
-    def initialize(self, network_file=None, **configuration):
+    def initialize(self, brain_file=None, **configuration):
         """
         Initializes the closed loop engine.
-        :param network_file: A python PyNN script or an h5 file
-         containing the neural network definition
+        :param brain_file: A python PyNN script containing the neural network definition
         :param configuration: A set of populations
         """
         self.rca.initialize()
@@ -135,17 +134,18 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.initialized = True
-        if network_file:
-            self.__network_file = network_file
+        if brain_file:
+            self.__network_file = brain_file
             self.__network_configuration = configuration
             try:
-                self.bca.load_brain(network_file, **configuration)
+                self.bca.load_brain(brain_file)
+                self.bca.load_populations(**configuration)
             except BrainTimeoutException:
                 logger.info(
-                    "Timeout ocurrs during loading the brain:" + network_file)
+                    "Timeout occurs during loading the brain:" + brain_file)
             except Exception as e:
                 logger.info(
-                    "Compiling Error during loading the brain({0}): {1!r}".format(network_file, e))
+                    "Compiling Error during loading the brain({0}): {1!r}".format(brain_file, e))
 
     @property
     def is_initialized(self):
@@ -154,13 +154,11 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         """
         return self.initialized
 
-    def load_network_from_file(self, network_file, **network_configuration):
+    def load_populations(self, **populations):
         """
-        Creates a new brain in the running simulation
+        load new populations into the brain
 
-        :param network_file: A python PyNN script or an h5 file
-        containing the neural network definition
-        :param network_configuration: A dictionary indexed by population names and
+        :param populations: A dictionary indexed by population names and
         containing neuron indices. Neuron indices can be defined by
         lists of integers or slices. Slices are either python slices or
         dictionaries containing 'from', 'to' and 'step' values.
@@ -170,8 +168,24 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
                 self.stop()
             if self.bca.is_alive():
                 self.bca.shutdown()
-            logger.info("Recreating brain from file " + network_file)
-            self.bca.load_brain(network_file, **network_configuration)
+            logger.info("Loading new populations ")
+            self.bca.load_populations(**populations)
+            self.tfm.hard_reset_brain_devices()
+
+    def load_brain(self, brain_file):
+        """
+        Creates a new brain in the running simulation
+
+        :param brain_file: A python PyNN script or an h5 file
+        containing the neural network definition
+        """
+        if self.initialized:
+            if self.running:
+                self.stop()
+            if self.bca.is_alive():
+                self.bca.shutdown()
+            logger.info("Recreating brain from file " + brain_file)
+            self.bca.load_brain(brain_file)
             logger.info("Resetting TFs")
             self.tfm.hard_reset_brain_devices()
 
@@ -325,18 +339,20 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         self.rca.reset_world(models, lights)
         logger.info("CLE world reset")
 
-    def reset_brain(self, network_file=None, network_configuration=None):
+    def reset_brain(self, brain_file=None, populations=None):
         """
         Reloads the brain and resets the transfer function.
         If no parameter is specified, it reloads the initial brain.
 
-        :param network_file: A python PyNN script containing the neural network definition
-        :param network_configuration: A set of populations
+        :param brain_file: A python PyNN script containing the neural network definition
+        :param populations: A set of populations
         """
-        if network_file is not None and network_configuration is not None:
-            self.load_network_from_file(network_file, **network_configuration)
+        if brain_file is not None and populations is not None:
+            self.load_brain(brain_file)
+            self.load_populations(**populations)
         else:
-            self.load_network_from_file(self.__network_file, **self.__network_configuration)
+            self.load_brain(self.__network_file)
+            self.load_populations(**self.__network_configuration)
         logger.info("CLE Brain reset")
 
     @property
