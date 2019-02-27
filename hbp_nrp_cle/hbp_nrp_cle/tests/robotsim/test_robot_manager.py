@@ -22,7 +22,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
 """
-This module tests the backend implementation of the simulation lifecycle
+This module tests the robot manager
 """
 
 import unittest
@@ -105,24 +105,3 @@ class TestRobotManager(unittest.TestCase):
         sceneHandler = "/some/scene/handler"
         self.robotManager._RobotManager__sceneHandler = sceneHandler
         self.assertTrue(self.robotManager.scene_handler() is sceneHandler)
-
-    def test_convertXSDPosetoPyPose(self):
-        pose = None
-        self.assertTrue(self.robotManager.convertXSDPosetoPyPose(pose) is None)
-
-        pose = Mock()
-        self.mocked_pose = patch("hbp_nrp_cle.robotsim.RobotManager.Pose").start()
-        self.mocked_pose.return_value.postion = "mocked_pose_position"
-        self.mocked_transformation = patch("hbp_nrp_cle.robotsim.RobotManager.transformations").start()
-
-        pose.ux.return_value = 1
-        self.assertTrue(self.robotManager.convertXSDPosetoPyPose(pose), self.mocked_pose.return_value)
-
-        pose.ux = None
-        self.assertTrue(self.robotManager.convertXSDPosetoPyPose(pose), self.mocked_pose.return_value)
-
-        self.mocked_transformation.quaternion_from_euler.return_value = [None, None, None, None]
-        self.assertTrue(self.robotManager.convertXSDPosetoPyPose(pose), self.mocked_pose.return_value)
-
-        self.mocked_pose.stop()
-        self.mocked_transformation.stop()

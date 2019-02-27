@@ -32,9 +32,6 @@ CLE Assembly (cleserver) creates an object of this class, and passes around.
 import copy
 import logging
 
-from geometry_msgs.msg import Pose
-import tf.transformations as transformations
-
 from .GazeboHelper import GazeboHelper
 from hbp_nrp_cleserver.server.ROSLaunch import ROSLaunch
 
@@ -72,6 +69,13 @@ class RobotManager(object):
         self.__sceneHandler = None
         self.__retina_config = None
 
+    def set_robot_dict(self, new_dict):
+        """
+        Set the robot dictionary
+        :return: robot list
+        """
+        self.robots = new_dict
+
     def get_robot_dict(self):
         """
         Gets a reference to the robot dictionary with robot id as key and Robot object as value
@@ -103,7 +107,13 @@ class RobotManager(object):
         if robot.id in self.robots:
             raise Exception("Robot name already exists.")
         self.robots[robot.id] = robot
+        self.initialize(robot)
 
+    def initialize(self, robot):
+        """
+        Initialize a robot into the scene
+        :param robot: robot to be initialize
+        """
         if robot.rosLaunchAbsPath:
             robot.ROSLaunch = ROSLaunch(robot.rosLaunchAbsPath)
 
@@ -195,46 +205,3 @@ class RobotManager(object):
         for robot in self.robots.itervalues():
             if robot.rosLaunch:
                 robot.rosLaunch.shutdown()
-
-    @staticmethod
-    def convertXSDPosetoPyPose(xsd_pose):
-        """
-        Converts a xml DOM pose object to python Pose object
-
-        :param xsd_pose: DOM object reference containing the pose
-        :return: a converted Pose object
-        """
-        if xsd_pose is None:
-            return None
-
-        rpose = Pose()
-        rpose.position.x = xsd_pose.x
-        rpose.position.y = xsd_pose.y
-        rpose.position.z = xsd_pose.z
-
-        # REST request has no ux defined. Exc DOM however has one
-        if getattr(xsd_pose, 'ux', None) is not None:
-            rpose.orientation.x = xsd_pose.ux
-            rpose.orientation.y = xsd_pose.uy
-            rpose.orientation.z = xsd_pose.uz
-            rpose.orientation.w = xsd_pose.theta
-        else:
-            roll = xsd_pose.roll if xsd_pose.roll is not None else 0
-            pitch = xsd_pose.pitch if xsd_pose.pitch is not None else 0
-            yaw = xsd_pose.yaw if xsd_pose.yaw is not None else 0
-
-            quaternion = transformations.quaternion_from_euler(roll, pitch, yaw)
-
-            rpose.orientation.x = quaternion[0]
-            rpose.orientation.y = quaternion[1]
-            rpose.orientation.z = quaternion[2]
-            rpose.orientation.w = quaternion[3]
-
-        if rpose.orientation.x is None or rpose.orientation.y is None or \
-                        rpose.orientation.z is None or rpose.orientation.w is None:
-            rpose.orientation.x = 0.0
-            rpose.orientation.y = 0.0
-            rpose.orientation.z = 0.0
-            rpose.orientation.w = 1.0
-
-        return rpose
