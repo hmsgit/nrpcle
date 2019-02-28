@@ -138,8 +138,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
             self.__network_file = brain_file
             self.__network_configuration = configuration
             try:
-                self.bca.load_brain(brain_file)
-                self.bca.load_populations(**configuration)
+                self.load_brain(brain_file, **configuration)
             except BrainTimeoutException:
                 logger.info(
                     "Timeout occurs during loading the brain:" + brain_file)
@@ -172,7 +171,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
             self.bca.load_populations(**populations)
             self.tfm.hard_reset_brain_devices()
 
-    def load_brain(self, brain_file):
+    def load_brain(self, brain_file, **brain_populations):
         """
         Creates a new brain in the running simulation
 
@@ -186,6 +185,8 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
                 self.bca.shutdown()
             logger.info("Recreating brain from file " + brain_file)
             self.bca.load_brain(brain_file)
+            # TODO make loading brain independent from population [NRRPLT-7287]
+            self.bca.load_populations(**brain_populations)
             logger.info("Resetting TFs")
             self.tfm.hard_reset_brain_devices()
 
@@ -348,11 +349,9 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         :param populations: A set of populations
         """
         if brain_file is not None and populations is not None:
-            self.load_brain(brain_file)
-            self.load_populations(**populations)
+            self.load_brain(brain_file, **populations)
         else:
-            self.load_brain(self.__network_file)
-            self.load_populations(**self.__network_configuration)
+            self.load_brain(self.__network_file, *self.__network_configuration)
         logger.info("CLE Brain reset")
 
     @property

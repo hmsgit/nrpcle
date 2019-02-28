@@ -128,16 +128,38 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         self.__cle._DeterministicClosedLoopEngine__network_configuration = {}
         self.__cle.reset_brain()
         self.assertEquals(1, self.__cle.load_brain.call_count)
-        self.assertEquals(1, self.__cle.load_populations.call_count)
 
     def test_shutdown(self):
         self.__cle.initialize("foo")
         self.__cle.shutdown()
 
-    def test_load_network(self):
+    def test_load_brain(self):
         self.__cle.initialize("foo")
-        self.__cle.load_brain("brain.py")
-        self.__tfm.hard_reset_brain_devices.assert_called_once_with()
+        populations = {}
+        self.__cle.load_brain("brain.py", **populations)
+        self.__bca.load_brain.assert_called()
+
+    def test_load_populations(self):
+        populations = {
+            'index1': 1,
+            'list1': [1, 2, 3],
+            'slice1': {'from': 1, 'to': 2, 'step': 1}
+        }
+        self.__cle.initialize("foo")
+        self.__cle.load_populations(**populations)
+        self.__bca.load_populations.assert_called()
+
+    def test_load_brain_and_populations(self):
+        populations = {
+            'index1': 1,
+            'list1': [1, 2, 3],
+            'slice1': {'from': 1, 'to': 2, 'step': 1}
+        }
+        self.__cle.initialize("foo")
+        self.__cle.load_brain("brain.py", **populations)
+        self.__cle.load_populations(**populations)
+        self.__bca.load_brain.assert_called()
+        self.__bca.load_populations.assert_called()
 
     def test_forced_stop(self):
         self.__cle.initialize("foo")
@@ -160,7 +182,7 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         self.__cle.reset_robot_pose()
         self.__cle.gazebo_helper.set_model_pose.assert_called_with('robot', pose)
 
-    def load_brain_and_populations(self):
+    def load_brain_while_sim_is_running(self):
 
         populations = {
             'index1': 1,
@@ -180,8 +202,8 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         self.__cle.initialize("foo")
         self.__cle.start()
         self.assertEqual(self.__cle.running, True)
-        self.__cle.load_brain("brain.py")
-        self.__cle.load_populations("brain.py", populations)
+        # TODO make loading brain independent from population [NRRPLT-7287]
+        self.__cle.load_brain("brain.py", populations)
         self.assertEqual(self.__cle.running, False)
         self.assertEqual(self.bca.is_alive(), False)
         self.__tfm.hard_reset_brain_devices.assert_called()

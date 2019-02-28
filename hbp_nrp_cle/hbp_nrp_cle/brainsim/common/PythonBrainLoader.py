@@ -100,7 +100,6 @@ def clear_populations(brain_module):
     """
     try:
         for population_id in brain_module.populations_keys:
-            print brain_module.__dict__[population_id]
             del brain_module.__dict__[population_id]
         brain_module.populations_keys = []
     except KeyError as e:

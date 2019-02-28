@@ -475,11 +475,12 @@ class IBrainControlAdapter(object):  # pragma: no cover
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
-    def load_brain(self, brain_file):
+    def load_brain(self, brain_file, **populations):
         """
         Loads the neuronal network contained in the given file
 
         :param brain_file: The path to the neuronal network file
+        :param populations: Additional populations to create
         """
         raise NotImplementedError("This method was not implemented in the concrete implementation")
 
