@@ -375,7 +375,11 @@ class TransferFunctionManager(ITransferFunctionManager):
         self.brain_adapter.shutdown()
         self.brain_adapter.initialize()
 
+        exceptions_found = []
         for tf in itertools.chain(self.__r2n, self.__n2r, self.__silent):
+            if not tf.active:
+                continue
+            tf_exception = None
             for i in range(1, len(tf.params)):
                 try:
                     spec = tf.params[i].spec
@@ -383,12 +387,23 @@ class TransferFunctionManager(ITransferFunctionManager):
                         tf.params[i] = spec.create_adapter(self)
                         tf.params[i].spec = spec
                         tf.__dict__[spec.name] = tf.params[i]
+                # pylint: disable=broad-except
                 except Exception as e:
                     logger.exception(e)
-                    raise BrainParameterException("Cannot map parameter '{0}' in transfer "
-                                                  "function '{1}'".format(spec.name, tf.name))
-            tf.initialize(self, True, False)
-            self._update_trigger(tf)
+                    tf_exception = BrainParameterException("Cannot map parameter '{0}' in transfer "
+                                                           "function '{1}'"
+                                                           .format(spec.name, tf.name))
+                    break
+
+            if tf_exception is not None:
+                self.activate_tf(tf, False)
+                exceptions_found.append(tf_exception)
+            else:
+                tf.initialize(self, True, False)
+                self._update_trigger(tf)
+
+        if exceptions_found:
+            raise Exception(exceptions_found)
 
     def hard_reset_robot_devices(self):
         """

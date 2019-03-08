@@ -146,10 +146,11 @@ class TestTransferFunctionManager(unittest.TestCase):
 
         camera_trans.device.spec.create_adapter = lambda: Exception()
 
-        with self.assertRaises(nrp.BrainParameterException) as cm:
+        with self.assertRaises(Exception) as cm:
             self.tfm.hard_reset_brain_devices()
 
-        self.assertEqual(cm.exception.message, "Cannot map parameter 'device' in transfer function 'camera_trans'")
+        self.assertEqual(len(cm.exception.message), 1)
+        self.assertEqual(cm.exception.message[0].message, "Cannot map parameter 'device' in transfer function 'camera_trans'")
 
     def test_shutdown(self):
 
