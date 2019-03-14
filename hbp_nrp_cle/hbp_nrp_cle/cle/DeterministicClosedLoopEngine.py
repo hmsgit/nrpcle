@@ -399,6 +399,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         """
         for rid, pose in self.__initial_robot_poses.iteritems():
             self.gazebo_helper.set_model_pose(str(rid), pose)
+        self.tfm.reset()
 
     def tf_elapsed_time(self):
         """
