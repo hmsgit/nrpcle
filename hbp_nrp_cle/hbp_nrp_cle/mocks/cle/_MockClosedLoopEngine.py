@@ -211,7 +211,7 @@ class MockClosedLoopEngine(IClosedLoopControl,
         self.brain_populations = populations
         return
 
-    def load_brain(self, brain_file):
+    def load_brain(self, brain_file, **populations):
         """
         Load (or reload) the brain model from a file the neuronal network file
 
@@ -219,4 +219,5 @@ class MockClosedLoopEngine(IClosedLoopControl,
           containing the neural network definition
         """
         self.brain = brain_file
+        self.load_populations(**populations)
         return

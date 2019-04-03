@@ -26,7 +26,6 @@ brain_loader unit test
 """
 
 from hbp_nrp_cle.brainsim.common import PythonBrainLoader as BrainLoader
-from hbp_nrp_cle.brainsim.pynn import H5PyNNBrainLoader as H5BrainLoader
 import hbp_nrp_cle.tf_framework as nrp
 
 import unittest
@@ -41,6 +40,8 @@ __author__ = 'Lorenzo Vannucci'
 
 MockOs = Mock()
 MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
+
+
 @patch("hbp_nrp_cle.common.os", new=MockOs)
 class TestClosedLoopEngine(unittest.TestCase):
     """
@@ -62,7 +63,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         circuit = module.circuit
         self.assertIsInstance(circuit, sim.Population)
         self.assertEqual(3, len(circuit))
-        module.populations_keys= []
+        module.populations_keys = []
         BrainLoader.setup_access_to_population(module, **{'first': slice(0, 1), 'second': slice(1, 3)})
         first = module.first
         second = module.second
@@ -113,7 +114,7 @@ class TestClosedLoopEngine(unittest.TestCase):
 
         add_pop = {'testPopulation1': slice(0, 1, 1),
                    'testPopulation2': slice(1, 2, 1)}
-        module.populations_keys= []
+        module.populations_keys = []
         BrainLoader.setup_access_to_population(module, **add_pop)
         self.assertIsNotNone(module.testPopulation1)
         self.assertEquals(module.testPopulation1[0], module.circuit[0])

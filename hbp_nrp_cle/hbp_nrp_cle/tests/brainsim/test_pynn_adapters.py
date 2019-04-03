@@ -59,7 +59,7 @@ class PyNNAdaptersTest(unittest.TestCase):
         brainconfig.rng_seed = 123456
         with LogCapture(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
                         'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter',
-                        'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')) as l:
+                         'hbp_nrp_cle.brainsim.common.__AbstractCommunicationAdapter')) as log_capt:
             self.control = PyNNControlAdapter(sim)
             self.assertEqual(self.control.is_alive(), False)
             self.control.initialize(timestep=0.1,
@@ -84,10 +84,10 @@ class PyNNAdaptersTest(unittest.TestCase):
             self.assertEqual(self.communicator.is_initialized, False)
             self.assertEqual(self.communicator.detector_devices, [])
             self.assertEqual(self.communicator.generator_devices, [])
-        l.check(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter', 'INFO',
-                 'neuronal simulator initialized'),
-                ('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter', 'WARNING',
-                 'trying to initialize an already initialized controller'))
+        log_capt.check(('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter', 'INFO',
+                        'neuronal simulator initialized'),
+                       ('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter', 'WARNING',
+                        'trying to initialize an already initialized controller'))
 
     @log_capture('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter',
                  'hbp_nrp_cle.brainsim.pynn.PyNNCommunicationAdapter')
@@ -584,29 +584,23 @@ requested (device)'))
     @patch("hbp_nrp_cle.common.refresh_resources")
     @patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader")
     def test_load_brain(self, loader, refreshMock):
-        with patch(
-            'hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
-            mock_open(read_data='some python code'), create=True
-        ) as m:
-            slice1 = { 'from': 1, 'to': 2, 'step': 3}
-            slice2 = { 'from': 4, 'to': 5, 'step': None}
+        with patch('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
+                   mock_open(read_data='some python code'),
+                   create=True):
+            slice1 = {'from': 1, 'to': 2, 'step': 3}
+            slice2 = {'from': 4, 'to': 5, 'step': None}
+
             populations_mixed = {
                 'slice_1': slice1, 'slice_2': slice(4, 5),
                 'list_1': [1, 2, 3]
             }
-            self.control.load_brain("foo.py")
-            self.control.load_populations(**populations_mixed)
-            populations_slice = {
-                'slice_1' : {'to': 2, 'step': 3, 'from': 1},
-                'slice_2' : {'to': 5, 'step': None, 'from': 4},
-                'list_1' : [1, 2, 3]
-            }
-            loader.load_py_network.assert_called_with(
-                "foo.py"
-            )
+            self.control.load_brain("foo.py", **populations_mixed)
+
+            loader.load_py_network.assert_called_with("foo.py")
             loader.setup_access_to_population.assert_called_once()
             self.assertTrue(loader.load_py_network.called)
             self.assertEqual(tf_framework.config.brain_source, 'some python code')
+
             populations_json = {
                 'slice_1': slice1, 'slice_2': slice2,
                 'list_1': [1, 2, 3]
@@ -617,9 +611,46 @@ requested (device)'))
             )
             loader.load_py_network.reset_mock()
 
+    @patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader")
+    def test_load_brain_no_population(self, _loader):
+        with patch('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
+                   mock_open(read_data='some python code'),
+                   create=True):
+
+            current_populations = {
+                'slice_1': {'from': 1, 'to': 2, 'step': 3}
+            }
+
+            brain_pop_bak = tf_framework.config.brain_populations
+            tf_framework.config.brain_populations = current_populations
+
+            with patch.object(self.control, 'load_populations') as load_pops_patch:
+                self.control.load_brain("foo.py")
+                load_pops_patch.assert_called_with(**current_populations)
+
+            tf_framework.config.brain_populations = brain_pop_bak
+
+    def test_populations_no_brain_loaded(self):
+        populations = {'slice_1': {'from': 1, 'to': 2, 'step': 3}}
+
+        brain_root_bak = tf_framework.config.brain_root
+        tf_framework.config.brain_root = None
+
+        # brain_root is None
+        with self.assertRaises(Exception):
+            self.control.load_populations(**populations)
+
+        # brain_root.circuit missing
+        tf_framework.config.brain_root = Mock(spec=[])
+
+        with self.assertRaises(AttributeError):
+            self.control.load_populations(**populations)
+
+        tf_framework.config.brain_root = brain_root_bak
+
     def test_populations_using_json_slice(self):
-        slice1 = { 'from': 1, 'to': 2, 'step': 3}
-        slice2 = { 'from': 1, 'to': 2, 'step': None}
+        slice1 = {'from': 1, 'to': 2, 'step': 3}
+        slice2 = {'from': 1, 'to': 2, 'step': None}
         populations_json_slice = {
           'slice_1': slice1, 'slice_2': slice2,
           'list_1': [1, 2, 3]
@@ -639,8 +670,8 @@ requested (device)'))
         )
 
     def test_populations_using_python_slice(self):
-        slice1 = { 'from': 1, 'to': 2, 'step': 3}
-        slice2 = { 'from': 1, 'to': 2}
+        slice1 = {'from': 1, 'to': 2, 'step': 3}
+        slice2 = {'from': 1, 'to': 2}
         populations_json_slice = {
           'population_1': 1, 'population_2': 2,
           'slice_1': slice1, 'slice_2': slice2,
@@ -665,7 +696,7 @@ requested (device)'))
 
         self.control.shutdown()
 
-        #communicator's lists must be empty
+        # communicator's lists must be empty
         self.assertEquals(len(self.communicator.detector_devices), 0)
         self.assertEquals(len(self.communicator.refreshable_devices), 0)
         self.assertEquals(len(self.communicator.finalizable_devices), 0)

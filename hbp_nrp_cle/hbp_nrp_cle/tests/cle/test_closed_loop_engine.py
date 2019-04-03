@@ -120,8 +120,6 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
 
         self.__cle.rca.reset_world.assert_called_with(mock_models_dict, mock_lights_dict)
 
-
-
     def test_reset_brain(self):
         self.__cle.load_brain = Mock()
         self.__cle.load_populations = Mock()
@@ -135,8 +133,7 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
 
     def test_load_brain(self):
         self.__cle.initialize("foo")
-        populations = {}
-        self.__cle.load_brain("brain.py", **populations)
+        self.__cle.load_brain("brain.py")
         self.__bca.load_brain.assert_called()
 
     def test_load_populations(self):
@@ -157,9 +154,7 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         }
         self.__cle.initialize("foo")
         self.__cle.load_brain("brain.py", **populations)
-        self.__cle.load_populations(**populations)
         self.__bca.load_brain.assert_called()
-        self.__bca.load_populations.assert_called()
 
     def test_forced_stop(self):
         self.__cle.initialize("foo")
@@ -173,12 +168,11 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
 
     def test_reset_robot_pose(self):
         self.__cle.gazebo_helper.set_model_pose = Mock()
-        poses = {}
         pose = Pose()
         pose.position = Point(0, 0, 0)
         pose.orientation = Quaternion(0, 0, 0, 1)
 
-        self.__cle.initial_robot_poses= {'robot': pose}
+        self.__cle.initial_robot_poses = {'robot': pose}
         self.__cle.reset_robot_pose()
         self.__cle.gazebo_helper.set_model_pose.assert_called_with('robot', pose)
 
@@ -202,11 +196,12 @@ class TestDeterministicClosedLoopEngine(unittest.TestCase):
         self.__cle.initialize("foo")
         self.__cle.start()
         self.assertEqual(self.__cle.running, True)
-        # TODO make loading brain independent from population [NRRPLT-7287]
+
         self.__cle.load_brain("brain.py", populations)
         self.assertEqual(self.__cle.running, False)
         self.assertEqual(self.bca.is_alive(), False)
         self.__tfm.hard_reset_brain_devices.assert_called()
+
 
 class TestClosedLoopEngine(TestDeterministicClosedLoopEngine):
     CLE_Class = ClosedLoopEngine

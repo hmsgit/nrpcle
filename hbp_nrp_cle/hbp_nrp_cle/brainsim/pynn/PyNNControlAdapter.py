@@ -32,6 +32,8 @@ from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
 from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population
 import hbp_nrp_cle.brainsim as brainsim
 
+import hbp_nrp_cle.tf_framework.config as tf_config
+
 import logging
 from os import path
 import copy
@@ -59,16 +61,25 @@ class PyNNControlAdapter(IBrainControlAdapter):
 
     def load_populations(self, **populations):
         """
-        Load (or reload) populations into the brain
+        Load (or reload) populations defined on the currently loaded brain.
 
         :param populations: A dictionary indexed by population names and
           containing neuron indices. Neuron indices can be defined by a single integer,
           list of integers or python slices. Python slices can be replaced by a
           dictionary containing the 'from', 'to' and 'step' values.
+        :raise Exception: When no brain is currently loaded
         """
-        import hbp_nrp_cle.tf_framework.config as tf_config
-        tf_config.brain_populations = self.populations_using_json_slice(
-            populations)
+
+        # check if a valid brain is loaded
+        if tf_config.brain_root is None:
+            raise Exception("No brain is currently loaded, cannot add Populations.")
+
+        if not hasattr(tf_config.brain_root, 'circuit'):
+            raise AttributeError("No circuit is found in the currently loaded brain:"
+                                 "Cannot add Populations.")
+
+        # valid brain found, load populations
+        tf_config.brain_populations = self.populations_using_json_slice(populations)
 
         if not hasattr(tf_config.brain_root, 'populations_keys'):
             tf_config.brain_root.populations_keys = []
@@ -77,16 +88,23 @@ class PyNNControlAdapter(IBrainControlAdapter):
         BrainLoader.setup_access_to_population(
             tf_config.brain_root, **self.populations_using_python_slice(populations))
 
-    def load_brain(self, brain_file):
+    def load_brain(self, brain_file, **populations):
         """
         Loads the neuronal network contained in the given file
 
         :param brain_file: The path to the neuronal network file
+        :param populations: Additional populations to create (Optional)
         """
         extension = path.splitext(brain_file)[1]
         brainsim.simulator = self._sim
+
         if extension == ".py":
             self.__load_py_brain(brain_file)
+
+            # load new populations if any, otherwise reload current ones (if any)
+            pops = populations if populations else tf_config.brain_populations
+            if pops:
+                self.load_populations(**pops)
         else:
             msg = "Neuronal network format {0} not supported".format(extension)
             raise Exception(msg)
@@ -99,8 +117,6 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         if not self.__is_initialized:
             self.initialize()
-
-        import hbp_nrp_cle.tf_framework.config as tf_config
 
         tf_config.brain_root = BrainLoader.load_py_network(brain_file)
 
@@ -177,10 +193,9 @@ class PyNNControlAdapter(IBrainControlAdapter):
 
         :return: A list of population infos
         """
-        import hbp_nrp_cle.tf_framework.config as config
         populations = []
-        for member in dir(config.brain_root):
-            candidate = getattr(config.brain_root, member)
+        for member in dir(tf_config.brain_root):
+            candidate = getattr(tf_config.brain_root, member)
             self.__find_all_populations(candidate, member, populations)
         return populations
 
@@ -237,7 +252,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         """
         result = copy.deepcopy(populations)
         for key, value in populations.iteritems():
-            if (isinstance(value, slice)):
+            if isinstance(value, slice):
                 p = {'from': value.start, 'to': value.stop, 'step': value.step}
                 result[key] = p
         return result
@@ -252,7 +267,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
         :param populations: a dictionary whose values are either
         python lists or slices.
         Slices can be of two types, either python slices,
-        or dictionnaries of the form {'from': 1, 'to': 10, 'step': 2}
+        or dictionaries of the form {'from': 1, 'to': 10, 'step': 2}
         :return: A dictionary where 'json slices' (plain python dicts) have been replaced
         by python slices.
         """

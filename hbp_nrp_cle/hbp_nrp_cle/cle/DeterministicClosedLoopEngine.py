@@ -167,7 +167,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
                 self.stop()
             if self.bca.is_alive():
                 self.bca.shutdown()
-            logger.info("Loading new populations ")
+            logger.info("Loading new populations")
             self.bca.load_populations(**populations)
             self.tfm.hard_reset_brain_devices()
 
@@ -177,6 +177,10 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
 
         :param brain_file: A python PyNN script or an h5 file
         containing the neural network definition
+        :param brain_populations: A (optional) dictionary indexed by population names and
+        containing neuron indices. Neuron indices can be defined by
+        lists of integers or slices. Slices are either python slices or
+        dictionaries containing 'from', 'to' and 'step' values.
         """
         if self.initialized:
             if self.running:
@@ -184,9 +188,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
             if self.bca.is_alive():
                 self.bca.shutdown()
             logger.info("Recreating brain from file " + brain_file)
-            self.bca.load_brain(brain_file)
-            # TODO make loading brain independent from population [NRRPLT-7287]
-            self.bca.load_populations(**brain_populations)
+            self.bca.load_brain(brain_file, **brain_populations)
             logger.info("Resetting TFs")
             self.tfm.hard_reset_brain_devices()
 

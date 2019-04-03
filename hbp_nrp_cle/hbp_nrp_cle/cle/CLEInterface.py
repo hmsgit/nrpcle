@@ -50,12 +50,16 @@ class IClosedLoopControl(object):  # pragma: no cover
     """
     Represents the closed loop engine synchronization mechanism.
     """
-    def load_brain(self, brain_file):
+    def load_brain(self, brain_file, **brain_populations):
         """
         Load (or reload) the brain model from a file the neuronal network file
 
         :param brain_file: A python PyNN script or an h5 file
           containing the neural network definition
+        :param brain_populations: A (optional) dictionary indexed by population names and
+        containing neuron indices. Neuron indices can be defined by
+        lists of integers or slices. Slices are either python slices or
+        dictionaries containing 'from', 'to' and 'step' values.
         """
         raise NotImplementedError("Method not implemented")
 

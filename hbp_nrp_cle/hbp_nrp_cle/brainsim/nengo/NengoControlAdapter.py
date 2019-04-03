@@ -71,7 +71,7 @@ class NengoControlAdapter(IBrainControlAdapter):
                 " based on BIBI file attributes. You can provide named populations by"
                 " having the brain module declare these as attribute.")
 
-    def load_brain(self, brain_file):
+    def load_brain(self, brain_file, **populations):
         """
         Loads the neuronal network contained in the given file
 
