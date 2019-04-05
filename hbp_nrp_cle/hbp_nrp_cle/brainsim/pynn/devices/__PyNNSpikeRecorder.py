@@ -127,6 +127,13 @@ class PyNNSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         """
         return self._neurons
 
+    @property
+    def neurons_count(self):
+        """
+        Gets the number of neurons monitored by this spike recorder
+        """
+        return self._neurons.size
+
     # simulation time not necessary for this device
     # pylint: disable=unused-argument
     def refresh(self, time):

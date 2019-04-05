@@ -26,10 +26,10 @@ The brain communication adapter for the Nengo default simulator
 """
 
 import logging
-from hbp_nrp_cle.brainsim.BrainInterface import IRawSignal
+from hbp_nrp_cle.brainsim.BrainInterface import IRawSignal, ISpikeRecorder
 
 from hbp_nrp_cle.brainsim.common import AbstractCommunicationAdapter, DeviceCommunicationDirection
-from hbp_nrp_cle.brainsim.nengo.devices import NengoRawSignalNode
+from hbp_nrp_cle.brainsim.nengo.devices import NengoRawSignalNode, NengoSpikeRecorder
 from hbp_nrp_cle.brainsim.nengo import NengoInfo
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,8 @@ class NengoCommunicationAdapter(AbstractCommunicationAdapter):
     Represents the communication adapter to the neuronal simulator
     """
 
-    __device_dict = {IRawSignal: NengoRawSignalNode}
+    __device_dict = {IRawSignal: NengoRawSignalNode,
+                     ISpikeRecorder: NengoSpikeRecorder}
 
     def __init__(self, nengo_simulation_state):
         super(NengoCommunicationAdapter, self).__init__()

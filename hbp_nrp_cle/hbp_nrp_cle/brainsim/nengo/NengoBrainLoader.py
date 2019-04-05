@@ -42,6 +42,7 @@ def setup_access_to_population(brain_module, *populations): # pragma: no cover
     try:
         for p in populations:
             brain_module.__dict__[p.name] = p.population
+            p.population.label = p.name
     except AttributeError:
         if len(populations) > 0:
             raise Exception(

@@ -118,3 +118,10 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
         self.__update = updates
         if updates is None:
             self.__update = []
+
+    @property
+    def neurons_count(self):
+        """
+        Gets the number of neurons monitored by this spike recorder
+        """
+        return self.neurons.size

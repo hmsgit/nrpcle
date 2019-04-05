@@ -118,8 +118,12 @@ class NeuronMonitor(TransferFunction):
         """
         if bca_changed:
             if hasattr(self.device, 'neurons'):
+
                 self.__neurons = self.device.neurons
-                self.__count = self.__neurons.size
+
+                # Get Neuron count
+                self.__count = self.device.neurons_count
+
             else:
                 self.__neurons = None
                 self.__count = None

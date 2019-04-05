@@ -112,6 +112,12 @@ class NengoSimulationState(object):
         """
         return self._root_network
 
+    def clear_probe_data(self, probe):
+        """
+        Clears the data of the specified probe
+        """
+        self._simulator.data.raw[probe] = []
+
     def __enter__(self):
         self._root_network.__enter__()
         return self
