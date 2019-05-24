@@ -45,8 +45,9 @@ class Robot(object):
     Robot model structure to be used in the CLE
     """
     def __init__(self, rid, sdf_abs_path, display_name, pose,
-                 is_custom=False, roslaunch_abs_path=None):
+                 is_custom=False, roslaunch_abs_path=None, model=None):
         self.id = rid
+        self.model = model
         self.SDFFileAbsPath = sdf_abs_path
         self.displayName = display_name
         self.pose = pose    # quaternion pose: geometry_msgs.msg.Pose
