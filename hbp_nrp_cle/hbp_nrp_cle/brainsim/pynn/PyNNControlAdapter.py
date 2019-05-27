@@ -115,6 +115,7 @@ class PyNNControlAdapter(IBrainControlAdapter):
 
         :param brain_file: The Python file containing the network
         """
+        self.__is_alive = True
         if not self.__is_initialized:
             self.initialize()
 
