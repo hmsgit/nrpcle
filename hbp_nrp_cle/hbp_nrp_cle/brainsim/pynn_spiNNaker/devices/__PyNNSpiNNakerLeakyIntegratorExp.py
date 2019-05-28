@@ -24,17 +24,21 @@
 """
 Implementation of PyNNLeakyIntegratorExp
 """
+# pylint: disable=import-error
+#from spynnaker.pyNN.external_devices_models.abstract_multicast_controllable_device import SendType
+import decimal
 
+from enum import Enum
 from hbp_nrp_cle.brainsim.pynn.devices.__PyNNLeakyIntegratorTypes import PyNNLeakyIntegratorExp
 from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker as sim
 from hbp_nrp_cle.brainsim.pynn_spiNNaker.__EthernetControlConnection import register_devices, \
     get_key
-from hbp_nrp_cle.tf_framework._TransferFunctionManager import TransferFunctionManager
+import logging
+logger = logging.getLogger(__name__)
 try:
     # pylint: disable=import-error
     from data_specification.enums import DataType
     from spynnaker.pyNN.external_devices_models import AbstractMulticastControllableDevice
-    from spinn_front_end_common.utilities.globals_variables import get_simulator
 except ImportError:  # pragma: no cover
     AbstractMulticastControllableDevice = object
 
@@ -48,11 +52,22 @@ except ImportError:  # pragma: no cover
         """A dummy for the get_simulator method in case Spinnaker is not installed"""
         return None
 
+
+class SendType(Enum):
+    """ The data type to be sent in the payload of the multicast packet
+    """
+    SEND_TYPE_INT = 0
+    SEND_TYPE_UINT = 1
+    SEND_TYPE_ACCUM = 2
+    SEND_TYPE_UACCUM = 3
+    SEND_TYPE_FRACT = 4
+    SEND_TYPE_UFRACT = 5
+
 __author__ = 'Georg Hinkel'
 
 
 class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
-                                      AbstractMulticastControllableDevice):
+                                      AbstractMulticastControllableDevice): # pragma no cover
     """
     Represents the membrane potential of a current-based LIF neuron
     with decaying-exponential post-synaptic currents
@@ -83,8 +98,6 @@ class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
 
     def __init__(self, **params):
         super(PyNNSpiNNakerLeakyIntegratorExp, self).__init__(**params)
-        self.__tfs = []
-        self.__t = 0.0
 
     def _update_parameters(self, params):
         """
@@ -94,14 +107,6 @@ class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
         """
         super(PyNNSpiNNakerLeakyIntegratorExp, self)._update_parameters(params)
         self._parameters['key'] = get_key(self._parameters['key'])
-
-    def register_tf_trigger(self, tf):
-        """
-        Registers the given TF as a trigger for this device
-
-        :param tf: The transfer function that should be triggered
-        """
-        self.__tfs.append(tf)
 
     def create_device(self):
         """
@@ -133,7 +138,7 @@ class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
 
         :param time: The current simulation time
         """
-        self.__t = time
+        pass
 
     def connect(self, neurons):
         """
@@ -156,8 +161,12 @@ class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
             'tau_refrac',
             'i_offset'
         ))
-        sim.Projection(presynaptic_population=neurons,
-                       postsynaptic_population=population,
+        logger.info("Creating projection from {n} to {p} with connector {c} and"
+                    " synapse type {st}, weight {w}".format(
+                        n=neurons, p=population, c=self._parameters['connector'],
+                        st=self._parameters['synapse_type'],
+                        w=self._parameters['synapse_type'].weight))
+        sim.Projection(neurons, population,
                        connector=self._parameters['connector'],
                        synapse_type=self._parameters['synapse_type'],
                        source=self._parameters['source'],
@@ -171,16 +180,10 @@ class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
 
         :param voltage: The membrane potential
         """
-        self._voltage = voltage
-
-        # There is no other way to obtain the timestep used by Spinnaker than through the
-        # machine timestep, which is a value in microseconds
-        # pylint: disable=protected-access
-        factor = get_simulator()._machine_time_step / 1.0e6
-        self.__t += (self._parameters['timesteps'] * factor)
-        t = self.__t
-        for tf in self.__tfs:
-            TransferFunctionManager.run_tf(tf, t)
+        # Store all voltages since last requested
+        # pylint: disable=E1101
+        # pylint: disable=E1103
+        self._voltage = (float)(decimal.Decimal(voltage) / DataType.S1615.scale)
 
     @property
     def device_control_key(self):
@@ -238,3 +241,20 @@ class PyNNSpiNNakerLeakyIntegratorExp(PyNNLeakyIntegratorExp,
         Gets the number of timesteps that occur between subsequent multicast commands
         """
         return self._parameters['timesteps']
+
+    @property
+    def device_control_send_type(self):
+        """
+        Returns the device control send type
+
+        :return: the device control send type
+        """
+        return SendType.SEND_TYPE_ACCUM
+
+    def _get_connector_weight(self):
+        """
+        Returns the default connector weight in case no explicit weight is specified as parameter
+
+        :return: the weight of the synaptic connection
+        """
+        return 0.1

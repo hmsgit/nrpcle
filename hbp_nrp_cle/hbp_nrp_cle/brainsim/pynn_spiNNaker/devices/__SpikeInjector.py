@@ -35,7 +35,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SpiNNakerSpikeInjector(AbstractBrainDevice, ISpikeInjector):
+class SpiNNakerSpikeInjector(AbstractBrainDevice, ISpikeInjector):  # pragma no cover
     """
     An implementation of the spike injector interface
     """
@@ -55,24 +55,8 @@ class SpiNNakerSpikeInjector(AbstractBrainDevice, ISpikeInjector):
     def __init__(self, **params):
         super(SpiNNakerSpikeInjector, self).__init__(**params)
         self.__connection = None
-        self.__injectors = self.create_device()
         self.__neuron_ids = list(range(0, self._parameters["n"]))
-
-    def create_device(self):
-        """
-        Creates the actual spike injector neuron population
-        :return: The spike injector population
-        """
-        port = live_connections.get_port(self._parameters["port"])
-        label = self._parameters["label"]
-        if label is None:
-            label = "SpikeInjectorPort{}".format(port)
-            self._parameters["label"] = label
-        return spynnaker.Population(self._parameters["n"],
-                                    spynnaker.external_devices.SpikeInjector(
-                                        port=port
-                                    ),
-                                    label=label)
+        self.__label = None
 
     def _disconnect(self):
         """
@@ -86,7 +70,7 @@ class SpiNNakerSpikeInjector(AbstractBrainDevice, ISpikeInjector):
         Injects a spike to the connected population
         """
         if self.__connection is not None:
-            self.__connection.send_spikes(self.__injectors.label, self.__neuron_ids,
+            self.__connection.send_spikes(self.__label, self.__neuron_ids,
                                           send_full_keys=True)
         else:
             logger.warn("Spike could not be injected as spike connection not started, yet")
@@ -97,15 +81,9 @@ class SpiNNakerSpikeInjector(AbstractBrainDevice, ISpikeInjector):
 
         :param neurons: A population of neurons
         """
-        live_connections.register_sender(self.__injectors.label, self.__started)
-        return spynnaker.Projection(
-            presynaptic_population=self.__injectors,
-            postsynaptic_population=neurons,
-            **self.get_parameters("source",
-                                  "receptor_type",
-                                  "connector",
-                                  "synapse_type")
-        )
+        live_connections.register_sender(
+            neurons, self.__started, **self.get_parameters(
+                "source", "receptor_type", "connector", "synapse_type"))
 
     def _update_parameters(self, params):
         """
@@ -135,3 +113,4 @@ class SpiNNakerSpikeInjector(AbstractBrainDevice, ISpikeInjector):
         elif self.__connection is not connection:
             raise Exception("Spike injector already has a connection assigned")
         self.__connection = connection
+        self.__label = pop_label

@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 __author__ = "Georg Hinkel"
 
 
-class PyNNSpiNNakerCommunicationAdapter(PyNNCommunicationAdapter):
+class PyNNSpiNNakerCommunicationAdapter(PyNNCommunicationAdapter):  # pragma no cover
     """
     Represents the communication adapter to the neuronal simulator
     """

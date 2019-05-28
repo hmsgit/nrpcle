@@ -27,8 +27,6 @@ Implementation of PyNNSpiNNakerSpikeRecorder
 
 from hbp_nrp_cle.brainsim.common.devices import AbstractBrainDevice
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder
-from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker as sim
-from hbp_nrp_cle.tf_framework._TransferFunctionManager import TransferFunctionManager
 import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connections
 import numpy as np
 import logging
@@ -37,7 +35,7 @@ __author__ = 'Georg Hinkel'
 logger = logging.getLogger(__name__)
 
 
-class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
+class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):  # pragma no cover
     """
     Represents a device which returns a "1" whenever one of the recorded
     neurons has spiked, otherwise a "0"
@@ -55,9 +53,10 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         if params.get("use_ids"):
             raise Exception("Usage of ids is currently not supported in SpiNNaker")
         self.__connection = None
+        self.__time = 0
+        self.__neurons = None
         self.__spike_neurons = []
         self.__spike_times = []
-        self.__tfs = []
 
     @property
     def times(self):
@@ -83,15 +82,6 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         """
         return len(self.__spike_times) > 0
 
-    def register_tf_trigger(self, tf):
-        """
-        Registers to trigger the provided TF in case a new spike appears
-
-        :param tf: The transfer function
-        """
-        if tf not in self.__tfs:
-            self.__tfs.append(tf)
-
     # pylint: disable=unused-argument
     def __receive_spike(self, label, time, neuron_ids):
         """
@@ -101,14 +91,9 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         :param time: The simulation time
         :param neuron_ids: The neurons that have spiked
         """
-        t = time / 1000.0
-        self.__spike_times.append(t)
+        logger.debug("Received spikes from {ids} at time {t}".format(ids=neuron_ids, t=self.__time))
+        self.__spike_times.append(self.__time)
         self.__spike_neurons.append(list(neuron_ids))
-        for tf in self.__tfs:
-            TransferFunctionManager.run_tf(tf, t)
-        if len(self.__tfs) > 0:
-            del self.__spike_times[:]
-            del self.__spike_neurons[:]
 
     def _disconnect(self):
         pass
@@ -121,12 +106,22 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         :param neurons: must be a Population, PopulationView or
             Assembly object
         """
-        sim.external_devices.activate_live_output_for(
-            neurons,
-            database_notify_host="localhost",
-            database_notify_port_num=live_connections.RECEIVE_PORT
-        )
-        live_connections.register_receiver(neurons.label, self.__receive_spike)
+        self.__neurons = neurons
+        live_connections.register_receiver(neurons, self.__receive_spike)
+
+    @property
+    def neurons(self):
+        """
+        Returns the neurons
+        """
+        return self.__neurons
+
+    @property
+    def neurons_count(self):
+        """
+        Returns the neurons count
+        """
+        return self.__neurons.size
 
     # simulation time not necessary for this device
     # pylint: disable=unused-argument
@@ -137,7 +132,7 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
         :param time: The current simulation time
         """
         # Spikes are recorded on the fly
-        pass
+        self.__time = time
 
     # simulation time not necessary for this device
     # pylint: disable=unused-argument
@@ -149,7 +144,6 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
 
         :param time: The current simulation time
         """
-        if len(self.__tfs) == 0:
-            # We need to access the internals of Spinnaker to clear the recorded values
-            del self.__spike_neurons[:]
-            del self.__spike_times[:]
+        del self.__spike_neurons[:]
+        del self.__spike_times[:]
+        self.__time = time

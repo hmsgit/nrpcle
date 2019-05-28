@@ -33,72 +33,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_receiver = None
-default_sender = None
-default_poisson = None
-
-send_callbacks = {}
-receive_callbacks = {}
-poisson_callbacks = {}
-
-RECEIVE_PORT = 19996
-SEND_PORT = 19999
-POISSON_PORT = 19997
-
-next_port = 12345
+send_receive_conn = None
+poisson_conn = None
 
 
-def create_and_start_connections():
-    """
-    Creates the live spikes connections, if necessary
-    """
-    # pylint: disable=global-statement
-    global default_receiver
-    global default_sender
-    global default_poisson
-    if default_sender is None and len(send_callbacks) > 0:
-        default_sender = spynnaker.external_devices.SpynnakerLiveSpikesConnection(
-            receive_labels=None, local_port=SEND_PORT, send_labels=list(send_callbacks)
-        )
-        for label in send_callbacks:
-            for callback in send_callbacks[label]:
-                default_sender.add_start_resume_callback(label, callback)
-    if default_receiver is None and len(receive_callbacks) > 0:
-        default_receiver = spynnaker.external_devices.SpynnakerLiveSpikesConnection(
-            receive_labels=list(receive_callbacks), local_port=RECEIVE_PORT, send_labels=None
-        )
-        for label in receive_callbacks:
-            for callback in receive_callbacks[label]:
-                default_receiver.add_receive_callback(label, callback)
-    if default_poisson is None and len(poisson_callbacks) > 0:
-        default_poisson = spynnaker.external_devices.SpynnakerPoissonControlConnection(
-            poisson_labels=list(poisson_callbacks), local_port=POISSON_PORT
-        )
-        for label in poisson_callbacks:
-            for callback in poisson_callbacks[label]:
-                default_poisson.add_start_callback(label, callback)
-
-
-def get_port(desired_port=None):
-    """
-    Gets a free port, perhaps the desired one
-    :param desired_port: The desired port
-    :return: A port not yet taken by other requests
-    """
-    # pylint: disable=global-statement
-    global next_port
-    if desired_port is None:
-        port = next_port
-    elif desired_port < next_port:
-        port = next_port
-        logger.warning("Port {} is potentially used".format(desired_port))
-    else:
-        port = desired_port
-    next_port = port + 1
-    return port
-
-
-def __register_callback(label, repo, callback):
+def __register_callback(label, repo, callback):  # pragma no cover
     """
     Registers the callback
 
@@ -114,60 +53,93 @@ def __register_callback(label, repo, callback):
     callbacks.append(callback)
 
 
-def register_receiver(label, receive_callback):
+def register_receiver(neurons, receive_callback):  # pragma no cover
     """
-    Registers a receive callback for the provided label
+    Sets up live reception for the given neurons with the given callback called
+    whenever a spike is received.
 
-    :param label: The label that should be used for the receiver
-    :param receive_callback: A callback that should be called whenever a new spike is received
+    :param neurons: The population of neurons to receive spikes from
+    :param receive_callback: A callback that should be called whenever a new \
+        spike is received
     """
-    __register_callback(label, receive_callbacks, receive_callback)
+    # pylint: disable=global-statement
+    global send_receive_conn
+    if send_receive_conn is None:
+        send_receive_conn = \
+            spynnaker.external_devices.SpynnakerLiveSpikesConnection(local_port=None)
+    spynnaker.external_devices.activate_live_output_for(
+        neurons,
+        database_notify_host="localhost",
+        database_notify_port_num=send_receive_conn.local_port
+    )
+    send_receive_conn.add_receive_label(neurons.label)
+    send_receive_conn.add_receive_callback(neurons.label, receive_callback)
 
 
-def register_sender(label, init_callback):
+def register_sender(neurons, init_callback, source, receptor_type, connector,
+                    synapse_type):  # pragma no cover
     """
-    Registers a send callback for the provided label
+    Sets up live sending to the given neurons, with the given callback called
+    when the simulation is ready to be sent to
 
-    :param label: The label that should be used for the sender
-    :param init_callback: A callback that should be called when the connection is established
+    :param neurons: The population of neurons to send spikes to
+    :param init_callback: A callback that should be called when the connection\
+         is established
+    :param source: The source of the projection
+    :param receptor_type: The receptor type of neurons to project to
+    :param connector: The connector for the projection
+    :param synapse_type: The synapse type for the projection
     """
-    __register_callback(label, send_callbacks, init_callback)
+    # pylint: disable=global-statement
+    global send_receive_conn
+    if send_receive_conn is None:
+        send_receive_conn = \
+            spynnaker.external_devices.SpynnakerLiveSpikesConnection(local_port=None)
+    label = "{}_sender".format(neurons.label)
+    injector_pop = spynnaker.Population(
+        neurons.size, spynnaker.external_devices.SpikeInjector(
+            database_notify_host="localhost",
+            database_notify_port_num=send_receive_conn.local_port),
+        label=label)
+    spynnaker.Projection(injector_pop, neurons, connector, synapse_type,
+                         source=source, receptor_type=receptor_type)
+    send_receive_conn.add_send_label(label)
+    send_receive_conn.add_start_resume_callback(label, init_callback)
 
 
-def register_poisson(label, init_callback):
+def register_poisson(generator, init_callback):  # pragma no cover
     """
-    Registers a poisson rate callback for the given label
+    Sets up live control of a Poisson source, with the given callback called
+    when the simulation is ready to be sent to
 
-    :param label: The label
-    :param init_callback: A callback that should be called when the connection is established
+    :param generator: The Poisson source
+    :param init_callback: A callback that should be called when the connection\
+        is established
     """
-    __register_callback(label, poisson_callbacks, init_callback)
+    # pylint: disable=global-statement
+    global poisson_conn
+    if poisson_conn is None:
+        poisson_conn = \
+            spynnaker.external_devices.SpynnakerPoissonControlConnection(local_port=None)
+    spynnaker.external_devices.add_poisson_live_rate_control(
+        generator,
+        database_notify_host="localhost",
+        database_notify_port_num=poisson_conn.local_port)
+    poisson_conn.add_poisson_label(generator.label)
+    poisson_conn.add_start_resume_callback(generator.label, init_callback)
 
 
-def shutdown():
+def shutdown(): # pragma no cover
     """
     Clears the registered callbacks
     """
     # pylint: disable=global-statement
-    global default_sender
-    global default_receiver
-    global default_poisson
-    receive_callbacks.clear()
-    send_callbacks.clear()
-    poisson_callbacks.clear()
+    global send_receive_conn
+    global poisson_conn
     # pylint: disable=protected-access
-    if default_sender is not None:
-        default_sender._handle_possible_rerun_state()
-        default_sender.close()
-        default_sender = None
-    if default_receiver is not None:
-        default_receiver._handle_possible_rerun_state()
-        default_receiver.close()
-        default_receiver = None
-    if default_poisson is not None:
-        default_poisson._handle_possible_rerun_state()
-        default_poisson.close()
-        default_poisson = None
-    # pylint: disable=global-statement
-    global next_port
-    next_port = 12345
+    if send_receive_conn is not None:
+        send_receive_conn.close()
+        send_receive_conn = None
+    if poisson_conn is not None:
+        poisson_conn.close()
+        poisson_conn = None

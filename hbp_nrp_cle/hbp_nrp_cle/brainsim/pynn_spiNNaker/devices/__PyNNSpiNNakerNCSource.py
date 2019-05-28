@@ -31,7 +31,7 @@ from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker
 __author__ = 'Felix Schneider'
 
 
-class PyNNSpiNNakerNCSource(PyNNNCSource):
+class PyNNSpiNNakerNCSource(PyNNNCSource): # pragma no cover
     """
     Represents a noisy current generator
     :param kwargs: Optional configuration parameters

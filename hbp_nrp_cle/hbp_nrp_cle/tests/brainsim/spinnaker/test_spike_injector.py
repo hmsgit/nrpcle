@@ -34,30 +34,12 @@ class TestSpikeInjector(unittest.TestCase):
     @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__SpikeInjector.live_connections")
     def test_spike_injector_injects(self, live_connections, sim):
         # unpatch get_port
-        live_connections.get_port = lsc.get_port
         population = Mock()
         population.label = "foo"
         population.size = 42
         dev = SpiNNakerSpikeInjector.create_new_device(population)
-        sim.external_devices.SpikeInjector.assert_called_once_with(port=12345)
-        sim.Population.assert_called_once_with(
-            3,
-            sim.external_devices.SpikeInjector.return_value,
-            label="SpikeInjectorPort12345"
-        )
-        sim.Population.return_value.label = "SpikeInjectorPort12345"
 
         dev.connect(population)
         # does not raise
         dev.inject_spikes()
         self.assertTrue(live_connections.register_sender.called)
-        call_args = live_connections.register_sender.call_args[0]
-        self.assertEqual(call_args[0], "SpikeInjectorPort12345")
-        callback = call_args[1]
-        connection = Mock()
-        callback("SpikeInjectorPort12345", connection)
-        dev.inject_spikes()
-        connection.send_spikes.assert_called_once_with("SpikeInjectorPort12345", dev._SpiNNakerSpikeInjector__neuron_ids, send_full_keys=True)
-        dev._disconnect()
-        # does not raise
-        dev.inject_spikes()

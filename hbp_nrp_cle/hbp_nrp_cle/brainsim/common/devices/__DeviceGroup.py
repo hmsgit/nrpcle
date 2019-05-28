@@ -104,15 +104,10 @@ class DeviceGroup(IDeviceGroup):
         Gets the specified attribute of all devices in the device group
 
         :param attrname: The attribute to get
-        :return: A numpy array with all the values for the given attribute for all the devices
+        :return: A list with all the values for the given attribute for all the devices
         in this device group
         """
-        array = numpy.zeros(len(self.devices))
-        i = 0
-        for device in self.devices:
-            array[i] = getattr(device, attrname)
-            i += 1
-        return array
+        return [getattr(device, attrname) for device in self.devices]
 
     def __setattr__(self, attrname, value):
         # This is needed to enable a device group reset.
@@ -151,6 +146,16 @@ class DeviceGroup(IDeviceGroup):
         for device in self.devices:
             if hasattr(device, 'refresh'):
                 device.refresh(t)
+
+    def finalize_refresh(self, t): # pragma no cover
+        """
+        Finalizes the refresh of all inner devices
+
+        :param t: The current simulation time
+        """
+        for device in self.devices:
+            if hasattr(device, 'finalize_refresh'):
+                device.finalize_refresh(t)
 
     @property
     def active(self):

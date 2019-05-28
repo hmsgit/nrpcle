@@ -31,7 +31,7 @@ from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker as sim
 __author__ = 'Felix Schneider'
 
 
-class PyNNSpiNNakerPopulationRate(PyNNPopulationRate):
+class PyNNSpiNNakerPopulationRate(PyNNPopulationRate): # pragma no cover
     """
     Represents the rate of a population of LIF neurons by
     measuring and normalizing the membrane potential of a

@@ -43,22 +43,5 @@ class TestPoissonGenerator(unittest.TestCase):
 
         dev.connect(population)
 
-        sim_mock.external_devices.add_poisson_live_rate_control.assert_called_once_with(
-            generator, receive_port=live_connection.POISSON_PORT
-        )
         self.assertTrue(live_connection.register_poisson.called)
-        call_args = live_connection.register_poisson.call_args[0]
-        self.assertEqual(generator.label, call_args[0])
-        callback = call_args[1]
 
-        self.assertEqual(42.0, dev.rate)
-        dev.rate = 23.0
-        generator.set.assert_called_once_with(rate=23.0)
-        self.assertEqual(23.0, dev.rate)
-
-        connection = Mock()
-        callback(generator.label, connection)
-
-        dev.rate = 42.0
-        generator.set.assert_called_once_with(rate=23.0)
-        connection.set_rates.assert_called_once_with(generator.label, [(0, 42)])

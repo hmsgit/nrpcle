@@ -28,6 +28,7 @@ from mock import patch
 
 
 class TestPopulationRate(unittest.TestCase):
+
     @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerPopulationRate.sim")
     def test_population_rate_supported(self, sim_mock):
         sim_mock.Population()[0].tau_m = 20.0

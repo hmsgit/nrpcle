@@ -29,7 +29,6 @@ from hbp_nrp_cle.brainsim.pynn.devices import PyNNPoissonSpikeGenerator
 from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker as sim
 import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connection
 import logging
-import decimal
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +37,7 @@ logger = logging.getLogger(__name__)
 __author__ = 'Georg Hinkel'
 
 
-class PyNNSpiNNakerPoissonSpikeGenerator(PyNNPoissonSpikeGenerator):
+class PyNNSpiNNakerPoissonSpikeGenerator(PyNNPoissonSpikeGenerator): # pragma no cover
     """
     Represents a Poisson spike generator
     """
@@ -48,6 +47,7 @@ class PyNNSpiNNakerPoissonSpikeGenerator(PyNNPoissonSpikeGenerator):
     def __init__(self, **config):
         super(PyNNSpiNNakerPoissonSpikeGenerator, self).__init__(**config)
         self.__connection = None
+        self.__is_new_rate = False
 
     default_parameters = {
         "duration": 1.0e10,
@@ -86,6 +86,8 @@ class PyNNSpiNNakerPoissonSpikeGenerator(PyNNPoissonSpikeGenerator):
         elif self.__connection is not connection:
             raise Exception("Poisson spike generator already has a connection assigned")
         self.__connection = connection
+        if self.__is_new_rate:
+            self.rate = self._parameters["rate"]
 
     def _update_parameters(self, params):
         super(PyNNSpiNNakerPoissonSpikeGenerator, self)._update_parameters(params)
@@ -95,10 +97,7 @@ class PyNNSpiNNakerPoissonSpikeGenerator(PyNNPoissonSpikeGenerator):
             PyNNSpiNNakerPoissonSpikeGenerator.__counter += 1
 
     def connect(self, neurons):
-        sim.external_devices.add_poisson_live_rate_control(
-            self._generator, receive_port=live_connection.POISSON_PORT
-        )
-        live_connection.register_poisson(self._generator.label, self.__init_connection)
+        live_connection.register_poisson(self._generator, self.__init_connection)
         return super(PyNNSpiNNakerPoissonSpikeGenerator, self).connect(neurons)
 
     @property
@@ -117,13 +116,9 @@ class PyNNSpiNNakerPoissonSpikeGenerator(PyNNPoissonSpikeGenerator):
         :param value: float
         """
         if self.__connection is None:
-            # try to reconfigure using the PyNN interface
-            logger.warning("Poisson rate update connection not yet available, "
-                           "reconfiguring Poisson generator using PyNN")
-            self._generator.set(rate=value)
+            # Indicate the rate is saved to send later
+            self.__is_new_rate = True
         else:
-            # Spinnaker multiplies the rate with a decimal, so we have to convert the rate
-            val = decimal.Decimal(value)
             self.__connection.set_rates(self._parameters["label"],
-                                        [(i, val) for i in range(self._parameters["n"])])
+                                        [(i, value) for i in range(self._parameters["n"])])
         self._parameters["rate"] = value

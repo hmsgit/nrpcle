@@ -120,10 +120,11 @@ class NeuronMonitor(TransferFunction):
             if hasattr(self.device, 'neurons'):
 
                 self.__neurons = self.device.neurons
-
-                # Get Neuron count
-                self.__count = self.device.neurons_count
-
+                #if hasattr(self.__neurons, "__getitem__"):
+                if type(self.device.neurons_count) is list:
+                    self.__count = sum(self.device.neurons_count)
+                else:
+                    self.__count = self.device.neurons_count
             else:
                 self.__neurons = None
                 self.__count = None
@@ -133,12 +134,22 @@ class NeuronMonitor(TransferFunction):
         it gets the population name inside the neurons object.
         :return: an string that contains the name of the population.
         """
+        neurons = self.device.neurons
+        #if not hasattr(neurons, "__getitem__"):
+        if type(neurons) is not list:
+            neurons = [neurons]
+
         population_label = None
-        if hasattr(self.device.neurons, 'parent'):
-            population_label = self.device.neurons.parent.label
-        if not population_label:
-            population_label = self.device.neurons.label
-        return str(population_label)
+        for neuron in neurons:
+            if hasattr(neuron, 'parent'):
+                label = neuron.parent.label
+            if not population_label:
+                label = neuron.label
+            if population_label is None:
+                population_label = str(label)
+            else:
+                population_label += ", " + str(label)
+        return population_label
 
     def __send_spike_recorder(self, t):
         """
@@ -148,10 +159,16 @@ class NeuronMonitor(TransferFunction):
         :return:
         """
         spikes = self.device.times
-        msgs = []
-
-        for spike in spikes:
-            msgs.append(SpikeData(int(spike[0]), spike[1]))
+        #if hasattr(spikes, "__getitem__"):
+        if type(spikes) is list:
+            offset = 0
+            msgs = []
+            for i, spikelist in enumerate(spikes):
+                msgs.extend(SpikeData(int(spike[0]) + offset, spike[1])
+                            for spike in spikelist)
+                offset += self.device.neurons[i].size
+        else:
+            msgs = [SpikeData(int(spike[0]), spike[1]) for spike in spikes]
         self.publisher.send_message(SpikeEvent(
             t, self.__count, msgs, self.name,
             self.get_population_name()))

@@ -64,6 +64,9 @@ class Translator(AbstractEthernetTranslator):
 
         :param multicast_packet: The multicast command packet
         """
+        logger.debug("Received packet {key}: {val}".format(
+            key=multicast_packet.key, val=multicast_packet.payload))
+
         try:
             integrator = self.__device_dict[multicast_packet.key]
             integrator.run(multicast_packet.payload)

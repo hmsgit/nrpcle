@@ -497,7 +497,6 @@ requested (device)'))
         #check communicator lists length
         self.assertEquals(len(self.communicator.detector_devices), 12)
         self.assertEquals(len(self.communicator.refreshable_devices), 12)
-        self.assertEquals(len(self.communicator.finalizable_devices), 1)
 
         self.control.run_step(0.1)
         print("Voltage of IF neuron (= device PopulationRate): ",

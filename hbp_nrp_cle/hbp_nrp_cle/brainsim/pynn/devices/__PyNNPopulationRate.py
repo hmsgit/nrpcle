@@ -120,7 +120,7 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         y_new = tau_c / self._cell[0].cm * (np.exp(
                 -x_new / self._cell[0].tau_m) - np.exp(
                 -x_new / self._cell[0].tau_syn_E))
-        self._weight = 1.0 / simps(y_new, dx=self.sim().state.dt)
+        self._weight = 1.0 / simps(y_new, dx=self.sim().get_time_step())
 
     def _start_record_rate(self):
         """
@@ -140,8 +140,8 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         """
 
         connector = self.sim().AllToAllConnector()
-        synapse_type = self.sim().StaticSynapse(weight=self._weight * 1000,
-                                                delay=self.sim().state.dt)
+        synapse_type = self.sim().StaticSynapse(
+            weight=self._weight * 1000, delay=self.sim().get_time_step())
 
         return self.sim().Projection(presynaptic_population=neurons,
                                      postsynaptic_population=self._cell,

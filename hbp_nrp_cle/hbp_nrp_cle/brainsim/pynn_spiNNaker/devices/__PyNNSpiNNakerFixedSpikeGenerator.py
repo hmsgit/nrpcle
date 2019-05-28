@@ -31,7 +31,7 @@ from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker
 __author__ = 'Felix Schneider'
 
 
-class PyNNSpiNNakerFixedSpikeGenerator(PyNNFixedSpikeGenerator):
+class PyNNSpiNNakerFixedSpikeGenerator(PyNNFixedSpikeGenerator): # pragma no cover
     """
     Represents a spike generator which generated equidistant
     spike times at a given frequency

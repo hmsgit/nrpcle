@@ -124,11 +124,10 @@ def setup_access_to_population(brain_module, **populations):
             if isinstance(population, slice):
                 expected_size = abs(
                     (population.start - population.stop) / (population.step or 1))
-            if neurons.size != expected_size:
-                raise Exception("Population '%s' out of bounds" % p)
+                if neurons.size != expected_size:
+                    raise Exception("Population '%s' out of bounds" % p)
             brain_module.__dict__[p] = neurons
             brain_module.populations_keys.append(p)
-
     except AttributeError:
         if len(populations) > 0:
             raise Exception(

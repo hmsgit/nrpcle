@@ -143,7 +143,7 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
                 logger.info(
                     "Timeout occurs during loading the brain:" + brain_file)
             except Exception as e:
-                logger.info(
+                logger.exception(
                     "Compiling Error during loading the brain({0}): {1!r}".format(brain_file, e))
 
     @property

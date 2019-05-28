@@ -26,7 +26,6 @@ This module contains an adapted implementation of a neural controller for SpiNNa
 """
 
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter, PyNNPopulationInfo
-import hbp_nrp_cle.brainsim.pynn_spiNNaker.__LiveSpikeConnection as live_connection
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ def all_ids(population):
     return population._all_ids
 
 
-class PySpiNNakerControlAdapter(PyNNControlAdapter):
+class PySpiNNakerControlAdapter(PyNNControlAdapter): # pragma no cover
     """
     An implementation to control a SpiNNaker board simulation synchronously
     """
@@ -50,6 +49,7 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter):
     def __init__(self, sim):
         super(PySpiNNakerControlAdapter, self).__init__(sim)
         sim.Population.all = all_ids
+        self._running = False
 
     def initialize(self, **params):
         """
@@ -74,16 +74,18 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter):
             handler.setFormatter(formatter)
             if len(handler.filters) > 0:
                 handler.removeFilter(handler.filters[-1])
+        self._running = False
 
     def run_step(self, dt):
-        live_connection.create_and_start_connections()
-        try:
-            super(PySpiNNakerControlAdapter, self).run_step(dt)
-        # it may happen that the simulation wants to write provenance data even though the temp
-        # directory no longer exists. In that case, the simulation is about to terminate, so
-        # we ignore the error, but log it
-        except IOError, e:
-            logger.exception(e)
+        if not self._running:
+            self._running = True
+            try:
+                self._sim.external_devices.run_forever()
+            # it may happen that the simulation wants to write provenance data even though the temp
+            # directory no longer exists. In that case, the simulation is about to terminate, so
+            # we ignore the error, but log it
+            except IOError, e:
+                logger.exception(e)
 
     def _is_population(self, candidate):
         """

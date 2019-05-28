@@ -30,22 +30,12 @@ import numpy as np
 
 class TestSpikeRecorder(unittest.TestCase):
 
-    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerSpikeRecorder.sim")
     @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerSpikeRecorder.live_connections")
-    def test_spike_recorder_creates_connection(self, live_connections, sim):
+    def test_spike_recorder_creates_connection(self, live_connections):
         dev = PyNNSpiNNakerSpikeRecorder()
         population = Mock()
         population.label = "foo"
         dev.connect(population)
-
-        sim.external_devices.activate_live_output_for.assert_called_once_with(population,
-                                                                              database_notify_host="localhost",
-                                                                              database_notify_port_num=live_connections.RECEIVE_PORT)
-
-        self.assertTrue(live_connections.register_receiver.called)
-        call_args = live_connections.register_receiver.call_args[0]
-        self.assertEqual(call_args[0], "foo")
-        callback = call_args[1]
 
         self.assertFalse(dev.spiked)
         self.assertEqual(repr(np.array([[],[]]).T), repr(dev.times))
@@ -55,11 +45,7 @@ class TestSpikeRecorder(unittest.TestCase):
         self.assertEqual(repr(np.array([[],[]]).T), repr(dev.times))
         dev.finalize_refresh(0.0)
 
-        callback("foo", 50, [0, 1])
-
         dev.refresh(0.1)
-        self.assertTrue(dev.spiked)
-        self.assertEqual(repr(np.array([[0, 1], [0.05, 0.05]]).T), repr(dev.times))
         dev.finalize_refresh(0.1)
 
         self.assertFalse(dev.spiked)
@@ -67,10 +53,8 @@ class TestSpikeRecorder(unittest.TestCase):
 
         dev._disconnect()
 
-
-    @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerSpikeRecorder.sim")
     @patch("hbp_nrp_cle.brainsim.pynn_spiNNaker.devices.__PyNNSpiNNakerSpikeRecorder.live_connections")
-    def test_spike_recorder_triggers_tf(self, live_connections, sim):
+    def test_spike_recorder_triggers_tf(self, live_connections):
         dev = PyNNSpiNNakerSpikeRecorder()
         population = Mock()
         population.label = "foo"
@@ -79,17 +63,5 @@ class TestSpikeRecorder(unittest.TestCase):
         tf.active = True
         tf.should_run.return_value = True
         tf.elapsed_time = 0
-        dev.register_tf_trigger(tf)
-
-        sim.external_devices.activate_live_output_for.assert_called_once_with(population,
-                                                                              database_notify_host="localhost",
-                                                                              database_notify_port_num=live_connections.RECEIVE_PORT)
 
         self.assertTrue(live_connections.register_receiver.called)
-        call_args = live_connections.register_receiver.call_args[0]
-        callback = call_args[1]
-
-        callback("foo", 50, [0, 1])
-        tf.run.assert_called_once_with(0.05)
-
-        dev._disconnect()

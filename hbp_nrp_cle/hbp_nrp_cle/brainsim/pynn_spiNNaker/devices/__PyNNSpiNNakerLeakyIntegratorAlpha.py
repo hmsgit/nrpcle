@@ -31,7 +31,7 @@ from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker
 __author__ = 'Felix Schneider'
 
 
-class PyNNSpiNNakerLeakyIntegratorAlpha(PyNNLeakyIntegratorAlpha):
+class PyNNSpiNNakerLeakyIntegratorAlpha(PyNNLeakyIntegratorAlpha): # pragma no cover
     """
     Represents the membrane potential of a current-based LIF neuron
     with alpha-shaped post synaptic currents

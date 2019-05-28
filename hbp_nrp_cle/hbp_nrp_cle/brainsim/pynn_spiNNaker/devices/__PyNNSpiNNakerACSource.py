@@ -31,7 +31,7 @@ from hbp_nrp_cle.brainsim.pynn_spiNNaker import spynnaker
 __author__ = 'Felix Schneider'
 
 
-class PyNNSpiNNakerACSource(PyNNACSource):
+class PyNNSpiNNakerACSource(PyNNACSource): # pragma no cover
     """
     Represents an alternating current generator.
     """
