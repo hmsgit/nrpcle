@@ -134,22 +134,12 @@ class NeuronMonitor(TransferFunction):
         it gets the population name inside the neurons object.
         :return: an string that contains the name of the population.
         """
-        neurons = self.device.neurons
-        #if not hasattr(neurons, "__getitem__"):
-        if type(neurons) is not list:
-            neurons = [neurons]
-
         population_label = None
-        for neuron in neurons:
-            if hasattr(neuron, 'parent'):
-                label = neuron.parent.label
-            if not population_label:
-                label = neuron.label
-            if population_label is None:
-                population_label = str(label)
-            else:
-                population_label += ", " + str(label)
-        return population_label
+        if hasattr(self.device.neurons, 'parent'):
+            population_label = self.device.neurons.parent.label
+        if not population_label:
+            population_label = self.device.neurons.label
+        return str(population_label)
 
     def __send_spike_recorder(self, t):
         """
