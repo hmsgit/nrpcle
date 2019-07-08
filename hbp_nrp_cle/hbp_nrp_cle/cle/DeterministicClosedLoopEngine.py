@@ -268,22 +268,27 @@ class DeterministicClosedLoopEngine(IClosedLoopControl):
         """
         logger.info("Simulation loop started")
         try:
-            self.stop_flag.clear()
-            self.stopped_flag.clear()
-            self.start_time = time.time()
-            while not self.stop_flag.isSet():
-                self.run_step(self.timestep)
-            self.__start_future.set_result(None)
+            try:
+                self.stop_flag.clear()
+                self.stopped_flag.clear()
+                self.start_time = time.time()
+                while not self.stop_flag.isSet():
+                    self.run_step(self.timestep)
+                self.__start_future.set_result(None)
+            finally:
+                logger.info("Simulation loop ended")
+                self.elapsed_time += time.time() - self.start_time
+                self.__start_thread = None
+                self.stopped_flag.set()
         # pylint: disable=broad-except
+        # we change the order intentionally (first finally then catch) because
+        # before throwing an custom exception (brainRuntimeException), the stopped flag
+        # has to be set in order to finish the stop function flow.
         except Exception as e:
             logger.exception(e)
             self.__start_future.set_exception(e)
         finally:
-            logger.info("Simulation loop ended")
-            self.elapsed_time += time.time() - self.start_time
             self.__start_future = None
-            self.__start_thread = None
-            self.stopped_flag.set()
 
     def stop(self, forced=False):
         """

@@ -31,6 +31,7 @@ from hbp_nrp_cle.brainsim.common import PythonBrainLoader as BrainLoader
 from hbp_nrp_cle.brainsim.pynn import PyNNPopulationInfo
 from hbp_nrp_cle.brainsim.pynn.PyNNInfo import is_population
 import hbp_nrp_cle.brainsim as brainsim
+from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 
 import hbp_nrp_cle.tf_framework.config as tf_config
 
@@ -221,7 +222,10 @@ class PyNNControlAdapter(IBrainControlAdapter):
 
         :param dt: the simulated time in milliseconds
         """
-        self._sim.run(dt)
+        try:
+            self._sim.run(dt)
+        except Exception as e:
+            raise BrainRuntimeException(str(e))
 
     def shutdown(self):  # -> None:
         """

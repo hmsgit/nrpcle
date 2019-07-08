@@ -26,6 +26,7 @@ This module contains an adapted implementation of a neural controller for SpiNNa
 """
 
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter, PyNNPopulationInfo
+from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 import logging
 
 logger = logging.getLogger(__name__)
@@ -81,11 +82,9 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter): # pragma no cover
             self._running = True
             try:
                 self._sim.external_devices.run_forever()
-            # it may happen that the simulation wants to write provenance data even though the temp
-            # directory no longer exists. In that case, the simulation is about to terminate, so
-            # we ignore the error, but log it
             except IOError, e:
                 logger.exception(e)
+                raise BrainRuntimeException(str(e))
 
     def _is_population(self, candidate):
         """

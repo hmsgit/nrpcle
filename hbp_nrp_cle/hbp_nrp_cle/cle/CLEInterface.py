@@ -28,6 +28,16 @@ This module represents the interfaces for the closed loop engine.
 __author__ = 'LorenzoVannucci'
 
 
+class BrainRuntimeException(Exception):
+    """
+    Represents that a exception was raised from the execution of the step in the brain
+    control adapter.
+    """
+
+    def __init__(self, message):
+        super(BrainRuntimeException, self).__init__(message)
+
+
 class ForcedStopException(Exception):
     """
     Represents that a closed loop has been forced to quit
@@ -41,8 +51,8 @@ class BrainTimeoutException(Exception):
     Represents that a brain file could not be loaded due to a Timeout
     """
     def __init__(self):
-        super(BrainTimeoutException, self)\
-            .__init__("The brain cannot be imported due to timeout or an error in the brain file")
+        super(BrainTimeoutException, self).__init__(
+            "The brain cannot be imported due to timeout or an error in the brain file")
 
 
 # pylint: disable=R0921

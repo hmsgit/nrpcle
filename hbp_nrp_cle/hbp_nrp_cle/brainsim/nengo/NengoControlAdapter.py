@@ -29,6 +29,7 @@ moduleauthor: krach@fzi.de
 from hbp_nrp_cle.brainsim import IBrainControlAdapter
 from hbp_nrp_cle.brainsim.nengo.NengoInfo import is_population, NengoPopulationInfo
 from hbp_nrp_cle.brainsim.nengo import NengoBrainLoader
+from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 
 import nengo
 
@@ -160,7 +161,7 @@ class NengoControlAdapter(IBrainControlAdapter):
         return populations
 
     @property
-    def is_initialized(self): # pragma: no cover
+    def is_initialized(self):  # pragma: no cover
         """
         Gets a value indicating whether initialize has been called
         """
@@ -181,10 +182,13 @@ class NengoControlAdapter(IBrainControlAdapter):
         :param dt: the simulated time in milliseconds
         """
 
-        _sim = self._nengo_simulation_state.simulator
+        try:
+            _sim = self._nengo_simulation_state.simulator
 
-        for _ in range(int(dt / (_sim.dt * 1000))):
-            _sim.step()
+            for _ in range(int(dt / (_sim.dt * 1000))):
+                _sim.step()
+        except Exception as e:
+            raise BrainRuntimeException(str(e))
 
     def shutdown(self):  # pragma: no cover
         """

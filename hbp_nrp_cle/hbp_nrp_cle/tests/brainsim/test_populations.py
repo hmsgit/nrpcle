@@ -30,6 +30,7 @@ __author__ = 'Georg Hinkel'
 import unittest
 import os
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter
+from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 import hbp_nrp_cle.brainsim.config as brainconfig
 from mock import patch, Mock
 
@@ -85,3 +86,10 @@ class TestPyNNControlAdapter(unittest.TestCase):
         self.assertEqual("PopulationAssembly", list_2.celltype)
         self.assertEqual(0, len(list_2.parameters))
         self.assertEqual(3, len(list_2.gids))
+
+    def test_exception_is_raised(self):
+        sim = Mock()
+        adapter = PyNNControlAdapter(sim)
+        sim.run.side_effect = Exception("error")
+        with self.assertRaises(BrainRuntimeException):
+            adapter.run_step(1)
