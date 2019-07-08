@@ -133,3 +133,10 @@ class NengoSpikeRecorder(AbstractBrainDevice, ISpikeRecorder): # pragma: no cove
         Gets the number of neurons monitored by this spike recorder
         """
         return self._neurons.n_neurons
+
+    @property
+    def population_name(self):
+        """
+        Returns the population name
+        """
+        return str(self._neurons.label)

@@ -123,6 +123,13 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):  # pragma
         """
         return self.__neurons.size
 
+    @property
+    def population_name(self):
+        """
+        Returns the population name
+        """
+        return str(self.__neurons.label)
+
     # simulation time not necessary for this device
     # pylint: disable=unused-argument
     def refresh(self, time):

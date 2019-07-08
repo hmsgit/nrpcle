@@ -125,3 +125,10 @@ class MockSpikeRecorder(AbstractMockBrainDevice, ISpikeRecorder):
         Gets the number of neurons monitored by this spike recorder
         """
         return self.neurons.size
+
+    @property
+    def population_name(self):
+        """
+        Returns the population name
+        """
+        return self.neurons.label

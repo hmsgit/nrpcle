@@ -85,7 +85,6 @@ class NeuronMonitor(TransferFunction):
 
         self.__publisher_spec = MapRobotPublisher("publisher", Topic(_topic, _type))
         self.__device_spec = MapSpikeSink("device", neurons, monitor_type, **cfg)
-        self.__neurons = None
 
         self.device = None
         self.publisher = None
@@ -119,27 +118,12 @@ class NeuronMonitor(TransferFunction):
         if bca_changed:
             if hasattr(self.device, 'neurons'):
 
-                self.__neurons = self.device.neurons
-                #if hasattr(self.__neurons, "__getitem__"):
                 if type(self.device.neurons_count) is list:
                     self.__count = sum(self.device.neurons_count)
                 else:
                     self.__count = self.device.neurons_count
             else:
-                self.__neurons = None
                 self.__count = None
-
-    def get_population_name(self):
-        """
-        it gets the population name inside the neurons object.
-        :return: an string that contains the name of the population.
-        """
-        population_label = None
-        if hasattr(self.device.neurons, 'parent'):
-            population_label = self.device.neurons.parent.label
-        if not population_label:
-            population_label = self.device.neurons.label
-        return str(population_label)
 
     def __send_spike_recorder(self, t):
         """
@@ -148,20 +132,23 @@ class NeuronMonitor(TransferFunction):
         :param t: The simulation time
         :return:
         """
-        spikes = self.device.times
-        #if hasattr(spikes, "__getitem__"):
-        if type(spikes) is list:
-            offset = 0
-            msgs = []
-            for i, spikelist in enumerate(spikes):
-                msgs.extend(SpikeData(int(spike[0]) + offset, spike[1])
-                            for spike in spikelist)
-                offset += self.device.neurons[i].size
-        else:
+        times = self.device.times
+        population_names = self.device.population_name
+
+        if type(times) is not list:
+            times = [times]
+
+        if type(population_names) is not list:
+            population_names = [population_names]
+
+        for population_name, spikes in zip(population_names, times):
+
+            # Create a message that contains the spike data
             msgs = [SpikeData(int(spike[0]), spike[1]) for spike in spikes]
-        self.publisher.send_message(SpikeEvent(
-            t, self.__count, msgs, self.name,
-            self.get_population_name()))
+
+            # Send message
+            self.publisher.send_message(
+                SpikeEvent(t, self.__count, msgs, self.name, population_name))
 
     def __send_leaky_integrator(self, t):
         """
