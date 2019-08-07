@@ -82,7 +82,8 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter): # pragma no cover
             self._running = True
             try:
                 self._sim.external_devices.run_forever()
-            except IOError, e:
+            except Exception as e:
+                self._running = False
                 logger.exception(e)
                 raise BrainRuntimeException(str(e))
 
