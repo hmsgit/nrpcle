@@ -3,11 +3,27 @@ This package contains the classes to specify transfer functions and connect them
 adapters of both the neuronal simulator and the world simulator
 """
 
-from hbp_nrp_cle.common import UserCodeException
 from hbp_nrp_excontrol.restricted_python import _inplacevar_
 from hbp_nrp_cle.tf_framework._TfApi import TfApi
 
 TF_API = TfApi()
+
+
+class UserCodeException(Exception):
+    """
+    General exception class returning a meaningful message
+    to the ExD frontend when user code fails to be loaded or run.
+
+    :param message: message that needs to be forwarded to the frontend.
+    :param error_type: Type of error (like 'CLE Error')
+    """
+
+    def __init__(self, message, error_type):
+        super(UserCodeException, self).__init__(message)
+        self.error_type = error_type
+
+    def __str__(self):
+        return "{0} ({1})".format(repr(self.message), self.error_type)
 
 
 class BrainParameterException(Exception):

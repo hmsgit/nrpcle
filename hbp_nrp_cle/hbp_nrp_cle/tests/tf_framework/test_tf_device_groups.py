@@ -37,9 +37,7 @@ import numpy as np
 
 __author__ = 'GeorgHinkel'
 
-MockOs = Mock()
-MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
-@patch("hbp_nrp_cle.common.os", new=MockOs)
+
 class Test2(unittest.TestCase):
     def test_all_right(self):
 

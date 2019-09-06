@@ -34,9 +34,7 @@ import unittest
 
 __author__ = 'sebastiankrach'
 
-MockOs = Mock()
-MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
-@patch("hbp_nrp_cle.common.os", new=MockOs)
+
 class TestTransferFunctionVariables(unittest.TestCase):
 
     def setUp(self):

@@ -37,12 +37,6 @@ __author__ = 'Lorenzo Vannucci'
 
 # pylint: disable=R0904
 # all the methods are inherited from unittest.TestCase
-
-MockOs = Mock()
-MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
-
-
-@patch("hbp_nrp_cle.common.os", new=MockOs)
 class TestClosedLoopEngine(unittest.TestCase):
     """
     Tests the brain_loader utility
@@ -101,8 +95,7 @@ class TestClosedLoopEngine(unittest.TestCase):
         self.assertIsInstance(module.foo, sim.Population)
         self.assertEqual(3, len(module.foo))
 
-    @patch("hbp_nrp_cle.common.refresh_resources")
-    def test_setup_populations(self, refresh_resources_mock):
+    def test_setup_populations(self):
         """
         Tests setting up additional populations
         """

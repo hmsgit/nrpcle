@@ -34,9 +34,7 @@ import unittest
 from mock import MagicMock, Mock, patch
 import logging
 
-MockOs = Mock()
-MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
-@patch("hbp_nrp_cle.common.os", new=MockOs)
+
 class TestTransferFunctionThrottling(unittest.TestCase):
 
     def setUp(self):

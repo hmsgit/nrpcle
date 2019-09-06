@@ -28,7 +28,6 @@ Support methods to load a brain network from a python file
 __author__ = "Lorenzo Vannucci, Sebastian Krach"
 
 from hbp_nrp_cle.cle.CLEInterface import BrainTimeoutException
-import hbp_nrp_cle.common
 
 import imp
 import logging
@@ -86,7 +85,6 @@ def load_py_network(path):
     :param path: path to the .py file
     """
     global __brain_index
-    hbp_nrp_cle.common.refresh_resources()
     brain_module = imp.load_source('__brain_model' + str(__brain_index), path)
     __brain_index += 1
     return brain_module

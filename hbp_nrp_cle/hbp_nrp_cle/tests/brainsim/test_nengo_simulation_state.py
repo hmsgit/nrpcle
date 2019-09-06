@@ -25,7 +25,6 @@ class NengoSimulationStateTest(unittest.TestCase):
 
         self.assertIsNone(self.sim_state.brain_root)
 
-    @patch('hbp_nrp_cle.common.refresh_resources')
     @log_capture('hbp_nrp_cle.brainsim.nengo.NengoSimulationState')
     def testLoadBrain(self, logcapture):
         directory = os.path.split(__file__)[0]
@@ -35,10 +34,13 @@ class NengoSimulationStateTest(unittest.TestCase):
         self.assertListEqual(self.sim_state.brain_root.ensembles, [])
         self.assertEquals(len(self.sim_state.brain_root.networks), 1)
         self.assertEquals(self.sim_state.brain_root.networks[0].label, "DummyNetwork")
-        logcapture.check('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
-                         'Resetting Nengo simulator')
 
-    @patch('hbp_nrp_cle.common.refresh_resources')
+        self.assertEquals(self.sim_state.brain_root.networks[0].label, "DummyNetwork")
+        logcapture.check(('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Saving brain source'),
+                         ('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Resetting Nengo simulator'))
+
     @log_capture('hbp_nrp_cle.brainsim.nengo.NengoSimulationState')
     def testInitializeSimulator(self, logcapture):
         directory = os.path.split(__file__)[0]
@@ -46,14 +48,20 @@ class NengoSimulationStateTest(unittest.TestCase):
         self.sim_state.load_brain(filename)
         self.assertIsNotNone(self.sim_state.brain_root)
         self.assertEquals(self.sim_state.brain_root.networks[0].label, "DummyNetwork")
-        logcapture.check('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
-                         'Resetting Nengo simulator')
+        logcapture.check(('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Saving brain source'),
+                         ('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Resetting Nengo simulator'))
+
         self.assertIsNotNone(self.sim_state.simulator)
         self.sim_factory.assert_called_once_with(self.sim_state.brain_root)
-        logcapture.check('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
-                         'Initializing new Nengo simulator instance')
+        logcapture.check(('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Saving brain source'),
+                         ('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Resetting Nengo simulator'),
+                         ('hbp_nrp_cle.brainsim.nengo.NengoSimulationState', 'INFO',
+                          'Initializing new Nengo simulator instance'))
 
-    @patch('hbp_nrp_cle.common.refresh_resources')
     @log_capture('hbp_nrp_cle.brainsim.nengo.NengoSimulationState')
     def testSimulatorStateWith(self, logcapture):
         directory = os.path.split(__file__)[0]
@@ -69,7 +77,6 @@ class NengoSimulationStateTest(unittest.TestCase):
         self.assertEquals(self.sim_state.brain_root.ensembles[0].n_neurons, 100)
         self.assertEquals(self.sim_state.brain_root.ensembles[0].dimensions, 1)
 
-    @patch('hbp_nrp_cle.common.refresh_resources')
     @log_capture('hbp_nrp_cle.brainsim.nengo.NengoSimulationState')
     def testDeleteFromModel(self, logcapture):
         directory = os.path.split(__file__)[0]

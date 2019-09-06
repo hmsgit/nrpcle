@@ -34,11 +34,6 @@ from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 import hbp_nrp_cle.brainsim.config as brainconfig
 from mock import patch, Mock
 
-MockOs = Mock()
-MockOs.environ = {'NRP_SIMULATION_DIR': '/somewhere/near/the/rainbow'}
-
-
-@patch("hbp_nrp_cle.common.os", new=MockOs)
 class TestPyNNControlAdapter(unittest.TestCase):
 
     def setUp(self):

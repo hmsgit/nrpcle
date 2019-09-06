@@ -580,9 +580,8 @@ requested (device)'))
         self.control.run_step(0.1)
         self.communicator.refresh_buffers(time)
 
-    @patch("hbp_nrp_cle.common.refresh_resources")
     @patch("hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.BrainLoader")
-    def test_load_brain(self, loader, refreshMock):
+    def test_load_brain(self, loader):
         with patch('hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter.open',
                    mock_open(read_data='some python code'),
                    create=True):
