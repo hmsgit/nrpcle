@@ -123,6 +123,9 @@ class PyNNSpiNNakerSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):  # pragma
         """
         return self.__neurons.size
 
+    # TODO: this method should be removed since it is not possible to ensure that a device can
+    #  provide a meaningful reference to the population is wrapping. A deeper population referencing
+    #  refactor is needed.
     @property
     def population_name(self):
         """

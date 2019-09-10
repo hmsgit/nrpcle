@@ -58,11 +58,31 @@ class NeuronMonitorTests(unittest.TestCase):
                 return neuron1.voltage > 20
 
     def test_spike_recorder_monitor(self):
-
         nrp.start_new_tf_manager()
         self.init_adapters()
 
         @nrp.NeuronMonitor(nrp.brain.foo, nrp.spike_recorder)
+        def my_monitor(t):
+            return True
+
+        nrp.initialize("test")
+        my_monitor.run(42.0)
+        msg = my_monitor.publisher.sent[-1]
+        self.assertIsInstance(msg, SpikeEvent)
+        self.assertEqual(msg.simulationTime, 42.0)
+        self.assertEqual(msg.monitorName, "my_monitor")
+        self.assertEqual(msg.neuronCount, 42)
+        self.assertEqual(len(msg.spikes), 0)
+
+        my_monitor.unregister()
+        self.assertIsNone(my_monitor.device)
+
+    def test_spike_recorder_monitor_map_neuron(self):
+        nrp.start_new_tf_manager()
+        self.init_adapters()
+
+        @nrp.NeuronMonitor(nrp.map_neurons(range(0, 1), lambda i: nrp.brain.foo),
+                           nrp.spike_recorder)
         def my_monitor(t):
             return True
 

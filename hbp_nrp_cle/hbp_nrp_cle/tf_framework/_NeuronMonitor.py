@@ -30,6 +30,7 @@ import sys
 from ._TransferFunction import TransferFunction
 from ._Neuron2Robot import MapSpikeSink
 from ._Robot2Neuron import MapRobotPublisher
+from ._NeuronSelectors import MapNeuronSelector
 from hbp_nrp_cle.tf_framework import config
 from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, ILeakyIntegratorAlpha, \
     ILeakyIntegratorExp, IPopulationRate
@@ -133,13 +134,34 @@ class NeuronMonitor(TransferFunction):
         :return:
         """
         times = self.device.times
-        population_names = self.device.population_name
 
         if type(times) is not list:
             times = [times]
 
-        if type(population_names) is not list:
-            population_names = [population_names]
+        population_names = []
+
+        # TODO: week solution, a deeper refactoring of population referencing is required
+        # See: [NRRPLT-7609] [NRRPLT-6822] [NRRPLT-7099]
+        def get_name_from_ppath(ppath):
+            """
+            Extracts population name from a property path
+            """
+            return ppath if '(root)' not in ppath else ppath[ppath.find('.') + 1:ppath.find('[')]
+
+        if isinstance(self.__device_spec.neurons, MapNeuronSelector):
+            nrange = self.__device_spec.neurons.neuron_range
+            nmapping = self.__device_spec.neurons.mapping
+
+            # TODO: another case in nrange (_NeuronSelectors.py:81) is not been considered
+            if isinstance(nrange, int):
+                nrange = range(0, nrange)
+
+            for i in nrange:
+                ppath = str(nmapping(i).name)
+                population_names += [get_name_from_ppath(ppath)]
+        else:
+            ppath = str(self.__device_spec.neurons.name)
+            population_names += [get_name_from_ppath(ppath)]
 
         for population_name, spikes in zip(population_names, times):
 
@@ -148,7 +170,7 @@ class NeuronMonitor(TransferFunction):
 
             # Send message
             self.publisher.send_message(
-                SpikeEvent(t, self.__count, msgs, self.name, population_name))
+                SpikeEvent(t, self.__count, msgs, self.name, str(population_name)))
 
     def __send_leaky_integrator(self, t):
         """
