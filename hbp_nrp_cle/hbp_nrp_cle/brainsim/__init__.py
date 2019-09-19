@@ -46,3 +46,8 @@ import pyNN.nest
 from hbp_nrp_cle.brainsim.BrainInterface import IBrainCommunicationAdapter, IBrainControlAdapter
 
 simulator = None
+
+from mpi4py import MPI
+# Duplicate of COMM_WORLD mpi communicator to be used within NRP so communications don't interfere
+# with NEST
+COMM_NRP = MPI.COMM_WORLD.Dup()

@@ -33,7 +33,7 @@ from itertools import chain
 from pyNN.common import Assembly, Population
 import numpy as np
 import logging
-from mpi4py import MPI
+from hbp_nrp_cle.brainsim import COMM_NRP
 
 __author__ = 'GeorgHinkel, Igor Peric, Alina Roitberg, Sebastian Krach'
 logger = logging.getLogger(__name__)
@@ -171,10 +171,10 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
         # for distrbuted Nest experiments, this direct access requires us to gather data
         # from all processes for assemble, CLE is guaranteed to be MPI process 0
         if self.mpi_aware:
-            updated_info = MPI.COMM_WORLD.gather(nest_info, root=0)
+            updated_info = COMM_NRP.gather(nest_info, root=0)
 
             # only let the CLE continue processing
-            if MPI.COMM_WORLD.Get_rank() > 0:
+            if COMM_NRP.Get_rank() > 0:
                 return [], []
 
             # concatenate all of the dictionaries

@@ -28,7 +28,7 @@ improved performance when updating device parameters of multiple devices
 """
 
 from hbp_nrp_cle.brainsim.common.devices import DeviceGroup
-from mpi4py import MPI
+from hbp_nrp_cle.brainsim import COMM_NRP
 import nest
 import numpy
 
@@ -200,12 +200,12 @@ class PyNNNestDevice(object):
 
         # default single-process or non MPI-aware (e.g. MUSIC) instance
         if self.mpi_aware:
-            for rank in xrange(MPI.COMM_WORLD.Get_size()):
-                if rank == MPI.COMM_WORLD.Get_rank():
+            for rank in xrange(COMM_NRP.Get_size()):
+                if rank == COMM_NRP.Get_rank():
                     continue
 
                 # send the data required to call SetStatus on each process
-                MPI.COMM_WORLD.send({'command': 'SetStatus', 'ids': neuron_ids, 'params': params},
+                COMM_NRP.send({'command': 'SetStatus', 'ids': neuron_ids, 'params': params},
                                     dest=rank, tag=100)
 
         # perform the nest command in this process regardless of configuration
