@@ -69,3 +69,21 @@ class PyNNNestFixedSpikeGenerator(PyNNFixedSpikeGenerator, PyNNNestDevice):
             # The nest device is only available as protected property of the PyNN device
             # pylint: disable=protected-access
             self.SetStatus(self._currentsource._device, {"amplitude": 1000.0 * current})
+
+    def create_device(self):
+        """
+        Create a fixed spike-distance device
+        """
+
+        self._generator = self.sim().Population(1, self.sim().IF_curr_exp(
+            **self.get_parameters("cm",
+                                  "tau_m",
+                                  "v_thresh",
+                                  "v_reset",
+                                  "v_rest")))
+
+        params = self.get_parameters("v_rest")
+        self.sim().initialize(self._generator, v=params["v_rest"])
+
+        self._currentsource = self.sim().DCSource(amplitude=self._current)
+        self._currentsource.inject_into(self._generator)

@@ -65,10 +65,12 @@ class PyNNNestPoissonSpikeGenerator(PyNNNestDevice, PyNNPoissonSpikeGenerator):
 
         :param value: float
         """
-        self._parameters["rate"] = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        self.SetStatus([self.device_id], {'rate': float(value)})
+
+        if self.rate != value:
+            self._parameters["rate"] = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            self.SetStatus([self.device_id], {'rate': float(value)})
 
     @property
     def device_id(self):

@@ -81,8 +81,7 @@ class TestSpikeRecorder(unittest.TestCase):
             raise IndexError()
 
     @patch("hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup.nest")
-    @patch("hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestSpikeRecorder.nest")
-    def test_default_refresh_config(self, nest_mock, other_nest_mock):
+    def test_default_refresh_config(self, nest_mock):
         dev = SpikeRecorder()
         neurons = Mock()
         neurons.__iter__ = Mock(return_value = iter([]))
@@ -101,8 +100,7 @@ class TestSpikeRecorder(unittest.TestCase):
         self.assertEqual(8.0, spikes[0][0])
 
     @patch("hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup.nest")
-    @patch("hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestSpikeRecorder.nest")
-    def test_use_indices_refresh_config(self, nest_mock, other_nest_mock):
+    def test_use_indices_refresh_config(self, nest_mock):
         dev = SpikeRecorder(use_ids = False)
         neurons = Mock()
         neurons.__iter__ = Mock(return_value = iter([]))

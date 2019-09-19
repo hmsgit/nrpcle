@@ -29,9 +29,11 @@ moduleauthor: probst@fzi.de
 from hbp_nrp_cle.brainsim.pynn.devices import PyNNPopulationRate
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
 
-import nest
 import pyNN.nest as nestsim
 from mpi4py import MPI
+
+from scipy.integrate import simps
+import numpy as np
 
 __author__ = 'DimitriProbst'
 
@@ -65,11 +67,11 @@ class PyNNNestPopulationRate(PyNNPopulationRate, PyNNNestDevice):
 
         # single process, direct access to voltage
         if not self.mpi_aware:
-            self._rate = nest.GetStatus([self._cell[0]])[0]['V_m']
+            self._rate = self.GetStatus([self._cell[0]])[0]['V_m']
 
         # multi-process, gather the voltage from all nodes, CLE is guaranteed to be rank 0
         else:
-            data = nest.GetStatus([self._cell[0]])[0]
+            data = self.GetStatus([self._cell[0]])[0]
             values = MPI.COMM_WORLD.gather(data['V_m'] if 'V_m' in data else 0.0, root=0)
 
             # only let the CLE continue processing
@@ -78,3 +80,38 @@ class PyNNNestPopulationRate(PyNNPopulationRate, PyNNNestDevice):
 
             # only one process will have the neuron and voltage accessible
             self._rate = sum(values)
+
+    def _create_device(self):
+        """
+        Creates a LIF neuron with decaying-exponential post-synaptic currents
+        and current-based synapses.
+        """
+
+        self._cell = self.sim().Population(1, self.sim().IF_curr_exp(
+            **self.get_parameters(("tau_m", "tau_fall"),
+                                  ("tau_syn_E", "tau_rise"),
+                                  "v_thresh",
+                                  "cm",
+                                  "v_rest")))
+
+
+        #self.sim().initialize(self._cell, v=self._cell[0].v_rest)
+        params = self.get_parameters("v_rest")
+        self.sim().initialize(self._cell, v=params["v_rest"])
+
+    def _calculate_weight(self):
+        """
+        Calculates the weight of a neuron from the population to the device
+        such that the area below the resulting PSP is 1. The exact shape of a
+        PSP can be found e.g. in Bytschok, I., Diploma thesis.
+        """
+        params = self.get_parameters("tau_rise","tau_fall","cm")
+        tau_c = (1. / params["tau_rise"] - 1. / params["tau_fall"]) ** -1
+        t_end = -np.log(1e-10) * params["tau_fall"]
+        x_new = np.arange(0., t_end, 0.1)
+        y_new = tau_c / params["cm"] * (np.exp(
+                -x_new / params["tau_fall"]) - np.exp(
+                -x_new / params["tau_rise"]))
+        self._weight = 1.0 / simps(y_new, dx=self.sim().get_time_step())
+
+

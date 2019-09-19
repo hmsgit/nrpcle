@@ -106,6 +106,7 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
                                   "v_thresh",
                                   "cm",
                                   "v_rest")))
+
         self.sim().initialize(self._cell, v=self._cell[0].v_rest)
 
     def _calculate_weight(self):
@@ -118,8 +119,8 @@ class PyNNPopulationRate(AbstractBrainDevice, IPopulationRate):
         t_end = -np.log(1e-10) * self._cell[0].tau_m
         x_new = np.arange(0., t_end, 0.1)
         y_new = tau_c / self._cell[0].cm * (np.exp(
-                -x_new / self._cell[0].tau_m) - np.exp(
-                -x_new / self._cell[0].tau_syn_E))
+            -x_new / self._cell[0].tau_m) - np.exp(
+            -x_new / self._cell[0].tau_syn_E))
         self._weight = 1.0 / simps(y_new, dx=self.sim().get_time_step())
 
     def _start_record_rate(self):

@@ -45,6 +45,13 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
         "stdev": create_transformation("std", 1000.0)
     }
 
+    @property
+    def mean(self):
+        """
+        Returns the mean of the current
+        """
+        return self._parameters["mean"]
+
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ
     @PyNNNCSource.mean.setter
@@ -54,16 +61,25 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
 
         :param value: float
         """
-        self._generator.mean = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        self.SetStatus(self._generator._device, {'mean': 1000.0 * value})
+
+        if self.mean != value:
+            self._parameters["mean"] = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            self.SetStatus(self._generator._device, {'mean': 1000.0 * value})
 
     def sim(self):
         """
         Gets the simulator module to use
         """
         return nestsim
+
+    @property
+    def stdev(self):
+        """
+        Returns the stdev of the current
+        """
+        return self._parameters["stdev"]
 
     # PyLint does not correctly recognize the overriding of the property setter
     # pylint: disable=arguments-differ
@@ -74,7 +90,8 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
 
         :param value: float
         """
-        self._generator.stdev = value
-        # The nest device is only available as protected property of the PyNN device
-        # pylint: disable=protected-access
-        self.SetStatus(self._generator._device, {'std': 1000.0 * value})
+        if self.stdev != value:
+            self._parameters["stdev"] = value
+            # The nest device is only available as protected property of the PyNN device
+            # pylint: disable=protected-access
+            self.SetStatus(self._generator._device, {'std': 1000.0 * value})

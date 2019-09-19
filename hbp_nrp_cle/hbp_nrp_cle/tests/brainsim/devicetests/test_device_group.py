@@ -22,8 +22,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # ---LICENSE-END
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestACSource import PyNNNestACSource
-from hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestDCSource \
-    import PyNNNestDCSource, IntegratedNestDCCurrentGenerator
+# from hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestDCSource \
+#     import PyNNNestDCSource, IntegratedNestDCCurrentGenerator
 
 import unittest
 from mock import patch, Mock
@@ -108,35 +108,35 @@ class TestNestDeviceGroup(unittest.TestCase):
         self.device.active = True
         self.assertTrue(self.device.active)
 
-    @patch("hbp_nrp_cle.brainsim.pynn_nest.devices.__PyNNNestDCSource.nest")
-    def test_integrated_generator_device_group(self, mock_nest_dc_source, mock_nest_device_group):
-        device_property = "I_e"  # amplitude device property for IntegratedNestDCCurrentGenerator
-
-        # set up
-        mock_nest_dc_source.GetStatus.return_value = ({device_property: 1.0},)
-
-        neurons = [self.__create_mock_with_id(i) for i in range(0, 5)]
-
-        device_group = PyNNNestDCSource.create_new_device_group(neurons, {})
-        device_group.connect(neurons)
-
-        device_ids = device_group._device_ids
-        self.assertEqual(len(neurons), len(device_ids))
-        for i in range(0, 5):
-            self.assertEqual(i, device_ids[i])
-
-        # the device_type should be IntegratedNestDCCurrentGenerator
-        self.assertEqual(device_group.device_type, IntegratedNestDCCurrentGenerator)
-
-        vals = [42, 0, 8, 15, 0]
-
-        # Set the amplitude of the generators
-        # which in the case of IntegratedNestDCCurrentGenerator
-        # corresponds to setting the generator's I_e property
-        device_group.set("amplitude", vals)
-
-        device_ids_, vals_ = mock_nest_device_group.SetStatus.call_args[0]
-
-        # check that the correct device property has been used while setting
-        self.assertTrue(all(map(lambda dict_: dict_.keys()[0] == device_property, vals_)))
+    # NOTE: test commented out since integrated_generator_device is currently disabled
+    # def test_integrated_generator_device_group(self, mock_nest_device_group):
+    #     device_property = "I_e"  # amplitude device property for IntegratedNestDCCurrentGenerator
+    #
+    #     # set up
+    #     mock_nest_device_group.GetStatus.return_value = ({device_property: 1.0},)
+    #
+    #     neurons = [self.__create_mock_with_id(i) for i in range(0, 5)]
+    #
+    #     device_group = PyNNNestDCSource.create_new_device_group(neurons, {})
+    #     device_group.connect(neurons)
+    #
+    #     device_ids = device_group._device_ids
+    #     self.assertEqual(len(neurons), len(device_ids))
+    #     for i in range(0, 5):
+    #         self.assertEqual(i, device_ids[i])
+    #
+    #     # the device_type should be IntegratedNestDCCurrentGenerator
+    #     self.assertEqual(device_group.device_type, IntegratedNestDCCurrentGenerator)
+    #
+    #     vals = [42, 0, 8, 15, 0]
+    #
+    #     # Set the amplitude of the generators
+    #     # which in the case of IntegratedNestDCCurrentGenerator
+    #     # corresponds to setting the generator's I_e property
+    #     device_group.set("amplitude", vals)
+    #
+    #     device_ids_, vals_ = mock_nest_device_group.SetStatus.call_args[0]
+    #
+    #     # check that the correct device property has been used while setting
+    #     self.assertTrue(all(map(lambda dict_: dict_.keys()[0] == device_property, vals_)))
 

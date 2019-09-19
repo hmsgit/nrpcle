@@ -150,6 +150,13 @@ class PyNNNestDeviceGroup(DeviceGroup):
         """
         self.device_type.transformations[attrname]['set'](self.__dict__['_device_ids'], value)
 
+    def __setattr__(self, attrname, value):
+        # quick hack needed for distributed CLE
+        if attrname == 'timestep':
+            self.__dict__['timestep'] = value
+        else:
+            super(PyNNNestDeviceGroup, self).__setattr__(attrname, value)
+
 
 class PyNNNestDevice(object):
     """
@@ -205,3 +212,15 @@ class PyNNNestDevice(object):
         # The nest device is only available as protected property of the PyNN device
         # pylint: disable=protected-access, no-member
         nest.SetStatus(neuron_ids, params)
+
+    def GetStatus(self, neuron_ids, properties=None):
+        """
+        Returns Nest Status of neuron_ids
+        """
+
+        if properties:
+            return nest.GetStatus(neuron_ids,properties)
+        else:
+            return nest.GetStatus(neuron_ids)
+
+

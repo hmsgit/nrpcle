@@ -30,7 +30,6 @@ from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDev
 
 from collections import defaultdict
 from itertools import chain
-import nest
 from pyNN.common import Assembly, Population
 import numpy as np
 import logging
@@ -167,7 +166,7 @@ class PyNNNestSpikeRecorder(PyNNSpikeRecorder, PyNNNestDevice):
         """
         # Get the spikes directly from NEST (It let use use memory instead of files)
         # pylint: disable=protected-access
-        nest_info = nest.GetStatus(recorder._spike_detector.device, 'events')[0]
+        nest_info = self.GetStatus(recorder._spike_detector.device, 'events')[0]
 
         # for distrbuted Nest experiments, this direct access requires us to gather data
         # from all processes for assemble, CLE is guaranteed to be MPI process 0

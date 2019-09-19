@@ -31,7 +31,6 @@ from hbp_nrp_cle.brainsim.pynn.devices import PyNNLeakyIntegratorAlpha, PyNNLeak
 
 from hbp_nrp_cle.brainsim.pynn_nest.devices.__NestDeviceGroup import PyNNNestDevice
 
-import nest
 import pyNN.nest as nestsim
 from mpi4py import MPI
 
@@ -48,6 +47,11 @@ class PyNNNestLeakyIntegrator(PyNNLeakyIntegrator, PyNNNestDevice):
     """
 
     def start_record_voltage(self):
+        # Since we get the data directly from Nest and Nest supports reading of just the latest
+        # value we don't need to record the entire voltage trace.
+        pass
+
+    def stop_record_voltage(self):
         # Since we get the data directly from Nest and Nest supports reading of just the latest
         # value we don't need to record the entire voltage trace.
         pass
@@ -69,11 +73,11 @@ class PyNNNestLeakyIntegrator(PyNNLeakyIntegrator, PyNNNestDevice):
 
         # single process, direct access to voltage
         if not self.mpi_aware:
-            self._voltage = nest.GetStatus([self._cell[0]])[0]['V_m']
+            self._voltage = self.GetStatus([self._cell[0]])[0]['V_m']
 
         # multi-process, gather the voltage from all nodes, CLE is guaranteed to be rank 0
         else:
-            data = nest.GetStatus([self._cell[0]])[0]
+            data = self.GetStatus([self._cell[0]])[0]
             values = MPI.COMM_WORLD.gather(data['V_m'] if 'V_m' in data else 0.0, root=0)
 
             # only let the CLE continue processing
