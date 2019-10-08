@@ -69,6 +69,7 @@ class PyNNNestDCSource(PyNNNestDevice, PyNNDCSource):
             # pylint: disable=protected-access
             self.SetStatus(self._generator._device, {"amplitude": 1000.0 * value})
 
+    # pylint: disable=unused-argument
     @staticmethod
     def _should_use_integrated_dc_gen(population, params):
         """
@@ -79,7 +80,7 @@ class PyNNNestDCSource(PyNNNestDevice, PyNNDCSource):
         :return: True if an optimized generator should be used, False otherwise
         """
 
-        # TODO: the call bellow to nest.GetStatus blocks execution in the MPI mode. A temporary
+        # TODO: the call below to nest.GetStatus blocks execution in the MPI mode. A temporary
         # solution has been to disable the possibility of using IntegratedNestDCCurrentGenerator.
         # A more permanent solution would involve to figure out how to evaluate the condition in the
         # return statement without making the nest call. Since the cases in which this optimized

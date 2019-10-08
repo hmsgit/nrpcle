@@ -53,7 +53,7 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
         return self._parameters["mean"]
 
     # PyLint does not correctly recognize the overriding of the property setter
-    # pylint: disable=arguments-differ
+    # pylint: disable=arguments-differ,function-redefined
     @PyNNNCSource.mean.setter
     def mean(self, value):
         """
@@ -82,7 +82,7 @@ class PyNNNestNCSource(PyNNNestDevice, PyNNNCSource):
         return self._parameters["stdev"]
 
     # PyLint does not correctly recognize the overriding of the property setter
-    # pylint: disable=arguments-differ
+    # pylint: disable=arguments-differ,function-redefined
     @PyNNNCSource.stdev.setter
     def stdev(self, value):
         """

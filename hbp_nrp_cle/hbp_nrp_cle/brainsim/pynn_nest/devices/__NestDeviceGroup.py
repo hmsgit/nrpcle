@@ -213,14 +213,13 @@ class PyNNNestDevice(object):
         # pylint: disable=protected-access, no-member
         nest.SetStatus(neuron_ids, params)
 
+    # pylint: disable=no-self-use
     def GetStatus(self, neuron_ids, properties=None):
         """
         Returns Nest Status of neuron_ids
         """
 
         if properties:
-            return nest.GetStatus(neuron_ids,properties)
+            return nest.GetStatus(neuron_ids, properties)
         else:
             return nest.GetStatus(neuron_ids)
-
-
