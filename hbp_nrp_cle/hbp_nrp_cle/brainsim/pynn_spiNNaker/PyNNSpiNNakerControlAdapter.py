@@ -28,6 +28,7 @@ This module contains an adapted implementation of a neural controller for SpiNNa
 from hbp_nrp_cle.brainsim.pynn.PyNNControlAdapter import PyNNControlAdapter, PyNNPopulationInfo
 from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 import logging
+from hbp_nrp_excontrol.logs import clientLogger
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,10 @@ class PySpiNNakerControlAdapter(PyNNControlAdapter): # pragma no cover
         if not self._running:
             self._running = True
             try:
+                clientLogger.advertise("Brain is loaded to the Spinnaker Board."
+                                       "This can take a couple of seconds.")
                 self._sim.external_devices.run_forever()
+                clientLogger.advertise("Brain loading to the Spinnaker Board has been finished.")
             except Exception as e:
                 self._running = False
                 logger.exception(e)
