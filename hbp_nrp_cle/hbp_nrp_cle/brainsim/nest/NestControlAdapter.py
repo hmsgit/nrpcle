@@ -40,6 +40,8 @@ import copy
 
 logger = logging.getLogger(__name__)
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestControlAdapter(IBrainControlAdapter):
     """

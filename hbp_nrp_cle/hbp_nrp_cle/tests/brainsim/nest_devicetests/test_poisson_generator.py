@@ -25,6 +25,8 @@ from hbp_nrp_cle.brainsim.nest.devices.__NestPoissonSpikeGenerator import NestPo
 import unittest
 from mock import patch, Mock
 
+__author__ = 'LorenzoVannucci'
+
 
 class TestNestPoissonGenerator(unittest.TestCase):
 

@@ -32,6 +32,8 @@ from hbp_nrp_cle.brainsim.nest.devices.__NestDictParser import set_synapse_type,
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestLeakyIntegrator(AbstractBrainDevice, IBrainDevice):
     """

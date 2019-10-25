@@ -7,6 +7,8 @@ from hbp_nrp_cle.brainsim.BrainInterface import PopulationInfo
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestPopulationInfo(PopulationInfo):
     """

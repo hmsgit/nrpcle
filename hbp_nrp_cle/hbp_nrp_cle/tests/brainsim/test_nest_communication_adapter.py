@@ -33,6 +33,8 @@ from hbp_nrp_cle.brainsim.BrainInterface import ISpikeRecorder, \
 from testfixtures import log_capture
 import numpy as np
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestCommunicationAdapterTest(unittest.TestCase):
 

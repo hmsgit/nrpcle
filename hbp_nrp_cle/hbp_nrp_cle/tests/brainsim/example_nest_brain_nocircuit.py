@@ -27,4 +27,6 @@ This is an example of a neural network, written in NEST, for testing purposes
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 foo = nest.Create('iaf_psc_alpha', 3)

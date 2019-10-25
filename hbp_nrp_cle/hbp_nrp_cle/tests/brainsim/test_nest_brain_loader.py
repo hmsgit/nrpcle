@@ -35,6 +35,8 @@ from mock import patch, Mock
 # pylint: disable=R0904
 # all the methods are inherited from unittest.TestCase
 
+__author__ = 'LorenzoVannucci'
+
 
 class TestNestBrainLoader(unittest.TestCase):
     """

@@ -27,6 +27,8 @@ from hbp_nrp_cle.brainsim.nest.devices.__NestNCSource import NestNCSource
 import unittest
 from mock import Mock, patch
 
+__author__ = 'LorenzoVannucci'
+
 
 class TestNestCurrentSources(unittest.TestCase):
 

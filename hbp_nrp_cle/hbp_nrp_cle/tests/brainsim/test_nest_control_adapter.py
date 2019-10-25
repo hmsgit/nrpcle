@@ -32,6 +32,9 @@ from hbp_nrp_cle.cle.CLEInterface import BrainRuntimeException
 import os
 from testfixtures import log_capture
 
+__author__ = 'LorenzoVannucci'
+
+
 class NestControlAdapterTest(unittest.TestCase):
 
     def setUp(self):

@@ -29,9 +29,11 @@ ILeakyIntegratorExp device.
 from hbp_nrp_cle.brainsim.BrainInterface import ILeakyIntegratorAlpha, ILeakyIntegratorExp
 from .__NestLeakyIntegrator import NestLeakyIntegrator
 
+
+__author__ = 'LorenzoVannucci'
+
+
 # pylint: disable=abstract-method
-
-
 class NestLeakyIntegratorAlpha(NestLeakyIntegrator, ILeakyIntegratorAlpha):
     """
     Represents the membrane potential of a current-based LIF neuron

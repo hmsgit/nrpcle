@@ -24,6 +24,7 @@
 """
 NEST devices
 """
+__author__ = 'LorenzoVannucci'
 
 from .__NestACSource import NestACSource
 from .__NestDCSource import NestDCSource

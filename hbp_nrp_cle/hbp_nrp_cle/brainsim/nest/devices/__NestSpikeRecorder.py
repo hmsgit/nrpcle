@@ -31,6 +31,8 @@ import numpy as np
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestSpikeRecorder(AbstractBrainDevice, ISpikeRecorder):
     """

@@ -25,6 +25,8 @@
 This module contains a base class how NEST populations are handled
 """
 
+__author__ = 'LorenzoVannucci'
+
 
 def is_population(population):  # pragma: no cover
     """

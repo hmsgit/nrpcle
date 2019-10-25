@@ -39,6 +39,8 @@ from hbp_nrp_cle.brainsim.nest.devices import NestPopulationRate, NestACSource, 
 
 logger = logging.getLogger(__name__)
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestCommunicationAdapter(AbstractCommunicationAdapter):
     """

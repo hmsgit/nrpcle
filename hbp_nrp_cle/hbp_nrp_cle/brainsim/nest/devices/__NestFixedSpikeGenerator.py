@@ -32,6 +32,8 @@ import numpy as np
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestFixedSpikeGenerator(AbstractBrainDevice, IFixedSpikeGenerator):
     """

@@ -30,6 +30,8 @@ from hbp_nrp_cle.brainsim.BrainInterface import INCSource
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestNCSource(AbstractBrainDevice, INCSource):
     """

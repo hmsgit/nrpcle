@@ -29,6 +29,8 @@ as a parameter. The reason for this is that this allows to make it transparent f
 whether some of the parsing functionality has been extracted here.
 """
 
+__author__ = 'LorenzoVannucci'
+
 
 def set_synapse_type(device_parameters):
     """

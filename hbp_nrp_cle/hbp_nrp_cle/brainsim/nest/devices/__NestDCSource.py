@@ -30,6 +30,8 @@ from hbp_nrp_cle.brainsim.BrainInterface import IDCSource
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 
 class NestDCSource(AbstractBrainDevice, IDCSource):
     """

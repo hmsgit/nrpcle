@@ -25,6 +25,8 @@ from hbp_nrp_cle.brainsim.nest.devices.__NestFixedSpikeGenerator import NestFixe
 import unittest
 from mock import patch, Mock
 
+__author__ = 'LorenzoVannucci'
+
 
 class TestNestFixedSpikeGenerator(unittest.TestCase):
 

@@ -25,6 +25,8 @@ from hbp_nrp_cle.brainsim.nest.devices.__NestSpikeRecorder import NestSpikeRecor
 import unittest
 from mock import Mock, patch
 
+__author__ = 'LorenzoVannucci'
+
 
 class TestNestSpikeRecorder(unittest.TestCase):
 

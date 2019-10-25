@@ -27,6 +27,8 @@ This is an example of a neural network, written in NEST, for testing purposes
 
 import nest
 
+__author__ = 'LorenzoVannucci'
+
 circuit = nest.Create('iaf_psc_alpha', 3)
 
 pop1 = circuit[0:2]

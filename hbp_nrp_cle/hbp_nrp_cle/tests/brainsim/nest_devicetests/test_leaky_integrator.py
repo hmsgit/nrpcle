@@ -25,6 +25,8 @@ from hbp_nrp_cle.brainsim.nest.devices.__NestLeakyIntegratorTypes import NestLea
 import unittest
 from mock import patch, Mock
 
+__author__ = 'LorenzoVannucci'
+
 
 class TestNestLeakyIntegrator(unittest.TestCase):
 
